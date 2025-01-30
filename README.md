@@ -1,4 +1,5 @@
 # OptiRH - Gestion des Ressources Humaines
+![_OptiRH finale](https://github.com/user-attachments/assets/0f3bdb15-6321-42da-b294-c12b76d025d3)
 
 ## 📌 Présentation
 OptiRH est une solution innovante de gestion des ressources humaines qui combine une application **desktop en JavaFX** et une **plateforme web intégrée**. 
