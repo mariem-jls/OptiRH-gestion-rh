@@ -1,10 +1,10 @@
-<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/22.0.2 Chrome/114.0.5735.289 Electron/25.8.4 Safari/537.36" modified="2025-02-04T10:15:47.888Z" etag="gl7_pgb8VTmQNSYTooSn" version="22.0.2" type="device">
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/22.0.2 Chrome/114.0.5735.289 Electron/25.8.4 Safari/537.36" modified="2025-02-06T10:56:10.893Z" etag="RzByaLUCAh7rmr6lL-ml" version="22.0.2" type="device">
   <diagram name="Page-1" id="Yrs7KlP71VBfs4nfrlCE">
-    <mxGraphModel dx="2554" dy="2179" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" background="#ffffff" math="0" shadow="0">
+    <mxGraphModel dx="1863" dy="1775" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" background="#ffffff" math="0" shadow="1">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="XjX4u2drSxFfhVrrYKXO-3" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#E07A5F;fontColor=#393C56;fillColor=#F2CC8F;endArrow=none;endFill=0;shadow=1;curved=1;" edge="1" parent="1" source="fzgczVOHdvdYnYpxsNVG-100" target="XjX4u2drSxFfhVrrYKXO-2">
+        <mxCell id="XjX4u2drSxFfhVrrYKXO-3" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#E07A5F;fontColor=#393C56;fillColor=#F2CC8F;endArrow=none;endFill=0;shadow=1;curved=1;" parent="1" source="fzgczVOHdvdYnYpxsNVG-100" target="XjX4u2drSxFfhVrrYKXO-2" edge="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="-725" y="-194" as="sourcePoint" />
             <mxPoint x="-638" y="-194" as="targetPoint" />
@@ -24,7 +24,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="XjX4u2drSxFfhVrrYKXO-4" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#E07A5F;fontColor=#393C56;fillColor=#F2CC8F;endArrow=none;endFill=0;shadow=1;curved=1;" edge="1" parent="1" source="fzgczVOHdvdYnYpxsNVG-92" target="XjX4u2drSxFfhVrrYKXO-1">
+        <mxCell id="XjX4u2drSxFfhVrrYKXO-4" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#E07A5F;fontColor=#393C56;fillColor=#F2CC8F;endArrow=none;endFill=0;shadow=1;curved=1;" parent="1" source="fzgczVOHdvdYnYpxsNVG-92" target="XjX4u2drSxFfhVrrYKXO-1" edge="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="-725" y="-310" as="sourcePoint" />
             <mxPoint x="-637" y="-310" as="targetPoint" />
@@ -238,10 +238,10 @@
         <mxCell id="fzgczVOHdvdYnYpxsNVG-113" value="Gérer des rapports globaux&amp;nbsp;" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#E07A5F;fontColor=#393C56;fillColor=#F2CC8F;shadow=1;" parent="fzgczVOHdvdYnYpxsNVG-3" vertex="1">
           <mxGeometry x="412" y="408" width="120" height="54" as="geometry" />
         </mxCell>
-        <mxCell id="XjX4u2drSxFfhVrrYKXO-1" value="Affecter les véhicules&lt;br&gt;aux employés&amp;nbsp;" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#E07A5F;fontColor=#393C56;fillColor=#F2CC8F;shadow=1;" vertex="1" parent="fzgczVOHdvdYnYpxsNVG-3">
+        <mxCell id="XjX4u2drSxFfhVrrYKXO-1" value="Affecter les véhicules&lt;br&gt;aux employés&amp;nbsp;" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#E07A5F;fontColor=#393C56;fillColor=#F2CC8F;shadow=1;" parent="fzgczVOHdvdYnYpxsNVG-3" vertex="1">
           <mxGeometry x="166" y="793" width="120" height="54" as="geometry" />
         </mxCell>
-        <mxCell id="XjX4u2drSxFfhVrrYKXO-2" value="Voir les prédictions de l&#39;IA des incidents" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#E07A5F;fontColor=#393C56;fillColor=#F2CC8F;shadow=1;" vertex="1" parent="fzgczVOHdvdYnYpxsNVG-3">
+        <mxCell id="XjX4u2drSxFfhVrrYKXO-2" value="Voir les prédictions de l&#39;IA des incidents" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#E07A5F;fontColor=#393C56;fillColor=#F2CC8F;shadow=1;" parent="fzgczVOHdvdYnYpxsNVG-3" vertex="1">
           <mxGeometry x="289" y="909" width="120" height="54" as="geometry" />
         </mxCell>
         <mxCell id="fzgczVOHdvdYnYpxsNVG-96" value="Suivre les trajets" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#E07A5F;fontColor=#393C56;fillColor=#F2CC8F;shadow=1;" parent="fzgczVOHdvdYnYpxsNVG-3" vertex="1">
