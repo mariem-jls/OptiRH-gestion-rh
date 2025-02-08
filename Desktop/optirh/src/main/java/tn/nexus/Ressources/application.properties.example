@@ -1,0 +1,4 @@
+# Database configuration
+spring.datasource.URL=jdbc:mysql://localhost:3306/optirh_db
+spring.datasource.USERNAME=root
+spring.datasource.PASSWORD=''
