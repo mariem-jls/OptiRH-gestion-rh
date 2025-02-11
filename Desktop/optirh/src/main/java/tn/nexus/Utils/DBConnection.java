@@ -17,9 +17,6 @@ public class DBConnection {
     private Connection con;
 
     private DBConnection() {
-        System.out.println(this.URL);
-        System.out.println(this.USER);
-        System.out.println(this.PWD);
         try {
             con = DriverManager.getConnection(URL, USER, PWD);
             System.out.println("Connection successful");
