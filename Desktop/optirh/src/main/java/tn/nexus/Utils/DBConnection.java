@@ -7,7 +7,7 @@ import java.sql.SQLException;
 public class DBConnection {
     private final String USER = "root";
     private final String PWD = "";
-    private final String URL = "jdbc:mysql://localhost:3306/optirh_db";
+    private final String URL = "jdbc:mysql://localhost:3306/optirh";
 
     public static DBConnection instance;
 
