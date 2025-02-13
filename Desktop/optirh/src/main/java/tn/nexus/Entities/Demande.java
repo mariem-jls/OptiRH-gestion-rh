@@ -46,7 +46,7 @@ public void setDate(LocalDate date) {
     this.date = date;
 }
 
-public String getDescString() {
+public String getDescription() {
     return description;
 }
 
