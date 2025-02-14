@@ -18,3 +18,9 @@ Thumbs.db
 
 # Environment variables
 .env
+
+# Java binary files
+*.class
+*.jar
+*.war
+*.ear
