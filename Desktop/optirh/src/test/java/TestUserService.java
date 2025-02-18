@@ -2,51 +2,70 @@
 import java.sql.SQLException;
 import java.util.List;
 
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+
 import tn.nexus.Entities.User;
 import tn.nexus.Services.UserService;
+import tn.nexus.Utils.DBConnection;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TestUserService {
-    public static void main(String[] args) {
-        UserService us = new UserService();
-
-        // Test insert
+    @Test
+    @Order(1)
+    public void testInsert() {
+        UserService userService = new UserService();
         try {
-            User u = new User("Ahmed Trabelsi", "ahmed@gmail.com", "123456", "Administrateur", "tunis");
-            int result = us.insert(u);
-            System.out.println("Insert result: " + result);
-        } catch (SQLException e) {
-            e.printStackTrace();
+            DBConnection.getInstance().getConnection().prepareStatement("ALTER TABLE users AUTO_INCREMENT = 1;")
+                    .executeUpdate();
+        } catch (SQLException e1) {
+            e1.printStackTrace();
         }
-
-        // Test showAll
+        User user = new User("John Doe", "john@example.com", "password123", "Administrateur", "123 Street");
         try {
-            List<User> users = us.showAll();
-            System.out.println("Users:");
-            for (User user : users) {
-                System.out.println(user);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        // Test update
-        try {
-            User u = new User(3, "Ahmed Trabelsi", "ahmed@gmail.com", "updatedPassword", "Administrateur", "test");
-            int result = us.update(u);
-            System.out.println("Update result: " + result);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        // Test delete
-        try {
-            User u = new User();
-            u.setId(3); // Assuming the user with ID 3 exists
-            int result = us.delete(u);
-            System.out.println("Delete result: " + result);
+            int result = userService.insert(user);
+            assertEquals(1, result);
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
+    @Test
+    @Order(2)
+    public void testUpdate() {
+        UserService userService = new UserService();
+        User user = new User(1, "John Doe", "john@example.com", "newpassword", "Administrateur", "123 Street");
+        try {
+            int result = userService.update(user);
+            assertEquals(1, result);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    @Order(3)
+    public void testShowAll() {
+        UserService userService = new UserService();
+        try {
+            List<User> users = userService.showAll();
+            assertEquals(1, users.size());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    @Order(4)
+    public void testDelete() {
+        UserService userService = new UserService();
+        User user = new User(1, "John Doe", "john@example.com", "newpassword", "Administrateur", "123 Street");
+        try {
+            int result = userService.delete(user);
+            assertEquals(1, result);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 }
