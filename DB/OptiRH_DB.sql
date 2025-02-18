@@ -19,6 +19,22 @@ CREATE TABLE OffreEmploi (
     ON DELETE CASCADE,
     ON UPDATE CASCADE
 );
+-- ############################################################
+-- # Mise à jour :
+-- # Auteur : mariem-jls
+-- # Description : Changements dans la table OffresEmploi 
+-- ############################################################
+CREATE TABLE Offre (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    poste VARCHAR(100),
+    description TEXT,
+    statut VARCHAR(50));
+-- ############################################################
+-- # Mise à jour :
+-- # Auteur : mariem-jls
+-- # Description : Ajout d'une colonne
+-- ############################################################
+ALTER TABLE Offre ADD COLUMN date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
 
 CREATE TABLE Demande (
     id INT PRIMARY KEY AUTO_INCREMENT,
