@@ -12,14 +12,20 @@ public class User {
     public User() {
     }
 
+    
     public User(int id, String nom, String email, String motDePasse, String role, String address) {
+        this(nom, email, motDePasse, role, address);
         this.id = id;
+    }
+
+    public User(String nom, String email, String motDePasse, String role, String address) {
         this.nom = nom;
         this.email = email;
         this.motDePasse = motDePasse;
         this.role = role;
         this.address = address;
     }
+
 
     public int getId() {
         return id;
