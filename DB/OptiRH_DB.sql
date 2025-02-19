@@ -46,6 +46,21 @@ CREATE TABLE Demande (
     ON DELETE CASCADE,
     ON UPDATE CASCADE
 );
+-- ############################################################
+-- # Mise à jour :
+-- # Auteur : mariem-jls
+-- # Description : Changements dans la table Demande 
+-- ############################################################
+    ALTER TABLE demande MODIFY COLUMN date TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+-- ############################################################
+    ALTER TABLE demande CHANGE COLUMN status statut ENUM('En attente', 'Acceptée', 'Refusée') DEFAULT 'En attente';
+-- ############################################################
+    ALTER TABLE demande MODIFY statut ENUM('EN_ATTENTE', 'ACCEPTEE', 'REFUSEE');
+-- ############################################################
+    ALTER TABLE demande ADD COLUMN fichier_piece_jointe VARCHAR(255) NULL;
+-- ############################################################
+    ALTER TABLE demande ADD COLUMN offre_id INT NOT NULL;
+    ALTER TABLE demande ADD CONSTRAINT fk_demande_offre FOREIGN KEY (offre_id) REFERENCES offre(id) ON DELETE CASCADE;
 
 CREATE TABLE Reclamation (
     id INT PRIMARY KEY AUTO_INCREMENT,
