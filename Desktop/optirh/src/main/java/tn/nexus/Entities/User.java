@@ -1,24 +1,26 @@
 package tn.nexus.Entities;
 
+import tn.nexus.Utils.Enums.Role;
+
 public class User {
 
     private int id;
     private String nom;
     private String email;
     private String motDePasse;
-    private String role;
+    private Role role;
     private String address;
 
     public User() {
     }
 
     
-    public User(int id, String nom, String email, String motDePasse, String role, String address) {
+    public User(int id, String nom, String email, String motDePasse, Role role, String address) {
         this(nom, email, motDePasse, role, address);
         this.id = id;
     }
 
-    public User(String nom, String email, String motDePasse, String role, String address) {
+    public User(String nom, String email, String motDePasse, Role role, String address) {
         this.nom = nom;
         this.email = email;
         this.motDePasse = motDePasse;
@@ -59,11 +61,11 @@ public class User {
         this.motDePasse = motDePasse;
     }
 
-    public String getRole() {
+    public Role getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(Role role) {
         this.role = role;
     }
 

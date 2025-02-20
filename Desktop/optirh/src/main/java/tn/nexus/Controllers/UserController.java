@@ -4,8 +4,11 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 
 import java.io.File;
@@ -19,15 +22,34 @@ import java.util.ResourceBundle;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import io.github.palexdev.materialfx.controls.MFXButton;
+import io.github.palexdev.materialfx.controls.MFXComboBox;
 import io.github.palexdev.materialfx.controls.MFXPaginatedTableView;
 import io.github.palexdev.materialfx.controls.MFXTableColumn;
+import io.github.palexdev.materialfx.controls.MFXTextField;
 import io.github.palexdev.materialfx.controls.cell.MFXTableRowCell;
+import io.github.palexdev.materialfx.filter.EnumFilter;
 import io.github.palexdev.materialfx.filter.StringFilter;
 import tn.nexus.Entities.User;
 import tn.nexus.Services.UserService;
 import tn.nexus.Utils.WrapWithSideBar;
+import tn.nexus.Utils.Enums.Role;
 
 public class UserController implements Initializable, WrapWithSideBar {
+
+    @FXML
+    private VBox userDetailsPanel;
+
+    @FXML
+    private MFXTextField nomField, emailField, addressField, passwordField;
+
+    @FXML
+    private MFXComboBox<Role> roleField;
+
+    @FXML
+    private MFXButton updateButton, deleteButton, addButton;
+
+    @FXML
+    private Button addUserButton;
 
     @FXML
     private AnchorPane sideBar;
@@ -42,6 +64,8 @@ public class UserController implements Initializable, WrapWithSideBar {
 
     private ObservableList<User> users = FXCollections.observableArrayList();
 
+    private User selectedUser;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         initializeSideBar(sideBar);
@@ -50,9 +74,41 @@ public class UserController implements Initializable, WrapWithSideBar {
         }
         setupTableColumns();
         setupFilters();
-        loadUsers();
         setupPagination();
         setupButtons();
+        loadUsers();
+        tableView.getSelectionModel().selectionProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null && !newSelection.isEmpty()) {
+                selectedUser = tableView.getSelectionModel().getSelectedValues().get(0);
+                showUserDetails(selectedUser);
+            }
+        });
+
+    }
+
+    private void showUserDetails(User user) {
+
+        initializeEmptyUserDetails();
+        selectedUser = user;
+        nomField.setText(user.getNom());
+        emailField.setText(user.getEmail());
+        roleField.selectItem(user.getRole());
+        addressField.setText(user.getAddress());
+    }
+
+    private void clearUserDetails() {
+        nomField.clear();
+        emailField.clear();
+        roleField.getSelectionModel().clearSelection();
+        addressField.clear();
+        passwordField.clear();
+        userDetailsPanel.setVisible(false);
+    }
+
+    private void initializeEmptyUserDetails() {
+
+        roleField.getItems().setAll(Role.values());
+        userDetailsPanel.setVisible(true);
     }
 
     private void setupTableColumns() {
@@ -68,13 +124,95 @@ public class UserController implements Initializable, WrapWithSideBar {
         addressColumn.setRowCellFactory(user -> new MFXTableRowCell<>(User::getAddress));
 
         tableView.getTableColumns().addAll(nomColumn, emailColumn, roleColumn, addressColumn);
+        tableView.autosizeColumnsOnInitialization();
+        userDetailsPanel.setVisible(false);
+
+        updateButton.setOnAction(event -> {
+            if (selectedUser != null) {
+                selectedUser.setNom(nomField.getText());
+                selectedUser.setEmail(emailField.getText());
+                selectedUser.setRole(roleField.getValue());
+                selectedUser.setAddress(addressField.getText());
+
+                try {
+                    userService.update(selectedUser);
+                    refreshTable();
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("Succès de la mise à jour");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Utilisateur mis à jour avec succès !");
+                    alert.showAndWait();
+                } catch (SQLException e) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Erreur de mise à jour");
+                    alert.setHeaderText("Erreur lors de la mise à jour de l'utilisateur");
+                    alert.setContentText(e.getMessage());
+                    alert.showAndWait();
+                }
+            }
+        });
+
+        deleteButton.setOnAction(event -> {
+            if (selectedUser != null) {
+                try {
+                    userService.delete(selectedUser);
+                    refreshTable();
+                    selectedUser = null;
+                    clearUserDetails();
+                    userDetailsPanel.setVisible(false);
+
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("Suppression réussie");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Utilisateur supprimé avec succès");
+                    alert.showAndWait();
+                } catch (SQLException e) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Erreur de suppression");
+                    alert.setHeaderText("Erreur lors de la suppression de l'utilisateur");
+                    alert.setContentText(e.getMessage());
+                    alert.showAndWait();
+                }
+            }
+        });
+
+        addButton.setOnAction(event -> {
+            User user = new User();
+            user.setNom(nomField.getText());
+            user.setEmail(emailField.getText());
+            user.setRole(roleField.getValue());
+            user.setMotDePasse(passwordField.getText());
+            user.setAddress(addressField.getText());
+
+            try {
+                userService.insert(user);
+                refreshTable();
+
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Insertion réussie");
+                alert.setHeaderText(null);
+                alert.setContentText("Utilisateur " + nomField.getText() + " ajouté avec succès");
+                alert.showAndWait();
+            } catch (SQLException e) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Erreur d'insertion");
+                alert.setHeaderText("Erreur lors de l'insertion de l'utilisateur");
+                alert.setContentText(e.getMessage());
+                alert.showAndWait();
+            }
+        });
+
+        addUserButton.setOnAction(event -> {
+            initializeEmptyUserDetails();
+        });
+
     }
 
     private void setupFilters() {
         tableView.getFilters().addAll(
                 new StringFilter<>("Nom", User::getNom),
                 new StringFilter<>("Email", User::getEmail),
-                new StringFilter<>("Role", User::getRole),
+                new EnumFilter<>("Role", User::getRole, Role.class),
                 new StringFilter<>("Address", User::getAddress));
     }
 
@@ -89,7 +227,7 @@ public class UserController implements Initializable, WrapWithSideBar {
     }
 
     private void setupPagination() {
-        tableView.setRowsPerPage(16);
+        tableView.setRowsPerPage(4);
     }
 
     private void setupButtons() {
@@ -109,12 +247,21 @@ public class UserController implements Initializable, WrapWithSideBar {
         exportButton.setGraphic(exportIcon);
         exportButton.setOnAction(event -> exportToCSV());
 
+        refreshButton.setPrefWidth(150);
+        exportButton.setPrefWidth(150);
+
+        VBox buttonContainer = new VBox(1);
         buttonContainer.getChildren().addAll(refreshButton, exportButton);
+
+        this.buttonContainer.getChildren().add(buttonContainer);
     }
 
     private void refreshTable() {
-        users.clear();
-        loadUsers();
+        try {
+            users.setAll(userService.showAll());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     private void exportToCSV() {

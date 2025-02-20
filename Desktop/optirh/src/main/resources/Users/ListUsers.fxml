@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView?>
+<?import io.github.palexdev.materialfx.controls.MFXButton?>
+<?import io.github.palexdev.materialfx.controls.MFXComboBox?>
 <?import io.github.palexdev.materialfx.controls.MFXPaginatedTableView?>
+<?import io.github.palexdev.materialfx.controls.MFXPasswordField?>
+<?import io.github.palexdev.materialfx.controls.MFXTextField?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.layout.AnchorPane?>
@@ -21,24 +25,48 @@
                         <!-- Button Container for Add, Refresh, and Export -->
                         <HBox fx:id="buttonContainer" spacing="10.0">
                             <children>
-                                <Button mnemonicParsing="false" styleClass="save-btn" text="Ajouter une utilisateur">
+                                <Button fx:id="addUserButton" mnemonicParsing="false" styleClass="save-btn" text="Ajouter un utilisateur">
                                     <graphic>
                                         <FontAwesomeIconView fill="WHITE" glyphName="PLUS" size="16" />
                                     </graphic>
+                                    <HBox.margin>
+                                        <Insets />
+                                    </HBox.margin>
                                 </Button>
                             </children>
+                     <padding>
+                        <Insets top="20.0" />
+                     </padding>
                         </HBox>
                         <!-- Table View -->
-                        <MFXPaginatedTableView fx:id="tableView" prefHeight="546.0" prefWidth="1500.0" rowsPerPage="16" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                        <MFXPaginatedTableView fx:id="tableView" prefHeight="546.0" prefWidth="900.0" rowsPerPage="16" />
                     </children>
-                    <opaqueInsets>
-                        <Insets />
-                    </opaqueInsets>
-                    <padding>
-                        <Insets left="25.0" right="25.0" top="25.0" />
-                    </padding>
+               <padding>
+                  <Insets left="10.0" />
+               </padding>
                 </VBox>
             </children>
         </AnchorPane>
     </center>
+
+    <right>
+        <VBox fx:id="userDetailsPanel" prefWidth="300.0" spacing="15.0" style="-fx-background-color: #F5F5F5; -fx-padding: 20px;" BorderPane.alignment="CENTER">
+            <children>
+
+                <MFXTextField fx:id="nomField" prefHeight="50.0" prefWidth="290.0" promptText="Nom" />
+                <MFXTextField fx:id="emailField" prefHeight="50.0" prefWidth="321.0" promptText="Email" />
+                <MFXComboBox fx:id="roleField" prefHeight="50.0" prefWidth="327.0" promptText="Role" />
+                <MFXPasswordField fx:id="passwordField" prefHeight="50.0" prefWidth="319.0" promptText="Mot de passe" />
+                <MFXTextField fx:id="addressField" prefHeight="50.0" prefWidth="295.0" promptText="Address" />
+
+                <HBox spacing="10.0">
+                    <children>
+                        <MFXButton fx:id="updateButton" style="-fx-background-color: #FF9800; -fx-text-fill: white;" text="Modifier" />
+                        <MFXButton fx:id="deleteButton" style="-fx-background-color: #F44336; -fx-text-fill: white;" text="Supprimer" />
+                        <MFXButton fx:id="addButton" style="-fx-background-color: #4CAF50; -fx-text-fill: white;" text="Ajouter" />
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+    </right>
 </BorderPane>
