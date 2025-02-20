@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import tn.nexus.Entities.User;
 import tn.nexus.Services.UserService;
 import tn.nexus.Utils.DBConnection;
+import tn.nexus.Utils.Enums.Role;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -22,7 +23,7 @@ public class TestUserService {
         } catch (SQLException e1) {
             e1.printStackTrace();
         }
-        User user = new User("John Doe", "john@example.com", "password123", "Administrateur", "123 Street");
+        User user = new User("John Doe", "john@example.com", "password123", Role.Administrateur, "123 Street");
         try {
             int result = userService.insert(user);
             assertEquals(1, result);
@@ -35,7 +36,7 @@ public class TestUserService {
     @Order(2)
     public void testUpdate() {
         UserService userService = new UserService();
-        User user = new User(1, "John Doe", "john@example.com", "newpassword", "Administrateur", "123 Street");
+        User user = new User(1, "New name", "newmail@example.com", "newpassword", Role.Candidat, "123456789 Street");
         try {
             int result = userService.update(user);
             assertEquals(1, result);
@@ -60,7 +61,7 @@ public class TestUserService {
     @Order(4)
     public void testDelete() {
         UserService userService = new UserService();
-        User user = new User(1, "John Doe", "john@example.com", "newpassword", "Administrateur", "123 Street");
+        User user = new User(1, "New name", "newmail@example.com", "newpassword", Role.Candidat, "123456789 Street");
         try {
             int result = userService.delete(user);
             assertEquals(1, result);

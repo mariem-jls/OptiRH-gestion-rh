@@ -1,0 +1,105 @@
+.menu {
+    -fx-background-color: linear-gradient(to bottom right, #3498db, #fff);
+}
+
+.menu-button {
+    -fx-background-color: transparent;
+    -fx-font-family: "Tahoma";
+    -fx-font-size: 16px;
+    -fx-cursor: hand;
+    -fx-text-fill: #ffffff;
+    -fx-alignment: center-left;
+}
+
+.menu-logout-btn {
+    -fx-background-color: #3498db;
+    -fx-font-family: "Tahoma";
+    -fx-font-size: 16px;
+    -fx-cursor: hand;
+    -fx-text-fill: #fff;
+    -fx-alignment: center-left;
+}
+
+.bg-white {
+    -fx-background-color: #fff;
+}
+
+
+.save-btn,
+.cancel-btn,
+.secondary-btn {
+    -fx-font-weight: bold;
+    -fx-min-width: 200;
+    -fx-padding: 17;
+}
+
+.save-btn {
+    -fx-text-fill: #fff !important;
+    -fx-background-color: linear-gradient(to right, #3498db, #3498db) !important;
+}
+
+.cancel-btn {
+    -fx-text-fill: #fff !important;
+    -fx-background-color: linear-gradient(to right, #fff, #fff) !important;
+}
+
+
+.secondary-btn {
+    -fx-text-fill: #fff !important;
+    -fx-background-color: linear-gradient(to right, #3498db, #3498db) !important;
+    -fx-opacity: 0.9;
+}
+
+
+/* table */
+.table-header {
+    -fx-background-color: #3498db !important;
+    -fx-padding: 14px 0px;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.table-header-label {
+    -fx-text-fill: #fff !important;
+}
+
+.table-body {
+    -fx-padding: 10px 0px;
+}
+
+.table-body-label {}
+
+.table-show-btn,
+.table-edit-btn,
+.table-delete-btn {
+    -fx-cursor: hand;
+    -fx-border-radius: 50%;
+    -fx-min-height: 30px;
+    -fx-min-width: 30px;
+    -fx-max-height: 30px;
+    -fx-max-width: 30px;
+    -fx-background-radius: 50%;
+    -fx-alignment: center;
+}
+
+.table-delete-btn {
+    -fx-background-color: #d8726f;
+}
+
+.table-edit-btn {
+    -fx-background-color: #3498db;
+}
+
+.table-show-btn {
+    -fx-background-color: #3498db;
+}
+
+
+.formation-card {
+    -fx-background-color: #fff;
+    -fx-padding: 20px;
+    -fx-border-radius: 15px;
+    -fx-border-width: 1px;
+    -fx-border-color: #3498db;
+    -fx-cursor: hand;
+}

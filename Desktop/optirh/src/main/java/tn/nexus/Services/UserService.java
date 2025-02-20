@@ -4,8 +4,11 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.mindrot.jbcrypt.BCrypt;
+
 import tn.nexus.Entities.User;
 import tn.nexus.Utils.DBConnection;
+import tn.nexus.Utils.Enums.Role;
 
 public class UserService implements CRUD<User> {
 
@@ -22,8 +25,8 @@ public class UserService implements CRUD<User> {
 
         ps.setString(1, user.getNom());
         ps.setString(2, user.getEmail());
-        ps.setString(3, user.getMotDePasse());
-        ps.setString(4, user.getRole());
+        ps.setString(3, BCrypt.hashpw(user.getMotDePasse(), BCrypt.gensalt()));
+        ps.setString(4, user.getRole().name());
         ps.setString(5, user.getAddress());
 
         return ps.executeUpdate();
@@ -37,10 +40,12 @@ public class UserService implements CRUD<User> {
 
         ps.setString(1, person.getNom());
         ps.setString(2, person.getEmail());
-        ps.setString(3, person.getMotDePasse());
-        ps.setString(4, person.getRole());
+        ps.setString(3, BCrypt.hashpw(person.getMotDePasse(), BCrypt.gensalt()));
+        ps.setString(4, person.getRole().name());
         ps.setString(5, person.getAddress());
         ps.setInt(6, person.getId());
+
+        System.out.println(ps);
 
         return ps.executeUpdate();
     }
@@ -72,8 +77,7 @@ public class UserService implements CRUD<User> {
             p.setId(rs.getInt("id"));
             p.setNom(rs.getString("nom"));
             p.setEmail(rs.getString("email"));
-            p.setMotDePasse(rs.getString("motDePasse"));
-            p.setRole(rs.getString("role"));
+            p.setRole(Role.valueOf(rs.getString("role")));
             p.setAddress(rs.getString("address"));
 
             temp.add(p);
