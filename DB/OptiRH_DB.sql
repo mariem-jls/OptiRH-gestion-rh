@@ -85,16 +85,24 @@ CREATE TABLE Demande (
     ADD COLUMN date_debut_disponible DATE,  
     ADD COLUMN situation_actuelle VARCHAR(100);
 
-CREATE TABLE Reclamation (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    description TEXT,
-    date DATE,
-    status VARCHAR(50),
-    utilisateur_id INT,
-    FOREIGN KEY (utilisateur_id) REFERENCES Utilisateur(id),
-    ON DELETE CASCADE,
-    ON UPDATE CASCADE
-);
+CREATE TABLE `reclamation` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `description` text COLLATE utf8mb4_general_ci,
+  `date` date DEFAULT NULL,
+  `status` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `utilisateur_id` int DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `utilisateur_id` (`utilisateur_id`)
+)
+CREATE TABLE reponse (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `description` text COLLATE utf8mb4_general_ci,
+  `date` date DEFAULT NULL,
+  `status` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `reclamation_id` int DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `reclamation_id` (`reclamation_id`)
+)
 
 CREATE TABLE Conges (
     id INT PRIMARY KEY AUTO_INCREMENT,
