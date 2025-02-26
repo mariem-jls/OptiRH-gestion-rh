@@ -61,6 +61,29 @@ CREATE TABLE Demande (
 -- ############################################################
     ALTER TABLE demande ADD COLUMN offre_id INT NOT NULL;
     ALTER TABLE demande ADD CONSTRAINT fk_demande_offre FOREIGN KEY (offre_id) REFERENCES offre(id) ON DELETE CASCADE;
+-- ############################################################
+-- # Mise à jour :
+-- # Auteur : mariem-jls
+-- # Description : Ajouts de colonnes dans la table Offre 
+-- ############################################################
+    ALTER TABLE Offre ADD COLUMN mode_travail VARCHAR(50);  -- Présentiel, Hybride, Télétravail
+    ALTER TABLE Offre ADD COLUMN type_contrat VARCHAR(50);   -- CDI, CDD, Stage, Freelance...
+    ALTER TABLE Offre ADD COLUMN localisation VARCHAR(100);  -- Ville, pays ou télétravail
+    ALTER TABLE Offre ADD COLUMN niveau_experience VARCHAR(50); -- Débutant, Junior, Senior...
+    ALTER TABLE Offre ADD COLUMN nb_postes INT;             -- Nombre de postes ouverts
+    ALTER TABLE Offre ADD COLUMN date_expiration DATE;      -- Date limite de candidature
+-- ############################################################
+-- # Mise à jour :
+-- # Auteur : mariem-jls
+-- # Description : Ajouts de colonnes dans la table Demande 
+-- ############################################################
+    ALTER TABLE demande  
+    ADD COLUMN nom_complet VARCHAR(255) NOT NULL,  
+    ADD COLUMN email VARCHAR(255) NOT NULL,  
+    ADD COLUMN telephone VARCHAR(20) NOT NULL,  
+    ADD COLUMN adresse VARCHAR(255),  
+    ADD COLUMN date_debut_disponible DATE,  
+    ADD COLUMN situation_actuelle VARCHAR(100);
 
 CREATE TABLE Reclamation (
     id INT PRIMARY KEY AUTO_INCREMENT,
