@@ -85,4 +85,23 @@ public class UserService implements CRUD<User> {
 
         return temp;
     }
+    public User getUserByEmailAndRole(String email, Role role) throws SQLException {
+        String req = "SELECT * FROM Users WHERE email = ? AND role = ?";
+        try (PreparedStatement ps = cnx.prepareStatement(req)) {
+            ps.setString(1, email);
+            ps.setString(2, role.name()); // Convertir le rôle en chaîne de caractères
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    User user = new User();
+                    user.setId(rs.getInt("id"));
+                    user.setNom(rs.getString("nom"));
+                    user.setEmail(rs.getString("email"));
+                    user.setRole(Role.valueOf(rs.getString("role"))); // Convertir la chaîne en enum Role
+                    user.setAddress(rs.getString("address"));
+                    return user;
+                }
+            }
+        }
+        return null; // Aucun utilisateur trouvé avec cet email et ce rôle
+    }
 }

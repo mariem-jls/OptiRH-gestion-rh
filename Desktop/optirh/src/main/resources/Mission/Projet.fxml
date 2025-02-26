@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="650.0" prefWidth="1100.0" stylesheets="@dashboard.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.nexus.Controllers.Mission.ProjetController">
+    <!-- SideBar à gauche -->
+    <left>
+        <AnchorPane fx:id="sideBar" prefHeight="200.0" prefWidth="200.0" styleClass="menu" BorderPane.alignment="CENTER" />
+    </left>
+
+    <!-- Interface Projet au centre -->
+    <center>
+        <AnchorPane prefHeight="200.0" prefWidth="200.0" styleClass="bg-white" BorderPane.alignment="CENTER">
+            <children>
+                <VBox layoutX="41.0" layoutY="269.0" prefHeight="650.4" prefWidth="900.0" spacing="20.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <children>
+                        <!-- Titre -->
+                        <Label style="-fx-font-size: 18; -fx-font-weight: bold;" text="Gestion des Projets" />
+
+                        <!-- Tableau des projets -->
+                        <TableView fx:id="projectTable" prefHeight="400.0" prefWidth="425.0">
+                            <columns>
+                                <TableColumn fx:id="idColumn" text="ID" />
+                                <TableColumn fx:id="nomColumn" prefWidth="156.79999542236328" text="Nom" />
+                                <TableColumn fx:id="descriptionColumn" prefWidth="138.4000244140625" text="Description" />
+                                <TableColumn fx:id="userNomColumn" prefWidth="145.60006713867188" text="Créé par" />
+                                <TableColumn fx:id="createdAtColumn" prefWidth="196.79998779296875" text="Date de création" />
+                            </columns>
+                        </TableView>
+
+                        <!-- Boutons pour Ajouter, Modifier et Supprimer -->
+                        <HBox alignment="CENTER" spacing="10">
+                            <Button onAction="#handleAddProject" prefHeight="32.0" prefWidth="92.0" styleClass="btn-ajouter" text="Ajouter" />
+                            <Button onAction="#handleUpdateProject" prefHeight="29.0" prefWidth="80.0" styleClass="btn-modifier" text="Modifier" />
+                            <Button onAction="#handleDeleteProject" styleClass="btn-supprimer" text="Supprimer" />
+                            <Button fx:id="viewMissionsButton" text="View Missions" />
+                        </HBox>
+                    </children>
+                    <padding>
+                        <Insets left="10.0" />
+                    </padding>
+                </VBox>
+            </children>
+        </AnchorPane>
+    </center>
+</BorderPane>

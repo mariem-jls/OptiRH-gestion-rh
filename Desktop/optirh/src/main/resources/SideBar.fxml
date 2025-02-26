@@ -57,6 +57,7 @@
                             </HBox.margin>
                         </FontAwesomeIconView>
                         <Button mnemonicParsing="false" styleClass="menu-button"
+                                onAction="#redirectToProjet"
                             text="Gestion des missions">
                             <opaqueInsets>
                                 <Insets />

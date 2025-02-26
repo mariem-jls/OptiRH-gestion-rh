@@ -22,10 +22,21 @@ public class SideBarController {
         menu.getScene().setRoot(root);
     }
     @FXML
-    void redirectToEmptyPage() {
+    void redirectToProjet() {
         Parent root = null;
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/NoRecords.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Mission/Projet.fxml"));
+            root = loader.load();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        menu.getScene().setRoot(root);
+    }
+    @FXML
+    void redirectToMissions() {
+        Parent root = null;
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Mission/Projet.fxml"));
             root = loader.load();
         } catch (Exception e) {
             throw new RuntimeException(e);
