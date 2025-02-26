@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="600.0" prefWidth="700.0" style="-fx-padding: 20px; -fx-background-color: #ffffff;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.nexus.Controllers.Evenement.EventDetailsController">
+
+    <!-- Titre principal -->
+    <Label fx:id="titleLabel" layoutX="30.0" layoutY="20.0" prefHeight="32.0" prefWidth="640.0" text="Titre de l'Événement" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #333;" />
+
+    <!-- Conteneur principal -->
+    <HBox layoutX="30.0" layoutY="70.0" spacing="20">
+
+        <!-- Image de l'événement -->
+        <VBox spacing="10">
+            <ImageView fx:id="eventImage" fitHeight="180.0" fitWidth="250.0" pickOnBounds="true" preserveRatio="true" style="-fx-border-color: #ccc; -fx-border-radius: 5px;"/>
+        </VBox>
+
+        <!-- Détails de l'événement dans une boîte encadrée -->
+        <TitledPane text="Détails de l'Événement" expanded="true" collapsible="false" prefWidth="380.0">
+            <VBox spacing="8" style="-fx-padding: 15px;">
+                <HBox spacing="10">
+                    <Label text="Date Début :" style="-fx-font-weight: bold;"/>
+                    <Label fx:id="DateDebutData" text="DateDebutData" />
+                </HBox>
+                <HBox spacing="10">
+                    <Label text="Date Fin :" style="-fx-font-weight: bold;"/>
+                    <Label fx:id="DateFinData" text="DateFinData" />
+                </HBox>
+                <HBox spacing="10">
+                    <Label text="Heure :" style="-fx-font-weight: bold;"/>
+                    <Label fx:id="HeureData" text="HeureData" />
+                </HBox>
+                <HBox spacing="10">
+                    <Label text="Lieu :" style="-fx-font-weight: bold;"/>
+                    <Label fx:id="LieuxData" text="LieuxData" />
+                </HBox>
+                <HBox spacing="10">
+                    <Label text="Prix :" style="-fx-font-weight: bold;"/>
+                    <Label fx:id="PrixData" text="PrixData" />
+                </HBox>
+            </VBox>
+        </TitledPane>
+
+    </HBox>
+
+    <!-- Description -->
+    <TitledPane text="Description" expanded="true" collapsible="false" layoutX="30.0" layoutY="280.0" prefWidth="640.0">
+        <Label fx:id="DescriptionData" text="DescriptionData" wrapText="true" style="-fx-padding: 10px;"/>
+    </TitledPane>
+
+    <!-- Formulaire de réservation -->
+    <TitledPane text="Réserver une Place" expanded="true" collapsible="false" layoutX="30.0" layoutY="390.0" prefWidth="640.0">
+        <VBox alignment="center" spacing="10" style="-fx-padding: 15px;">
+            <HBox spacing="10">
+                <Label text="Prénom :" />
+                <TextField fx:id="firstNameField" prefWidth="200.0" editable="false" />
+            </HBox>
+            <HBox spacing="10">
+                <Label text="Nom :" />
+                <TextField fx:id="lastNameField" prefWidth="200.0" />
+            </HBox>
+            <HBox spacing="10">
+                <Label text="Email :" />
+                <TextField fx:id="emailField" prefWidth="200.0" editable="false" />
+            </HBox>
+            <HBox spacing="10">
+                <Label text="Téléphone :" />
+                <TextField fx:id="phoneField" prefWidth="200.0" />
+            </HBox>
+            <Button onAction="#handleReservation" text="Réserver" style="-fx-background-color: #007b8f; -fx-text-fill: white; -fx-font-size: 14px; -fx-background-radius: 8px;"/>
+        </VBox>
+    </TitledPane>
+
+</AnchorPane>

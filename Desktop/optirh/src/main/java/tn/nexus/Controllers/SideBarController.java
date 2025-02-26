@@ -54,4 +54,15 @@ public class SideBarController {
         }
         menu.getScene().setRoot(root);
     }
+    @FXML
+    void redirectToEvenement() {
+        Parent root = null;
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Evenement/listeEvenemnt.fxml"));
+            root = loader.load();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        menu.getScene().setRoot(root);
+    }
 }

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.nexus.Controllers.Evenement.EventFrontController"
+            stylesheets="@styles/styles.css"
+            style="-fx-background-color: #f4f4f4;">
+
+    <!-- Titre et bouton alignés à gauche -->
+    <top>
+        <HBox spacing="20" style="-fx-padding: 20px; -fx-alignment: center-left; -fx-background-color: white; -fx-border-width: 0 0 2px 0; -fx-border-color: #ddd;">
+            <Label text="Nos Événements"
+                   style="-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #333;"/>
+            <Button text="Mes Réservations"
+                    fx:id="myReservationButton"
+                    styleClass="reservation-button"
+                    onAction="#handleMyReservation"/>
+        </HBox>
+    </top>
+
+    <!-- Conteneur des cartes d'événements -->
+    <center>
+        <FlowPane fx:id="eventContainer" hgap="20" vgap="20"
+                  style="-fx-padding: 20px; -fx-background-color: transparent;"
+                  prefWidth="900" prefHeight="600">
+            <!-- Exemple d'une carte événement -->
+            <VBox styleClass="event-card">
+                <ImageView fx:id="eventImage" fitWidth="250" fitHeight="150" preserveRatio="true" styleClass="event-image"/>
+                <Label fx:id="eventTitle" text="Nom de l'Événement" styleClass="event-title"/>
+                <Label fx:id="eventDate" text="Date: 12 Mars 2025" styleClass="event-date"/>
+                <Label fx:id="eventPrice" text="Prix: 20 DT" styleClass="event-price"/>
+                <Button text="Voir Détails" fx:id="viewDetailsButton" styleClass="event-button"/>
+            </VBox>
+        </FlowPane>
+    </center>
+
+</BorderPane>

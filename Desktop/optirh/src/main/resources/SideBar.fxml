@@ -82,6 +82,23 @@
                         </Button>
                     </children>
                 </HBox>
+                <HBox layoutX="10.0" layoutY="10.0" prefHeight="0.0" prefWidth="200.0">
+                    <children>
+                        <FontAwesomeIconView fill="WHITE" glyphName="LIST" selectionEnd="0"
+                                             selectionStart="0" size="20">
+                            <HBox.margin>
+                                <Insets right="5.0" />
+                            </HBox.margin>
+                        </FontAwesomeIconView>
+                        <Button mnemonicParsing="false" styleClass="menu-button"
+                                onAction="#redirectToEvenement"
+                                text="Gestion des Evenements">
+                            <opaqueInsets>
+                                <Insets />
+                            </opaqueInsets>
+                        </Button>
+                    </children>
+                </HBox>
                 <HBox layoutX="10.0" layoutY="210.0" prefHeight="0.0" prefWidth="200.0">
                     <children>
                         <FontAwesomeIconView fill="WHITE" glyphName="BUG" selectionEnd="0"

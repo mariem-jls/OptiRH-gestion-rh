@@ -8,6 +8,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import tn.nexus.Services.Evenement.EvenementServices;
 
 import java.io.IOException;
 
@@ -31,6 +32,8 @@ public class MainFx extends Application {
 
         // FXMLLoader loader = new
         // FXMLLoader(getClass().getResource("/formations/AjouterFormation.fxml"));
+        EvenementServices evenementService = new EvenementServices();
+        evenementService.mettreAJourStatutEvenements(); // Mise à jour des statuts au démarrage
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/Users/ListUsers.fxml"));
         Parent root = loader.load();
         Scene scene = new Scene(root);

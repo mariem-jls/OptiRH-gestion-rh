@@ -1,0 +1,134 @@
+/* Conteneur des cartes en grille */
+#eventContainer {
+    -fx-hgap: 20px;
+    -fx-vgap: 20px;
+    -fx-alignment: center;
+}
+
+/* Carte événement */
+.event-card {
+    -fx-padding: 10px;
+    -fx-border-color: #007b8f;
+    -fx-border-radius: 8px;
+    -fx-background-color: white;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 6, 0, 0, 4);
+    -fx-alignment: center;
+    -fx-spacing: 8;
+    -fx-pref-width: 200px;  /* Largeur réduite */
+    -fx-pref-height: 250px; /* Hauteur réduite */
+}
+
+/* Effet hover sur la carte */
+.event-card:hover {
+    -fx-transform: scale(1.05);
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 12, 0, 0, 8);
+}
+
+/* Image de l'événement */
+.event-image {
+    -fx-fit-width: 180px;  /* Largeur réduite */
+    -fx-fit-height: 120px; /* Hauteur réduite */
+}
+
+/* Titre */
+.event-title {
+    -fx-font-size: 14px; /* Réduction de la taille du texte */
+    -fx-font-weight: bold;
+}
+/* Prix */
+.event-price, .event-date {
+    -fx-font-size: 12px;
+}
+/* Conteneur prix + date */
+.event-info {
+    -fx-spacing: 15;
+    -fx-alignment: center;
+}
+
+/* Bouton Voir Détails */
+.event-button {
+    -fx-background-color: #007b8f;
+    -fx-text-fill: white;
+
+    -fx-font-size: 12px;
+    -fx-padding: 6px 10px;
+}
+
+/* Effet hover sur le bouton */
+.event-button:hover {
+    -fx-background-color: #005f6b;
+}
+
+.reservation-button{
+    -fx-background-color: #007b8f;
+    -fx-text-fill: white;
+    -fx-background-radius: 8px;
+    -fx-padding: 8px 15px;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+
+}
+
+.reservation-button:hover{
+    -fx-background-color: #005f6b;
+
+
+}
+
+/* styles.css */
+.btn-ajouter {
+    -fx-background-color: #007b8f;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-padding: 8px 15px;
+    -fx-border-radius: 6px;
+    -fx-cursor: hand;
+    -fx-transition: 0.3s;
+}
+
+.btn-ajouter:hover {
+    -fx-background-color: #1565C0; /* Couleur plus foncée au survol */
+}
+
+/* Bouton Modifier */
+.btn-modifier {
+    -fx-background-color: #FFA500; /* Orange */
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-padding: 6px 12px;
+    -fx-border-radius: 5px;
+    -fx-cursor: hand;
+}
+
+.btn-modifier:hover {
+    -fx-background-color: #E69500; /* Orange plus foncé */
+}
+
+/* Bouton Supprimer */
+.btn-supprimer {
+    -fx-background-color: #E53935; /* Rouge */
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-padding: 6px 12px;
+    -fx-border-radius: 5px;
+    -fx-cursor: hand;
+}
+
+.btn-supprimer:hover {
+    -fx-background-color: #C62828; /* Rouge plus foncé */
+}
+
+/* Bouton Voir Réservation */
+.btn-voir {
+    -fx-background-color: #1E88E5; /* Bleu */
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-padding: 6px 12px;
+    -fx-border-radius: 5px;
+    -fx-cursor: hand;
+}
+
+.btn-voir:hover {
+    -fx-background-color: #1565C0; /* Bleu plus foncé */
+}
+
