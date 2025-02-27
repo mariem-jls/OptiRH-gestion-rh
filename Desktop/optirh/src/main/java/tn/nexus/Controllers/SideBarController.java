@@ -65,4 +65,15 @@ public class SideBarController {
         }
         menu.getScene().setRoot(root);
     }
+    @FXML
+    void redirectToTransport() {
+        Parent root = null;
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/transport/GestionTrajet.fxml"));
+            root = loader.load();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        menu.getScene().setRoot(root);
+    }
 }

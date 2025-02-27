@@ -32,8 +32,6 @@ public class MainFx extends Application {
 
         // FXMLLoader loader = new
         // FXMLLoader(getClass().getResource("/formations/AjouterFormation.fxml"));
-        EvenementServices evenementService = new EvenementServices();
-        evenementService.mettreAJourStatutEvenements(); // Mise à jour des statuts au démarrage
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/Users/ListUsers.fxml"));
         Parent root = loader.load();
         Scene scene = new Scene(root);

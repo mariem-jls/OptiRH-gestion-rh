@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.paint.Color?>
+
+<?import java.net.URL?>
+<VBox xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.nexus.Controllers.Transport.ModifierTrajetController" spacing="20" alignment="CENTER">
+    <stylesheets>
+        <URL value="@/dashboard.css" />
+    </stylesheets>
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <!-- Titre de la fenêtre -->
+    <Label text="Modifier un Trajet" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+
+
+    <!-- Champ Type -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Type :"/>
+        <TextField fx:id="typeField" promptText="Entrez le type de trajet"/>
+    </HBox>
+
+    <!-- Champ Station -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Station :"/>
+        <TextField fx:id="stationField" promptText="Entrez la station"/>
+    </HBox>
+
+    <!-- Champ Départ -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Départ :"/>
+        <TextField fx:id="departField" promptText="Entrez le lieu de départ"/>
+    </HBox>
+
+    <!-- Champ Arrivée -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Arrivée :"/>
+        <TextField fx:id="arriveField" promptText="Entrez le lieu d'arrivée"/>
+    </HBox>
+
+    <!-- Message d'erreur -->
+    <Label fx:id="errorMessage" textFill="red" visible="false"/>
+
+    <!-- Boutons -->
+    <HBox spacing="20" alignment="CENTER">
+        <Button text="Enregistrer" onAction="#handleEnregistrer"/>
+        <Button text="Annuler" onAction="#handleAnnuler"/>
+    </HBox>
+</VBox>

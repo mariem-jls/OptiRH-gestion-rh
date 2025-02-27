@@ -122,4 +122,17 @@ public class UserService implements CRUD<User> {
         }
         return null; // Aucun utilisateur trouvé avec cet email
     }
+    public String getUserNameById(int userId) throws SQLException {
+        String query = "SELECT nom FROM users WHERE id = ?";
+
+        try (PreparedStatement statement = cnx.prepareStatement(query)) {
+            statement.setInt(1, userId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getString("nom"); // Récupère le nom de l'utilisateur
+                }
+            }
+        }
+        return null; // Retourne null si aucun utilisateur n'est trouvé
+    }
 }
