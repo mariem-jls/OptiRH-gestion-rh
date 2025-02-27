@@ -85,16 +85,24 @@ CREATE TABLE Demande (
     ADD COLUMN date_debut_disponible DATE,  
     ADD COLUMN situation_actuelle VARCHAR(100);
 
-CREATE TABLE Reclamation (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    description TEXT,
-    date DATE,
-    status VARCHAR(50),
-    utilisateur_id INT,
-    FOREIGN KEY (utilisateur_id) REFERENCES Utilisateur(id),
-    ON DELETE CASCADE,
-    ON UPDATE CASCADE
-);
+CREATE TABLE `reclamation` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `description` text COLLATE utf8mb4_general_ci,
+  `date` date DEFAULT NULL,
+  `status` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `utilisateur_id` int DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `utilisateur_id` (`utilisateur_id`)
+)
+CREATE TABLE reponse (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `description` text COLLATE utf8mb4_general_ci,
+  `date` date DEFAULT NULL,
+  `status` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `reclamation_id` int DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `reclamation_id` (`reclamation_id`)
+)
 
 CREATE TABLE Conges (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -104,3 +112,29 @@ CREATE TABLE Conges (
     utilisateur_id INT,
     FOREIGN KEY (utilisateur_id) REFERENCES Utilisateur(id) ON DELETE CASCADE
 );
+CREATE TABLE `missions` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `titre` VARCHAR(100) NOT NULL,
+  `description` TEXT DEFAULT NULL,
+  `status` ENUM('To Do','In Progress','Done') DEFAULT 'To Do',
+  `project_id` INT(11) DEFAULT NULL,
+  `assigned_to` INT(11) DEFAULT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `date_terminer` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `project_id` (`project_id`),
+  KEY `assigned_to` (`assigned_to`),
+  CONSTRAINT `missions_ibfk_1` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`),
+  CONSTRAINT `missions_ibfk_2` FOREIGN KEY (`assigned_to`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+CREATE TABLE `projects` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `nom` VARCHAR(100) NOT NULL,
+  `description` TEXT DEFAULT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_by` INT(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `created_by` (`created_by`),
+  CONSTRAINT `projects_ibfk_1` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

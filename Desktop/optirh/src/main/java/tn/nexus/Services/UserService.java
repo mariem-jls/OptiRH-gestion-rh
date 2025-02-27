@@ -104,4 +104,22 @@ public class UserService implements CRUD<User> {
         }
         return null; // Aucun utilisateur trouvé avec cet email et ce rôle
     }
+    public User getUserByEmail(String email) throws SQLException {
+        String req = "SELECT * FROM Users WHERE email = ?";
+        try (PreparedStatement ps = cnx.prepareStatement(req)) {
+            ps.setString(1, email);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    User user = new User();
+                    user.setId(rs.getInt("id"));
+                    user.setNom(rs.getString("nom"));
+                    user.setEmail(rs.getString("email"));
+                    user.setRole(Role.valueOf(rs.getString("role"))); // Rôle facultatif
+                    user.setAddress(rs.getString("address"));
+                    return user;
+                }
+            }
+        }
+        return null; // Aucun utilisateur trouvé avec cet email
+    }
 }

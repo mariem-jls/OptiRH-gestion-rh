@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.paint.Color?>
+<?import javafx.scene.paint.LinearGradient?>
+<?import javafx.scene.paint.Stop?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane stylesheets="@dashboard.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.nexus.Controllers.Mission.MissionEmployeController">
+    <!-- Section Gauche (Left) -->
+    <left>
+        <AnchorPane fx:id="sideBar" prefHeight="426.0" prefWidth="243.0" styleClass="menu" BorderPane.alignment="CENTER" />
+    </left>
+
+    <!-- Section Centrale (Center) -->
+    <center>
+        <VBox spacing="10" prefHeight="762.0" prefWidth="692.0">
+            <!-- Champ de saisie pour l'email -->
+            <HBox alignment="CENTER_LEFT" spacing="10">
+                <Label text="Email :" />
+                <TextField fx:id="emailField" prefWidth="200" styleClass="custom-text-field" />
+                <Button fx:id="loadMissionsButton" styleClass="button" text="Charger Missions" />
+            </HBox>
+
+            <!-- Boutons de filtrage -->
+            <HBox alignment="CENTER_LEFT" spacing="10">
+                <Button fx:id="filterTodayButton" text="Aujourd'hui" />
+                <Button fx:id="filterThisMonthButton" text="Ce mois-ci" />
+                <Button fx:id="clearFilterButton" text="Tout afficher" />
+            </HBox>
+
+            <!-- TableView pour les missions "To Do" -->
+            <VBox spacing="10">
+                <Label alignment="CENTER" prefHeight="26.0" prefWidth="306.0" style="-fx-font-size: 16; -fx-font-weight: bold;" text="To Do" />
+                <TableView fx:id="todoTable" prefHeight="150">
+                    <columns>
+                        <TableColumn fx:id="todoMissionNameColumn" prefWidth="150" text="Nom" />
+                        <TableColumn fx:id="todoDescriptionColumn" prefWidth="300" text="Description" />
+                    </columns>
+                </TableView>
+            </VBox>
+
+            <!-- TableView pour les missions "In Progress" -->
+            <VBox spacing="10">
+                <Label alignment="CENTER" prefHeight="26.0" prefWidth="298.0" style="-fx-font-size: 16; -fx-font-weight: bold;" text="In Progress">
+                    <font>
+                        <Font name="Berlin Sans FB" size="12.0" />
+                    </font>
+                </Label>
+                <TableView fx:id="inProgressTable" prefHeight="150">
+                    <columns>
+                        <TableColumn fx:id="inProgressMissionNameColumn" prefWidth="150" text="Nom" />
+                        <TableColumn fx:id="inProgressDescriptionColumn" prefWidth="300" text="Description" />
+                    </columns>
+                </TableView>
+            </VBox>
+
+            <!-- TableView pour les missions "Done" -->
+            <VBox spacing="10">
+                <Label alignment="CENTER" prefHeight="26.0" prefWidth="300.0" style="-fx-font-size: 16; -fx-font-weight: bold;" text="Done">
+                    <font>
+                        <Font name="Berlin Sans FB" size="12.0" />
+                    </font>
+                </Label>
+                <TableView fx:id="doneTable" prefHeight="150">
+                    <columns>
+                        <TableColumn fx:id="doneMissionNameColumn" prefWidth="150" text="Nom" />
+                        <TableColumn fx:id="doneDescriptionColumn" prefWidth="300" text="Description" />
+                    </columns>
+                </TableView>
+            </VBox>
+        </VBox>
+    </center>
+
+    <!-- Section Bas (Bottom) -->
+    <bottom>
+        <VBox prefHeight="70.0" prefWidth="1148.0" spacing="10">
+            <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+                <children>
+
+
+                    <Button fx:id="changeStatusButton" prefHeight="32.0" prefWidth="174.0" onAction="#handleChangeStatus"  styleClass="bg-white"  text="Changer Statut" textFill="#cc0d0d">
+                        <font>
+                            <Font name="Arial Bold" size="10.0" />
+                        </font>
+                    </Button>
+                </children>
+            </HBox>
+        </VBox>
+    </bottom>
+</BorderPane>

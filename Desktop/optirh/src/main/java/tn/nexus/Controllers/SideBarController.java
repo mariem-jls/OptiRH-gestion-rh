@@ -25,7 +25,7 @@ public class SideBarController {
     void redirectToProjet() {
         Parent root = null;
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Mission/Projet.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Mission/MissionEmploye.fxml"));
             root = loader.load();
         } catch (Exception e) {
             throw new RuntimeException(e);
