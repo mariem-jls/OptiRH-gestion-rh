@@ -24,7 +24,7 @@ public class Mission {
         this.updatedAt = updatedAt;
         this.dateTerminer = dateTerminer;
     }
-        // Constructeurs
+    // Constructeurs
     public Mission() {}
 
     public Mission(int id, String titre, String description, String status, int projectId, int assignedTo, Timestamp createdAt, Timestamp updatedAt) {

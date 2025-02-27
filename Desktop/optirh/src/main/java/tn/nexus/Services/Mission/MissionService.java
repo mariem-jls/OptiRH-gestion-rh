@@ -221,10 +221,16 @@ public class MissionService implements CRUD<Mission> {
     }
     public List<Mission> getTasksByUserAndStatus(int userId, String status) throws SQLException {
         List<Mission> missions = new ArrayList<>();
-        String query = "SELECT * FROM Missions WHERE assigned_to = ? AND status = ?";
+        String query = "SELECT * FROM Missions WHERE assigned_to = ?";
+        if (status != null) {
+            query += " AND status = ?";
+        }
         try (PreparedStatement statement = cnx.prepareStatement(query)) {
             statement.setInt(1, userId);
-            statement.setString(2, status);
+            if (status != null) {
+                statement.setString(2, status);
+            }
+            System.out.println("Requête SQL exécutée : " + statement.toString()); // Log
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 Mission mission = new Mission(
@@ -239,10 +245,10 @@ public class MissionService implements CRUD<Mission> {
                         resultSet.getTimestamp("date_terminer")
                 );
                 missions.add(mission);
+                System.out.println("Mission trouvée : " + mission.getTitre()); // Log
             }
         }
         return missions;
     }
-
 
 }
