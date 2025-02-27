@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.ColumnConstraints?>
+
+<VBox xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="tn.nexus.Controllers.Recrutement.OffreDetailsController"
+      spacing="15"
+      stylesheets="@styles/detailsStyle.css"
+      alignment="CENTER"
+      maxWidth="800">
+
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <!-- En-tête optimisé -->
+    <HBox spacing="20" alignment="CENTER" maxWidth="600">
+        <Label fx:id="posteLabel" styleClass="header"/>
+        <Button text="Postuler" onAction="#handlePostuler" styleClass="action-button"/>
+    </HBox>
+
+    <Separator styleClass="separator"/>
+
+    <!-- Grille centrée avec contraintes -->
+    <GridPane hgap="10" vgap="8" styleClass="metadata-grid" maxWidth="600">
+        <columnConstraints>
+            <ColumnConstraints halignment="CENTER" hgrow="NEVER"/>
+            <ColumnConstraints halignment="CENTER" hgrow="NEVER"/>
+            <ColumnConstraints halignment="CENTER" hgrow="NEVER"/>
+        </columnConstraints>
+
+        <ImageView fx:id="expirationIcon" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <Label text="Date d'expiration :" styleClass="detail-label" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+        <Label fx:id="dateCreationLabel" GridPane.rowIndex="0" GridPane.columnIndex="2"/>
+
+        <ImageView fx:id="placesIcon" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <Label text="Postes disponibles :" styleClass="detail-label" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+        <Label fx:id="nbPostesLabel" GridPane.rowIndex="1" GridPane.columnIndex="2"/>
+    </GridPane>
+
+    <Separator styleClass="separator"/>
+    <!-- Description (largeur conservée) -->
+    <VBox spacing="10" styleClass="section" alignment="CENTER" maxWidth="600">
+        <Label text="Description" styleClass="section-title"/>
+        <Label fx:id="descriptionLabel" wrapText="true" styleClass="description-text"/>
+    </VBox>
+
+    <!-- Détails alignés au centre -->
+    <GridPane hgap="15" vgap="10" styleClass="details-grid" maxWidth="600">
+        <columnConstraints>
+            <ColumnConstraints percentWidth="40" halignment="CENTER"/>
+            <ColumnConstraints percentWidth="60" halignment="CENTER"/>
+        </columnConstraints>
+
+        <Label text="Statut :" styleClass="detail-label" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <Label fx:id="statutLabel" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+        <Label text="Mode de travail :" styleClass="detail-label" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <Label fx:id="modeTravailLabel" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+        <Label text="Type de contrat :" styleClass="detail-label" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <Label fx:id="typeContratLabel" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+        <Label text="Localisation :" styleClass="detail-label" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+        <Label fx:id="localisationLabel" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+        <Label text="Niveau :" styleClass="detail-label" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+        <Label fx:id="niveauExperienceLabel" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+    </GridPane>
+</VBox>

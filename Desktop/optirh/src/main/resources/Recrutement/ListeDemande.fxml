@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<?import javafx.scene.text.Font?>
+<BorderPane stylesheets="@styles/offresStyle.css" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/23.0.1" fx:controller="tn.nexus.Controllers.Recrutement.ListeDemandeController"> <!-- Ajout du fichier CSS -->
+    <left>
+        <AnchorPane fx:id="sideBar" prefHeight="200.0" prefWidth="200.0" styleClass="menu" BorderPane.alignment="CENTER" />
+    </left>
+
+    <top>
+        <!-- Titre centré -->
+        <HBox alignment="CENTER" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="20">
+            <Label styleClass="header" style="-fx-font-size: 18px; -fx-font-weight: bold;" text="Liste des Demandes">
+                <font>
+                    <Font size="24.0"/>
+                </font>
+            </Label>
+        </HBox>
+    </top>
+
+    <center>
+        <VBox fillWidth="true" spacing="10">
+            <TableView fx:id="tableDemandes" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="colId" text="ID" />
+                    <TableColumn fx:id="colStatut" text="Statut" />
+                    <TableColumn fx:id="colDate" text="Date" />
+                    <TableColumn fx:id="colNomComplet" text="Nom Complet" />
+                    <TableColumn fx:id="colEmail" text="Email" />
+                    <TableColumn fx:id="colTelephone" text="Téléphone" />
+                    <TableColumn fx:id="colAdresse" text="Adresse" />
+                    <TableColumn fx:id="colDateDebutDisponible" text="Date de Début Disponible" />
+                    <TableColumn fx:id="colSituationActuelle" text="Situation Actuelle" />
+                    <TableColumn fx:id="colDescription" text="Description" />
+                    <TableColumn fx:id="colFichier" text="CV" />
+                    <TableColumn fx:id="colActions" text="Actions" />
+                </columns>
+            </TableView>
+        </VBox>
+    </center>
+
+</BorderPane>

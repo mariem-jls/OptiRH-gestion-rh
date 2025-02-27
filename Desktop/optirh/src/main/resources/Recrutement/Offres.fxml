@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane stylesheets="@styles/offresStyle.css" xmlns="http://javafx.com/javafx/23.0.1"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.nexus.Controllers.Recrutement.OffresController">
+
+    <!-- Sidebar à gauche -->
+    <left>
+        <AnchorPane fx:id="sideBar" prefWidth="200" styleClass="menu"/>
+    </left>
+
+    <!-- Contenu principal -->
+    <center>
+        <AnchorPane>
+            <!-- Titre centré -->
+            <HBox alignment="CENTER" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="20">
+                <Label styleClass="header" style="-fx-font-size: 18px; -fx-font-weight: bold;" text="Liste des Offres">
+                    <font>
+                        <Font size="24.0"/>
+                    </font>
+                </Label>
+            </HBox>
+
+            <!-- Barre de recherche -->
+            <HBox alignment="CENTER_LEFT" spacing="20"
+                  AnchorPane.leftAnchor="20" AnchorPane.rightAnchor="20" AnchorPane.topAnchor="80">
+                <TextField fx:id="searchField" promptText="Rechercher une offre..."
+                           styleClass="text-field" HBox.hgrow="ALWAYS"/>
+                <Button onAction="#handleSearch" styleClass="button" text="Rechercher"/>
+                <Button fx:id="btnAjouterOffre" onAction="#handleAddOffer" styleClass="button" text="Ajouter"/>
+            </HBox>
+
+            <!-- TableView -->
+            <TableView fx:id="tableOffres" styleClass="table-view"
+                       AnchorPane.topAnchor="120" AnchorPane.bottomAnchor="20"
+                       AnchorPane.leftAnchor="20" AnchorPane.rightAnchor="20">
+                <columns>
+                    <TableColumn fx:id="colPoste" text="Poste" prefWidth="150" minWidth="150"/>
+                    <TableColumn fx:id="colDescription" text="Description" prefWidth="250" minWidth="250"/>
+                    <TableColumn fx:id="colStatut" text="Statut" prefWidth="100" minWidth="100"/>
+                    <TableColumn fx:id="colDate" text="Date de création" prefWidth="150" minWidth="150"/>
+                    <TableColumn fx:id="colModeTravail" text="Mode de Travail" prefWidth="150" minWidth="150"/>
+                    <TableColumn fx:id="colTypeContrat" text="Type de Contrat" prefWidth="150" minWidth="150"/>
+                    <TableColumn fx:id="colLocalisation" text="Localisation" prefWidth="150" minWidth="150"/>
+                    <TableColumn fx:id="colNiveauExperience" text="Expérience" prefWidth="120" minWidth="120"/>
+                    <TableColumn fx:id="colNbPostes" text="Nb Postes" prefWidth="100" minWidth="100"/>
+                    <TableColumn fx:id="colDateExpiration" text="Date Expiration" prefWidth="150" minWidth="150"/>
+                    <TableColumn fx:id="colActions" text="Actions" prefWidth="200" minWidth="200"/>
+                </columns>
+            </TableView>
+        </AnchorPane>
+    </center>
+
+</BorderPane>

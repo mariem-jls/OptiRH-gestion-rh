@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<?import java.lang.String?>
+<?import javafx.collections.FXCollections?>
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.nexus.Controllers.Recrutement.EditOffreController"
+            stylesheets="@styles/style.css">
+
+    <Label text="Modifier l'Offre" style="-fx-font-size: 20; -fx-font-weight: bold;"
+           AnchorPane.leftAnchor="20" AnchorPane.topAnchor="20"/>
+
+    <!-- ScrollPane pour permettre le scroll -->
+    <ScrollPane fitToWidth="true" fitToHeight="true"
+                AnchorPane.topAnchor="60" AnchorPane.leftAnchor="20"
+                AnchorPane.rightAnchor="20" AnchorPane.bottomAnchor="80">
+        <VBox spacing="15" alignment="CENTER" prefWidth="500">
+
+            <Label text="Poste:"/>
+            <TextField fx:id="posteField" promptText="Entrez le poste"/>
+
+            <Label text="Description:"/>
+            <TextArea fx:id="descriptionArea" promptText="Entrez la description" prefRowCount="3"/>
+
+            <Label text="Mode de Travail:"/>
+            <ComboBox fx:id="modeTravailComboBox">
+                <items>
+                    <FXCollections fx:factory="observableArrayList">
+                        <String fx:value="Présentiel"/>
+                        <String fx:value="Télétravail"/>
+                        <String fx:value="Hybride"/>
+                    </FXCollections>
+                </items>
+            </ComboBox>
+
+            <Label text="Type de Contrat:"/>
+            <ComboBox fx:id="typeContratComboBox">
+                <items>
+                    <FXCollections fx:factory="observableArrayList">
+                        <String fx:value="CDI"/>
+                        <String fx:value="CDD"/>
+                        <String fx:value="Freelance"/>
+                        <String fx:value="Stage"/>
+                    </FXCollections>
+                </items>
+            </ComboBox>
+
+            <Label text="Localisation:"/>
+            <TextField fx:id="localisationField" promptText="Entrez la localisation"/>
+
+            <Label text="Niveau d'expérience:"/>
+            <ComboBox fx:id="niveauExperienceComboBox">
+                <items>
+                    <FXCollections fx:factory="observableArrayList">
+                        <String fx:value="Débutant"/>
+                        <String fx:value="Intermédiaire"/>
+                        <String fx:value="Expérimenté"/>
+                        <String fx:value="Expert"/>
+                    </FXCollections>
+                </items>
+            </ComboBox>
+
+            <Label text="Nombre de Postes:"/>
+            <TextField fx:id="nbPostesField" promptText="Entrez le nombre de postes"/>
+
+            <Label text="Statut:"/>
+            <ComboBox fx:id="statutComboBox">
+                <items>
+                    <FXCollections fx:factory="observableArrayList">
+                        <String fx:value="Actif"/>
+                        <String fx:value="Inactif"/>
+                        <String fx:value="En attente"/>
+                    </FXCollections>
+                </items>
+            </ComboBox>
+
+            <!-- Date Création -->
+            <VBox>
+                <Label text="Date de Création:"/>
+                <DatePicker fx:id="dateCreationPicker" promptText="Choisissez la date"/>
+            </VBox>
+
+            <!-- Date Expiration -->
+            <VBox>
+                <Label text="Date d'Expiration:"/>
+                <DatePicker fx:id="dateExpirationPicker" promptText="Choisissez la date"/>
+            </VBox>
+
+        </VBox>
+    </ScrollPane>
+
+    <!-- Boutons en bas -->
+    <HBox spacing="10" alignment="CENTER"
+          AnchorPane.leftAnchor="20" AnchorPane.rightAnchor="20" AnchorPane.bottomAnchor="20">
+        <padding>
+            <Insets top="10" right="10" bottom="10" left="10"/>
+        </padding>
+        <Button text="Enregistrer" fx:id="saveButton" onAction="#handleSave"/>
+        <Button text="Annuler" fx:id="cancelButton" onAction="#handleCancel"/>
+    </HBox>
+
+</AnchorPane>

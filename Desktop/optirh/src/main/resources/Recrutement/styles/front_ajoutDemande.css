@@ -1,0 +1,131 @@
+/* style.css */
+.root {
+    -fx-font-family: 'Segoe UI';
+    -fx-base: #ffffff;
+}
+.form-label {
+    -fx-font-size: 14px;
+    -fx-text-fill: #34495e;
+    -fx-font-weight: 600;
+    -fx-padding: 5px 0;
+}
+/* Titre */
+.form-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+    -fx-padding: 0 0 15px 0;
+}
+
+.text-field, .combo-box, .date-picker, .text-area {
+    -fx-background-radius: 4px;
+    -fx-border-color: #bdc3c7;
+    -fx-border-radius: 4px;
+    -fx-padding: 8px;
+}
+
+.submit-button {
+    -fx-background-color: #27ae60;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 10 25;
+    -fx-background-radius: 5px;
+}
+
+.cancel-button {
+    -fx-background-color: #e74c3c;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 10 25;
+    -fx-background-radius: 5px;
+}
+
+.file-button {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-padding: 8 15;
+}
+
+.button-container {
+    -fx-padding: 20 0 0 0;
+}
+
+.text-area {
+    -fx-font-family: "Arial";
+    -fx-font-size: 14px;
+}
+/* style.css */
+.text-field, .combo-box, .date-picker, .text-area {
+    -fx-pref-width: 350px;
+    -fx-max-width: 350px;
+}
+
+.button {
+    -fx-pref-width: -1; /* Réinitialisation de la largeur par défaut */
+}
+
+.file-button {
+    -fx-pref-width: 150px;
+}
+
+.submit-button, .cancel-button {
+    -fx-pref-width: 120px;
+}
+/* Champs de formulaire */
+.form-field {
+    -fx-pref-width: 400px;
+    -fx-pref-height: 35px;
+    -fx-background-radius: 5px;
+    -fx-border-color: #bdc3c7;
+    -fx-border-radius: 5px;
+    -fx-padding: 5px 10px;
+}
+
+.form-field:focused {
+    -fx-border-color: #3498db;
+}
+
+/* Zone de texte */
+.form-textarea {
+    -fx-pref-width: 400px;
+    -fx-pref-height: 100px;
+    -fx-background-radius: 5px;
+    -fx-border-color: #bdc3c7;
+    -fx-border-radius: 5px;
+    -fx-padding: 10px;
+}
+/* Boutons */
+.primary-button {
+    -fx-background-color: #1a6dda;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-pref-width: 120px;
+    -fx-background-radius: 5px;
+    -fx-padding: 10px;
+}
+
+.secondary-button {
+    -fx-background-color: #0e3b75;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-pref-width: 120px;
+    -fx-background-radius: 5px;
+    -fx-padding: 10px;
+}
+
+.file-button {
+    -fx-background-color: #2980b9;
+    -fx-text-fill: white;
+    -fx-background-radius: 5px;
+}
+
+/* Messages d'erreur */
+.error-message {
+    -fx-text-fill: #e74c3c;
+    -fx-font-weight: bold;
+    -fx-padding: 10px 0;
+}
+.file-label {
+    -fx-text-fill: #7f8c8d;
+    -fx-font-style: italic;
+}
