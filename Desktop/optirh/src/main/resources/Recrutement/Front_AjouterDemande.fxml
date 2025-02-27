@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+<?import javafx.collections.FXCollections?>
+
+<?import java.lang.String?>
+<ScrollPane fitToWidth="true" xmlns="http://javafx.com/javafx/23.0.1"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.nexus.Controllers.Recrutement.AjouterDemandeController"
+            stylesheets="@styles/front_ajoutDemande.css">
+
+    <content>
+        <AnchorPane minWidth="-Infinity" prefWidth="600">
+            <VBox spacing="20" alignment="CENTER" AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0"
+                  AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+
+                <!-- Titre -->
+                <Label text="Postuler" styleClass="form-title"/>
+
+                <!-- Conteneur principal du formulaire -->
+                <GridPane hgap="15" vgap="15" alignment="CENTER"
+                          prefWidth="600" maxWidth="800">
+                    <columnConstraints>
+                        <ColumnConstraints halignment="RIGHT" minWidth="150" prefWidth="150"/>
+                        <ColumnConstraints halignment="LEFT" prefWidth="400" hgrow="ALWAYS"/>
+                    </columnConstraints>
+
+                    <!-- Champs du formulaire -->
+                    <!-- Nom Complet -->
+                    <Label text="Nom Complet *" styleClass="form-label" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                    <TextField fx:id="txtNomComplet" promptText="Jean Dupont" styleClass="form-field"
+                               GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                    <!-- Email -->
+                    <Label text="Email *" styleClass="form-label" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                    <TextField fx:id="txtEmail" promptText="jean.dupont@example.com" styleClass="form-field"
+                               GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                    <!-- Téléphone -->
+                    <Label text="Téléphone *" styleClass="form-label" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                    <TextField fx:id="txtTelephone" promptText="+216 00 000 000" styleClass="form-field"
+                               GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                    <!-- Adresse -->
+                    <Label text="Adresse *" styleClass="form-label" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                    <TextField fx:id="txtAdresse" promptText="123 Rue de la République, Tunis" styleClass="form-field"
+                               GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+                    <!-- Offre
+                    <Label text="Offre *" styleClass="form-label" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                    <ComboBox fx:id="comboOffre" promptText="Sélectionnez une offre" styleClass="form-field"
+                              GridPane.rowIndex="4" GridPane.columnIndex="1"/> -->
+                    <ComboBox fx:id="comboOffre"
+                              promptText="Offre sélectionnée"
+                              styleClass="combo-offre-fixe"
+                              disable="false"/>
+
+                    <!-- Date de début disponible -->
+                    <Label text="Date de début disponible *" styleClass="form-label" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+                    <DatePicker fx:id="dateDebutDisponiblePicker" styleClass="form-field"
+                                GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+                    <!-- Date de la demande -->
+                    <Label text="" styleClass="form-label"/>
+                    <DatePicker fx:id="datePicker" prefWidth="350" editable="false" visible="false" managed="false"/>
+                    <!-- Utilisateur ID -->
+                    <Label text="Utilisateur ID:" styleClass="form-label"/>
+                    <TextField fx:id="txtUtilisateurId" prefWidth="350"/>
+
+                    <!-- Situation actuelle -->
+                    <Label text="Situation actuelle *" styleClass="form-label" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+                    <ComboBox fx:id="comboSituationActuelle" styleClass="form-field" GridPane.rowIndex="6" GridPane.columnIndex="1">
+                        <items>
+                            <FXCollections fx:factory="observableArrayList">
+                                <String fx:value="Employé"/>
+                                <String fx:value="Sans emploi"/>
+                                <String fx:value="Travailleur indépendant"/>
+                                <String fx:value="Étudiant"/>
+                                <String fx:value="Autre"/>
+                            </FXCollections>
+                        </items>
+                    </ComboBox>
+
+                    <!-- Fichier CV -->
+                    <Label text="CV (PDF uniquement) *" styleClass="form-label" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
+                    <HBox spacing="10" alignment="CENTER_LEFT" GridPane.rowIndex="7" GridPane.columnIndex="1">
+                        <Button text="Choisir un fichier" onAction="#handleFileUpload"
+                                styleClass="file-button" prefWidth="150"/>
+                        <Label fx:id="fileLabel" styleClass="file-label" text="Aucun fichier sélectionné"/>
+                    </HBox>
+
+                    <!-- Description -->
+                    <Label text="Description" styleClass="form-label" GridPane.rowIndex="8" GridPane.columnIndex="0"/>
+                    <TextArea fx:id="txtDescription" promptText="Décrivez votre expérience et motivation..."
+                              styleClass="form-textarea" GridPane.rowIndex="8" GridPane.columnIndex="1"/>
+                </GridPane>
+
+                <!-- Boutons -->
+                <HBox spacing="20" alignment="CENTER" styleClass="button-container">
+                    <Button text="Enregistrer" onAction="#handleEnregistrer" styleClass="primary-button"/>
+                    <Button text="Annuler" onAction="#handleAnnuler" styleClass="secondary-button"/>
+                </HBox>
+
+                <!-- Message d'erreur -->
+                <Label fx:id="errorLabel" styleClass="error-message" visible="false"/>
+            </VBox>
+        </AnchorPane>
+    </content>
+</ScrollPane>
+
+
+

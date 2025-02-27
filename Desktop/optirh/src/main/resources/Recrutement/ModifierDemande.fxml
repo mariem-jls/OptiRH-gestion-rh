@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="tn.nexus.Controllers.Recrutement.ModifierDemandeController"
+      spacing="15"
+      alignment="CENTER"
+      prefWidth="400"
+      styleClass="form-container"
+      stylesheets="@styles/theme.css">
+
+    <Label text="Modifier une Demande" styleClass="form-title"/>
+
+    <GridPane hgap="10" vgap="10" alignment="CENTER">
+        <columnConstraints>
+            <ColumnConstraints halignment="CENTER" prefWidth="350"/>
+        </columnConstraints>
+
+        <!-- Champ Statut (seul modifiable) -->
+        <ComboBox fx:id="comboStatut" promptText="Statut" GridPane.rowIndex="0"/>
+
+        <!-- Champs non modifiables -->
+        <TextField fx:id="txtNomComplet" promptText="Nom Complet" editable="false" styleClass="non-editable" GridPane.rowIndex="1"/>
+        <TextField fx:id="txtEmail" promptText="Email" editable="false" styleClass="non-editable" GridPane.rowIndex="2"/>
+        <TextField fx:id="txtTelephone" promptText="Téléphone" editable="false" styleClass="non-editable" GridPane.rowIndex="3"/>
+        <TextField fx:id="txtAdresse" promptText="Adresse" editable="false" styleClass="non-editable" GridPane.rowIndex="4"/>
+        <DatePicker fx:id="dateDebutDisponiblePicker" promptText="Date de début disponible" editable="false" styleClass="non-editable" GridPane.rowIndex="5"/>
+        <TextField fx:id="txtSituationActuelle" promptText="Situation actuelle" editable="false" styleClass="non-editable" GridPane.rowIndex="6"/>
+        <TextField fx:id="txtDescription" promptText="Description" editable="false" styleClass="non-editable" GridPane.rowIndex="7"/>
+        <DatePicker fx:id="datePicker" promptText="Date de la demande" editable="false" styleClass="non-editable" GridPane.rowIndex="8"/>
+    </GridPane>
+
+    <HBox spacing="20" alignment="CENTER">
+        <Button text="Modifier" onAction="#modifierDemande" styleClass="btn-primary"/>
+        <Button text="Annuler" onAction="#annuler" styleClass="btn-secondary"/>
+    </HBox>
+
+    <padding>
+        <Insets top="20" right="30" bottom="20" left="30"/>
+    </padding>
+</VBox>

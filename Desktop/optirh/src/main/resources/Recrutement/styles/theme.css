@@ -1,0 +1,47 @@
+/* Conteneur principal */
+.form-container {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e0e0e0;
+    -fx-border-radius: 8px;
+    -fx-padding: 20px;
+}
+
+/* Titre */
+.form-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+    -fx-padding: 0 0 15px 0;
+}
+
+/* Champs non modifiables */
+.non-editable {
+    -fx-background-color: #f8f9fa;
+    -fx-border-color: #dee2e6;
+    -fx-text-fill: #495057;
+    -fx-opacity: 1;
+}
+
+.non-editable .arrow-button {
+    -fx-opacity: 0;
+}
+
+/* ComboBox Statut */
+#comboStatut {
+    -fx-pref-width: 200px;
+    -fx-background-color: #ffffff;
+    -fx-border-color: #3498db;
+}
+
+/* Boutons */
+.btn-primary {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-pref-width: 120px;
+}
+
+.btn-secondary {
+    -fx-background-color: #95a5a6;
+    -fx-text-fill: white;
+    -fx-pref-width: 120px;
+}

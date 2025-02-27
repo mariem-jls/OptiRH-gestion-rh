@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane stylesheets="@styles/style.css" xmlns="http://javafx.com/javafx/23.0.1"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.nexus.Controllers.Recrutement.OffresListController">
+
+    <!-- UP BAR avec hauteur augmentée et coins arrondis -->
+    <top>
+        <Pane fx:id="up_barre" prefHeight="130.0" prefWidth="1000.0"
+              styleClass="up_barre"
+              BorderPane.alignment="CENTER">
+            <children>
+                <!-- Logo repositionné -->
+                <ImageView fitHeight="180.0" fitWidth="200.0"
+                           layoutX="30.0" layoutY="-10.0"
+                           pickOnBounds="true" preserveRatio="true">
+                    <image>
+                        <Image url="@images/logoGris_enhanced.png" />
+                    </image>
+                </ImageView>
+
+
+            </children>
+        </Pane>
+    </top>
+
+
+
+    <!-- CONTENU PRINCIPAL (votre liste d'offres) -->
+    <center>
+        <AnchorPane style="-fx-background-color: #EEEEEE;">
+            <!-- Barre de recherche -->
+            <HBox spacing="10" alignment="CENTER"
+                  AnchorPane.topAnchor="20" AnchorPane.leftAnchor="20" AnchorPane.rightAnchor="20">
+                <TextField fx:id="searchField" promptText="Rechercher une offre..." styleClass="search-field"/>
+                <Button text="Rechercher" styleClass="btn" onAction="#handleSearch"/>
+            </HBox>
+
+            <!-- Liste des offres -->
+            <ScrollPane fitToWidth="true"
+                        AnchorPane.topAnchor="70" AnchorPane.leftAnchor="20"
+                        AnchorPane.rightAnchor="20" AnchorPane.bottomAnchor="20">
+                <content>
+                    <VBox fx:id="offresList" spacing="15" alignment="TOP_CENTER"/>
+                </content>
+            </ScrollPane>
+        </AnchorPane>
+    </center>
+</BorderPane>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.paint.Color?>
+
+<VBox xmlns:fx="http://javafx.com/fxml/1" spacing="20" alignment="CENTER">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <!-- Titre de la fenêtre -->
+    <Label text="Mes Réservations" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+
+    <!-- Champ pour entrer l'ID de l'utilisateur -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="ID de l'Utilisateur :"/>
+        <TextField promptText="Entrez votre ID"/>
+    </HBox>
+
+    <!-- Bouton pour afficher les réservations -->
+    <Button text="Afficher mes Réservations"/>
+
+    <!-- Message d'erreur ou de succès -->
+    <Label textFill="red" visible="false"/>
+
+    <!-- Tableau pour afficher les réservations -->
+    <TableView>
+        <columns>
+            <TableColumn text="ID Réservation"/>
+            <TableColumn text="Disponibilité"/>
+            <TableColumn text="ID Véhicule"/>
+            <TableColumn text="ID Trajet"/>
+        </columns>
+    </TableView>
+</VBox>
