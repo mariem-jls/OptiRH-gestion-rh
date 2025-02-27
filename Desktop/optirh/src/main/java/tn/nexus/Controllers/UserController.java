@@ -227,7 +227,7 @@ public class UserController implements Initializable, WrapWithSideBar {
     }
 
     private void setupPagination() {
-        tableView.setRowsPerPage(4);
+        tableView.setRowsPerPage(16);
     }
 
     private void setupButtons() {
