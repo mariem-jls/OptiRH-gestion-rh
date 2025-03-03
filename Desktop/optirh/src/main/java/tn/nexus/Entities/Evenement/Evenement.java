@@ -54,6 +54,19 @@ public class Evenement {
         this.dateDebut = dateDebut;
     }
 
+    public Evenement(String titre, String lieu, String description, double prix, String image, LocalDate dateDebut, LocalDate dateFin, LocalTime heure, double latitude, double longitude) {
+        this.titre = titre;
+        this.lieu = lieu;
+        this.description = description;
+        this.prix = prix;
+        this.image = image;
+        this.dateDebut = dateDebut;
+        this.dateFin = dateFin;
+        this.heure = heure;
+        this.longitude = longitude;
+        this.latitude = latitude;
+    }
+
 
     // Getters et Setters
     public StatusEvenement getStatus() {

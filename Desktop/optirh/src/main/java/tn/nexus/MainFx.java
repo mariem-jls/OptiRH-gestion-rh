@@ -20,6 +20,9 @@ public class MainFx extends Application {
 
     @Override
     public void start(Stage primaryStage) throws IOException {
+        /********Mattre a jour le statut d'venement**********/
+        //EvenementServices evenementService = new EvenementServices();
+       // evenementService.mettreAJourStatutEvenements(); // Mise à jour des statuts au démarrage
 
         // template fixe
         UserAgentBuilder.builder()

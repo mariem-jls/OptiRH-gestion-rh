@@ -17,29 +17,54 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+
+import java.io.File;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
+
 public class AjouterEvenementController {
 
     @FXML private DatePicker dateDebutField, dateFinField;
     @FXML private TextArea descriptionField;
-    @FXML private TextField heureField, imageField, lieuField, titreField, prixField,latitudeField,longitudeField;
+    @FXML private TextField heureField, imageField, lieuField, titreField, prixField, latitudeField, longitudeField;
+    @FXML private Label weatherLabel;
+    @FXML private ProgressIndicator progressIndicator;
+    @FXML private ImageView weatherIcon;
 
-    /*****************Instance du ServiceEvenement*************/
+
 
     private final EvenementServices serviceEvenement = new EvenementServices();
-
     private ListeEvenementController listeEvenementController;
+
     public void setListeEvenementController(ListeEvenementController controller) {
         this.listeEvenementController = controller;
     }
-    /************Boutton clear *********************/
+
+    @FXML
+    public void initialize() {
+        latitudeField.textProperty().addListener((obs, oldVal, newVal) -> handleFetchWeather());
+        longitudeField.textProperty().addListener((obs, oldVal, newVal) -> handleFetchWeather());
+        dateDebutField.valueProperty().addListener((obs, oldVal, newVal) -> handleFetchWeather());
+        dateFinField.valueProperty().addListener((obs, oldVal, newVal) -> handleFetchWeather());
+    }
+
     @FXML
     private void clearFields() {
         titreField.clear(); lieuField.clear(); descriptionField.clear(); prixField.clear();
         dateDebutField.setValue(null); dateFinField.setValue(null);
         heureField.clear(); imageField.clear();
     }
-
-    /**************Alerte*************/
 
     private void showAlert(Alert.AlertType type, String title, String message) {
         Alert alert = new Alert(type);
@@ -48,7 +73,6 @@ public class AjouterEvenementController {
         alert.setContentText(message);
         alert.showAndWait();
     }
-    /*************Choix d image************/
 
     @FXML
     void choisirImage(ActionEvent event) {
@@ -62,18 +86,6 @@ public class AjouterEvenementController {
         }
     }
 
-    /*************Controle Saisie******************/
-
-    private boolean isFieldValid(String text, int maxLength, String fieldName) {
-        if (text.isEmpty()) {
-            return false;
-        }
-        if (text.length() > maxLength || !text.matches("[a-zA-Z0-9 ]+")) {
-            return false;
-        }
-        return true;
-    }
-
     private boolean validateFields() {
         if (titreField.getText().isEmpty() || lieuField.getText().isEmpty() ||
                 descriptionField.getText().isEmpty() || imageField.getText().isEmpty() ||
@@ -82,22 +94,12 @@ public class AjouterEvenementController {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Tous les champs sont requis !");
             return false;
         }
-        if (!isFieldValid(titreField.getText(), 10, "Titre") ) {
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Le titre  doit contenir seulement des lettres et chiffres (max 10 caractères).");
-            return false;
-        }
-        if (!isFieldValid(lieuField.getText(), 10, "Lieu")) {
-            showAlert(Alert.AlertType.ERROR, "Erreur", " le lieu doit contenir seulement des lettres et chiffres (max 10 caractères).");
-            return false;
-        }
         try {
-            double prix = Double.parseDouble(prixField.getText());
-            if (prix < 0) {
-                showAlert(Alert.AlertType.ERROR, "Erreur", "Le prix doit être positif !");
-                return false;
-            }
+            Double.parseDouble(prixField.getText());
+            Double.parseDouble(latitudeField.getText());
+            Double.parseDouble(longitudeField.getText());
         } catch (NumberFormatException e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Le prix doit être un nombre valide !");
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Le prix, la latitude et la longitude doivent être des nombres valides !");
             return false;
         }
         try {
@@ -106,41 +108,8 @@ public class AjouterEvenementController {
             showAlert(Alert.AlertType.ERROR, "Erreur", "L'heure doit être au format HH:mm !");
             return false;
         }
-        LocalDate dateDebut = dateDebutField.getValue();
-        LocalDate dateFin = dateFinField.getValue();
-        /*if (dateDebut.isBefore(LocalDate.now())) {
-            showAlert(Alert.AlertType.ERROR, "Erreur", "La date de début ne peut pas être antérieure à aujourd'hui !");
-            return false;
-        }
-        if (dateFin.isBefore(dateDebut)) {
-            showAlert(Alert.AlertType.ERROR, "Erreur", "La date de fin doit être après la date de début !");
-            return false;
-        }*/
-        try {
-            double latitude = Double.parseDouble(latitudeField.getText());
-            if (latitude < -90 || latitude > 90) {
-                showAlert(Alert.AlertType.ERROR, "Erreur", "La latitude doit être comprise entre -90 et 90 !");
-                return false;
-            }
-        } catch (NumberFormatException e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur", "La latitude doit être un nombre valide !");
-            return false;
-        }
-
-        try {
-            double longitude = Double.parseDouble(longitudeField.getText());
-            if (longitude < -180 || longitude > 180) {
-                showAlert(Alert.AlertType.ERROR, "Erreur", "La longitude doit être comprise entre -180 et 180 !");
-                return false;
-            }
-        } catch (NumberFormatException e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur", "La longitude doit être un nombre valide !");
-            return false;
-        }
         return true;
     }
-
-    /************Boutton Ajouter***************/
 
     @FXML
     void ajouterEvenement(ActionEvent event) throws SQLException {
@@ -148,10 +117,9 @@ public class AjouterEvenementController {
 
         Evenement evenement = new Evenement(
                 titreField.getText(), lieuField.getText(), descriptionField.getText(),
-                Double.parseDouble(prixField.getText()), dateDebutField.getValue(),
-                dateFinField.getValue(), imageField.getText(), LocalTime.parse(heureField.getText()),
-                Double.parseDouble(latitudeField.getText()), Double.parseDouble(longitudeField.getText()) // Ajout de latitude et longitude
-
+                Double.parseDouble(prixField.getText()), imageField.getText(),
+                dateDebutField.getValue(), dateFinField.getValue(), LocalTime.parse(heureField.getText()),
+                Double.parseDouble(latitudeField.getText()), Double.parseDouble(longitudeField.getText())
         );
 
         serviceEvenement.insert(evenement);
@@ -160,6 +128,74 @@ public class AjouterEvenementController {
         }
         clearFields();
         ((Stage) titreField.getScene().getWindow()).close();
+    }
 
+
+
+    @FXML
+    private void handleFetchWeather() {
+        String latStr = latitudeField.getText();
+        String lonStr = longitudeField.getText();
+        LocalDate dateDebut = dateDebutField.getValue();
+        LocalDate dateFin = dateFinField.getValue();
+
+        if (latStr.isEmpty() || lonStr.isEmpty() || dateDebut == null) {
+            return;
+        }
+
+        try {
+            double lat = Double.parseDouble(latStr);
+            double lon = Double.parseDouble(lonStr);
+            progressIndicator.setVisible(true);
+            weatherLabel.setText("⏳ Chargement...");
+
+            WeatherApiClient client = new WeatherApiClient();
+            String weatherData = client.getWeatherData(lat, lon, dateDebut.toString());
+            String weatherDataFin = (dateFin != null) ? client.getWeatherData(lat, lon, dateFin.toString()) : null;
+
+            if (weatherData != null) {
+                String parsedData = WeatherDataParser.parseWeatherData(weatherData, dateDebut.toString());
+                weatherLabel.setText("Début: " + parsedData);
+                String iconCode = extractIconCode(weatherData, dateDebut.toString());
+                if (iconCode != null) {
+                    String iconUrl = WeatherDataParser.getWeatherIcon(iconCode);
+                    weatherIcon.setImage(new Image(iconUrl));
+                }
+            }
+
+            if (weatherDataFin != null) {
+                String parsedDataFin = WeatherDataParser.parseWeatherData(weatherDataFin, dateFin.toString());
+                weatherLabel.setText(weatherLabel.getText() + "\nFin: " + parsedDataFin);
+                String iconCodeFin = extractIconCode(weatherDataFin, dateFin.toString());
+                if (iconCodeFin != null) {
+                    String iconUrlFin = WeatherDataParser.getWeatherIcon(iconCodeFin);
+                    weatherIcon.setImage(new Image(iconUrlFin));
+                }
+            }
+
+        } catch (NumberFormatException e) {
+            weatherLabel.setText("❌ Latitude et longitude doivent être des nombres.");
+        } finally {
+            progressIndicator.setVisible(false);
+        }
+    }
+
+
+    private String extractIconCode(String weatherData, String date) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(weatherData);
+            JsonNode list = root.path("list");
+
+            for (JsonNode node : list) {
+                String forecastDate = node.path("dt_txt").asText().split(" ")[0];
+                if (forecastDate.equals(date)) {
+                    return node.path("weather").get(0).path("icon").asText();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
