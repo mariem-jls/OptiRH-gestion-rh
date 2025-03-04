@@ -40,7 +40,7 @@
 
 .cancel-btn {
     -fx-text-fill: #fff !important;
-    -fx-background-color: linear-gradient(to right, #fff, #fff) !important;
+    -fx-background-color: linear-gradient(to right, #949494, #8b8b8b) !important;
 }
 
 
