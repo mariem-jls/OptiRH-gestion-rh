@@ -1,14 +1,14 @@
 package tn.nexus.Utils.Mission;
 
-import jakarta.activation.DataHandler;
-import jakarta.mail.*;
-import jakarta.mail.internet.*;
-import jakarta.mail.util.ByteArrayDataSource;
+// Remplacer tous les imports jakarta par javax
+import javax.activation.DataHandler;
+import javax.mail.*;
+import javax.mail.internet.*;
+import javax.mail.util.ByteArrayDataSource;
 import tn.nexus.Entities.Mission.Mission;
 
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-
 public class EmailSender {
     private static final String LOGO_RESOURCE_PATH = "/Img/logoGris_enhanced.png";
     private static final String FROM_EMAIL = "bouhanioumaima2@gmail.com";
