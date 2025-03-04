@@ -5,64 +5,48 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
-<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.AnchorPane?>
+
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="650.0" prefWidth="1100.0" stylesheets="@../dashboard.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.nexus.Controllers.Transport.GestionTrajetController">
     <left>
         <AnchorPane fx:id="sideBar" prefHeight="200.0" prefWidth="200.0" styleClass="menu" BorderPane.alignment="CENTER" />
     </left>
     <center>
-<VBox alignment="CENTER" prefHeight="761.0" prefWidth="820.0" spacing="20" >
-    <stylesheets>
-        <URL value="@/dashboard.css" />
-    </stylesheets>
-    <padding>
-        <Insets bottom="20" left="20" right="20" top="20" />
-    </padding>
+        <VBox alignment="CENTER" prefHeight="761.0" prefWidth="820.0" spacing="20">
+            <stylesheets>
+                <URL value="@/transport/dashboard.css" />
+            </stylesheets>
+            <padding>
+                <Insets bottom="20" left="20" right="20" top="20" />
+            </padding>
 
-    <Label style="-fx-font-size: 24px; -fx-font-weight: bold;" text="Gestion des Trajets" />
+            <Label style="-fx-font-size: 24px; -fx-font-weight: bold;" text="Gestion des Trajets" />
 
-    <HBox alignment="CENTER_LEFT" spacing="10">
-        <Label text="Type :" />
-        <TextField fx:id="typeField" promptText="Entrez le type de trajet" />
-    </HBox>
+            <!-- Message d'erreur ou de succès -->
+            <Label fx:id="errorMessage" textFill="red" visible="false" />
 
-    <HBox alignment="CENTER_LEFT" spacing="10">
-        <Label text="Station :" />
-        <TextField fx:id="stationField" promptText="Entrez la station" />
-    </HBox>
+            <!-- Boutons d'actions -->
+            <HBox alignment="CENTER" spacing="20">
+                <Button onAction="#handleAjouterTrajet" styleClass="btn-ajouter" text="Ajouter" />
+                <Button onAction="#handleModifierTrajet" styleClass="btn-modifier" text="Modifier" />
+                <Button onAction="#handleSupprimerTrajet" styleClass="btn-supprimer" text="Supprimer" />
+                <Button onAction="#handleOpenGestionVehicule" text="Gestion des Véhicules" />
+                <!-- Bouton pour ouvrir les statistiques -->
+                <Button onAction="#handleOpenStatistiques" styleClass="btn-statistiques" text="Statistiques" />
+            </HBox>
 
-    <HBox alignment="CENTER_LEFT" spacing="10">
-        <Label text="Départ :" />
-        <TextField fx:id="departField" promptText="Entrez le lieu de départ" />
-    </HBox>
-
-    <HBox alignment="CENTER_LEFT" spacing="10">
-        <Label text="Arrivée :" />
-        <TextField fx:id="arriveField" promptText="Entrez le lieu d'arrivée" />
-    </HBox>
-
-    <Label fx:id="errorMessage" textFill="red" visible="false" />
-
-    <HBox alignment="CENTER" spacing="20">
-        <Button onAction="#handleAjouterTrajet" styleClass="btn-ajouter" text="Ajouter" />
-        <Button onAction="#handleModifierTrajet" styleClass="btn-modifier" text="Modifier" />
-        <Button onAction="#handleSupprimerTrajet" styleClass="btn-supprimer" text="Supprimer" />
-        <Button onAction="#handleAnnuler" styleClass="btn-annuler" text="Annuler" />
-        <Button onAction="#handleOpenGestionVehicule" text="Gestion des Véhicules" />
-    </HBox>
-
-    <TableView fx:id="trajetTable">
-        <columns>
-            <TableColumn fx:id="typeColumn" text="Type" />
-            <TableColumn fx:id="stationColumn" text="Station" />
-            <TableColumn fx:id="departColumn" text="Départ" />
-            <TableColumn fx:id="arriveColumn" text="Arrivée" />
-        </columns>
-    </TableView>
-</VBox>
+            <!-- TableView pour afficher les trajets -->
+            <TableView fx:id="trajetTable">
+                <columns>
+                    <TableColumn fx:id="typeColumn" text="Type" />
+                    <TableColumn fx:id="stationColumn" text="Station" />
+                    <TableColumn fx:id="departColumn" text="Départ" />
+                    <TableColumn fx:id="arriveColumn" text="Arrivée" />
+                </columns>
+            </TableView>
+        </VBox>
     </center>
 </BorderPane>

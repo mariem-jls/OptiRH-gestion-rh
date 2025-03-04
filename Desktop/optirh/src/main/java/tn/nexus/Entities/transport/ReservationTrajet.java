@@ -6,7 +6,6 @@ public class ReservationTrajet {
     private int vehiculeId;
     private int trajetId;
     private int userId;
-    private String userName;  // Ajout du nom de l'utilisateur
 
 
     public ReservationTrajet() {
@@ -61,13 +60,7 @@ public class ReservationTrajet {
         this.userId = userId;
     }
 
-    public String getUserName() {
-        return userName;
-    }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
     @Override
     public String toString() {
         return "Reservation_Evenement{" +
@@ -76,7 +69,6 @@ public class ReservationTrajet {
                 ", vehiculeId=" + vehiculeId +
                 ", trajetId=" + trajetId +
                 ", userId=" + userId +
-                ", userName='" + userName + '\'' +
                 '}';
     }
 }

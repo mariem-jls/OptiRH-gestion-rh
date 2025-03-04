@@ -1,0 +1,6 @@
+<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.layout.StackPane?>
+
+<StackPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.nexus.Controllers.Transport.StatistiqueController">
+    <PieChart fx:id="pieChart" title="Réservations par type de véhicule" legendVisible="true" />
+</StackPane>

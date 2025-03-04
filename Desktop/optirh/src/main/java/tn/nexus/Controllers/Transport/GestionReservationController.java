@@ -3,9 +3,12 @@ package tn.nexus.Controllers.Transport;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.paint.Color;
+import tn.nexus.Entities.User;
 import tn.nexus.Entities.transport.ReservationTrajet;
 import tn.nexus.Services.Transport.ReservationTrajetService;
 import tn.nexus.Services.UserService;
@@ -15,15 +18,17 @@ import java.util.List;
 
 public class GestionReservationController {
 
-
     @FXML private Label errorMessage;
     @FXML private TableView<ReservationTrajet> reservationTable;
-    @FXML private TableColumn<ReservationTrajet, Integer> idColumn;
+
     @FXML private TableColumn<ReservationTrajet, String> disponibiliteColumn;
-    @FXML private TableColumn<ReservationTrajet, Integer> userIdColumn;
     @FXML private TableColumn<ReservationTrajet, String> userNameColumn;
+    @FXML private TableColumn<ReservationTrajet, String> userEmailColumn;
+    @FXML private TableColumn<ReservationTrajet, String> userRoleColumn;
+    @FXML private TableColumn<ReservationTrajet, String> userAddressColumn;
 
     private final ReservationTrajetService reservationService = new ReservationTrajetService();
+    private final UserService userService = new UserService();
     private final ObservableList<ReservationTrajet> reservationList = FXCollections.observableArrayList();
 
     private int vehiculeId; // ID du véhicule associé
@@ -40,28 +45,48 @@ public class GestionReservationController {
     public void initialize() {
         // Lier les colonnes de la TableView aux propriétés de l'entité ReservationTrajet
         disponibiliteColumn.setCellValueFactory(new PropertyValueFactory<>("disponibilite"));
-        userNameColumn.setCellValueFactory(new PropertyValueFactory<>("userName"));
-
-
+        userNameColumn.setCellValueFactory(cellData -> {
+            try {
+                User user = userService.getUserById(cellData.getValue().getUserId());
+                return new javafx.beans.property.SimpleStringProperty(user.getNom());
+            } catch (SQLException e) {
+                return new javafx.beans.property.SimpleStringProperty("N/A");
+            }
+        });
+        userEmailColumn.setCellValueFactory(cellData -> {
+            try {
+                User user = userService.getUserById(cellData.getValue().getUserId());
+                return new javafx.beans.property.SimpleStringProperty(user.getEmail());
+            } catch (SQLException e) {
+                return new javafx.beans.property.SimpleStringProperty("N/A");
+            }
+        });
+        userRoleColumn.setCellValueFactory(cellData -> {
+            try {
+                User user = userService.getUserById(cellData.getValue().getUserId());
+                return new javafx.beans.property.SimpleStringProperty(user.getRole().name());
+            } catch (SQLException e) {
+                return new javafx.beans.property.SimpleStringProperty("N/A");
+            }
+        });
+        userAddressColumn.setCellValueFactory(cellData -> {
+            try {
+                User user = userService.getUserById(cellData.getValue().getUserId());
+                return new javafx.beans.property.SimpleStringProperty(user.getAddress());
+            } catch (SQLException e) {
+                return new javafx.beans.property.SimpleStringProperty("N/A");
+            }
+        });
     }
 
-
-    // Charger la liste des réservations associées au véhicule et au trajet
     private void loadReservations() {
         try {
             reservationList.clear();
 
+            // Récupérer les réservations pour ce véhicule et ce trajet
             List<ReservationTrajet> reservations = reservationService.getReservationsByVehiculeAndTrajet(vehiculeId, trajetId);
 
-            UserService userService = new UserService();
-
-            // Récupérer et ajouter le nom de l'utilisateur pour chaque réservation
-            for (ReservationTrajet reservation : reservations) {
-                UserService UserService = new UserService();
-                String userName = UserService.getUserNameById(reservation.getUserId());
-                reservation.setUserName(userName);
-            }
-
+            // Ajouter les réservations à la liste observable
             reservationList.addAll(reservations);
             reservationTable.setItems(reservationList);
 
@@ -69,9 +94,6 @@ public class GestionReservationController {
             showError("Erreur lors du chargement des réservations : " + e.getMessage());
         }
     }
-
-
-
 
     // Afficher un message d'erreur
     private void showError(String message) {
@@ -86,6 +108,4 @@ public class GestionReservationController {
         errorMessage.setTextFill(Color.GREEN);
         errorMessage.setVisible(true);
     }
-
-
 }

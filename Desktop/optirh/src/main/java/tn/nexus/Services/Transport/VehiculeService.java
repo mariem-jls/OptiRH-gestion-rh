@@ -17,7 +17,7 @@ public class VehiculeService implements CRUD<Vehicule> {
      */
     @Override
     public int insert(Vehicule vehicule) throws SQLException {
-        String req = "INSERT INTO vehicule (disponibilite, type, nbrPlace, trajet_id) VALUES (?, ?, ?, ?)";
+        String req = "INSERT INTO vehicule (disponibilite, type, nbrPlace, trajet_id, nbrReservation) VALUES (?, ?, ?, ?, 0)";
         try (PreparedStatement ps = con.prepareStatement(req, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, vehicule.getDisponibilite());
             ps.setString(2, vehicule.getType());
@@ -43,22 +43,24 @@ public class VehiculeService implements CRUD<Vehicule> {
      */
     @Override
     public int update(Vehicule vehicule) throws SQLException {
-        System.out.println(" Mise à jour du véhicule ID: " + vehicule.getId());
+        // Validation : le nombre de réservations ne doit pas dépasser le nombre de places
 
-        String req = "UPDATE vehicule SET disponibilite = ?, type = ?, nbrplace = ?, trajet_id = ? WHERE id = ?";
+        System.out.println("Mise à jour du véhicule ID: " + vehicule.getId());
+
+        String req = "UPDATE vehicule SET disponibilite = ?, type = ?, nbrplace = ?, trajet_id = ?, nbrReservation = ? WHERE id = ?";
         try (PreparedStatement ps = con.prepareStatement(req)) {
             ps.setString(1, vehicule.getDisponibilite());
             ps.setString(2, vehicule.getType());
             ps.setInt(3, vehicule.getNbrplace());
             ps.setInt(4, vehicule.getTrajetId());
-            ps.setInt(5, vehicule.getId());
+            ps.setInt(5, vehicule.getNbrReservation()); // Mettre à jour le nombre de réservations
+            ps.setInt(6, vehicule.getId());
 
             int rowsUpdated = ps.executeUpdate();
-            System.out.println(" Nombre de lignes mises à jour: " + rowsUpdated);
+            System.out.println("Nombre de lignes mises à jour: " + rowsUpdated);
             return rowsUpdated;
         }
     }
-
     /**
      * Supprimer un véhicule.
      * return Nombre de lignes affectées.
@@ -89,7 +91,8 @@ public class VehiculeService implements CRUD<Vehicule> {
                         rs.getString("disponibilite"),
                         rs.getString("type"),
                         rs.getInt("nbrplace"),
-                        rs.getInt("trajet_id")
+                        rs.getInt("trajet_id"),
+                        0
                 );
                 vehicules.add(vehicule);
             }
@@ -131,11 +134,35 @@ public class VehiculeService implements CRUD<Vehicule> {
                             rs.getString("disponibilite"),
                             rs.getString("type"),
                             rs.getInt("nbrplace"),
-                            rs.getInt("trajet_id")
+                            rs.getInt("trajet_id"),
+                            0  // Initialisation de nbrReservation à 0
                     ));
                 }
             }
         }
         return vehicules;
     }
+
+
+
+    public Vehicule getVehiculeById(int vehiculeId) throws SQLException {
+        String query = "SELECT * FROM vehicule WHERE id = ?";
+        try (PreparedStatement ps = con.prepareStatement(query)) {
+            ps.setInt(1, vehiculeId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new Vehicule(
+                            rs.getInt("id"),
+                            rs.getString("disponibilite"),
+                            rs.getString("type"),
+                            rs.getInt("nbrplace"),
+                            rs.getInt("trajet_id"),
+                            rs.getInt("nbrReservation")
+                    );
+                }
+            }
+        }
+        return null; // Retourne null si le véhicule n'est pas trouvé
+    }
+
 }

@@ -13,7 +13,7 @@ import java.sql.SQLException;
 public class ModifierVehiculeController {
 
     @FXML private ComboBox<String> disponibiliteCombo;
-    @FXML private TextField typeField;
+    @FXML private ComboBox<String> typeCombo;
     @FXML private TextField nbrPlaceField;
     @FXML private Label errorMessage;
 
@@ -25,7 +25,7 @@ public class ModifierVehiculeController {
     public void setVehicule(Vehicule vehicule) {
         this.vehicule = vehicule;
         disponibiliteCombo.setValue(vehicule.getDisponibilite());
-        typeField.setText(vehicule.getType());
+        typeCombo.setValue(vehicule.getType());
         nbrPlaceField.setText(String.valueOf(vehicule.getNbrplace()));
     }
 
@@ -38,7 +38,7 @@ public class ModifierVehiculeController {
     @FXML
     public void handleEnregistrer() {
         String disponibilite = disponibiliteCombo.getValue();
-        String type = typeField.getText();
+        String type = typeCombo.getValue();
         String nbrPlaceText = nbrPlaceField.getText();
 
         // Valider les champs
@@ -63,7 +63,7 @@ public class ModifierVehiculeController {
             if (result > 0) {
                 showSuccess("Véhicule modifié avec succès !");
                 // Fermer la fenêtre de modification
-                typeField.getScene().getWindow().hide();
+                typeCombo.getScene().getWindow().hide();
                 // Appeler le callback pour rafraîchir la TableView dans le contrôleur principal
                 if (onModificationSuccess != null) {
                     onModificationSuccess.run();
@@ -82,7 +82,7 @@ public class ModifierVehiculeController {
     @FXML
     public void handleAnnuler() {
         // Fermer la fenêtre
-        typeField.getScene().getWindow().hide();
+        typeCombo.getScene().getWindow().hide();
     }
 
     // Afficher un message d'erreur

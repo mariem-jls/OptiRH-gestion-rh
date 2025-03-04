@@ -4,11 +4,11 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.paint.Color?>
-<?import javafx.collections.FXCollections?>
 
-<?import java.lang.String?>
 <?import java.net.URL?>
-<VBox xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.nexus.Controllers.Transport.ModifierVehiculeController" spacing="20" alignment="CENTER">
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
+<VBox xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.nexus.Controllers.Transport.AjouterVehiculeController" spacing="20" alignment="CENTER">
     <stylesheets>
         <URL value="@/transport/dashboard.css" />
     </stylesheets>
@@ -17,7 +17,7 @@
     </padding>
 
     <!-- Titre de la fenêtre -->
-    <Label text="Modifier un Véhicule" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+    <Label text="Ajouter un Véhicule" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
 
     <!-- Champ Disponibilité -->
     <HBox spacing="10" alignment="CENTER_LEFT">
@@ -57,7 +57,7 @@
 
     <!-- Boutons -->
     <HBox spacing="20" alignment="CENTER">
-        <Button text="Enregistrer" onAction="#handleEnregistrer"/>
-        <Button text="Annuler" onAction="#handleAnnuler"/>
+        <Button text="Ajouter" styleClass="btn-ajouter" onAction="#handleAjouterVehicule"/>
+        <Button text="Annuler" styleClass="btn-annuler" onAction="#handleAnnuler"/>
     </HBox>
 </VBox>
