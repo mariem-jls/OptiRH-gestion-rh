@@ -18,11 +18,22 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+
+
 public class ModifierEvenementController {
 
     @FXML private DatePicker dateDebutField, dateFinField;
     @FXML private TextArea descriptionField;
     @FXML private TextField heureField, imageField, lieuField, titreField, prixField, latitudeField, longitudeField;
+    @FXML private Label weatherLabel;
+    @FXML private ImageView weatherIcon;
+    @FXML private ProgressIndicator progressIndicator;
+
 
     private final EvenementServices serviceEvenement = new EvenementServices();
     private Evenement evenementActuel;
@@ -82,7 +93,10 @@ public class ModifierEvenementController {
             if (evenement.getHeure() != null) {
                 heureField.setText(evenement.getHeure().toString());
             }
+            handleFetchWeather();
         }
+
+
     }
 
     /*************Validation*************/
@@ -203,4 +217,80 @@ public class ModifierEvenementController {
 
         ((Stage) titreField.getScene().getWindow()).close();
     }
+
+    @FXML
+    private void initialize() {
+        latitudeField.textProperty().addListener((obs, oldVal, newVal) -> handleFetchWeather());
+        longitudeField.textProperty().addListener((obs, oldVal, newVal) -> handleFetchWeather());
+        dateDebutField.valueProperty().addListener((obs, oldVal, newVal) -> handleFetchWeather());
+        dateFinField.valueProperty().addListener((obs, oldVal, newVal) -> handleFetchWeather());
+    }
+    @FXML
+    private void handleFetchWeather() {
+        String latStr = latitudeField.getText();
+        String lonStr = longitudeField.getText();
+        LocalDate dateDebut = dateDebutField.getValue();
+        LocalDate dateFin = dateFinField.getValue();
+
+        if (latStr.isEmpty() || lonStr.isEmpty() || dateDebut == null) {
+            return;
+        }
+
+        try {
+            double lat = Double.parseDouble(latStr);
+            double lon = Double.parseDouble(lonStr);
+            progressIndicator.setVisible(true);
+            weatherLabel.setText("⏳ Chargement...");
+
+            WeatherApiClient client = new WeatherApiClient();
+            String weatherData = client.getWeatherData(lat, lon, dateDebut.toString());
+            String weatherDataFin = (dateFin != null) ? client.getWeatherData(lat, lon, dateFin.toString()) : null;
+
+            if (weatherData != null) {
+                String parsedData = WeatherDataParser.parseWeatherData(weatherData, dateDebut.toString());
+                weatherLabel.setText("Début: " + parsedData);
+                String iconCode = extractIconCode(weatherData, dateDebut.toString());
+                if (iconCode != null) {
+                    String iconUrl = WeatherDataParser.getWeatherIcon(iconCode);
+                    weatherIcon.setImage(new Image(iconUrl));
+                }
+            }
+
+            if (weatherDataFin != null) {
+                String parsedDataFin = WeatherDataParser.parseWeatherData(weatherDataFin, dateFin.toString());
+                weatherLabel.setText(weatherLabel.getText() + "\nFin: " + parsedDataFin);
+                String iconCodeFin = extractIconCode(weatherDataFin, dateFin.toString());
+                if (iconCodeFin != null) {
+                    String iconUrlFin = WeatherDataParser.getWeatherIcon(iconCodeFin);
+                    weatherIcon.setImage(new Image(iconUrlFin));
+                }
+            }
+
+        } catch (NumberFormatException e) {
+            weatherLabel.setText("❌ Latitude et longitude doivent être des nombres.");
+        } finally {
+            progressIndicator.setVisible(false);
+        }
+
+    }
+
+    private String extractIconCode(String weatherData, String date) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(weatherData);
+            JsonNode list = root.path("list");
+
+            for (JsonNode node : list) {
+                String forecastDate = node.path("dt_txt").asText().split(" ")[0];
+                if (forecastDate.equals(date)) {
+                    return node.path("weather").get(0).path("icon").asText();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
 }

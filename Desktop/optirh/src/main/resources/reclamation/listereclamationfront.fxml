@@ -34,112 +34,8 @@
         </children>
     </Pane>
 
-    <!-- Barre latérale -->
-    <AnchorPane fx:id="left_barre" layoutY="90.0" prefHeight="590.0" prefWidth="224.0" style="-fx-background-color: #8fa6b5;">
-        <children>
-            <ImageView fitHeight="24.0" fitWidth="24.0" layoutX="26.0" layoutY="30.0" pickOnBounds="true" preserveRatio="true">
-                <image>
-                    <Image url="@imgs/dashboard.png" />
-                </image>
-            </ImageView>
-            <Text fx:id="tab1" layoutX="73.0" layoutY="50.0" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-cursor: hand;" text="Tableau de bord">
-                <font>
-                    <Font size="14.0" />
-                </font>
-            </Text>
-            <ImageView fitHeight="24.0" fitWidth="24.0" layoutX="26.0" layoutY="80.0" pickOnBounds="true" preserveRatio="true">
-                <image>
-                    <Image url="@imgs/community.png" />
-                </image>
-            </ImageView>
-            <Text layoutX="67.0" layoutY="100.0" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-cursor: hand;" text="Employés">
-                <font>
-                    <Font size="14.0" />
-                </font>
-            </Text>
-            <ImageView fitHeight="29.0" fitWidth="23.0" layoutX="28.0" layoutY="130.0" pickOnBounds="true" preserveRatio="true">
-                <image>
-                    <Image url="@imgs/statistiques.png" />
-                </image>
-            </ImageView>
-            <Text layoutX="67.0" layoutY="150.0" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-cursor: hand;" text="Offres">
-                <font>
-                    <Font size="14.0" />
-                </font>
-            </Text>
-            <ImageView fitHeight="29.0" fitWidth="23.0" layoutX="27.0" layoutY="180.0" pickOnBounds="true" preserveRatio="true">
-                <image>
-                    <Image url="@imgs/calculator.png" />
-                </image>
-            </ImageView>
-            <Text layoutX="67.0" layoutY="200.0" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-cursor: hand;" text="Missions">
-                <font>
-                    <Font size="14.0" />
-                </font>
-            </Text>
-            <ImageView fitHeight="29.0" fitWidth="23.0" layoutX="30.0" layoutY="231.0" pickOnBounds="true" preserveRatio="true">
-                <image>
-                    <Image url="@imgs/calendar.png" />
-                </image>
-            </ImageView>
-            <Text layoutX="67.0" layoutY="250.0" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-cursor: hand;" text="Événement">
-                <font>
-                    <Font size="14.0" />
-                </font>
-            </Text>
-            <AnchorPane fx:id="logoutPane1" layoutY="511.0" prefHeight="40.0" prefWidth="224.0" style="-fx-background-color: #007b8f;">
-                <children>
-                    <ImageView fitHeight="16.0" fitWidth="16.0" layoutX="29.0" layoutY="12.0" pickOnBounds="true" preserveRatio="true">
-                        <image>
-                            <Image url="@images/reglages.png" />
-                        </image>
-                    </ImageView>
-                    <Text layoutX="72.0" layoutY="25.0" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-cursor: hand;" text="Paramètres">
-                        <font>
-                            <Font size="14.0" />
-                        </font>
-                    </Text>
-                </children>
-            </AnchorPane>
-            <AnchorPane fx:id="logoutPane" layoutX="12.0" layoutY="415.0" prefHeight="40.0" prefWidth="224.0" style="-fx-background-color: #007b8f;">
-                <children>
-                    <Text layoutX="72.0" layoutY="25.0" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-cursor: hand;" text="Déconnexion">
-                        <font>
-                            <Font size="14.0" />
-                        </font>
-                    </Text>
-                    <ImageView fitHeight="16.0" fitWidth="16.0" layoutX="30.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true">
-                        <image>
-                            <Image url="@imgs/logout.png" />
-                        </image>
-                    </ImageView>
-                </children>
-            </AnchorPane>
-            <ImageView fitHeight="29.0" fitWidth="23.0" layoutX="30.0" layoutY="284.0" pickOnBounds="true" preserveRatio="true">
-                <image>
-                    <Image url="@images/cote-voiture.png" />
-                </image>
-            </ImageView>
-            <Text layoutX="67.0" layoutY="300.0" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-cursor: hand;" text="Transport">
-                <font>
-                    <Font size="14.0" />
-                </font>
-            </Text>
-            <ImageView fitHeight="29.0" fitWidth="23.0" layoutX="27.0" layoutY="333.0" pickOnBounds="true" preserveRatio="true">
-                <image>
-                    <Image url="@images/exclamation.png" />
-                </image>
-            </ImageView>
-            <Text layoutX="67.0" layoutY="350.0" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-cursor: hand;" text="Réclamations">
-                <font>
-                    <Font size="14.0" />
-                </font>
-            </Text>
-        </children>
-    </AnchorPane>
-
     <!-- Contenu principal -->
-    <AnchorPane fx:id="dashContent" layoutX="224.0" layoutY="90.0" prefHeight="590.0" prefWidth="823.0" style="-fx-background-color: #EEEEEE;">
+    <AnchorPane fx:id="dashContent" layoutX="0.0" layoutY="90.0" prefHeight="590.0" prefWidth="1047.0" style="-fx-background-color: #EEEEEE;">
         <children>
             <!-- Vos champs de formulaire et table -->
             <AnchorPane layoutX="25.0" layoutY="42.0" prefHeight="534.0" prefWidth="296.0" style="-fx-background-color: rgba(255, 255, 255, 0.8); -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0, 0, 0);">
@@ -153,6 +49,10 @@
                 <Button layoutX="206.0" layoutY="51.0" mnemonicParsing="false" onAction="#clearFields" text="Clear" style="-fx-background-color: #007B8FFF;" styleClass="button-clear" />
 
             </AnchorPane>
+
+            <!-- Ajout du champ de recherche et du filtre -->
+            <TextField fx:id="searchField" layoutX="336.0" layoutY="42.0" promptText="Rechercher par description..." style="-fx-background-color: #ffffff; -fx-background-radius: 5; -fx-border-color: #cccccc; -fx-border-radius: 5; -fx-padding: 5;" />
+            <ComboBox fx:id="filterStatusField" layoutX="550.0" layoutY="42.0" promptText="Filtrer par statut" style="-fx-background-color: #ffffff; -fx-background-radius: 5; -fx-border-color: #cccccc; -fx-border-radius: 5; -fx-padding: 5;" />
 
             <TableView fx:id="reclamationsTable" layoutX="336.0" layoutY="74.0" prefHeight="400" prefWidth="637.0" style="-fx-background-color: rgba(255, 255, 255, 0.8); -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0, 0, 0);">
                 <columns>

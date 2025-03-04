@@ -13,8 +13,13 @@ public class User {
 
     public User() {
     }
+    public User ( int id,String nom ){
+        this.nom = nom;
+        this.id = id;
+    }
 
-    
+
+
     public User(int id, String nom, String email, String motDePasse, Role role, String address) {
         this(nom, email, motDePasse, role, address);
         this.id = id;

@@ -2,9 +2,11 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
@@ -23,16 +25,26 @@
                 <VBox layoutX="41.0" layoutY="269.0" prefHeight="650.4" prefWidth="900.0" spacing="20.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                     <children>
                         <!-- Titre -->
-                        <Label style="-fx-font-size: 18; -fx-font-weight: bold;" text="Gestion des Projets" />
+                        <Label alignment="CENTER" prefHeight="59.0" prefWidth="850.0" style="-fx-font-size: 18; -fx-font-weight: bold;" text="Gestion des Projets" />
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Label text="Recherche par email :" />
+                            <TextField fx:id="emailSearchField" prefWidth="200" styleClass="custom-text-field" />
+                            <CheckBox fx:id="completedFilterCheck" prefHeight="32.0" prefWidth="281.0" styleClass="filter-checkbox" text="Missions terminées" />
+                            <Button alignment="CENTER_RIGHT" onAction="#handleExportPDF" styleClass="btn-export" text="Exporter PDF" />
+
+                        </HBox>
+                        <HBox alignment="CENTER_RIGHT" spacing="10" style="-fx-padding: 10;">
+                            <Button alignment="CENTER_RIGHT" onAction="#showStatisticsDashboard" style="-fx-background-color: #2196F3; -fx-text-fill: white;" text="Tableau de Bord" />
+                        </HBox>
 
                         <!-- Tableau des projets -->
                         <TableView fx:id="projectTable" prefHeight="400.0" prefWidth="425.0">
                             <columns>
                                 <TableColumn fx:id="idColumn" text="ID" />
-                                <TableColumn fx:id="nomColumn" prefWidth="156.79999542236328" text="Nom" />
-                                <TableColumn fx:id="descriptionColumn" prefWidth="138.4000244140625" text="Description" />
-                                <TableColumn fx:id="userNomColumn" prefWidth="145.60006713867188" text="Créé par" />
-                                <TableColumn fx:id="createdAtColumn" prefWidth="196.79998779296875" text="Date de création" />
+                                <TableColumn fx:id="nomColumn" prefWidth="176.00000762939453" text="Nom" />
+                                <TableColumn fx:id="descriptionColumn" prefWidth="176.79998779296875" text="Description" />
+                                <TableColumn fx:id="userNomColumn" prefWidth="164.79995727539062" text="Créé par" />
+                                <TableColumn fx:id="createdAtColumn" prefWidth="244.0001220703125" text="Date de création" />
                             </columns>
                         </TableView>
 

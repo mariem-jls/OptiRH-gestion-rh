@@ -1,21 +1,25 @@
 package tn.nexus.Entities.reclamation;
 
-import java.util.Date;
+import java.sql.Date;
 
 public class Reponse {
     private int id;
     private String description;
     private Date date;
     private int reclamationId;
+    private int rating;  // Si vous souhaitez gérer des ratings
 
+    // Constructeur par défaut
     public Reponse() {
     }
 
-    public Reponse(int id, String description, Date date, int reclamationId) {
+    // Ajout du constructeur avec 5 paramètres
+    public Reponse(int id, String description, Date date, int reclamationId, int rating) {
         this.id = id;
         this.description = description;
         this.date = date;
         this.reclamationId = reclamationId;
+        this.rating = rating;
     }
 
     // Getters et Setters
@@ -51,6 +55,14 @@ public class Reponse {
         this.reclamationId = reclamationId;
     }
 
+    public int getRating() {
+        return rating;
+    }
+
+    public void setRating(int rating) {
+        this.rating = rating;
+    }
+
     @Override
     public String toString() {
         return "Reponse{" +
@@ -58,6 +70,7 @@ public class Reponse {
                 ", description='" + description + '\'' +
                 ", date=" + date +
                 ", reclamationId=" + reclamationId +
+                ", rating=" + rating +
                 '}';
     }
 }

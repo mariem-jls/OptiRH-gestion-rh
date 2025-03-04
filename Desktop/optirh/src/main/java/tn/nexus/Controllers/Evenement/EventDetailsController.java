@@ -64,7 +64,7 @@ public class EventDetailsController {
 
     User u1 = new User(3, "ikbel", "ikbel@esprit.tn", "$2a$10$X6j9uxlqquyTIaY9UBWnAO/82JZpQYIPWyRC5hsdWu5ew32oy.NK2", Role.Chef_Projet, "BorjLouzir");
 
-/*******************get data******************/
+    /*******************get data******************/
     public void setEventData(Evenement event) {
         this.currentEvent = event;
         titleLabel.setText(event.getTitre());
@@ -120,7 +120,7 @@ public class EventDetailsController {
 
         try {
             // Vérifier si l'utilisateur a déjà réservé cet événement
-            if (reservationService.isReservationExists(3, currentEvent.getIdEvenement())) {
+            if (reservationService.isReservationExists(1, currentEvent.getIdEvenement())) {
                 showAlert(Alert.AlertType.ERROR, "Réservation existante", null, "Vous avez déjà réservé cet événement !");
                 return; // Stopper le processus
             }
@@ -128,7 +128,12 @@ public class EventDetailsController {
             // Tenter l'insertion
             int result = reservationService.insert(reservation);
             if (result > 0) {
-                showAlert(Alert.AlertType.INFORMATION, "Réservation confirmée", null, "Votre réservation a été enregistrée avec succès !");
+                // Envoi du SMS après réservation réussie
+                String smsMessage = "Bonjour " + firstName + ", votre réservation pour l'evenement '"
+                        + currentEvent.getTitre() + "' a été confirmée !";
+                SmsService.sendSms(phone, smsMessage);
+
+                showAlert(Alert.AlertType.INFORMATION, "Réservation confirmée", null, "Votre réservation a été enregistrée avec succès ! Un SMS de confirmation a été envoyé.");
                 Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
                 stage.close();
             } else {

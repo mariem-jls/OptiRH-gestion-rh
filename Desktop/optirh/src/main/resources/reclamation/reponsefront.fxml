@@ -4,10 +4,15 @@
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.AnchorPane?>
-<AnchorPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.nexus.Controllers.reclamation.ReponseViewController">
+<?import javafx.scene.image.ImageView?>
+<?import org.controlsfx.control.Rating?>
+
+<AnchorPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.nexus.Controllers.reclamation.ReponseViewController">
+
+    <!-- TableView contenant la liste des réponses -->
     <TableView fx:id="reponsesTable" layoutX="10.0" layoutY="10.0" prefHeight="400.0" prefWidth="600.0">
         <columns>
-
             <TableColumn fx:id="descriptionColumn" text="Description">
                 <cellValueFactory>
                     <PropertyValueFactory property="description" />
@@ -18,6 +23,17 @@
                     <PropertyValueFactory property="date" />
                 </cellValueFactory>
             </TableColumn>
+            <TableColumn fx:id="ratingColumn" text="Rating">
+                <cellValueFactory>
+                    <PropertyValueFactory property="rating" />
+                </cellValueFactory>
+            </TableColumn>
         </columns>
     </TableView>
+
+    <!-- Contrôle de Rating -->
+    <Rating fx:id="ratingControl" rating="0" max="5" layoutX="620.0" layoutY="10.0" />
+
+    <!-- ImageView pour afficher le QR Code -->
+    <ImageView fx:id="qrCodeImageView" layoutX="620.0" layoutY="100.0" fitHeight="200.0" fitWidth="200.0" />
 </AnchorPane>

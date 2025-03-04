@@ -2,6 +2,8 @@ package tn.nexus.Controllers.reclamation;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -20,6 +22,7 @@ import java.net.URL;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 public class ReclamationController implements Initializable, WrapWithSideBar {
@@ -34,13 +37,12 @@ public class ReclamationController implements Initializable, WrapWithSideBar {
     @FXML
     private TableColumn<Reclamation, LocalDate> dateColumn;
     @FXML
-    private TextField descriptionField;
+    private TextField searchField;
     @FXML
-    private DatePicker dateField;
-    @FXML
-    private ComboBox<String> statusField;
+    private ComboBox<String> filterStatusField;
 
     private final ReclamationService reclamationService = new ReclamationService();
+    private ObservableList<Reclamation> observableReclamationList;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -53,20 +55,32 @@ public class ReclamationController implements Initializable, WrapWithSideBar {
 
             // Chargement des données
             List<Reclamation> reclamationList = reclamationService.showAll();
-            ObservableList<Reclamation> observableReclamationList = FXCollections.observableArrayList(reclamationList);
-            reclamationsTable.setItems(observableReclamationList);
+            observableReclamationList = FXCollections.observableArrayList(reclamationList);
 
-            // Remplissage de la ComboBox
-            statusField.setItems(FXCollections.observableArrayList("En attente", "En cours", "Résolue"));
-            if(statusField.getValue() == null) {
-                statusField.setValue("en attente");
-            }
+            // Configuration des filtres
+            filterStatusField.setItems(FXCollections.observableArrayList("Tous", "En attente", "En cours", "Résolue"));
+            filterStatusField.setValue("Tous");
+
+            // Création d'une FilteredList pour la recherche et le filtrage
+            FilteredList<Reclamation> filteredData = new FilteredList<>(observableReclamationList, p -> true);
+
+            // Ajout des écouteurs pour la recherche et le filtrage
+            searchField.textProperty().addListener((observable, oldValue, newValue) -> applyFilters(filteredData));
+            filterStatusField.valueProperty().addListener((observable, oldValue, newValue) -> applyFilters(filteredData));
+
+            // Création d'une SortedList pour trier les données
+            SortedList<Reclamation> sortedData = new SortedList<>(filteredData);
+            sortedData.comparatorProperty().bind(reclamationsTable.comparatorProperty());
+
+            // Liaison des données filtrées et triées à la table
+            reclamationsTable.setItems(sortedData);
 
             // Ajout d'une colonne "Action" avec un bouton "Réponse"
             TableColumn<Reclamation, Void> actionColumn = new TableColumn<>("Action");
             actionColumn.setCellFactory(param -> new TableCell<>() {
                 private final Button btn = new Button("Réponse");
                 {
+                    btn.setStyle("-fx-background-color: #007BFF; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;");
                     btn.setOnAction(event -> {
                         Reclamation reclamation = getTableView().getItems().get(getIndex());
                         try {
@@ -90,77 +104,41 @@ public class ReclamationController implements Initializable, WrapWithSideBar {
                     setGraphic(empty ? null : btn);
                 }
             });
+
+            // Ajouter la colonne "Action" à la table
             reclamationsTable.getColumns().add(actionColumn);
 
-            // Listener de sélection de table
-            reclamationsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
-                if (newSelection != null) {
-                    descriptionField.setText(newSelection.getDescription());
-                    statusField.setValue(newSelection.getStatus());
-                    dateField.setValue(newSelection.getDate().toLocalDate());
-                }
-            });
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    @FXML
-    public void ajouterReclamation() throws SQLException {
-        String description = descriptionField.getText();
-        if (description == null || description.trim().length() < 2) {
-            showAlert(Alert.AlertType.WARNING, "La description doit contenir au moins 2 caractères !");
-            return;
-        }
-        if (dateField.getValue() == null || dateField.getValue().isBefore(LocalDate.now())) {
-            showAlert(Alert.AlertType.WARNING, "Veuillez sélectionner une date valide (aujourd'hui ou plus tard).");
-            return;
-        }
+    private void applyFilters(FilteredList<Reclamation> filteredData) {
+        String searchKeyword = searchField.getText().toLowerCase();
+        String selectedStatus = filterStatusField.getValue();
 
-        String status = statusField.getValue() != null ? statusField.getValue() : "En attente";
-        if (dateField.getValue() == null) {
-            showAlert(Alert.AlertType.WARNING, "La date ne peut pas être vide !");
-            return;
-        }
-
-        Reclamation reclamation = new Reclamation(description, status, java.sql.Date.valueOf(dateField.getValue()), 1);
-        reclamationService.insert(reclamation);
-        reclamationsTable.getItems().add(reclamation);
-        clearFields();
-    }
-
-    @FXML
-    public void modifierReclamation() throws SQLException {
-        Reclamation selectedReclamation = reclamationsTable.getSelectionModel().getSelectedItem();
-        if (selectedReclamation != null) {
-            selectedReclamation.setDescription(descriptionField.getText());
-            selectedReclamation.setStatus(statusField.getValue());
-            selectedReclamation.setDate(java.sql.Date.valueOf(dateField.getValue()));
-            reclamationService.update(selectedReclamation);
-            reclamationsTable.refresh();
-            clearFields();
-        } else {
-            showAlert(Alert.AlertType.WARNING, "Aucune réclamation sélectionnée !");
-        }
+        filteredData.setPredicate(reclamation -> {
+            if (reclamation == null) return false;
+            boolean statusMatches = Objects.equals(selectedStatus, "Tous") || Objects.equals(reclamation.getStatus(), selectedStatus);
+            boolean searchMatches = searchKeyword.isEmpty() || reclamation.getDescription().toLowerCase().contains(searchKeyword);
+            return statusMatches && searchMatches;
+        });
     }
 
     @FXML
     public void supprimerReclamation() throws SQLException {
         Reclamation selectedReclamation = reclamationsTable.getSelectionModel().getSelectedItem();
-        if (selectedReclamation != null) {
-            int rowsAffected = reclamationService.delete(selectedReclamation);
-            reclamationsTable.getItems().remove(selectedReclamation);
-            showAlert(rowsAffected > 0 ? Alert.AlertType.INFORMATION : Alert.AlertType.WARNING, "Suppression effectuée");
-        } else {
+        if (selectedReclamation == null) {
             showAlert(Alert.AlertType.WARNING, "Aucune réclamation sélectionnée !");
+            return;
         }
-    }
 
-    @FXML
-    public void clearFields() {
-        descriptionField.clear();
-        dateField.setValue(null);
-        statusField.setValue(null);
+        if (reclamationService.delete(selectedReclamation) > 0) {
+            observableReclamationList.remove(selectedReclamation);
+            showAlert(Alert.AlertType.INFORMATION, "Réclamation supprimée !");
+        } else {
+            showAlert(Alert.AlertType.WARNING, "Échec de la suppression !");
+        }
     }
 
     private void showAlert(Alert.AlertType type, String message) {

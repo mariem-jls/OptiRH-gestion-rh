@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.paint.Color?>
+
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
+<?import java.net.URL?>
+<VBox xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.nexus.Controllers.Transport.GestionVehiculeController" spacing="20" alignment="CENTER">
+    <stylesheets>
+        <URL value="@/transport/dashboard.css" />
+    </stylesheets>
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <!-- Titre de la fenêtre -->
+    <Label text="Gestion des Véhicules" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+
+    <!-- Champ ID (non modifiable)-->
+    <HBox spacing="10" alignment="CENTER_LEFT" visible="false" managed="false">
+        <Label text="ID :"/>
+        <TextField fx:id="idField" promptText="ID" editable="false"/>
+    </HBox>
+
+
+
+    <!-- Message d'erreur -->
+    <Label fx:id="errorMessage" textFill="red" visible="false"/>
+
+    <!-- Boutons -->
+    <HBox spacing="20" alignment="CENTER">
+        <Button text="Ajouter" styleClass="btn-ajouter" onAction="#handleAjouterVehicule"/>
+        <Button text="Modifier" styleClass="btn-modifier"  onAction="#handleOpenModifierVehicule"/>
+        <Button text="Supprimer" styleClass="btn-supprimer" onAction="#handleSupprimerVehicule"/>
+        <Button text="Réservations disponible" onAction="#handleOpenGestionReservation"/>
+    </HBox>
+
+    <!-- Tableau pour afficher la liste des véhicules -->
+    <TableView fx:id="vehiculeTable">
+        <columns>
+            <TableColumn text="Disponibilité" fx:id="disponibiliteColumn"/>
+            <TableColumn text="Type" fx:id="typeColumn"/>
+            <TableColumn text="Nombre de places" fx:id="nbrPlaceColumn"/>
+        </columns>
+    </TableView>
+
+</VBox>

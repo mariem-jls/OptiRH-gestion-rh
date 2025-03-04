@@ -2,6 +2,7 @@ package tn.nexus.Controllers.Evenement;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -13,6 +14,7 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import tn.nexus.Entities.Evenement.Evenement;
+import tn.nexus.Entities.Evenement.StatusEvenement;
 import tn.nexus.Services.Evenement.EvenementServices;
 import tn.nexus.Utils.WrapWithSideBar;
 
@@ -31,7 +33,7 @@ public class ListeEvenementController implements WrapWithSideBar {
     @FXML
     private TableColumn<Evenement, Double> latitudeColumn;
     @FXML
-    private TableColumn<Evenement, String> statusColumn;
+    private TableColumn<Evenement, StatusEvenement> statusColumn;
 
 
     @FXML
@@ -68,16 +70,39 @@ public class ListeEvenementController implements WrapWithSideBar {
     public void initialize() {
         initializeSideBar(sideBar);
         titleColumn.setCellValueFactory(new PropertyValueFactory<>("titre"));
-        descriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
         locationColumn.setCellValueFactory(new PropertyValueFactory<>("lieu"));
         priceColumn.setCellValueFactory(new PropertyValueFactory<>("prix"));
         startDateColumn.setCellValueFactory(new PropertyValueFactory<>("dateDebut"));
         endDateColumn.setCellValueFactory(new PropertyValueFactory<>("dateFin"));
         timeColumn.setCellValueFactory(new PropertyValueFactory<>("heure"));
         imageColumn.setCellValueFactory(new PropertyValueFactory<>("image"));
-        longitudeColumn.setCellValueFactory(new PropertyValueFactory<>("longitude"));
-        latitudeColumn.setCellValueFactory(new PropertyValueFactory<>("latitude"));
         statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
+        // Appliquer la couleur en fonction du statut
+        statusColumn.setCellFactory(column -> new TableCell<Evenement, StatusEvenement>() {
+            @Override
+            protected void updateItem(StatusEvenement status, boolean empty) {
+                super.updateItem(status, empty);
+                setText(null); // Réinitialisation du texte
+                setStyle(""); // Réinitialisation du style
+
+                if (!empty && status != null) {
+                    setText(status.toString()); // Afficher le texte du statut
+
+                    switch (status) {
+                        case A_VENIR:
+                            setStyle("-fx-background-color: #77DD77; -fx-text-fill: black;");
+                            break;
+                        case EN_COURS:
+                            setStyle("-fx-background-color: #FFA500; -fx-text-fill: black;");
+                            break;
+                        case TERMINE:
+                            setStyle("-fx-background-color: #FF6666; -fx-text-fill: white;");
+                            break;
+                    }
+                }
+            }
+        });
+
 
         refreshTable();// Charger les événements dans la table
 
@@ -110,8 +135,8 @@ public class ListeEvenementController implements WrapWithSideBar {
     }
 
     private HBox createActionButtons(Evenement evenement) {
-        Button btnModifier = new Button("Modifier");
-        Button btnSupprimer = new Button("Supprimer");
+        Button btnModifier = new Button("✏");
+        Button btnSupprimer = new Button("\uD83D\uDDD1 ");
         Button btnVoirReservation = new Button("Voir réservation");
 
         btnModifier.getStyleClass().add("btn-modifier");
@@ -160,7 +185,6 @@ public class ListeEvenementController implements WrapWithSideBar {
             System.out.println("Erreur ouverture modification : " + e.getMessage());
         }
     }
-
     private void supprimerEvenement(Evenement evenement) {
         if (evenement != null) {
             try {
@@ -220,6 +244,24 @@ public class ListeEvenementController implements WrapWithSideBar {
             eventsTable.setItems(evenementObservableList);
         } catch (SQLException e) {
             System.out.println("Erreur lors du rafraîchissement : " + e.getMessage());
+        }
+    }
+
+    /**********************ouvrir map*******************/
+    public void viewinmap(ActionEvent actionEvent) {
+        try {
+
+            String fxmlPath = "/Evenement/map.fxml";
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            Parent root = loader.load();
+            Scene scene = new Scene(root, 800, 600);
+            Stage stage = new Stage();
+            stage.setScene(scene);
+            stage.setTitle("Carte Dynamique Des Evenement");
+            stage.show();
+        } catch (IOException e) {
+            System.err.println("Erreur lors du chargement du fichier FXML: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }

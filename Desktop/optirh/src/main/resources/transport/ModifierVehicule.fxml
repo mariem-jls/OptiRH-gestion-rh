@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.paint.Color?>
+<?import javafx.collections.FXCollections?>
+
+<?import java.lang.String?>
+<?import java.net.URL?>
+<VBox xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.nexus.Controllers.Transport.ModifierVehiculeController" spacing="20" alignment="CENTER">
+    <stylesheets>
+        <URL value="@/transport/dashboard.css" />
+    </stylesheets>
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <!-- Titre de la fenêtre -->
+    <Label text="Modifier un Véhicule" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+
+    <!-- Champ Disponibilité -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Disponibilité :"/>
+        <ComboBox fx:id="disponibiliteCombo" promptText="Sélectionner la disponibilité">
+            <items>
+                <FXCollections fx:factory="observableArrayList">
+                    <String fx:value="Disponible"/>
+                    <String fx:value="Indisponible"/>
+                </FXCollections>
+            </items>
+        </ComboBox>
+    </HBox>
+
+    <!-- Champ Type de véhicule -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Type :"/>
+        <ComboBox fx:id="typeCombo" promptText="Sélectionnez le type de véhicule">
+            <items>
+                <FXCollections fx:factory="observableArrayList">
+                    <String fx:value="Voiture"/>
+                    <String fx:value="Minibus"/>
+                    <String fx:value="Bus"/>
+                </FXCollections>
+            </items>
+        </ComboBox>
+    </HBox>
+
+    <!-- Champ Nombre de places -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Nombre de places :"/>
+        <TextField fx:id="nbrPlaceField" promptText="Entrez le nombre de places"/>
+    </HBox>
+
+    <!-- Message d'erreur -->
+    <Label fx:id="errorMessage" textFill="red" visible="false"/>
+
+    <!-- Boutons -->
+    <HBox spacing="20" alignment="CENTER">
+        <Button text="Enregistrer" onAction="#handleEnregistrer"/>
+        <Button text="Annuler" onAction="#handleAnnuler"/>
+    </HBox>
+</VBox>

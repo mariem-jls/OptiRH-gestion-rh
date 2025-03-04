@@ -25,7 +25,7 @@ public class SideBarController {
     void redirectToProjet() {
         Parent root = null;
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Mission/MissionEmploye.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Mission/Projet.fxml"));
             root = loader.load();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -59,6 +59,17 @@ public class SideBarController {
         Parent root = null;
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/Evenement/listeEvenemnt.fxml"));
+            root = loader.load();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        menu.getScene().setRoot(root);
+    }
+    @FXML
+    void redirectToTransport() {
+        Parent root = null;
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/transport/GestionTrajet.fxml"));
             root = loader.load();
         } catch (Exception e) {
             throw new RuntimeException(e);

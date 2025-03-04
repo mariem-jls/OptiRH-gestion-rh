@@ -1,11 +1,14 @@
 package tn.nexus.Controllers.Mission;
 
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
 import tn.nexus.Entities.Mission.Mission;
 import tn.nexus.Entities.User;
 import tn.nexus.Services.Mission.MissionService;
@@ -14,271 +17,380 @@ import tn.nexus.Utils.WrapWithSideBar;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.List;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class MissionEmployeController  implements WrapWithSideBar  {
+public class MissionEmployeController implements WrapWithSideBar {
+
     @FXML
     private AnchorPane sideBar;
     @FXML
     private TextField emailField;
-
     @FXML
     private Button loadMissionsButton;
-
     @FXML
-    private TableView<Mission> todoTable;
-
+    private GridPane calendarGrid;
     @FXML
-    private TableColumn<Mission, String> todoMissionNameColumn;
-
+    private Label monthYearLabel;
     @FXML
-    private TableColumn<Mission, String> todoDescriptionColumn;
-
+    private Button previousMonthButton;
     @FXML
-    private TableView<Mission> inProgressTable;
-
-    @FXML
-    private TableColumn<Mission, String> inProgressMissionNameColumn;
-
-    @FXML
-    private TableColumn<Mission, String> inProgressDescriptionColumn;
-
-    @FXML
-    private TableView<Mission> doneTable;
-
-    @FXML
-    private TableColumn<Mission, String> doneMissionNameColumn;
-
-    @FXML
-    private TableColumn<Mission, String> doneDescriptionColumn;
-
+    private Button nextMonthButton;
     @FXML
     private Button filterTodayButton;
-
     @FXML
     private Button filterThisMonthButton;
-
     @FXML
     private Button clearFilterButton;
-
     @FXML
     private Button changeStatusButton;
+    @FXML
+    private ProgressIndicator loadingSpinner;
+    @FXML
+    private ComboBox<String> statusFilterCombo;
 
     private final MissionService missionService = new MissionService();
     private final UserService userService = new UserService();
-
-    private List<Mission> allMissions; // Liste pour stocker toutes les missions
-    private int employeId; // ID de l'employé connecté
-
-    // ObservableList pour gérer les données des tables
-    private final ObservableList<Mission> todoList = FXCollections.observableArrayList();
-    private final ObservableList<Mission> inProgressList = FXCollections.observableArrayList();
-    private final ObservableList<Mission> doneList = FXCollections.observableArrayList();
+    private YearMonth currentYearMonth;
+    private Map<LocalDate, List<Mission>> missionsByDate = new HashMap<>();
+    private int employeId;
+    private DateTimeFormatter monthFormatter = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.FRENCH);
 
     @FXML
     public void initialize() {
-        // Configurer les colonnes des TableView
-        configureTableColumns();
         initializeSideBar(sideBar);
-
-        // Lier les ObservableList aux TableView
-        todoTable.setItems(todoList);
-        inProgressTable.setItems(inProgressList);
-        doneTable.setItems(doneList);
-
-        // Configurer les boutons
-        loadMissionsButton.setOnAction(event -> handleLoadMissions());
-        filterTodayButton.setOnAction(event -> handleFilterToday());
-        filterThisMonthButton.setOnAction(event -> handleFilterThisMonth());
-        clearFilterButton.setOnAction(event -> handleClearFilter());
-        changeStatusButton.setOnAction(event -> handleChangeStatus());
+        currentYearMonth = YearMonth.now();
+        setupCalendar();
+        setupEventHandlers();
+        setupStatusFilter();
     }
 
-    private void configureTableColumns() {
-        // Configurer les colonnes pour chaque TableView
-        todoMissionNameColumn.setCellValueFactory(new PropertyValueFactory<>("titre"));
-        todoDescriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
-
-        inProgressMissionNameColumn.setCellValueFactory(new PropertyValueFactory<>("titre"));
-        inProgressDescriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
-
-        doneMissionNameColumn.setCellValueFactory(new PropertyValueFactory<>("titre"));
-        doneDescriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
+    private void setupStatusFilter() {
+        statusFilterCombo.setItems(FXCollections.observableArrayList(
+                "Tous", "To Do", "In Progress", "Done"));
+        statusFilterCombo.getSelectionModel().selectFirst();
+        statusFilterCombo.setOnAction(e -> applyFilters());
     }
 
-    private void loadMissions() {
-        try {
-            // Récupérer toutes les missions assignées à l'employé
-            allMissions = missionService.getTasksByUserAndStatus(employeId, null);
-            System.out.println("Nombre de missions chargées : " + allMissions.size()); // Log
-
-            // Afficher toutes les missions initialement
-            refreshTables(allMissions);
-        } catch (SQLException e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors du chargement des missions : " + e.getMessage());
-        }
+    private void applyFilters() {
+        loadMissions();
     }
+
+    // Supprimer la méthode en double et unifier le comportement
 
     @FXML
-    private void handleLoadMissions() {
-        // Récupérer l'email saisi
+    private void loadMissions() {
         String email = emailField.getText().trim();
 
-        if (email.isEmpty()) {
-            showAlert(Alert.AlertType.WARNING, "Champ vide", "Veuillez saisir votre email.");
+        if (!isValidEmail(email)) {
+            showAlert("Erreur", "Email invalide");
             return;
         }
 
-        try {
-            // Récupérer l'utilisateur par email (sans vérifier le rôle)
-            User employe = userService.getUserByEmail(email);
+        loadingSpinner.setVisible(true);
 
-            if (employe != null) {
-                employeId = employe.getId();
-                System.out.println("ID de l'employé récupéré : " + employeId); // Log
-                loadMissions(); // Charger les missions de l'employé
-            } else {
-                showAlert(Alert.AlertType.ERROR, "Erreur", "Aucun utilisateur trouvé avec cet email.");
+        Task<User> fetchUserTask = new Task<>() {
+            @Override
+            protected User call() throws Exception {
+                return userService.getUserByEmail(email);
             }
-        } catch (SQLException e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors de la récupération de l'utilisateur : " + e.getMessage());
-        }
+        };
+
+        fetchUserTask.setOnSucceeded(event -> {
+            User user = fetchUserTask.getValue();
+            if (user != null) {
+                employeId = user.getId(); // Set employeId here
+                loadUserMissions(employeId);
+            } else {
+                showAlert("Erreur", "Aucun utilisateur trouvé");
+            }
+            loadingSpinner.setVisible(false);
+        });
+
+        fetchUserTask.setOnFailed(event -> {
+            showAlert("Erreur", "Échec de chargement");
+            loadingSpinner.setVisible(false);
+        });
+
+        new Thread(fetchUserTask).start();
     }
 
-    @FXML
-    private void handleFilterToday() {
-        // Filtrer les missions pour aujourd'hui
-        LocalDate today = LocalDate.now();
-        List<Mission> filteredMissions = allMissions.stream()
-                .filter(mission -> mission.getDateTerminer().toLocalDateTime().toLocalDate().isEqual(today))
-                .collect(Collectors.toList());
 
-        // Rafraîchir les TableView avec les missions filtrées
-        refreshTables(filteredMissions);
-    }
 
-    @FXML
-    private void handleFilterThisMonth() {
-        // Filtrer les missions pour ce mois-ci
-        LocalDate now = LocalDate.now();
-        List<Mission> filteredMissions = allMissions.stream()
-                .filter(mission -> mission.getDateTerminer().toLocalDateTime().toLocalDate().getMonth() == now.getMonth() &&
-                        mission.getDateTerminer().toLocalDateTime().toLocalDate().getYear() == now.getYear())
-                .collect(Collectors.toList());
-
-        // Rafraîchir les TableView avec les missions filtrées
-        refreshTables(filteredMissions);
-    }
-
-    @FXML
-    private void handleClearFilter() {
-        // Afficher toutes les missions sans filtre
-        refreshTables(allMissions);
-    }
-
-    @FXML
-    private void handleChangeStatus() {
-        // Récupérer la mission sélectionnée dans l'une des TableView
-        Mission selectedMission = getSelectedMission();
-
-        if (selectedMission == null) {
-            showAlert(Alert.AlertType.WARNING, "Aucune mission sélectionnée", "Veuillez sélectionner une mission pour changer son statut.");
-            return;
+    private boolean isValidEmail(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            return false;
         }
 
-        // Afficher une boîte de dialogue pour choisir le nouveau statut
-        ChoiceDialog<String> dialog = new ChoiceDialog<>("To Do", List.of("To Do", "In Progress", "Done"));
-        dialog.setTitle("Changer le statut");
-        dialog.setHeaderText(null);
-        dialog.setContentText("Choisissez le nouveau statut de la mission :");
+        // Regex pour validation basique d'email
+        String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
+        Pattern pattern = Pattern.compile(emailRegex);
+        Matcher matcher = pattern.matcher(email.trim());
+        return matcher.matches();
+    }
 
-        dialog.showAndWait().ifPresent(newStatut -> {
+    private void loadUserMissions(int userId) {
+        String statusFilter = statusFilterCombo.getValue();
+        if("Tous".equals(statusFilter)) statusFilter = null;
+
+        String finalStatusFilter = statusFilter;
+        Task<List<Mission>> missionTask = new Task<>() {
+            protected List<Mission> call() throws Exception {
+                return missionService.getTasksByUserAndStatus(userId, finalStatusFilter);
+            }
+        };
+
+        missionTask.setOnSucceeded(e -> {
+            List<Mission> missions = missionTask.getValue();
+
+            // Filter missions to current month
+            List<Mission> filteredMissions = missions.stream()
+                    .filter(mission -> {
+                        LocalDate missionDate = mission.getDateTerminer().toLocalDateTime().toLocalDate();
+                        return YearMonth.from(missionDate).equals(currentYearMonth);
+                    })
+                    .collect(Collectors.toList());
+
+            missionsByDate = groupMissionsByDate(filteredMissions);
+            updateCalendarDays();
+            loadingSpinner.setVisible(false);
+        });
+
+        new Thread(missionTask).start();
+    }
+
+    private VBox createDayCell(LocalDate date) {
+        return createDayCell(date, date.getDayOfWeek().getValue());
+    }
+
+    private VBox createDayCell(LocalDate date, int dayOfWeek) {
+        VBox cell = new VBox(3);
+        cell.setPadding(new Insets(10));
+        cell.setStyle("-fx-border-color: #ddd; -fx-border-radius: 3px;");
+        cell.setPrefSize(120, 80);
+
+        // Style weekend
+        if(dayOfWeek > 5) {
+            cell.setStyle("-fx-background-color: #f5f5f5; -fx-border-color: #ddd; -fx-border-radius: 3px;");
+        }
+
+        Text dayNumber = new Text(String.valueOf(date.getDayOfMonth()));
+        dayNumber.setStyle(date.equals(LocalDate.now()) ?
+                "-fx-fill: #2196F3; -fx-font-weight: bold;" : "-fx-fill: #666;");
+
+        cell.getChildren().add(dayNumber);
+        return cell;
+    }
+
+    private void showDateDetails(LocalDate date) {
+        List<Mission> missions = missionsByDate.getOrDefault(date, List.of());
+        // Afficher dialogue avec liste détaillée
+    }
+
+
+
+    private Label createMissionLabel(Mission mission) {
+        Label label = new Label(mission.getTitre());
+        label.setStyle(getMissionStyle(mission.getStatus()));
+
+        // Tooltip avec détails
+        String tooltipText = String.format(
+                "Description: %s\nStatut: %s\nDe: %s\nÀ: %s",
+                mission.getDescription(),
+                mission.getStatus(),
+                mission.getCreatedAt().toLocalDateTime().toLocalDate(),
+                mission.getDateTerminer().toLocalDateTime().toLocalDate());
+        label.setTooltip(new Tooltip(tooltipText));
+
+        // Gestion clic pour changement statut
+        label.setOnMouseClicked(e -> showStatusChangeDialog(mission));
+
+        return label;
+    }
+
+    private void showStatusChangeDialog(Mission mission) {
+        ChoiceDialog<String> dialog = new ChoiceDialog<>(
+                mission.getStatus(),
+                List.of("To Do", "In Progress", "Done"));
+
+        dialog.setTitle("Changement statut");
+        dialog.setHeaderText("Modifier le statut de: " + mission.getTitre());
+        Optional<String> result = dialog.showAndWait();
+
+        result.ifPresent(newStatus -> {
             try {
-                System.out.println("Mise à jour du statut de la mission ID " + selectedMission.getId() + " vers : " + newStatut); // Log
-                // Mettre à jour le statut de la mission dans la base de données
-                missionService.updateMissionStatus(selectedMission.getId(), newStatut);
-
-                // Mettre à jour le statut localement
-                selectedMission.setStatus(newStatut);
-
-                // Rafraîchir les tables sans recharger toutes les missions
-                refreshTablesAfterStatusChange(selectedMission);
-
-            } catch (SQLException e) {
-                showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors de la mise à jour du statut : " + e.getMessage());
+                missionService.updateMissionStatus(mission.getId(), newStatus);
+                loadUserMissions(employeId); // Rafraîchir seulement les missions
+            } catch (SQLException ex) {
+                showAlert("Erreur", ex.getMessage());
             }
         });
     }
 
-    private Mission getSelectedMission() {
-        // Vérifier dans quelle TableView une mission est sélectionnée
-        if (!todoTable.getSelectionModel().isEmpty()) {
-            return todoTable.getSelectionModel().getSelectedItem();
-        } else if (!inProgressTable.getSelectionModel().isEmpty()) {
-            return inProgressTable.getSelectionModel().getSelectedItem();
-        } else if (!doneTable.getSelectionModel().isEmpty()) {
-            return doneTable.getSelectionModel().getSelectedItem();
-        }
-        return null;
+
+    private void setupCalendar() {
+        calendarGrid.getChildren().clear();
+        calendarGrid.setHgap(5);
+        calendarGrid.setVgap(5);
+        updateCalendarHeader();
+        updateCalendarDays();
     }
 
-    private void refreshTables(List<Mission> missions) {
-        // Vider les listes existantes
-        todoList.clear();
-        inProgressList.clear();
-        doneList.clear();
+    private void updateCalendarHeader() {
+        // Days of week
+        String[] days = {"Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"};
+        for (int i = 0; i < 7; i++) {
+            Label dayLabel = new Label(days[i]);
+            dayLabel.setStyle("-fx-font-weight: bold; -fx-padding: 5px;");
+            calendarGrid.add(dayLabel, i, 0);
+        }
+    }
 
-        // Ajouter les missions aux listes correspondantes
-        for (Mission mission : missions) {
-            System.out.println("Mission à afficher : " + mission.getTitre() + " - Statut : " + mission.getStatus()); // Log
-            switch (mission.getStatus().toLowerCase()) {
-                case "to do":
-                    todoList.add(mission);
-                    System.out.println("Ajoutée à todoTable"); // Log
-                    break;
-                case "in progress":
-                    inProgressList.add(mission);
-                    System.out.println("Ajoutée à inProgressTable"); // Log
-                    break;
-                case "done":
-                    doneList.add(mission);
-                    System.out.println("Ajoutée à doneTable"); // Log
-                    break;
-                default:
-                    System.out.println("Statut inconnu : " + mission.getStatus()); // Log
-                    break;
+    private void updateCalendarDays() {
+        // Vider toutes les lignes sauf l'en-tête
+        calendarGrid.getChildren().removeIf(node ->
+                GridPane.getRowIndex(node) != null && GridPane.getRowIndex(node) > 0
+        );
+
+        int row = 1;
+        int col = currentYearMonth.atDay(1).getDayOfWeek().getValue() - 1;
+
+        for (int day = 1; day <= currentYearMonth.lengthOfMonth(); day++) {
+            LocalDate date = currentYearMonth.atDay(day);
+            VBox dayCell = createDayCell(date, date.getDayOfWeek().getValue()); // Utiliser la version avec jour de la semaine
+            calendarGrid.add(dayCell, col, row);
+
+            if (++col > 6) {
+                col = 0;
+                row++;
             }
         }
+
+        monthYearLabel.setText(currentYearMonth.format(monthFormatter)); // Utiliser le formateur français
+        highlightToday();
+        populateMissions();
     }
 
-    private void refreshTablesAfterStatusChange(Mission updatedMission) {
-        // Supprimer la mission de toutes les tables
-        todoList.remove(updatedMission);
-        inProgressList.remove(updatedMission);
-        doneList.remove(updatedMission);
+    private void populateMissions() {
+        // Nettoyer les anciennes missions
+        calendarGrid.getChildren().forEach(node -> {
+            if(node instanceof VBox vbox && GridPane.getRowIndex(node) != null && GridPane.getRowIndex(node) > 0) {
+                vbox.getChildren().removeIf(child -> child instanceof Label);
+            }
+        });
 
-        // Ajouter la mission à la table correspondante à son nouveau statut
-        switch (updatedMission.getStatus().toLowerCase()) {
-            case "to do":
-                todoList.add(updatedMission);
-                break;
-            case "in progress":
-                inProgressList.add(updatedMission);
-                break;
-            case "done":
-                doneList.add(updatedMission);
-                break;
-            default:
-                System.out.println("Statut inconnu : " + updatedMission.getStatus()); // Log
-                break;
+        missionsByDate.forEach((date, missions) -> {
+            int row = getRowForDate(date);
+            int col = date.getDayOfWeek().getValue() - 1;
+
+            VBox cell = (VBox) calendarGrid.getChildren()
+                    .filtered(n -> GridPane.getRowIndex(n) == row && GridPane.getColumnIndex(n) == col)
+                    .stream().findFirst().orElse(null);
+
+            if(cell != null) {
+                missions.forEach(mission -> {
+                    Label missionLabel = createMissionLabel(mission);
+                    cell.getChildren().add(missionLabel);
+                });
+            }
+        });
+    }
+
+    private String getMissionStyle(String status) {
+        return switch (status.toLowerCase()) {
+            case "to do" -> "-fx-background-color: #FFCDD2; -fx-text-fill: #B71C1C;";
+            case "in progress" -> "-fx-background-color: #FFF9C4; -fx-text-fill: #F57F17;";
+            case "done" -> "-fx-background-color: #C8E6C9; -fx-text-fill: #1B5E20;";
+            default -> "";
+        };
+    }
+
+    private Map<LocalDate, List<Mission>> groupMissionsByDate(List<Mission> missions) {
+        return missions.stream()
+                .collect(Collectors.groupingBy(m ->
+                        m.getDateTerminer().toLocalDateTime().toLocalDate()));
+    }
+
+    private int getRowForDate(LocalDate date) {
+        int firstDayOfMonth = currentYearMonth.atDay(1).getDayOfWeek().getValue() - 1;
+        int dayOfMonth = date.getDayOfMonth();
+        return (firstDayOfMonth + dayOfMonth - 1) / 7 + 1;
+    }
+
+    private void setupEventHandlers() {
+        previousMonthButton.setOnAction(e -> {
+            currentYearMonth = currentYearMonth.minusMonths(1);
+            setupCalendar();
+            if (employeId > 0) {
+                loadUserMissions(employeId);
+            }
+        });
+
+        nextMonthButton.setOnAction(e -> {
+            currentYearMonth = currentYearMonth.plusMonths(1);
+            setupCalendar();
+            if (employeId > 0) {
+                loadUserMissions(employeId);
+            }
+        });
+
+        // Add event handlers for today and this month filters
+        filterTodayButton.setOnAction(e -> filterToday());
+        filterThisMonthButton.setOnAction(e -> filterThisMonth());
+
+        clearFilterButton.setOnAction(e -> clearFilters());
+
+        statusFilterCombo.setOnAction(e -> {
+            if(employeId > 0) {
+                loadUserMissions(employeId);
+            }
+        });
+    }
+
+    private void filterToday() {
+        currentYearMonth = YearMonth.now();
+        setupCalendar(); // Updates the calendar to current month
+        if (employeId > 0) {
+            loadUserMissions(employeId); // Reload missions for current month
+        }
+        highlightToday(); // Highlight today's date
+    }
+
+    private void filterThisMonth() {
+        currentYearMonth = YearMonth.now();
+        setupCalendar();
+        if (employeId > 0) {
+            loadUserMissions(employeId);
         }
     }
 
-    private void showAlert(Alert.AlertType alertType, String title, String message) {
-        Alert alert = new Alert(alertType);
+    private void clearFilters() {
+        currentYearMonth = YearMonth.now();
+        statusFilterCombo.getSelectionModel().selectFirst(); // Reset status filter
+        setupCalendar(); // Reset calendar display first
+        if (employeId > 0) {
+            loadUserMissions(employeId); // Load missions with current month and all statuses
+        }
+    }
+    private void highlightToday() {
+        calendarGrid.getChildren().forEach(node -> {
+            if (node instanceof VBox vbox &&
+                    !vbox.getChildren().isEmpty() &&
+                    vbox.getChildren().get(0) instanceof Text text &&
+                    text.getText().equals(String.valueOf(LocalDate.now().getDayOfMonth()))) {
+                {
+                    vbox.setStyle("-fx-border-color: #2196F3; -fx-border-width: 2px;");
+                }
+            }});
+    }
+
+    private void showAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
-        alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
     }

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.paint.Color?>
+
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
+<?import java.net.URL?>
+<VBox xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.nexus.Controllers.Transport.GestionReservationController" spacing="20" alignment="CENTER">
+    <stylesheets>
+        <URL value="@/transport/dashboard.css" />
+    </stylesheets>
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <!-- Titre de la fenêtre -->
+    <Label text="Gestion des Réservations" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+
+    <!-- Message d'erreur -->
+    <Label fx:id="errorMessage" textFill="red" visible="false"/>
+
+    <!-- Tableau pour afficher la liste des réservations -->
+    <TableView fx:id="reservationTable">
+        <columns>
+            <TableColumn text="Disponibilité" fx:id="disponibiliteColumn"/>
+            <TableColumn text="Nom de l'Utilisateur" fx:id="userNameColumn"/>
+            <TableColumn text="Email de l'Utilisateur" fx:id="userEmailColumn"/>
+            <TableColumn text="Rôle de l'Utilisateur" fx:id="userRoleColumn"/>
+            <TableColumn text="Adresse de l'Utilisateur" fx:id="userAddressColumn"/>
+        </columns>
+    </TableView>
+</VBox>

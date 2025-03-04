@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Leaflet Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        #map {
+            height: 100vh;
+            width: 100vw;
+        }
+    </style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+    // Initialisation de la carte
+    var map = L.map('map').setView([36.8065, 10.1815], 12); // Centre sur Tunis, Tunisie
+
+    // Ajout des tuiles OpenStreetMap
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Fonction pour ajouter des marqueurs
+    function addMarkers(events) {
+        console.log(events); // Affichez les données dans la console pour vérification
+        events.forEach(function(event) {
+            // Vérifiez que les champs nécessaires existent
+            if (event.latitude && event.longitude && event.titre && event.description) {
+                // Créez un marqueur
+                var marker = L.marker([event.latitude, event.longitude]).addTo(map);
+
+                // Ajoutez un tooltip avec le titre de l'événement
+                marker.bindTooltip(event.titre, {
+                    permanent: true, // Afficher en permanence
+                    direction: 'top', // Position du tooltip (top, bottom, left, right)
+                    className: 'custom-tooltip' // Classe CSS personnalisée (optionnelle)
+                });
+
+                // Ajoutez un popup avec plus de détails
+                marker.bindPopup("<b>" + event.titre + "</b><br>" + event.description);
+            } else {
+                console.error("Données manquantes pour l'événement : ", event);
+            }
+        });
+    }
+</script>
+</body>
+</html>

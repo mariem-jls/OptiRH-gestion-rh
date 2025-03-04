@@ -7,9 +7,9 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.cell.PropertyValueFactory?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
-<?import javafx.scene.layout.BorderPane?>
 
 <BorderPane prefHeight="476.0" prefWidth="1406.0" style="-fx-background-color: #f4f4f4; -fx-padding: 30;" stylesheets="@/Evenement/styles/styles.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.nexus.Controllers.Evenement.ListeEvenementController">
     <left>
@@ -17,9 +17,9 @@
     </left>
 
     <center>
-        <VBox spacing="10" alignment="CENTER">
+        <VBox alignment="CENTER" spacing="10">
             <!-- Titre -->
-            <Label text="📅 Liste des Événements" style="-fx-text-fill: #333;">
+            <Label style="-fx-text-fill: #333;" text="📅 Liste des Événements">
                 <font>
                     <Font name="Arial Black" size="30.0" />
                 </font>
@@ -29,57 +29,54 @@
             <TextField fx:id="searchField" promptText="Rechercher un événement..." />
 
             <!-- Table des événements -->
-            <TableView fx:id="eventsTable" prefHeight="310.0" prefWidth="1270.0" style="-fx-background-color: white; -fx-border-radius: 8px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 8, 0, 0, 4);">
+            <TableView fx:id="eventsTable" prefHeight="310.0" prefWidth="1100.0" style="-fx-background-color: white; -fx-border-radius: 8px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 8, 0, 0, 4);">
                 <columns>
-                    <TableColumn fx:id="titleColumn" prefWidth="120" text="📌 Titre">
+                    <TableColumn fx:id="titleColumn" prefWidth="80.00001680850983" text="📌 Titre">
                         <cellValueFactory>
                             <PropertyValueFactory property="titre" />
                         </cellValueFactory>
                     </TableColumn>
-                    <TableColumn fx:id="locationColumn" prefWidth="120" text="📍 Lieu">
+                    <TableColumn fx:id="locationColumn" prefWidth="95.20000457763672" text="📍 Lieu">
                         <cellValueFactory>
                             <PropertyValueFactory property="lieu" />
                         </cellValueFactory>
                     </TableColumn>
-                    <TableColumn fx:id="descriptionColumn" prefWidth="150" text="📝 Description">
-                        <cellValueFactory>
-                            <PropertyValueFactory property="description" />
-                        </cellValueFactory>
-                    </TableColumn>
-                    <TableColumn fx:id="priceColumn" prefWidth="100" text="💰 Prix">
+
+                    <TableColumn fx:id="priceColumn" prefWidth="69.5999755859375" text="💰 Prix">
                         <cellValueFactory>
                             <PropertyValueFactory property="prix" />
                         </cellValueFactory>
                     </TableColumn>
-                    <TableColumn fx:id="startDateColumn" prefWidth="100" text="📅 Début">
+                    <TableColumn fx:id="startDateColumn" prefWidth="100.79998779296875" text="📅 Début">
                         <cellValueFactory>
                             <PropertyValueFactory property="dateDebut" />
                         </cellValueFactory>
                     </TableColumn>
-                    <TableColumn fx:id="endDateColumn" prefWidth="100" text="⏳ Fin">
+                    <TableColumn fx:id="endDateColumn" prefWidth="68.0" text="⏳ Fin">
                         <cellValueFactory>
                             <PropertyValueFactory property="dateFin" />
                         </cellValueFactory>
                     </TableColumn>
-                    <TableColumn fx:id="imageColumn" prefWidth="100" text="🖼️ Image">
+                    <TableColumn fx:id="imageColumn" prefWidth="99.2000732421875" text="🖼️ Image">
                         <cellValueFactory>
                             <PropertyValueFactory property="image" />
                         </cellValueFactory>
                     </TableColumn>
-                    <TableColumn fx:id="timeColumn" prefWidth="100" text="⏰ Heure">
+                    <TableColumn fx:id="timeColumn" prefWidth="66.39996337890625" text="⏰ Heure">
                         <cellValueFactory>
                             <PropertyValueFactory property="heure" />
                         </cellValueFactory>
                     </TableColumn>
-                    <TableColumn fx:id="longitudeColumn" prefWidth="100" text="🌍 Longitude" />
-                    <TableColumn fx:id="latitudeColumn" prefWidth="100" text="📍 Latitude" />
-                    <TableColumn fx:id="statusColumn" prefWidth="100" text="🔄 Status" />
-                    <TableColumn fx:id="actionColumn" prefWidth="150" text="⚙️ Actions" />
+                    <TableColumn fx:id="statusColumn" prefWidth="149.60003662109375" text="🔄 Status" />
+                    <TableColumn fx:id="actionColumn" prefWidth="245.59991455078125" text="⚙️ Actions" />
                 </columns>
             </TableView>
 
             <!-- Bouton Ajouter Événement -->
             <Button fx:id="Ajouter_Evenement" onAction="#ouvrirFenetreAjout" styleClass="btn-ajouter" text="➕ Ajouter Événement" />
+
+            <Button fx:id="ViewInMap" layoutX="327.0" layoutY="450.0" mnemonicParsing="false" onAction="#viewinmap" styleClass="btn-ajouter" text="View In Map" />
+
         </VBox>
     </center>
 </BorderPane>

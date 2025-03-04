@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.paint.Color?>
+
+<?import java.net.URL?>
+<?import java.lang.String?>
+<?import javafx.collections.FXCollections?>
+<VBox xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.nexus.Controllers.Transport.ModifierTrajetController" spacing="20" alignment="CENTER">
+    <stylesheets>
+        <URL value="@/transport/dashboard.css" />
+    </stylesheets>
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <!-- Titre de la fenêtre -->
+    <Label text="Modifier un Trajet" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+
+
+    <!-- ComboBox pour le type de trajet -->
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <Label text="Type :"/>
+        <ComboBox fx:id="typeCombo" promptText="Sélectionnez le type de trajet">
+            <items>
+                <FXCollections fx:factory="observableArrayList">
+                    <String fx:value="Trajet Urbain"/>
+                    <String fx:value="Trajet Interurbain"/>
+                </FXCollections>
+            </items>
+        </ComboBox>
+    </HBox>
+
+    <!-- Champ Station -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Station :"/>
+        <TextField fx:id="stationField" promptText="Entrez la station"/>
+    </HBox>
+
+    <!-- Champ Départ -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Départ :"/>
+        <TextField fx:id="departField" promptText="Entrez le lieu de départ"/>
+    </HBox>
+
+    <!-- Champ Arrivée -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Arrivée :"/>
+        <TextField fx:id="arriveField" promptText="Entrez le lieu d'arrivée"/>
+    </HBox>
+
+    <!-- Nouveaux champs pour les coordonnées de départ -->
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <Label text="Longitude Départ :"/>
+        <TextField fx:id="longitudeDepartField" promptText="Longitude du départ"/>
+    </HBox>
+
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <Label text="Latitude Départ :"/>
+        <TextField fx:id="latitudeDepartField" promptText="Latitude du départ"/>
+    </HBox>
+
+    <!-- Nouveaux champs pour les coordonnées d'arrivée -->
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <Label text="Longitude Arrivée :"/>
+        <TextField fx:id="longitudeArriveeField" promptText="Longitude de l'arrivée"/>
+    </HBox>
+
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <Label text="Latitude Arrivée :"/>
+        <TextField fx:id="latitudeArriveeField" promptText="Latitude de l'arrivée"/>
+    </HBox>
+
+
+
+    <!-- Message d'erreur -->
+    <Label fx:id="errorMessage" textFill="red" visible="false"/>
+
+    <!-- Boutons -->
+    <HBox spacing="20" alignment="CENTER">
+        <Button text="Enregistrer" onAction="#handleEnregistrer"/>
+        <Button text="Annuler" onAction="#handleAnnuler"/>
+    </HBox>
+</VBox>
