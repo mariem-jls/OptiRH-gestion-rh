@@ -4,46 +4,66 @@
 <?import javafx.scene.control.cell.PropertyValueFactory?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.FontWeight?>
+<?import javafx.scene.paint.Color?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.effect.DropShadow?>
+
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="650.0" prefWidth="1100.0" stylesheets="@../dashboard.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.nexus.Controllers.reclamation.ReclamationController">
     <left>
         <AnchorPane fx:id="sideBar" prefHeight="200.0" prefWidth="200.0" styleClass="menu" BorderPane.alignment="CENTER" />
     </left>
     <center>
-    <!-- Contenu principal -->
-    <AnchorPane fx:id="dashContent" layoutX="0" layoutY="0" prefHeight="680.0" prefWidth="1047.0" style="-fx-background-color: #EEEEEE;">
-        <children>
-            <!-- Vos champs de formulaire et table -->
-            <AnchorPane layoutX="25.0" layoutY="42.0" prefHeight="534.0" prefWidth="296.0" style="-fx-background-color: rgba(255, 255, 255, 0.8); -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0, 0, 0);">
-                <TextField fx:id="descriptionField" layoutX="14.0" layoutY="29.0" promptText="Description" style="-fx-background-color: #ffffff; -fx-background-radius: 5; -fx-border-color: #cccccc; -fx-border-radius: 5; -fx-padding: 5;" />
-                <DatePicker fx:id="dateField" layoutX="14.0" layoutY="77.0" promptText="Date" style="-fx-background-color: #ffffff; -fx-background-radius: 5; -fx-border-color: #cccccc; -fx-border-radius: 5; -fx-padding: 5;" />
-                <ComboBox fx:id="statusField" layoutX="14.0" layoutY="139.0" promptText="Status" style="-fx-background-color: #ffffff; -fx-background-radius: 5; -fx-border-color: #cccccc; -fx-border-radius: 5; -fx-padding: 5;" />
+        <!-- Contenu principal -->
+        <AnchorPane fx:id="dashContent" layoutX="0" layoutY="0" prefHeight="680.0" prefWidth="1047.0" style="-fx-background-color: #F5F5F5;">
+            <children>
+                <!-- Cadre moderne pour la table -->
+                <VBox layoutX="25.0" layoutY="42.0" prefHeight="534.0" prefWidth="997.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);">
+                    <children>
+                        <!-- Titre de la table -->
+                        <HBox alignment="CENTER" style="-fx-background-color: #007BFF; -fx-background-radius: 15 15 0 0; -fx-padding: 15;">
+                            <children>
+                                <Label text="Liste des Réclamations" style="-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;" />
+                            </children>
+                        </HBox>
 
-                <Button layoutX="10.0" layoutY="250.0" onAction="#ajouterReclamation" text="Ajouter" style="-fx-background-color: #007B8FFF;" styleClass="button-add" />
-                <Button layoutX="100.0" layoutY="250.0" onAction="#modifierReclamation" text="Modifier" style="-fx-background-color: #007B8FFF;" styleClass="button-edit" />
-                <Button layoutX="190.0" layoutY="250.0" onAction="#supprimerReclamation" text="Supprimer" style="-fx-background-color: #007B8FFF;" styleClass="button-delete" />
-                <Button layoutX="206.0" layoutY="51.0" mnemonicParsing="false" onAction="#clearFields" text="Clear" style="-fx-background-color: #007B8FFF;" styleClass="button-clear" />
-            </AnchorPane>
+                        <!-- Champ de recherche et filtre par statut -->
+                        <HBox spacing="10" style="-fx-padding: 15;">
+                            <TextField fx:id="searchField" promptText="Rechercher par description..." style="-fx-background-color: #ffffff; -fx-background-radius: 5; -fx-border-color: #cccccc; -fx-border-radius: 5; -fx-padding: 5;" />
+                            <ComboBox fx:id="filterStatusField" promptText="Filtrer par statut" style="-fx-background-color: #ffffff; -fx-background-radius: 5; -fx-border-color: #cccccc; -fx-border-radius: 5; -fx-padding: 5;" />
+                        </HBox>
 
-            <TableView fx:id="reclamationsTable" layoutX="336.0" layoutY="74.0" prefHeight="400" prefWidth="637.0" style="-fx-background-color: rgba(255, 255, 255, 0.8); -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0, 0, 0);">
-                <columns>
-                    <TableColumn fx:id="descriptionColumn" text="Description">
-                        <cellValueFactory>
-                            <PropertyValueFactory property="description" />
-                        </cellValueFactory>
-                    </TableColumn>
-                    <TableColumn fx:id="dateColumn" text="Date">
-                        <cellValueFactory>
-                            <PropertyValueFactory property="date" />
-                        </cellValueFactory>
-                    </TableColumn>
-                    <TableColumn fx:id="statusColumn" text="Status">
-                        <cellValueFactory>
-                            <PropertyValueFactory property="status" />
-                        </cellValueFactory>
-                    </TableColumn>
-                </columns>
-            </TableView>
-        </children>
-    </AnchorPane>
+                        <!-- Bouton Supprimer -->
+                        <HBox spacing="10" style="-fx-padding: 15;">
+                            <Button text="Supprimer" onAction="#supprimerReclamation" style="-fx-background-color: #FF0000; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" />
+                        </HBox>
+
+                        <!-- Tableau des réclamations -->
+                        <TableView fx:id="reclamationsTable" prefHeight="450.0" prefWidth="997.0" style="-fx-background-color: transparent; -fx-border-radius: 0 0 15 15;">
+                            <columns>
+                                <TableColumn fx:id="descriptionColumn" text="Description" style="-fx-font-size: 14px; -fx-text-fill: #333333;">
+                                    <cellValueFactory>
+                                        <PropertyValueFactory property="description" />
+                                    </cellValueFactory>
+                                </TableColumn>
+                                <TableColumn fx:id="dateColumn" text="Date" style="-fx-font-size: 14px; -fx-text-fill: #333333;">
+                                    <cellValueFactory>
+                                        <PropertyValueFactory property="date" />
+                                    </cellValueFactory>
+                                </TableColumn>
+                                <TableColumn fx:id="statusColumn" text="Statut" style="-fx-font-size: 14px; -fx-text-fill: #333333;">
+                                    <cellValueFactory>
+                                        <PropertyValueFactory property="status" />
+                                    </cellValueFactory>
+                                </TableColumn>
+                            </columns>
+                        </TableView>
+                    </children>
+                </VBox>
+            </children>
+        </AnchorPane>
     </center>
 </BorderPane>

@@ -24,6 +24,8 @@ public class ReponseController {
     private TableColumn<Reponse, String> descriptionColumn;
     @FXML
     private TableColumn<Reponse, Date> dateColumn;
+    @FXML
+    private TableColumn<Reponse, Integer> ratingColumn;  // Nouvelle colonne pour le rating
 
     private int reclamationId;
     private final ReponseService reponseService = new ReponseService();
@@ -37,6 +39,8 @@ public class ReponseController {
     public void initialize() {
         descriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
         dateColumn.setCellValueFactory(new PropertyValueFactory<>("date"));
+        ratingColumn.setCellValueFactory(new PropertyValueFactory<>("rating"));  // Liaison de la colonne avec le rating
+
         reponsesTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
                 // Mettre à jour le champ description avec la valeur de la réponse sélectionnée
@@ -75,7 +79,8 @@ public class ReponseController {
                     0,
                     descriptionField.getText(),
                     Date.valueOf(dateField.getValue()),
-                    reclamationId
+                    reclamationId,
+                    0 // Initialiser le rating à 0 par défaut, ou une autre valeur si nécessaire
             );
             reponseService.insert(reponse);
             loadReponses();
@@ -103,6 +108,7 @@ public class ReponseController {
             try {
                 selectedReponse.setDescription(descriptionField.getText());
                 selectedReponse.setDate(Date.valueOf(dateField.getValue()));
+                // Ajouter ici la gestion de la modification du rating si nécessaire
                 reponseService.update(selectedReponse);
                 loadReponses();
             } catch (Exception e) {

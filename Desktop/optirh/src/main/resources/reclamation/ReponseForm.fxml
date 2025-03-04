@@ -1,35 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <?import javafx.scene.control.*?>
 <?import javafx.scene.control.cell.PropertyValueFactory?>
 <?import javafx.scene.layout.AnchorPane?>
-<AnchorPane prefHeight="400" prefWidth="600" style="-fx-background-color: #f4f4f4; -fx-padding: 30;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.nexus.Controllers.reclamation.ReponseController">
 
+<AnchorPane prefHeight="400" prefWidth="600" style="-fx-background-color: #f4f4f4; -fx-padding: 30;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.nexus.Controllers.reclamation.ReponseController">
+    <!-- Champ Description -->
     <Label layoutX="14.0" layoutY="29.0" text="Description" />
     <TextArea fx:id="descriptionField" layoutX="14.0" layoutY="50.0" prefWidth="572.0" prefHeight="100.0" promptText="Description" />
 
+    <!-- Champ Date -->
     <Label layoutX="14.0" layoutY="160.0" text="Date" />
     <DatePicker fx:id="dateField" layoutX="14.0" layoutY="180.0" promptText="Date" />
 
+    <!-- Boutons d'actions -->
     <Button layoutX="14.0" layoutY="300.0" onAction="#ajouterReponse" text="Ajouter" style="-fx-background-color: #007B8FFF; -fx-text-fill: white;" />
     <Button layoutX="100.0" layoutY="300.0" onAction="#modifierReponse" text="Modifier" style="-fx-background-color: #007B8FFF; -fx-text-fill: white;" />
     <Button layoutX="190.0" layoutY="300.0" onAction="#supprimerReponse" text="Supprimer" style="-fx-background-color: #007B8FFF; -fx-text-fill: white;" />
     <Button layoutX="280.0" layoutY="300.0" onAction="#clearFields" text="Clear" style="-fx-background-color: #007B8FFF; -fx-text-fill: white;" />
 
+    <!-- TableView pour afficher les réponses -->
     <TableView fx:id="reponsesTable" layoutX="14.0" layoutY="350.0" prefHeight="200" prefWidth="572.0">
         <columns>
-
+            <!-- Colonne Description -->
             <TableColumn fx:id="descriptionColumn" text="Description">
                 <cellValueFactory>
                     <PropertyValueFactory property="description" />
                 </cellValueFactory>
             </TableColumn>
+
+            <!-- Colonne Date -->
             <TableColumn fx:id="dateColumn" text="Date">
                 <cellValueFactory>
                     <PropertyValueFactory property="date" />
                 </cellValueFactory>
             </TableColumn>
+
+            <!-- Colonne Rating -->
+            <TableColumn fx:id="ratingColumn" text="Rating">
+                <cellValueFactory>
+                    <PropertyValueFactory property="rating" />
+                </cellValueFactory>
+            </TableColumn>
         </columns>
     </TableView>
-
 </AnchorPane>
