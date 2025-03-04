@@ -1,6 +1,9 @@
 package tn.nexus.Entities.Mission;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Mission {
     private int id;
@@ -36,6 +39,10 @@ public class Mission {
         this.assignedTo = assignedTo;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+    }
+
+    public Mission(LocalDate createdAt, LocalDate dateTerminer, String s) {
+
     }
 
     // Getters et Setters

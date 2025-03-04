@@ -1,5 +1,7 @@
 package tn.nexus.Entities.Mission;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Projet {
     private int id;
@@ -8,6 +10,8 @@ public class Projet {
     private Timestamp createdAt;
     private int createdBy; // Référence à l'utilisateur qui a créé le projet
     private String userNom;
+    private List<Mission> missions = new ArrayList<>();
+
     // Constructeurs
     public Projet() {}
 
@@ -30,6 +34,22 @@ public class Projet {
         this.description = description;
         this.createdBy = createdBy;
     }
+    // Méthode pour ajouter des missions
+    public void addMission(Mission mission) {
+        this.missions.add(mission);
+        mission.setProjectId(this.id); // Maintient la cohérence bidirectionnelle
+    }
+
+    // Getter/Setter pour la liste complète
+    public List<Mission> getMissions() {
+        return new ArrayList<>(missions); // Retourne une copie non modifiable
+    }
+
+    public void setMissions(List<Mission> missions) {
+        this.missions.clear();
+        this.missions.addAll(missions);
+    }
+
 
 
     // Getters et Setters

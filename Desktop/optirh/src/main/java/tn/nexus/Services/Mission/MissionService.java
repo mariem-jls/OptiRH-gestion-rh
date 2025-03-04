@@ -4,12 +4,20 @@ import tn.nexus.Entities.Mission.Mission;
 import tn.nexus.Services.CRUD;
 import tn.nexus.Utils.DBConnection;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 public class MissionService implements CRUD<Mission> {
     private Connection cnx = DBConnection.getInstance().getConnection();
+
+    private static final DateTimeFormatter MONTH_FORMAT = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.FRENCH);
+
+
 
     @Override
     public int insert(Mission mission) throws SQLException {
@@ -23,9 +31,51 @@ public class MissionService implements CRUD<Mission> {
             ps.setInt(5, mission.getAssignedTo());
             ps.setTimestamp(6, mission.getCreatedAt());
             ps.setTimestamp(7, mission.getUpdatedAt());
-            ps.setTimestamp(8, mission.getDateTerminer()); // Nouvel attribut
+            ps.setTimestamp(8, mission.getDateTerminer());
             return ps.executeUpdate();
         }
+
+
+    }
+    public List<Mission> getTasksApproachingDeadline() throws SQLException {
+        List<Mission> missions = new ArrayList<>();
+        String query = "SELECT * FROM Missions WHERE "
+                + "date_terminer BETWEEN NOW() AND NOW() + INTERVAL 2 DAY "
+                + "AND status != 'Done'";
+
+        try (PreparedStatement stmt = cnx.prepareStatement(query)) {
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                Mission mission = new Mission(
+                        rs.getInt("id"),
+                        rs.getString("titre"),
+                        rs.getString("description"),
+                        rs.getString("status"),
+                        rs.getInt("project_id"),
+                        rs.getInt("assigned_to"),
+                        rs.getTimestamp("created_at"),
+                        rs.getTimestamp("updated_at"),
+                        rs.getTimestamp("date_terminer") // Nouvel attribut
+                );
+                missions.add(mission);
+            }
+        }
+        return missions;
+    }
+
+    public String getUserEmailByMission(int missionId) throws SQLException {
+        String query = "SELECT u.email FROM Users u "
+                + "JOIN Missions m ON u.id = m.assigned_to "
+                + "WHERE m.id = ?";
+
+        try (PreparedStatement stmt = cnx.prepareStatement(query)) {
+            stmt.setInt(1, missionId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getString("email");
+            }
+        }
+        return null;
     }
 
     @Override
@@ -85,6 +135,7 @@ public class MissionService implements CRUD<Mission> {
         }
         return missions;
     }
+
 
     // Récupérer les tâches par statut
     public List<Mission> getTasksByStatus(String status) throws SQLException {
@@ -196,7 +247,42 @@ public class MissionService implements CRUD<Mission> {
         }
         return missions;
     }
+    public List<Mission> loadMissions(String email) {
+        // Implémentation concrète de chargement des missions
+        // Exemple avec des données de test
+        return List.of(
+                new Mission(LocalDate.now().minusDays(5), LocalDate.now().plusDays(3), "Mission 1"),
+                new Mission(LocalDate.now().plusDays(10), LocalDate.now().plusDays(15), "Mission 2")
+        );
+    }
 
+    public String formatMonthYear(LocalDate date) {
+        return date.format(MONTH_FORMAT);
+    }
+    public List<Mission> getTasksByUserAndDateRange(int userId, LocalDate startDate, LocalDate endDate, String status) throws SQLException {
+        List<Mission> missions = new ArrayList<>();
+
+        String query = "SELECT * FROM mission WHERE user_id = ? AND status LIKE ? "
+                + "AND date_terminer BETWEEN ? AND ?";
+        try (PreparedStatement statement = cnx.prepareStatement(query)) {
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                Mission mission = new Mission(
+                        resultSet.getInt("id"),
+                        resultSet.getString("titre"),
+                        resultSet.getString("description"),
+                        resultSet.getString("status"),
+                        resultSet.getInt("project_id"),
+                        resultSet.getInt("assigned_to"),
+                        resultSet.getTimestamp("created_at"),
+                        resultSet.getTimestamp("updated_at"),
+                        resultSet.getTimestamp("date_terminer")
+                );
+                missions.add(mission);
+            }
+        }
+        return missions;
+    }
     public List<Mission> getTasksWithDateTerminedAndStatusNotDone() throws SQLException {
         List<Mission> missions = new ArrayList<>();
         String query = "SELECT * FROM Missions WHERE date_terminer < NOW() AND status != 'Done'";
@@ -250,5 +336,160 @@ public class MissionService implements CRUD<Mission> {
         }
         return missions;
     }
+    public List<Mission> getTasksByUserEmail(String email) throws SQLException {
+        List<Mission> missions = new ArrayList<>();
+        String query = "SELECT m.* FROM Missions m JOIN Users u ON m.assigned_to = u.id WHERE u.email = ?";
+        try (PreparedStatement statement = cnx.prepareStatement(query)) {
+            statement.setString(1, email);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                Mission mission = new Mission(
+                        resultSet.getInt("id"),
+                        resultSet.getString("titre"),
+                        resultSet.getString("description"),
+                        resultSet.getString("status"),
+                        resultSet.getInt("project_id"),
+                        resultSet.getInt("assigned_to"),
+                        resultSet.getTimestamp("created_at"),
+                        resultSet.getTimestamp("updated_at"),
+                        resultSet.getTimestamp("date_terminer")
+                );
+                missions.add(mission);
+            }
+        }
+        return missions;
+    }
+    public List<Mission> getTasksByDateRange(Timestamp startDate, Timestamp endDate) throws SQLException {
+        List<Mission> missions = new ArrayList<>();
+        String query = "SELECT * FROM Missions WHERE date_terminer BETWEEN ? AND ?";
+        try (PreparedStatement statement = cnx.prepareStatement(query)) {
+            statement.setTimestamp(1, startDate);
+            statement.setTimestamp(2, endDate);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                Mission mission = new Mission(
+                        resultSet.getInt("id"),
+                        resultSet.getString("titre"),
+                        resultSet.getString("description"),
+                        resultSet.getString("status"),
+                        resultSet.getInt("project_id"),
+                        resultSet.getInt("assigned_to"),
+                        resultSet.getTimestamp("created_at"),
+                        resultSet.getTimestamp("updated_at"),
+                        resultSet.getTimestamp("date_terminer")
+                );
+                missions.add(mission);
+            }
+        }
+        return missions;
+    }
+    public List<Mission> getTasksByUserEmailAndDateRange(String email, Timestamp startDate, Timestamp endDate) throws SQLException {
+        List<Mission> missions = new ArrayList<>();
+        String query = "SELECT m.* FROM Missions m JOIN Users u ON m.assigned_to = u.id WHERE u.email = ? AND m.date_terminer BETWEEN ? AND ?";
+        try (PreparedStatement statement = cnx.prepareStatement(query)) {
+            statement.setString(1, email);
+            statement.setTimestamp(2, startDate);
+            statement.setTimestamp(3, endDate);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                Mission mission = new Mission(
+                        resultSet.getInt("id"),
+                        resultSet.getString("titre"),
+                        resultSet.getString("description"),
+                        resultSet.getString("status"),
+                        resultSet.getInt("project_id"),
+                        resultSet.getInt("assigned_to"),
+                        resultSet.getTimestamp("created_at"),
+                        resultSet.getTimestamp("updated_at"),
+                        resultSet.getTimestamp("date_terminer")
+                );
+                missions.add(mission);
+            }
+        }
+        return missions;
+    }
 
+
+
+    public List<Mission> getTasksByDate(Timestamp date) throws SQLException {
+        String query = "SELECT * FROM mission WHERE DATE(date_fin) = ?";
+        List<Mission> missions = new ArrayList<>();
+
+
+        PreparedStatement statement = cnx.prepareStatement(query);
+
+        statement.setTimestamp(1, date);
+
+        try (ResultSet resultSet = statement.executeQuery()) {
+            while (resultSet.next()) {
+                Mission mission = new Mission();
+                mission.setId(resultSet.getInt("id"));
+                mission.setTitre(resultSet.getString("titre"));
+                mission.setDescription(resultSet.getString("description"));
+                mission.setCreatedAt(resultSet.getTimestamp("date_debut"));
+                mission.setDateTerminer(resultSet.getTimestamp("date_fin"));
+                mission.setStatus(resultSet.getString("status"));
+                missions.add(mission);
+            }
+
+
+            return missions;
+        }
+    }
+    public Mission getMissionById(int missionId) throws SQLException {
+        String query = "SELECT * FROM Missions WHERE id = ?";
+        try (PreparedStatement statement = cnx.prepareStatement(query)) {
+            statement.setInt(1, missionId);
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                return new Mission(
+                        resultSet.getInt("id"),
+                        resultSet.getString("titre"),
+                        resultSet.getString("description"),
+                        resultSet.getString("status"),
+                        resultSet.getInt("project_id"),
+                        resultSet.getInt("assigned_to"),
+                        resultSet.getTimestamp("created_at"),
+                        resultSet.getTimestamp("updated_at"),
+                        resultSet.getTimestamp("date_terminer")
+                );
+            }
+        }
+        return null;
+    }
+    public List<Mission> getTasksWithDateTermined() throws SQLException {
+        String query = "SELECT * FROM mission WHERE date_fin < NOW()";
+        List<Mission> missions = new ArrayList<>();
+
+
+        PreparedStatement statement = cnx.prepareStatement(query);
+        ResultSet resultSet = statement.executeQuery() ;
+
+        while (resultSet.next()) {
+            Mission mission = new Mission();
+            mission.setId(resultSet.getInt("id"));
+            mission.setTitre(resultSet.getString("titre"));
+            mission.setDescription(resultSet.getString("description"));
+            mission.setCreatedAt(resultSet.getTimestamp("date_debut"));
+            mission.setDateTerminer(resultSet.getTimestamp("date_fin"));
+            mission.setStatus(resultSet.getString("status"));
+            missions.add(mission);
+        }
+
+
+        return missions;
+    }
+    public String getUserEmailByUserId(int userId) throws SQLException {
+        String query = "SELECT email FROM Users WHERE id = ?";
+        try (PreparedStatement stmt = cnx.prepareStatement(query)) {
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getString("email");
+            }
+        }
+        return null;
+    }
 }
+

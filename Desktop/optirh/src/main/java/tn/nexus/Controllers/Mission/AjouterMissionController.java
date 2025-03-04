@@ -6,6 +6,7 @@ import javafx.stage.Stage;
 import tn.nexus.Entities.Mission.Mission;
 import tn.nexus.Entities.Mission.Projet;
 import tn.nexus.Services.Mission.MissionService;
+import tn.nexus.Utils.Mission.EmailSender;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -16,6 +17,8 @@ public class AjouterMissionController {
 
     @FXML
     private TextField titreField;
+    private final EmailSender emailSender = new EmailSender();
+
     @FXML
     private TextArea descriptionField;
     @FXML
@@ -70,6 +73,11 @@ public class AjouterMissionController {
 
             // Ajout de la mission
             missionService.addMission(newMission);
+            String userEmail = missionService.getUserEmailByUserId(assignedTo);
+
+            // Envoyer la notification
+            if(userEmail != null) {
+                emailSender.sendNewMissionNotification(newMission, userEmail);}
             showAlert("Succès", "Mission ajoutée avec succès", Alert.AlertType.INFORMATION);
             closeWindow();
         } catch (NumberFormatException e) {
