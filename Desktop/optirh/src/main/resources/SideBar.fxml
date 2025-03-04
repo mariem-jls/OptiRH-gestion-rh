@@ -65,6 +65,57 @@
                         </Button>
                     </children>
                 </HBox>
+                <HBox layoutX="10.0" layoutY="10.0" prefHeight="0.0" prefWidth="200.0">
+                    <children>
+                        <FontAwesomeIconView fill="WHITE" glyphName="BRIEFCASE" selectionEnd="0"
+                                             selectionStart="0" size="20">
+                            <HBox.margin>
+                                <Insets right="5.0" />
+                            </HBox.margin>
+                        </FontAwesomeIconView>
+                        <Button mnemonicParsing="false" styleClass="menu-button"
+                                onAction="#redirectToOffres"
+                                text="Gestion des Offres">
+                            <opaqueInsets>
+                                <Insets />
+                            </opaqueInsets>
+                        </Button>
+                    </children>
+                </HBox>
+                <HBox layoutX="10.0" layoutY="10.0" prefHeight="0.0" prefWidth="200.0">
+                    <children>
+                        <FontAwesomeIconView fill="WHITE" glyphName="TASKS" selectionEnd="0"
+                                             selectionStart="0" size="20">
+                            <HBox.margin>
+                                <Insets right="5.0" />
+                            </HBox.margin>
+                        </FontAwesomeIconView>
+                        <Button mnemonicParsing="false" styleClass="menu-button"
+                                onAction="#redirectToDemandes"
+                                text="Gestion des Demandes">
+                            <opaqueInsets>
+                                <Insets />
+                            </opaqueInsets>
+                        </Button>
+                    </children>
+                </HBox>
+                <HBox layoutX="10.0" layoutY="10.0" prefHeight="0.0" prefWidth="200.0">
+                    <children>
+                        <FontAwesomeIconView fill="WHITE" glyphName="SEARCH" selectionEnd="0"
+                                             selectionStart="0" size="20">
+                            <HBox.margin>
+                                <Insets right="5.0" />
+                            </HBox.margin>
+                        </FontAwesomeIconView>
+                        <Button mnemonicParsing="false" styleClass="menu-button"
+                                onAction="#redirectToAnalyseCv"
+                                text="Gestion des CVs">
+                            <opaqueInsets>
+                                <Insets />
+                            </opaqueInsets>
+                        </Button>
+                    </children>
+                </HBox>
                 <HBox prefHeight="9.0" prefWidth="200.0">
                     <children>
                         <FontAwesomeIconView fill="WHITE" glyphName="RECLAMATIONS" selectionEnd="0"

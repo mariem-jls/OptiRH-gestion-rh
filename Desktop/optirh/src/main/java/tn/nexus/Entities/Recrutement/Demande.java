@@ -6,7 +6,6 @@ import java.sql.Timestamp;
 public class Demande {
 
     private int id;
-    private int utilisateurId;
     private int offreId;
 
     public enum Statut {
@@ -27,9 +26,8 @@ public class Demande {
 
     public Demande() {}
 
-    public Demande(int id, int utilisateurId, int offreId, Statut statut, Timestamp date, String description, String fichierPieceJointe, String nomComplet, String email, String telephone, String adresse, Date dateDebutDisponible, String situationActuelle) {
+    public Demande(int id, int offreId, Statut statut, Timestamp date, String description, String fichierPieceJointe, String nomComplet, String email, String telephone, String adresse, Date dateDebutDisponible, String situationActuelle) {
         this.id = id;
-        this.utilisateurId = utilisateurId;
         this.offreId = offreId;
         this.statut = statut;
         this.date = date;
@@ -43,8 +41,7 @@ public class Demande {
         this.situationActuelle = situationActuelle;
     }
 
-    public Demande(int utilisateurId, int offreId, Statut statut, Timestamp date, String description, String fichierPieceJointe, String nomComplet, String email, String telephone, String adresse, Date dateDebutDisponible, String situationActuelle) {
-        this.utilisateurId = utilisateurId;
+    public Demande( int offreId, Statut statut, Timestamp date, String description, String fichierPieceJointe, String nomComplet, String email, String telephone, String adresse, Date dateDebutDisponible, String situationActuelle) {
         this.offreId = offreId;
         this.statut = statut;
         this.date = date;
@@ -64,14 +61,6 @@ public class Demande {
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public int getUtilisateurId() {
-        return utilisateurId;
-    }
-
-    public void setUtilisateurId(int utilisateurId) {
-        this.utilisateurId = utilisateurId;
     }
 
     public int getOffreId() {
@@ -166,7 +155,6 @@ public class Demande {
     public String toString() {
         return "Demande{" +
                 "id=" + id +
-                ", utilisateurId=" + utilisateurId +
                 ", offreId=" + offreId +
                 ", statut=" + statut +
                 ", date=" + date +

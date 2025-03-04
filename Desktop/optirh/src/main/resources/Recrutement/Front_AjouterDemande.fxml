@@ -64,9 +64,7 @@
                     <!-- Date de la demande -->
                     <Label text="" styleClass="form-label"/>
                     <DatePicker fx:id="datePicker" prefWidth="350" editable="false" visible="false" managed="false"/>
-                    <!-- Utilisateur ID -->
-                    <Label text="Utilisateur ID:" styleClass="form-label"/>
-                    <TextField fx:id="txtUtilisateurId" prefWidth="350"/>
+
 
                     <!-- Situation actuelle -->
                     <Label text="Situation actuelle *" styleClass="form-label" GridPane.rowIndex="6" GridPane.columnIndex="0"/>

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.VBox?>
+
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="650.0" prefWidth="1100.0" stylesheets="@styles/analyseCV.css" xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.nexus.Controllers.Recrutement.AnalyseCVsController">
+
+
+    <left>
+        <AnchorPane fx:id="sideBar" prefHeight="200.0" prefWidth="200.0" styleClass="menu" BorderPane.alignment="CENTER" />
+    </left>
+    <center>
+
+    <VBox>
+
+    <!-- ComboBox pour les offres -->
+    <ComboBox fx:id="offresComboBox" promptText="Sélectionnez une offre" />
+
+    <!-- ListView pour afficher les CVs -->
+    <ListView fx:id="cvListView" />
+
+    <!-- Bouton d'analyse -->
+    <Button fx:id="analyserButton" text="Analyser les CVs" />
+
+    <!-- TableView pour les résultats -->
+    <TableView fx:id="resultatTable">
+        <columns>
+            <!-- Colonne Nom -->
+            <TableColumn fx:id="colNom" text="Nom" prefWidth="150">
+                <cellValueFactory>
+                    <PropertyValueFactory property="nom" />
+                </cellValueFactory>
+            </TableColumn>
+
+            <!-- Colonne Expérience (masquée) -->
+            <TableColumn fx:id="colExperience" text="Expérience" visible="false">
+                <cellValueFactory>
+                    <PropertyValueFactory property="experience" />
+                </cellValueFactory>
+            </TableColumn>
+
+            <!-- Colonne Contenu Brut (utilise "technologies") -->
+            <TableColumn fx:id="colTechnologies" text="Contenu Brut" prefWidth="600">
+                <cellValueFactory>
+                    <PropertyValueFactory property="technologies" />
+                </cellValueFactory>
+            </TableColumn>
+            <TableColumn fx:id="colMatch" text="Correspondance" prefWidth="100">
+                <cellValueFactory>
+                    <PropertyValueFactory property="matchPercentage"/>
+                </cellValueFactory>
+            </TableColumn>
+
+            <!-- Colonne LinkedIn (masquée) -->
+            <TableColumn fx:id="colLinkedin" text="LinkedIn" visible="false">
+                <cellValueFactory>
+                    <PropertyValueFactory property="linkedin" />
+                </cellValueFactory>
+            </TableColumn>
+        </columns>
+    </TableView>
+</VBox>
+    </center>
+
+</BorderPane>
