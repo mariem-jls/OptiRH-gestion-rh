@@ -134,8 +134,8 @@
                 </HBox>
             </children>
         </VBox>
-        <Button layoutX="49.0" layoutY="585.0" mnemonicParsing="false" styleClass="menu-logout-btn"
-            text="Se déconnecter">
+        <Button fx:id="logoutButton" layoutX="49.0" layoutY="585.0" mnemonicParsing="false"
+            onAction="#logout" styleClass="menu-logout-btn" text="Se déconnecter">
             <graphic>
                 <FontAwesomeIconView fill="#f7f7f7" glyphName="ARROW_CIRCLE_LEFT" size="17" text="" />
             </graphic>

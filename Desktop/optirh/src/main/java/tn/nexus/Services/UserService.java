@@ -114,7 +114,8 @@ public class UserService implements CRUD<User> {
                     user.setId(rs.getInt("id"));
                     user.setNom(rs.getString("nom"));
                     user.setEmail(rs.getString("email"));
-                    user.setRole(Role.valueOf(rs.getString("role"))); // Rôle facultatif
+                    user.setMotDePasse(rs.getString("motDePasse"));
+                    user.setRole(Role.valueOf(rs.getString("role")));
                     user.setAddress(rs.getString("address"));
                     return user;
                 }

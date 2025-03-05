@@ -3,12 +3,30 @@ package tn.nexus.Controllers;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
+import javafx.scene.control.Button;
 import javafx.scene.layout.AnchorPane;
+import tn.nexus.Services.Auth.UserSession;
 
 public class SideBarController {
 
     @FXML
     private AnchorPane menu;
+
+    @FXML
+    private Button logoutButton;
+    
+    @FXML
+    void logout() {
+        UserSession.getInstance().logout();
+        Parent root = null;
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Auth/Login.fxml"));
+            root = loader.load();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        logoutButton.getScene().setRoot(root);
+    }
 
     @FXML
     void redirectToManageUsers() {

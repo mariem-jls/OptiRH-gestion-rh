@@ -1,0 +1,63 @@
+package tn.nexus.Controllers.Auth;
+
+import io.github.palexdev.materialfx.controls.MFXPasswordField;
+import io.github.palexdev.materialfx.controls.MFXTextField;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.scene.control.Label;
+import javafx.stage.Stage;
+import tn.nexus.Entities.User;
+import tn.nexus.Services.Auth.AuthService;
+import javafx.scene.Parent;
+
+public class LoginController {
+    @FXML
+    private MFXTextField emailField;
+
+    @FXML
+    private MFXPasswordField passwordField;
+
+    @FXML
+    private Label statusLabel;
+
+    @FXML
+    private void login(ActionEvent event) {
+        String email = emailField.getText();
+        String password = passwordField.getText();
+
+        User user = AuthService.loginUser(email, password);
+
+        if (user != null) {
+            statusLabel.setText("Login successful!");
+            System.out.println("Logged in as: " + user.getNom() + " (" + user.getRole() + ")");
+
+            // Redirect to ListUsers.fxml
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/Users/ListUsers.fxml"));
+                Parent root = loader.load();
+
+                // Get the current stage and set the new scene
+                Stage stage = (Stage) emailField.getScene().getWindow();
+                stage.setScene(new Scene(root));
+                stage.setTitle("User List");
+                stage.show();
+            } catch (Exception e) {
+                e.getMessage();
+                statusLabel.setText("Failed to load user list.");
+            }
+        } else {
+            statusLabel.setText("Invalid credentials.");
+        }
+    }
+
+    public void forgotPassword(ActionEvent event) {
+        // Navigate to Forgot Password screen
+    }
+
+    public void createAccount(ActionEvent event) {
+        // Navigate to Create Account screen
+    }
+
+}

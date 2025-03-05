@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import io.github.palexdev.materialfx.controls.MFXButton?>
+<?import io.github.palexdev.materialfx.controls.MFXTextField?>
+<?import io.github.palexdev.materialfx.controls.MFXPasswordField?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+
+<VBox spacing="15" alignment="CENTER" xmlns="http://javafx.com/javafx/8.0"
+    xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.nexus.Controllers.Auth.LoginController">
+    <!-- Email Field -->
+    <VBox spacing="10" alignment="CENTER">
+        <Label text="Email" style="-fx-font-size: 14px; -fx-font-weight: bold;" />
+        <MFXTextField fx:id="emailField" promptText="Entrez votre email"
+            styleClass="mfx-text-field" />
+    </VBox>
+
+    <!-- Password Field -->
+    <VBox spacing="10" alignment="CENTER">
+        <Label text="Mot de passe" style="-fx-font-size: 14px; -fx-font-weight: bold;" />
+        <MFXPasswordField fx:id="passwordField" promptText="Entrez votre mot de passe"
+            styleClass="mfx-password-field" />
+    </VBox>
+
+    <!-- Login Button -->
+    <MFXButton text="Se connecter" onAction="#login"
+        styleClass="mfx-button" prefWidth="200" />
+
+    <!-- Status Label (Error message if login fails) -->
+    <Label fx:id="statusLabel" textFill="red" style="-fx-font-size: 12px;" />
+
+    <!-- Additional Links for Forgot Password and Create Account -->
+    <HBox spacing="15" alignment="CENTER" style="-fx-font-size: 12px; -fx-font-weight: normal;">
+        <MFXButton text="Mot de passe oublié ?" onAction="#forgotPassword"
+            styleClass="mfx-button-link" />
+        <MFXButton text="Crée un compte" onAction="#createAccount"
+            styleClass="mfx-button-link" />
+    </HBox>
+
+</VBox>
