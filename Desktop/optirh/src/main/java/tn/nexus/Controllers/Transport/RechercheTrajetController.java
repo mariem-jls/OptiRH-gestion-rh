@@ -22,7 +22,7 @@ import java.util.List;
 public class RechercheTrajetController  implements WrapWithSideBar {
 
     // Composants FXML
-<<<<<<< HEAD
+
     @FXML private TextField departField;
     @FXML private TextField arriveField;
     @FXML private TableView<Vehicule> vehiculeTable;
@@ -34,27 +34,9 @@ public class RechercheTrajetController  implements WrapWithSideBar {
     @FXML
     private AnchorPane sideBar;
     @FXML private WebView webView; // Référence au WebVie
-=======
-    @FXML
-    private TextField departField;
-    @FXML
-    private TextField arriveField;
-    @FXML
-    private TableView<Vehicule> vehiculeTable;
-    @FXML
-    private TableColumn<Vehicule, String> typeColumn;
-    @FXML
-    private TableColumn<Vehicule, String> disponibiliteColumn;
-    @FXML
-    private TableColumn<Vehicule, Integer> placesColumn;
-    @FXML
-    private TableColumn<Vehicule, Void> actionColumn;
-    @FXML
-    private Label errorMessage;
 
-    @FXML
-    private WebView webView; // Référence au WebVie
->>>>>>> 987c7df6fc61ea6f6a77e155e9b15adb66c4cdf9
+
+
 
     private UserSession userSession = UserSession.getInstance();
 
