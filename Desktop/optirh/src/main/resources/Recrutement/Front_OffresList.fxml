@@ -25,8 +25,8 @@
                     </image>
                 </ImageView>
 
-
             </children>
+
         </Pane>
     </top>
 
@@ -38,8 +38,9 @@
             <!-- Barre de recherche -->
             <HBox spacing="10" alignment="CENTER"
                   AnchorPane.topAnchor="20" AnchorPane.leftAnchor="20" AnchorPane.rightAnchor="20">
-                <TextField fx:id="searchField" promptText="Rechercher une offre..." styleClass="search-field"/>
-                <Button text="Rechercher" styleClass="btn" onAction="#handleSearch"/>
+                <TextField fx:id="searchField" promptText="Rechercher une offre..." styleClass="search-field"
+                           onKeyReleased="#handleSearchTextChanged"/>
+               <!-- <Button text="Rechercher" styleClass="btn" onAction="#handleSearch"/> -->
             </HBox>
 
             <!-- Liste des offres -->
@@ -52,4 +53,10 @@
             </ScrollPane>
         </AnchorPane>
     </center>
+    <!-- PIED DE PAGE -->
+    <bottom>
+        <HBox styleClass="footer" alignment="CENTER" prefHeight="50">
+            <Label text="© 2024 Nexus Recrutement - Tous droits réservés"/>
+        </HBox>
+    </bottom>
 </BorderPane>
