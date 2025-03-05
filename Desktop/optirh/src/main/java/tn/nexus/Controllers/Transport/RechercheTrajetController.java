@@ -2,6 +2,7 @@ package tn.nexus.Controllers.Transport;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import tn.nexus.Entities.transport.ReservationTrajet;
@@ -11,11 +12,12 @@ import tn.nexus.Services.Transport.PayPalPaymentService;
 import tn.nexus.Services.Transport.ReservationTrajetService;
 import tn.nexus.Services.Transport.TrajetService;
 import tn.nexus.Services.Transport.VehiculeService;
+import tn.nexus.Utils.WrapWithSideBar;
 
 import java.sql.SQLException;
 import java.util.List;
 
-public class RechercheTrajetController {
+public class RechercheTrajetController  implements WrapWithSideBar {
 
     // Composants FXML
     @FXML private TextField departField;
@@ -26,7 +28,8 @@ public class RechercheTrajetController {
     @FXML private TableColumn<Vehicule, Integer> placesColumn;
     @FXML private TableColumn<Vehicule, Void> actionColumn;
     @FXML private Label errorMessage;
-
+    @FXML
+    private AnchorPane sideBar;
     @FXML private WebView webView; // Référence au WebVie
 
 
@@ -40,6 +43,8 @@ public class RechercheTrajetController {
     // Méthode d'initialisation
     @FXML
     public void initialize() {
+        initializeSideBar(sideBar);
+
 
         String mapHtmlPath = getClass().getResource("/transport/map.html").toExternalForm();
         webView.getEngine().load(mapHtmlPath);
