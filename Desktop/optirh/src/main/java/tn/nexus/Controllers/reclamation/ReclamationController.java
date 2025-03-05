@@ -9,14 +9,18 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import tn.nexus.Entities.reclamation.Reclamation;
 import tn.nexus.Services.reclamation.ReclamationService;
 import tn.nexus.Utils.WrapWithSideBar;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
@@ -24,6 +28,11 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.ResourceBundle;
+
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
 
 public class ReclamationController implements Initializable, WrapWithSideBar {
     @FXML
@@ -40,6 +49,8 @@ public class ReclamationController implements Initializable, WrapWithSideBar {
     private TextField searchField;
     @FXML
     private ComboBox<String> filterStatusField;
+    @FXML
+    private PieChart pieChart;
 
     private final ReclamationService reclamationService = new ReclamationService();
     private ObservableList<Reclamation> observableReclamationList;
@@ -108,6 +119,8 @@ public class ReclamationController implements Initializable, WrapWithSideBar {
             // Ajouter la colonne "Action" à la table
             reclamationsTable.getColumns().add(actionColumn);
 
+            // Mise à jour des statistiques
+            updateStatistics();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -136,8 +149,68 @@ public class ReclamationController implements Initializable, WrapWithSideBar {
         if (reclamationService.delete(selectedReclamation) > 0) {
             observableReclamationList.remove(selectedReclamation);
             showAlert(Alert.AlertType.INFORMATION, "Réclamation supprimée !");
+            updateStatistics(); // Mettre à jour les statistiques après suppression
         } else {
             showAlert(Alert.AlertType.WARNING, "Échec de la suppression !");
+        }
+    }
+
+    private void updateStatistics() {
+        int pending = 0, inProgress = 0, resolved = 0;
+        for (Reclamation r : observableReclamationList) {
+            if (r.getStatus() == null) continue; // Ignorer les statuts null
+            switch (r.getStatus()) {
+                case "En attente": pending++; break;
+                case "En cours": inProgress++; break;
+                case "Résolue": resolved++; break;
+            }
+        }
+
+        // Mise à jour du PieChart
+        pieChart.setData(FXCollections.observableArrayList(
+                new PieChart.Data("En attente", pending),
+                new PieChart.Data("En cours", inProgress),
+                new PieChart.Data("Résolue", resolved)
+        ));
+    }
+
+    @FXML
+    public void exportToPDF() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Enregistrer le fichier PDF");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Fichiers PDF", "*.pdf"));
+        File file = fileChooser.showSaveDialog(null);
+
+        if (file != null) {
+            try {
+                Document document = new Document();
+                PdfWriter.getInstance(document, new FileOutputStream(file));
+                document.open();
+
+                // Titre du document
+                document.add(new Paragraph("Liste des Réclamations"));
+
+                // Création de la table PDF
+                PdfPTable table = new PdfPTable(3);
+                table.addCell("Description");
+                table.addCell("Statut");
+                table.addCell("Date");
+
+                // Ajout des données de la table
+                for (Reclamation r : observableReclamationList) {
+                    table.addCell(r.getDescription());
+                    table.addCell(r.getStatus());
+                    table.addCell(r.getDate().toString());
+                }
+
+                document.add(table);
+                document.close();
+
+                showAlert(Alert.AlertType.INFORMATION, "Exportation réussie : " + file.getName());
+            } catch (Exception e) {
+                e.printStackTrace();
+                showAlert(Alert.AlertType.ERROR, "Erreur lors de l'exportation PDF");
+            }
         }
     }
 

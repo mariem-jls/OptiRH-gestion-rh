@@ -2,6 +2,7 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.control.cell.PropertyValueFactory?>
+<?import javafx.scene.chart.PieChart?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
@@ -59,8 +60,18 @@
                                         <PropertyValueFactory property="status" />
                                     </cellValueFactory>
                                 </TableColumn>
+                                <!-- Colonne "Action" pour le bouton "Réponse" -->
+                                <TableColumn text="Action" />
                             </columns>
                         </TableView>
+
+                        <!-- Statistiques et export PDF -->
+                        <VBox spacing="10" style="-fx-padding: 15;">
+                            <!-- Statistiques -->
+                            <PieChart fx:id="pieChart" />
+                            <!-- Bouton d'exportation PDF -->
+                            <Button text="Exporter en PDF" onAction="#exportToPDF" style="-fx-background-color: #28a745; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" />
+                        </VBox>
                     </children>
                 </VBox>
             </children>
