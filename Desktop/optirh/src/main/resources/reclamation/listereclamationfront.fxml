@@ -1,78 +1,65 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.cell.PropertyValueFactory?>
-<?import javafx.scene.image.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
-<AnchorPane fx:id="lkoll" prefHeight="680.0" prefWidth="1047.0" style="-fx-background-color: #40E0D0;" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.nexus.Controllers.reclamation.ReclamationfrontController">
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
 
-    <!-- Link to external CSS file -->
-    <stylesheets>
-        @styles.css
-    </stylesheets>
+<BorderPane fx:id="lkoll" prefHeight="680.0" stylesheets="" prefWidth="1047.0" style="-fx-background-color: #40E0D0;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.nexus.Controllers.reclamation.ReclamationfrontController">
 
-    <!-- Barre supérieure -->
-    <Pane fx:id="up_barre" layoutX="-12.0" prefHeight="90.0" prefWidth="1060.0" style="-fx-background-color: #007b8f;">
-        <children>
-            <ImageView fitHeight="146.0" fitWidth="168.0" layoutX="28.0" layoutY="-20.0" pickOnBounds="true" preserveRatio="true" style="-fx-cursor: hand;">
-                <image>
-                    <Image url="@images/logoGris_enhanced.png" />
-                </image>
-            </ImageView>
-            <ImageView fx:id="userImage" fitHeight="29.0" fitWidth="35.0" layoutX="1005.0" layoutY="20.0" pickOnBounds="true" preserveRatio="true">
-                <image>
-                    <Image url="@imgs/user.png" />
-                </image>
-            </ImageView>
-            <Text fx:id="fullnameText" fill="WHITE" layoutX="918.0" layoutY="33.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Bonjour, User" />
-            <Text fx:id="roleText" fill="WHITE" layoutX="971.0" layoutY="50.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Role">
-                <font>
-                    <Font size="11.0" />
-                </font>
-            </Text>
-        </children>
-    </Pane>
 
-    <!-- Contenu principal -->
-    <AnchorPane fx:id="dashContent" layoutX="0.0" layoutY="90.0" prefHeight="590.0" prefWidth="1047.0" style="-fx-background-color: #EEEEEE;">
-        <children>
-            <!-- Vos champs de formulaire et table -->
-            <AnchorPane layoutX="25.0" layoutY="42.0" prefHeight="534.0" prefWidth="296.0" style="-fx-background-color: rgba(255, 255, 255, 0.8); -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0, 0, 0);">
-                <TextField fx:id="descriptionField" layoutX="14.0" layoutY="29.0" promptText="Description" style="-fx-background-color: #ffffff; -fx-background-radius: 5; -fx-border-color: #cccccc; -fx-border-radius: 5; -fx-padding: 5;" />
-                <DatePicker fx:id="dateField" layoutX="14.0" layoutY="77.0" promptText="Date" style="-fx-background-color: #ffffff; -fx-background-radius: 5; -fx-border-color: #cccccc; -fx-border-radius: 5; -fx-padding: 5;" />
-                <ComboBox fx:id="statusField" layoutX="14.0" layoutY="139.0" promptText="Status" style="-fx-background-color: #ffffff; -fx-background-radius: 5; -fx-border-color: #cccccc; -fx-border-radius: 5; -fx-padding: 5;" />
 
-                <Button layoutX="10.0" layoutY="250.0" onAction="#ajouterReclamation" text="Ajouter" style="-fx-background-color: #007B8FFF;" styleClass="button-add" />
-                <Button layoutX="100.0" layoutY="250.0" onAction="#modifierReclamation" text="Modifier" style="-fx-background-color: #007B8FFF;" styleClass="button-edit" />
-                <Button layoutX="190.0" layoutY="250.0" onAction="#supprimerReclamation" text="Supprimer" style="-fx-background-color: #007B8FFF;" styleClass="button-delete" />
-                <Button layoutX="206.0" layoutY="51.0" mnemonicParsing="false" onAction="#clearFields" text="Clear" style="-fx-background-color: #007B8FFF;" styleClass="button-clear" />
+    <!-- Left region (SideBar) -->
+    <left>
+        <AnchorPane fx:id="sideBar" prefHeight="680.0" prefWidth="200.0" styleClass="menu" BorderPane.alignment="CENTER" />
+    </left>
 
-            </AnchorPane>
+    <!-- Center region (Main Content) -->
+    <center>
+        <AnchorPane fx:id="dashContent" prefHeight="680.0" prefWidth="847.0" style="-fx-background-color: #EEEEEE;">
+            <children>
+                <!-- Vos champs de formulaire et table -->
+                <AnchorPane layoutX="25.0" layoutY="42.0" prefHeight="534.0" prefWidth="296.0" style="-fx-background-color: rgba(255, 255, 255, 0.8); -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0, 0, 0);">
+                    <TextField fx:id="descriptionField" layoutX="14.0" layoutY="29.0" promptText="Description" style="-fx-background-color: #ffffff; -fx-background-radius: 5; -fx-border-color: #cccccc; -fx-border-radius: 5; -fx-padding: 5;" />
+                    <DatePicker fx:id="dateField" layoutX="14.0" layoutY="77.0" promptText="Date" style="-fx-background-color: #ffffff; -fx-background-radius: 5; -fx-border-color: #cccccc; -fx-border-radius: 5; -fx-padding: 5;" />
+                    <ComboBox fx:id="statusField" layoutX="14.0" layoutY="139.0" promptText="Status" style="-fx-background-color: #ffffff; -fx-background-radius: 5; -fx-border-color: #cccccc; -fx-border-radius: 5; -fx-padding: 5;" />
 
-            <!-- Ajout du champ de recherche et du filtre -->
-            <TextField fx:id="searchField" layoutX="336.0" layoutY="42.0" promptText="Rechercher par description..." style="-fx-background-color: #ffffff; -fx-background-radius: 5; -fx-border-color: #cccccc; -fx-border-radius: 5; -fx-padding: 5;" />
-            <ComboBox fx:id="filterStatusField" layoutX="550.0" layoutY="42.0" promptText="Filtrer par statut" style="-fx-background-color: #ffffff; -fx-background-radius: 5; -fx-border-color: #cccccc; -fx-border-radius: 5; -fx-padding: 5;" />
+                    <Button layoutX="10.0" layoutY="250.0" onAction="#ajouterReclamation" style="-fx-background-color: #007B8FFF;" styleClass="button-add" text="Ajouter" />
+                    <Button layoutX="100.0" layoutY="250.0" onAction="#modifierReclamation" style="-fx-background-color: #007B8FFF;" styleClass="button-edit" text="Modifier" />
+                    <Button layoutX="190.0" layoutY="250.0" onAction="#supprimerReclamation" style="-fx-background-color: #007B8FFF;" styleClass="button-delete" text="Supprimer" />
+                    <Button layoutX="206.0" layoutY="51.0" mnemonicParsing="false" onAction="#clearFields" style="-fx-background-color: #007B8FFF;" styleClass="button-clear" text="Clear" />
+                </AnchorPane>
 
-            <TableView fx:id="reclamationsTable" layoutX="336.0" layoutY="74.0" prefHeight="400" prefWidth="637.0" style="-fx-background-color: rgba(255, 255, 255, 0.8); -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0, 0, 0);">
-                <columns>
-                    <TableColumn fx:id="descriptionColumn" text="Description">
-                        <cellValueFactory>
-                            <PropertyValueFactory property="description" />
-                        </cellValueFactory>
-                    </TableColumn>
-                    <TableColumn fx:id="dateColumn" text="Date">
-                        <cellValueFactory>
-                            <PropertyValueFactory property="date" />
-                        </cellValueFactory>
-                    </TableColumn>
-                    <TableColumn fx:id="statusColumn" text="Status">
-                        <cellValueFactory>
-                            <PropertyValueFactory property="status" />
-                        </cellValueFactory>
-                    </TableColumn>
-                </columns>
-            </TableView>
-        </children>
-    </AnchorPane>
-</AnchorPane>
+                <!-- Ajout du champ de recherche et du filtre -->
+                <TextField fx:id="searchField" layoutX="336.0" layoutY="42.0" promptText="Rechercher par description..." style="-fx-background-color: #ffffff; -fx-background-radius: 5; -fx-border-color: #cccccc; -fx-border-radius: 5; -fx-padding: 5;" />
+                <ComboBox fx:id="filterStatusField" layoutX="550.0" layoutY="42.0" promptText="Filtrer par statut" style="-fx-background-color: #ffffff; -fx-background-radius: 5; -fx-border-color: #cccccc; -fx-border-radius: 5; -fx-padding: 5;" />
+
+                <!-- TableView avec une taille augmentée -->
+                <TableView fx:id="reclamationsTable" layoutX="336.0" layoutY="87.0" prefHeight="505.0" prefWidth="770.0" style="-fx-background-color: rgba(255, 255, 255, 0.8); -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0, 0, 0);">
+                    <columns>
+                        <TableColumn fx:id="descriptionColumn" prefWidth="193.5999755859375" text="Description">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="description" />
+                            </cellValueFactory>
+                        </TableColumn>
+                        <TableColumn fx:id="dateColumn" prefWidth="87.20001220703125" text="Date">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="date" />
+                            </cellValueFactory>
+                        </TableColumn>
+                        <TableColumn fx:id="statusColumn" prefWidth="208.0" text="Status">
+                            <cellValueFactory>
+                                <PropertyValueFactory property="status" />
+                            </cellValueFactory>
+                        </TableColumn>
+                    </columns>
+                </TableView>
+            </children>
+        </AnchorPane>
+    </center>
+</BorderPane>

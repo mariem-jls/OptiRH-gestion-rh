@@ -4,9 +4,10 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.layout.AnchorPane;
+import tn.nexus.Entities.User;
 
 public class SideBarController {
-
+   User user;
     @FXML
     private AnchorPane menu;
 
@@ -36,8 +37,13 @@ public class SideBarController {
     void redirectToReclamation() {
         Parent root = null;
         try {
+            if(user.getRole().equals("Administrator")) {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/reclamation/listeReclamation.fxml"));
-            root = loader.load();
+            root = loader.load();}
+            else
+            {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/reclamation/listeReclamationfront.fxml"));
+                root = loader.load();}
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
