@@ -1,17 +1,27 @@
 package tn.nexus.Services.Transport;
 
+import tn.nexus.Entities.User;
 import tn.nexus.Entities.transport.ReservationTrajet;
+import tn.nexus.Entities.transport.Trajet;
+import tn.nexus.Entities.transport.Vehicule;
+import tn.nexus.Services.UserService;
 import tn.nexus.Utils.DBConnection;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ReservationTrajetService implements tn.nexus.Services.CRUD<ReservationTrajet> {
     private Connection connection;
+    private MailService mailService;
+
 
     public ReservationTrajetService() {
         this.connection = DBConnection.getInstance().getConnection(); // Utilisation du Singleton
+        this.mailService = new MailService(); // Initialisation du service d'e-mail
+
     }
 
     @Override
@@ -30,7 +40,6 @@ public class ReservationTrajetService implements tn.nexus.Services.CRUD<Reservat
             throw new IllegalArgumentException("L'ID de l'utilisateur doit être positif.");
         }
 
-
         // Vérifier si le véhicule, le trajet et l'utilisateur existent
         if (!vehiculeExists(reservation.getVehiculeId())) {
             throw new IllegalArgumentException("Le véhicule spécifié n'existe pas.");
@@ -42,24 +51,54 @@ public class ReservationTrajetService implements tn.nexus.Services.CRUD<Reservat
             throw new IllegalArgumentException("L'utilisateur spécifié n'existe pas.");
         }
 
-        String query = "INSERT INTO reservationtrajet (disponibilite, user_id, trajet_id, vehicule_id) VALUES (?, ?, ?, ?)";
+        // Requête SQL pour insérer une réservation
+        String query = "INSERT INTO reservationtrajet (disponibilite, utilisateur_id, trajet_id, vehicule_id) VALUES (?, ?, ?, ?)";
         try (PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
             statement.setString(1, reservation.getDisponibilite());
             statement.setInt(2, reservation.getUserId());
             statement.setInt(3, reservation.getTrajetId());
             statement.setInt(4, reservation.getVehiculeId());
 
+
             int rowsInserted = statement.executeUpdate();
             if (rowsInserted > 0) {
                 try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
-                        return generatedKeys.getInt(1); // Retourne l'ID généré
+                        int reservationId = generatedKeys.getInt(1); // Retourne l'ID généré
+
+
+
+
+                        // Récupérer les détails du trajet, du véhicule et de l'utilisateur
+                        TrajetService trajetService = new TrajetService();
+                        VehiculeService vehiculeService = new VehiculeService();
+                        UserService userService = new UserService();
+
+                        Trajet trajet = trajetService.getTrajetById(reservation.getTrajetId());
+                        Vehicule vehicule = vehiculeService.getVehiculeById(reservation.getVehiculeId());
+                        User user = userService.getUserById2(reservation.getUserId());
+
+                        // Envoyer un e-mail de confirmation
+                        mailService.sendReservationConfirmation(
+                                user.getEmail(), // E-mail de l'utilisateur
+                                vehicule.getType(), // Type de véhicule
+                                trajet.getDepart(), // Point de départ
+                                trajet.getArrive(), // Point d'arrivée
+                                trajet.getStation() // Station
+                        );
+
+                        return reservationId; // Retourner l'ID généré
                     }
                 }
             }
+
+
         }
         return -1; // Échec de l'insertion
     }
+
+
+
 
     @Override
     public int update(ReservationTrajet reservation) throws SQLException {
@@ -88,7 +127,7 @@ public class ReservationTrajetService implements tn.nexus.Services.CRUD<Reservat
             throw new IllegalArgumentException("L'utilisateur spécifié n'existe pas.");
         }
 
-        String query = "UPDATE reservationtrajet SET disponibilite = ?, user_id = ?, vehicule_id = ?, trajet_id = ? WHERE id = ?";
+        String query = "UPDATE reservationtrajet SET disponibilite = ?, utilisateur_id = ?, vehicule_id = ?, trajet_id = ? WHERE id = ?";
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setString(1, reservation.getDisponibilite());
             statement.setInt(2, reservation.getUserId());
@@ -121,7 +160,7 @@ public class ReservationTrajetService implements tn.nexus.Services.CRUD<Reservat
                         resultSet.getString("disponibilite"),
                         resultSet.getInt("vehicule_id"),
                         resultSet.getInt("trajet_id"),
-                        resultSet.getInt("user_id")
+                        resultSet.getInt("utilisateur_id")
                 );
                 reservations.add(reservation);
             }
@@ -143,7 +182,7 @@ public class ReservationTrajetService implements tn.nexus.Services.CRUD<Reservat
                             resultSet.getString("disponibilite"),
                             resultSet.getInt("vehicule_id"),
                             resultSet.getInt("trajet_id"),
-                            resultSet.getInt("user_id")
+                            resultSet.getInt("utilisateur_id")
                     );
                     reservations.add(reservation);
                 }
@@ -176,12 +215,40 @@ public class ReservationTrajetService implements tn.nexus.Services.CRUD<Reservat
 
     // Vérifier si un utilisateur existe
     private boolean userExists(int userId) throws SQLException {
-        String query = "SELECT id FROM utilisateur WHERE id = ?";
+        String query = "SELECT id FROM users WHERE id = ?";
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setInt(1, userId);
             try (ResultSet resultSet = statement.executeQuery()) {
                 return resultSet.next(); // Retourne true si l'utilisateur existe
             }
         }
+    }
+    public String getUsernameByUserId(int userId) throws SQLException {
+        String query = "SELECT nom FROM users WHERE id = ?";
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, userId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getString("nom");
+                }
+            }
+        }
+        return null; // Retourne null si l'utilisateur n'est pas trouvé
+    }
+
+    public Map<String, Integer> getReservationsByVehicleType(List<ReservationTrajet> reservations, List<Vehicule> vehicules) {
+        Map<String, Integer> reservationsByType = new HashMap<>();
+
+        for (ReservationTrajet reservation : reservations) {
+            for (Vehicule vehicule : vehicules) {
+                if (reservation.getVehiculeId() == vehicule.getId()) {
+                    String type = vehicule.getType();
+                    reservationsByType.put(type, reservationsByType.getOrDefault(type, 0) + 1);
+                    break;
+                }
+            }
+        }
+
+        return reservationsByType;
     }
 }

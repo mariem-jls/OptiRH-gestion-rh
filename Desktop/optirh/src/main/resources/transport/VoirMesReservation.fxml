@@ -7,6 +7,7 @@
 <?import javafx.scene.paint.Color?>
 
 <VBox xmlns:fx="http://javafx.com/fxml/1" spacing="20" alignment="CENTER">
+
     <padding>
         <Insets top="20" right="20" bottom="20" left="20"/>
     </padding>

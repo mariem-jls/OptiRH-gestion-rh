@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leaflet Map</title>
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+  <!-- Leaflet Routing Machine CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    #map {
+      height: 100vh;
+      width: 100vw;
+    }
+  </style>
+</head>
+<body>
+<div id="map"></div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<!-- Leaflet Routing Machine JS -->
+<script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+
+<script>
+  // Initialisation de la carte
+  var map = L.map('map').setView([36.8065, 10.1815], 13); // Centre sur Tunis
+
+  // Ajout des tuiles OpenStreetMap
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(map);
+
+  window.drawRoutes = function(trajetsJson) {
+    console.log("Trajets reçus :", trajetsJson); // Ajoutez cette ligne pour vérifier les données
+    var trajets = JSON.parse(trajetsJson);
+    trajets.forEach(function(trajet) {
+      var start = L.latLng(trajet.start[0], trajet.start[1]);
+      var end = L.latLng(trajet.end[0], trajet.end[1]);
+
+      L.Routing.control({
+        waypoints: [start, end],
+        routeWhileDragging: true,
+        show: false // Masquer le panneau d'instructions
+      }).addTo(map);
+    });
+  };
+
+  L.Routing.control({
+    waypoints: [
+      L.latLng(57.74, 11.94),
+      L.latLng(57.6792, 11.949)
+    ]
+  }).addTo(map);
+</script>
+</body>
+</html>

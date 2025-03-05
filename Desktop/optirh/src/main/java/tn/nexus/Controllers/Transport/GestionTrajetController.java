@@ -1,21 +1,18 @@
 
 package tn.nexus.Controllers.Transport;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-        import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
-import tn.nexus.Controllers.SideBarController;
-import tn.nexus.Controllers.Transport.GestionVehiculeController;
-import tn.nexus.Controllers.Transport.ModifierTrajetController;
 import tn.nexus.Entities.transport.Trajet;
 import tn.nexus.Services.Transport.TrajetService;
 import tn.nexus.Utils.WrapWithSideBar;
@@ -123,59 +120,27 @@ public class GestionTrajetController implements WrapWithSideBar {
     // Gérer l'ajout d'un trajet
     @FXML
     public void handleAjouterTrajet() {
-        String type = typeField.getText();
-        String station = stationField.getText();
-        String depart = departField.getText();
-        String arrive = arriveField.getText();
-
-        // Liste pour collecter les erreurs
-        List<String> errors = new ArrayList<>();
-
-        // Contrôle de saisie : vérifier que tous les champs sont remplis
-        if (type.isEmpty()) {
-            errors.add("Le type est obligatoire.");
-        }
-        if (station.isEmpty()) {
-            errors.add("La station est obligatoire.");
-        }
-
-        if (depart.isEmpty()) {
-            errors.add("Le départ est obligatoire.");
-        }
-        if (arrive.isEmpty()) {
-            errors.add("L'arrivée est obligatoire.");
-        }
-
-        // Valider le champ "Type"
-        if (!type.isEmpty()) {
-            errors.addAll(validateType(type));
-        }
-
-        // Valider le champ "Station"
-        if (!station.isEmpty()) {
-            errors.addAll(validateStation(station));
-        }
-
-        // Si des erreurs sont détectées, les afficher et arrêter l'exécution
-        if (!errors.isEmpty()) {
-            showErrors(errors);
-            return;
-        }
-
-        // Si les champs sont valides, créer un nouveau trajet
-        Trajet trajet = new Trajet(0, type, station, depart, arrive);
-
         try {
-            int result = trajetService.insert(trajet);
-            if (result > 0) {
-                showSuccess("Trajet ajouté avec succès !");
-                loadTrajets(); // Recharger la liste des trajets
-                clearFields();
-            } else {
-                showError("Erreur lors de l'ajout du trajet.");
-            }
-        } catch (SQLException e) {
-            showError("Erreur de base de données : " + e.getMessage());
+            // Charger la nouvelle interface d'ajout
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/transport/AjouterTrajet.fxml"));
+            Parent root = loader.load();
+
+            // Passer le contrôleur de l'interface d'ajout
+            AjouterTrajetController controller = loader.getController();
+
+            // Définir un callback pour rafraîchir la table après l'ajout
+            controller.setOnAjoutSuccess(() -> {
+                loadTrajets(); // Recharger les trajets dans la table
+            });
+
+            // Afficher la nouvelle interface
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Ajouter un Trajet");
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+            showError("Erreur lors de l'ouverture de l'interface d'ajout.");
         }
     }
 
@@ -306,6 +271,28 @@ public class GestionTrajetController implements WrapWithSideBar {
             }
         } else {
             showError("Veuillez sélectionner un trajet !");
+        }
+    }
+
+    // Méthode pour ouvrir la fenêtre des statistiques
+    public void handleOpenStatistiques(ActionEvent event) {
+        try {
+            // Charger le fichier FXML des statistiques
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Transport/Statistique.fxml"));
+            Parent root = loader.load();
+
+            // Créer une nouvelle scène
+            Scene scene = new Scene(root);
+
+            // Créer une nouvelle fenêtre
+            Stage stage = new Stage();
+            stage.setTitle("Statistiques des Réservations");
+            stage.setScene(scene);
+
+            // Afficher la fenêtre
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

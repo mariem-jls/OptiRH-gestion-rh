@@ -1,103 +1,108 @@
-/* style.css corrigé */
-.header {
-    -fx-text-fill: white;
-    -fx-font-size: 20px;
-    -fx-font-weight: bold;
-    -fx-padding: 20px 0 0 20px; /* Ajustement du padding */
+/* offreStyle.css corrigé */
+.main-content {
+    -fx-padding: 20px;
+    -fx-spacing: 15px;
 }
 
-.button {
+/* Header spécifique au contenu principal */
+.main-content .header {
+    -fx-text-fill: #01224C;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 0 20px 0;
+}
+
+/* Styles uniquement pour les boutons du contenu principal */
+.main-content .button {
     -fx-background-color: #021E33;
     -fx-text-fill: white;
     -fx-background-radius: 5px;
     -fx-padding: 10px 20px;
-    -fx-pref-width: 120px;     /* Largeur fixe pour les boutons */
-    -fx-font-size: 14px;       /* Taille de police */
-    min-width: 120px;
-    min-height: 40px;
+    -fx-pref-width: 120px;
+    -fx-font-size: 14px;
 }
 
-.button:hover {
+.main-content .button:hover {
     -fx-background-color: #012E67;
 }
 
-.table-view {
-    -fx-background-color: #9BADc0; /* Correction de #9BADCO en #9BADc0 */
+/* TableView dans le contenu principal */
+.main-content .table-view {
+    -fx-background-color: #9BADc0;
     -fx-border-color: #01224C;
     -fx-border-radius: 5px;
+    -fx-table-cell-border-color: transparent;
 }
 
-.table-view .column-header {
+.main-content .table-view .column-header {
     -fx-background-color: #012E67;
     -fx-text-fill: white;
-    -fx-font-size: 14px;       /* Taille de police augmentée */
-    -fx-font-weight: bold;     /* Texte en gras */
-    -fx-border-color: #01224C;
-    -fx-alignment: CENTER-LEFT; /* Alignement du texte */
-}
-.table-view .column-header .label {
-    -fx-text-fill: #ffffff;      /* Couleur du texte */
-    -fx-padding: 10px;         /* Espacement interne */
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
 }
 
-.anchor-pane, .border-pane{
-    -fx-background-color: #748B9D;
+.main-content .table-view .column-header .label {
+    -fx-text-fill: white;
+    -fx-padding: 10px;
 }
-.table-view .table-row-cell {
+
+.main-content .table-view .table-row-cell {
     -fx-border-color: #01224C;
     -fx-border-width: 0 0 1px 0;
+    -fx-background-color: #ffffff;
 }
 
-.table-view .table-cell {
+.main-content .table-view .table-row-cell:odd {
+    -fx-background-color: #f8f9fa;
+}
+
+.main-content .table-view .table-cell {
     -fx-padding: 10px;
     -fx-alignment: CENTER_LEFT;
 }
-/* Permettre le redimensionnement automatique */
-.table-view .column-header {
-    -fx-size: 35px;
-    -fx-pref-width: -1; /* Priorité au contenu */
-}
 
-.table-column {
+/* Styles spécifiques pour les colonnes */
+.main-content .table-column {
     -fx-alignment: CENTER_LEFT;
 }
-.hbox {
-    -fx-spacing: 20px;         /* Espacement entre éléments */
-    -fx-padding: 10px;         /* Marge interne */
-}
-.text-field {
-    -fx-pref-width: 200px;     /* Largeur fixe pour le champ de recherche */
+
+/* Champs de texte uniquement dans le contenu principal */
+.main-content .text-field {
+    -fx-pref-width: 200px;
     -fx-background-radius: 5px;
     -fx-border-color: #01224C;
     -fx-background-color: white;
-    -fx-border-radius: 5px;
     -fx-padding: 8px;
 }
-.text-field, .text-area, .combo-box, .date-picker {
-    -fx-border-color: #ccc; /* Bordure des champs */
-    -fx-border-radius: 5px; /* Coins arrondis */
-    -min-width: 300px;
-    -min-height: 40px;
-}
-.vbox {
-    -fx-padding: 10; /* Espacement interne pour le VBox */
-}
-.label {
-    -fx-font-size: 14px; /* Taille de police pour les étiquettes */
-    -fx-text-fill: #01224C /*#333333; /* Couleur du texte */
+
+/* Labels dans le contenu principal */
+.main-content .label {
+    -fx-font-size: 14px;
+    -fx-text-fill: #01224C;
 }
 
-.action-btn {
+/* Boutons d'action spécifiques */
+.main-content .action-btn {
     -fx-font-size: 12px;
     -fx-padding: 5px 10px;
-    -fx-cursor: hand;
 }
 
-.delete-btn {
+.main-content .delete-btn {
     -fx-background-color: #1a6dda;
     -fx-text-fill: white;
 }
 
-.delete-btn:hover {
-    -fx-background-color: #1a6dda;
+/* Conserver le style du sidebar */
+.menu {
+}
+
+.menu .button {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-border-color: transparent;
+    -fx-pref-width: 200px;
+}
+
+.menu .button:hover {
+    -fx-background-color: #012E67;
 }

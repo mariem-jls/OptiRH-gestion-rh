@@ -12,12 +12,16 @@ public class TrajetService implements tn.nexus.Services.CRUD<Trajet> {
 
     @Override
     public int insert(Trajet trajet) throws SQLException {
-        String req = "INSERT INTO trajet (type, station, depart, arrive) VALUES (?, ?, ?, ?)";
+        String req = "INSERT INTO trajet (type, station, depart, arrive, longitude_depart, latitude_depart, longitude_arrivee,  latitude_arrivee ) VALUES (?, ?, ?, ?, ?, ? ,?,? )";
         try (PreparedStatement ps = con.prepareStatement(req, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, trajet.getType());
             ps.setString(2, trajet.getStation());
             ps.setString(3, trajet.getDepart());
             ps.setString(4, trajet.getArrive());
+            ps.setDouble(5, trajet.getLongitudeDepart());
+            ps.setDouble(6, trajet.getLatitudeDepart());
+            ps.setDouble(7, trajet.getLongitudeArrivee());
+            ps.setDouble(8, trajet.getLatitudeArrivee());
 
             int result = ps.executeUpdate();
 
@@ -34,13 +38,17 @@ public class TrajetService implements tn.nexus.Services.CRUD<Trajet> {
 
     @Override
     public int update(Trajet trajet) throws SQLException {
-        String req = "UPDATE trajet SET type = ?, station = ?, depart = ?, arrive = ? WHERE id = ?";
+        String req = "UPDATE trajet SET type = ?, station = ?, depart = ?, arrive = ?, longitude_depart=?, latitude_depart=?, longitude_arrivee=?,  latitude_arrivee=? WHERE id = ?";
         try (PreparedStatement ps = con.prepareStatement(req)) {
             ps.setString(1, trajet.getType());
             ps.setString(2, trajet.getStation());
             ps.setString(3, trajet.getDepart());
             ps.setString(4, trajet.getArrive());
-            ps.setInt(5, trajet.getId());
+            ps.setDouble(5, trajet.getLongitudeDepart());
+            ps.setDouble(6, trajet.getLatitudeDepart());
+            ps.setDouble(7, trajet.getLongitudeArrivee());
+            ps.setDouble(8, trajet.getLatitudeArrivee());
+            ps.setInt(9, trajet.getId());
 
             return ps.executeUpdate();
         }
@@ -68,7 +76,11 @@ public class TrajetService implements tn.nexus.Services.CRUD<Trajet> {
                         rs.getString("type"),
                         rs.getString("station"),
                         rs.getString("depart"),
-                        rs.getString("arrive")
+                        rs.getString("arrive"),
+                        rs.getDouble("longitude_Depart"),
+                        rs.getDouble("latitude_Depart"),
+                        rs.getDouble("longitude_Arrivee"),
+                        rs.getDouble("latitude_Arrivee")
                 );
                 trajets.add(trajet);
             }
@@ -89,7 +101,11 @@ public class TrajetService implements tn.nexus.Services.CRUD<Trajet> {
                             rs.getString("type"),
                             rs.getString("station"),
                             rs.getString("depart"),
-                            rs.getString("arrive")
+                            rs.getString("arrive"),
+                            rs.getDouble("longitude_depart"),
+                            rs.getDouble("latitude_depart"),
+                            rs.getDouble("longitude_arrivee"),
+                            rs.getDouble("latitude_arrivee")
                     ));
                 }
             } catch (SQLException e) {
@@ -97,5 +113,29 @@ public class TrajetService implements tn.nexus.Services.CRUD<Trajet> {
             }
         }
         return trajets;
+    }
+
+
+    public Trajet getTrajetById(int trajetId) throws SQLException {
+        String query = "SELECT * FROM trajet WHERE id = ?";
+        try (PreparedStatement ps = con.prepareStatement(query)) {
+            ps.setInt(1, trajetId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new Trajet(
+                            rs.getInt("id"),
+                            rs.getString("type"),
+                            rs.getString("station"),
+                            rs.getString("depart"),
+                            rs.getString("arrive"),
+                            rs.getDouble("longitude_depart"),
+                            rs.getDouble("latitude_depart"),
+                            rs.getDouble("longitude_arrivee"),
+                            rs.getDouble("latitude_arrivee")
+                    );
+                }
+            }
+        }
+        return null; // Retourne null si le trajet n'est pas trouvé
     }
 }

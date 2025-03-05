@@ -10,7 +10,6 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import tn.nexus.Controllers.Transport.ModifierVehiculeController;
 import tn.nexus.Entities.transport.Vehicule;
 import tn.nexus.Services.Transport.VehiculeService;
 
@@ -134,41 +133,26 @@ public class GestionVehiculeController {
     // Gérer l'ajout d'un véhicule
     @FXML
     public void handleAjouterVehicule() {
-        // Liste pour collecter les erreurs
-        List<String> errors = new ArrayList<>();
-
-        // Valider que tous les champs sont remplis
-        errors.addAll(validateFields());
-
-        // Valider que le type de véhicule est valide
-        errors.addAll(validateTypeVehicule());
-
-        // Valider que le nombre de places est valide
-        errors.addAll(validateNombrePlaces());
-
-        // Si des erreurs sont détectées, les afficher et arrêter l'exécution
-        if (!errors.isEmpty()) {
-            showErrors(errors);
-            return;
-        }
-
-        // Si les champs sont valides, créer un nouveau véhicule (sans ID car auto-incrémenté)
-        String disponibilite = disponibiliteCombo.getValue();
-        String type = typeField.getText();
-        int nbrPlace = Integer.parseInt(nbrPlaceField.getText());
-        Vehicule vehicule = new Vehicule(0, disponibilite, type, nbrPlace, trajetId);
-
         try {
-            int result = vehiculeService.insert(vehicule);
-            if (result > 0) {
-                showSuccess("Véhicule ajouté avec succès !");
-                loadVehicules(); // Recharger la liste des véhicules
-                clearFields();
-            } else {
-                showError("Erreur lors de l'ajout du véhicule.");
-            }
-        } catch (SQLException e) {
-            showError("Erreur de base de données : " + e.getMessage());
+            // Charger la nouvelle interface d'ajout
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/transport/AjouterVehicule.fxml"));
+            Parent root = loader.load();
+
+            // Passer l'ID du trajet au contrôleur d'ajout
+            AjouterVehiculeController controller = loader.getController();
+            controller.setTrajetId(trajetId);
+
+            // Définir un callback pour rafraîchir la table après l'ajout
+            controller.setOnAjoutSuccess(this::loadVehicules);
+
+            // Afficher la nouvelle interface
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Ajouter un Véhicule");
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+            showError("Erreur lors de l'ouverture de l'interface d'ajout.");
         }
     }
 
@@ -199,7 +183,7 @@ public class GestionVehiculeController {
             String disponibilite = disponibiliteCombo.getValue();
             String type = typeField.getText();
             int nbrPlace = Integer.parseInt(nbrPlaceField.getText());
-            Vehicule vehicule = new Vehicule(id, disponibilite, type, nbrPlace, trajetId);
+            Vehicule vehicule = new Vehicule(id, disponibilite, type, nbrPlace, trajetId, 0);
 
             // Modifier le véhicule dans la base de données
             int result = vehiculeService.update(vehicule);
@@ -229,7 +213,7 @@ public class GestionVehiculeController {
 
         try {
             int id = Integer.parseInt(idText);
-            Vehicule vehicule = new Vehicule(id, "", "", 0, trajetId);
+            Vehicule vehicule = new Vehicule(id, "", "", 0, trajetId, 0);
 
             int result = vehiculeService.delete(vehicule);
             if (result > 0) {

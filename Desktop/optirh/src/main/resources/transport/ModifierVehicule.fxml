@@ -10,7 +10,7 @@
 <?import java.net.URL?>
 <VBox xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.nexus.Controllers.Transport.ModifierVehiculeController" spacing="20" alignment="CENTER">
     <stylesheets>
-        <URL value="@/dashboard.css" />
+        <URL value="@/transport/dashboard.css" />
     </stylesheets>
     <padding>
         <Insets top="20" right="20" bottom="20" left="20"/>
@@ -32,10 +32,18 @@
         </ComboBox>
     </HBox>
 
-    <!-- Champ Type -->
+    <!-- Champ Type de véhicule -->
     <HBox spacing="10" alignment="CENTER_LEFT">
         <Label text="Type :"/>
-        <TextField fx:id="typeField" promptText="Entrez le type de véhicule"/>
+        <ComboBox fx:id="typeCombo" promptText="Sélectionnez le type de véhicule">
+            <items>
+                <FXCollections fx:factory="observableArrayList">
+                    <String fx:value="Voiture"/>
+                    <String fx:value="Minibus"/>
+                    <String fx:value="Bus"/>
+                </FXCollections>
+            </items>
+        </ComboBox>
     </HBox>
 
     <!-- Champ Nombre de places -->

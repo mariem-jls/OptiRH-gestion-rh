@@ -1,10 +1,5 @@
 package tn.nexus.Entities.transport;
 
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
-
 public class Vehicule {
 
     private int id;
@@ -12,17 +7,19 @@ public class Vehicule {
     private String type;
     private int nbrplace;
     private int trajetId;
+    private int nbrReservation;
 
 
     public Vehicule() {
     }
 
-    public Vehicule(int id, String disponibilite, String type, int nbrplace, int trajetId) {
+    public Vehicule(int id, String disponibilite, String type, int nbrplace, int trajetId, int nbrReservation) {
         this.id = id;
         this.disponibilite = disponibilite;
         this.type = type;
         this.nbrplace = nbrplace;
         this.trajetId = trajetId;
+        this.nbrReservation = 0;
 
     }
 
@@ -65,7 +62,13 @@ public class Vehicule {
         this.trajetId = trajetId;
     }
 
+    public int getNbrReservation() {
+        return nbrReservation;
+    }
 
+    public void setNbrReservation(int nbrReservation) {
+        this.nbrReservation = nbrReservation;
+    }
 
     @Override
     public String toString() {
@@ -74,6 +77,7 @@ public class Vehicule {
                 ", disponibilite=" + disponibilite +
                 ", type=" + type +
                 ", nbrplace=" + nbrplace +
+                ", trajetId=" + trajetId +
                 '}';
     }
 }

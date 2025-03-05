@@ -26,11 +26,12 @@
         <TextField fx:id="txtNomComplet" promptText="Nom Complet" editable="false" styleClass="non-editable" GridPane.rowIndex="1"/>
         <TextField fx:id="txtEmail" promptText="Email" editable="false" styleClass="non-editable" GridPane.rowIndex="2"/>
         <TextField fx:id="txtTelephone" promptText="Téléphone" editable="false" styleClass="non-editable" GridPane.rowIndex="3"/>
-        <TextField fx:id="txtAdresse" promptText="Adresse" editable="false" styleClass="non-editable" GridPane.rowIndex="4"/>
-        <DatePicker fx:id="dateDebutDisponiblePicker" promptText="Date de début disponible" editable="false" styleClass="non-editable" GridPane.rowIndex="5"/>
-        <TextField fx:id="txtSituationActuelle" promptText="Situation actuelle" editable="false" styleClass="non-editable" GridPane.rowIndex="6"/>
-        <TextField fx:id="txtDescription" promptText="Description" editable="false" styleClass="non-editable" GridPane.rowIndex="7"/>
-        <DatePicker fx:id="datePicker" promptText="Date de la demande" editable="false" styleClass="non-editable" GridPane.rowIndex="8"/>
+        <TextField fx:id="txtPoste" promptText="Poste" editable="false" styleClass="non-editable" GridPane.rowIndex="4"/>
+        <TextField fx:id="txtAdresse" promptText="Adresse" editable="false" styleClass="non-editable" GridPane.rowIndex="5"/>
+        <DatePicker fx:id="dateDebutDisponiblePicker" promptText="Date de début disponible" editable="false" styleClass="non-editable" GridPane.rowIndex="6"/>
+        <TextField fx:id="txtSituationActuelle" promptText="Situation actuelle" editable="false" styleClass="non-editable" GridPane.rowIndex="7"/>
+        <TextField fx:id="txtDescription" promptText="Description" editable="false" styleClass="non-editable" GridPane.rowIndex="8"/>
+        <DatePicker fx:id="datePicker" promptText="Date de la demande" editable="false" styleClass="non-editable" GridPane.rowIndex="9"/>
     </GridPane>
 
     <HBox spacing="20" alignment="CENTER">

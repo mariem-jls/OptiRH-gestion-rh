@@ -3,12 +3,14 @@ package tn.nexus.Controllers.Recrutement;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -36,6 +38,8 @@ public class OffresListController {
 
         emptyList.bind(Bindings.isEmpty(offresList.getChildren()));
         loadActiveOffres(); // Charger les offres actives au démarrage
+
+
     }
     public BooleanProperty emptyListProperty() {
         return emptyList;
@@ -97,7 +101,7 @@ public class OffresListController {
         offresList.getChildren().add(offrePane);
     }
 
-    @FXML
+   /* @FXML
     private void handleSearch() throws SQLException { // Retirez throws SQLException
         offresList.getChildren().clear();
         List<Offre> filtered = offreService.getAllOffres(searchField.getText())
@@ -107,7 +111,31 @@ public class OffresListController {
 
         filtered.forEach(this::createOfferCard);
 
-    }
+    }*/
+   @FXML
+   private void handleSearchTextChanged() {
+       offresList.getChildren().clear(); // On vide la liste à chaque modification du champ
+       String searchText = searchField.getText();
+
+       // Si le champ de recherche est vide, on charge toutes les offres actives
+       if (searchText.isEmpty()) {
+           loadActiveOffres(); // Charger toutes les offres actives si la recherche est vide
+           return;
+       }
+
+       // Filtrage des offres selon le texte de recherche
+       List<Offre> filtered = offreService.getAllOffres(searchText);
+
+       if (filtered.isEmpty()) {
+           System.out.println("Aucune offre trouvée"); // Débogage
+       }
+
+       // Créer des cartes d'offres pour les résultats filtrés
+       filtered.forEach(this::createOfferCard);
+   }
+
+
+
 
 
     // Méthode pour gérer le clic sur le bouton Détails

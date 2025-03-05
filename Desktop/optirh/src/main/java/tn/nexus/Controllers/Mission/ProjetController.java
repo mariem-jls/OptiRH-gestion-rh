@@ -1,5 +1,6 @@
 package tn.nexus.Controllers.Mission;
 
+import com.sun.javafx.charts.Legend;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -7,16 +8,27 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import tn.nexus.Entities.Mission.Projet;
+import tn.nexus.Entities.Mission.Mission;
+import tn.nexus.Entities.User;
 import tn.nexus.Services.Mission.ProjetService;
+import tn.nexus.Services.Mission.MissionService;
 import tn.nexus.Utils.WrapWithSideBar;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.List;
 
 public class ProjetController implements WrapWithSideBar {
-
+    @FXML
+    private ComboBox<User> userFilterCombo;
+    @FXML
+    private CheckBox completedFilterCheck;
+    private MissionService missionService;
     @FXML
     private TableView<Projet> projectTable;
 
@@ -34,7 +46,8 @@ public class ProjetController implements WrapWithSideBar {
 
     @FXML
     private TableColumn<Projet, Timestamp> createdAtColumn;
-
+    @FXML
+    private TextField emailSearchField;
     @FXML
     private AnchorPane sideBar;
 
@@ -48,26 +61,60 @@ public class ProjetController implements WrapWithSideBar {
         try {
             initializeSideBar(sideBar);
 
-            // Configurer les colonnes de la TableView
+            // Configuration des colonnes
             idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
             nomColumn.setCellValueFactory(new PropertyValueFactory<>("nom"));
             descriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
             userNomColumn.setCellValueFactory(new PropertyValueFactory<>("userNom"));
             createdAtColumn.setCellValueFactory(new PropertyValueFactory<>("createdAt"));
-
-            // Charger les projets dans la TableView
+            viewMissionsButton.setOnAction(event -> handleViewMissions());
+            // Initialisation des filtres
+            initializeSearchField();
             refreshProjectTable();
 
-            // Configurer le bouton pour afficher les missions du projet sélectionné
             viewMissionsButton.setOnAction(event -> handleViewMissions());
+
         } catch (SQLException e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors du chargement des projets : " + e.getMessage());
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors du chargement : " + e.getMessage());
         }
     }
 
-    // Rafraîchir la TableView des projets
-    private void refreshProjectTable() throws SQLException {
-        projectTable.getItems().setAll(projetService.showAll2());
+    private void initializeSearchField() {
+        // Listener pour la recherche en temps réel
+        emailSearchField.textProperty().addListener((obs, oldVal, newVal) -> {
+            try {
+                refreshTable();
+            } catch (SQLException e) {
+                showAlert(Alert.AlertType.ERROR, "Erreur", e.getMessage());
+            }
+        });
+
+        // Listener pour la case à cocher
+        completedFilterCheck.selectedProperty().addListener((obs, oldVal, newVal) -> {
+            try {
+                refreshTable();
+            } catch (SQLException e) {
+                showAlert(Alert.AlertType.ERROR, "Erreur", e.getMessage());
+            }
+        });
+    }
+
+    private void refreshTable() throws SQLException {
+        List<Projet> projets;
+        String searchEmail = emailSearchField.getText().trim();
+
+        if (completedFilterCheck.isSelected()) {
+            projets = projetService.showCompletedProjects();
+            if (!searchEmail.isEmpty()) {
+                projets.retainAll(projetService.searchProjectsByUserEmail(searchEmail));
+            }
+        } else {
+            projets = searchEmail.isEmpty() ?
+                    projetService.showAll2() :
+                    projetService.searchProjectsByUserEmail(searchEmail);
+        }
+
+        projectTable.getItems().setAll(projets);
     }
 
     @FXML
@@ -78,7 +125,6 @@ public class ProjetController implements WrapWithSideBar {
 
             // Obtenir le contrôleur de la fenêtre d'ajout
             AjouterProjetController ajouterProjetController = loader.getController();
-
             // Définir le callback pour rafraîchir la TableView après l'ajout
             ajouterProjetController.setOnProjectAdded(() -> {
                 try {
@@ -94,9 +140,11 @@ public class ProjetController implements WrapWithSideBar {
             stage.setTitle("Ajouter un projet");
             stage.showAndWait(); // Attendre que la fenêtre soit fermée
         } catch (Exception e) {
+            e.printStackTrace(); // Afficher l'exception complète pour mieux comprendre le problème
             showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors de l'ouverture de la fenêtre d'ajout : " + e.getMessage());
         }
     }
+
 
     @FXML
     private void handleUpdateProject() {
@@ -128,6 +176,9 @@ public class ProjetController implements WrapWithSideBar {
         } catch (Exception e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors de la modification du projet : " + e.getMessage());
         }
+    }
+    private void refreshProjectTable() throws SQLException {
+        refreshTable();
     }
 
     @FXML
@@ -196,4 +247,93 @@ public class ProjetController implements WrapWithSideBar {
         alert.setContentText(message);
         alert.showAndWait();
     }
+    private void initializeFilters() throws SQLException {
+        if (userFilterCombo != null) {
+            // Récupération des chefs de projet uniquement
+            userFilterCombo.getItems().addAll(projetService.getAllChefProjet());
+
+            // Ajout de l'option "Tous"
+            userFilterCombo.getItems().add(0, new User(-1, "Tous les projets"));
+            userFilterCombo.getSelectionModel().selectFirst();
+
+            // Rafraîchissement automatique
+            userFilterCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
+                try {
+                    refreshTable();
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        } else {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "ComboBox 'userFilterCombo' non initialisé.");
+        }
+    }
+
+    @FXML
+    private void handleExportPDF() {
+        try {
+            // Récupérer tous les projets
+            List<Projet> projets = projectTable.getItems();
+
+            // Configurer le FileChooser
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Exporter les projets en PDF");
+            fileChooser.getExtensionFilters().add(
+                    new FileChooser.ExtensionFilter("Fichiers PDF", "*.pdf")
+            );
+
+            // Afficher la boîte de dialogue de sauvegarde
+            File file = fileChooser.showSaveDialog(projectTable.getScene().getWindow());
+
+            if (file != null) {
+                // Exporter les projets en PDF
+                PDFExporter.exportProjectsToPDF(projets, file.getAbsolutePath());
+
+                // Afficher une confirmation
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Export réussi");
+                alert.setHeaderText(null);
+                alert.setContentText("Les projets ont été exportés avec succès !");
+                alert.showAndWait();
+            }
+        } catch (SQLException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur",
+                    "Erreur lors de la récupération des données : " + e.getMessage());
+        } catch (Exception e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur",
+                    "Erreur lors de l'export PDF : " + e.getMessage());
+        }
+    }
+    public Mission getMission(int missionId) {
+        try {
+
+            return missionService.getMissionById(missionId);
+        } catch (SQLException e) {
+            showAlert("Erreur", "Impossible de récupérer la mission : " + e.getMessage(), Alert.AlertType.ERROR);
+            return null;
+        }
+    }
+
+    private void showAlert(String title, String message, Alert.AlertType type) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+
+    @FXML
+    private void showStatisticsDashboard() {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/Mission/StatistiqueMission.fxml"));
+            Stage stage = new Stage();
+            stage.setTitle("Analytique des Missions");
+            stage.setScene(new Scene(root, 1000, 800));
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }

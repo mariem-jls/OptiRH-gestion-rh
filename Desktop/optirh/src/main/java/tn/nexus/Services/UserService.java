@@ -105,7 +105,7 @@ public class UserService implements CRUD<User> {
         return null; // Aucun utilisateur trouvé avec cet email et ce rôle
     }
     public User getUserByEmail(String email) throws SQLException {
-        String req = "SELECT * FROM Users WHERE email = ?";
+        String req = "SELECT * FROM users WHERE email = ?";
         try (PreparedStatement ps = cnx.prepareStatement(req)) {
             ps.setString(1, email);
             try (ResultSet rs = ps.executeQuery()) {
@@ -134,5 +134,49 @@ public class UserService implements CRUD<User> {
             }
         }
         return null; // Retourne null si aucun utilisateur n'est trouvé
+    }
+
+    public User getUserById(int userId) throws SQLException {
+        System.out.println("Recherche de l'utilisateur avec l'ID : " + userId); // Log pour débogage
+        String query = "SELECT * FROM users WHERE id = ?";
+        try (PreparedStatement ps = cnx.prepareStatement(query)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    User user = new User();
+                    user.setId(rs.getInt("id"));
+                    user.setNom(rs.getString("nom"));
+                    user.setEmail(rs.getString("email"));
+                    user.setRole(Role.valueOf(rs.getString("role")));
+                    user.setAddress(rs.getString("address"));
+                    System.out.println("Utilisateur trouvé : " + user.getNom()); // Log pour débogage
+                    return user;
+                } else {
+                    System.out.println("Aucun utilisateur trouvé avec l'ID : " + userId); // Log pour débogage
+                }
+            }
+        }
+        return null; // Retourne null si l'utilisateur n'est pas trouvé
+    }
+
+
+    public User getUserById2(int userId) throws SQLException {
+        String query = "SELECT * FROM users WHERE id = ?";
+        try (PreparedStatement ps = cnx.prepareStatement(query)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new User(
+                            rs.getInt("id"),
+                            rs.getString("nom"),
+                            rs.getString("email"),
+                            rs.getString("motDePasse"),
+                            Role.valueOf(rs.getString("role")),
+                            rs.getString("address")
+                    );
+                }
+            }
+        }
+        return null; // Retourne null si l'utilisateur n'est pas trouvé
     }
 }

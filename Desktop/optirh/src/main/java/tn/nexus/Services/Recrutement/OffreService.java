@@ -101,8 +101,8 @@ public class OffreService implements CRUD<Offre> {
     }
 
     public List<Offre> getAllOffres(String searchQuery) {
-        // La requête SQL pour récupérer les offres filtrées
-        String query = "SELECT * FROM offre WHERE poste LIKE ? OR localisation LIKE ?";
+        // La requête SQL pour récupérer uniquement les offres actives et filtrées par poste ou localisation
+        String query = "SELECT * FROM offre WHERE statut = 'Active' AND (poste LIKE ? OR localisation LIKE ?)";
         try (PreparedStatement stmt = cnx.prepareStatement(query)) {
             // Paramétrer la recherche pour le poste et la localisation
             stmt.setString(1, "%" + searchQuery + "%");
@@ -118,15 +118,15 @@ public class OffreService implements CRUD<Offre> {
                 Offre offre = new Offre(
                         rs.getInt("id"),
                         rs.getString("poste"),
-                        rs.getString("description"),         // Ajout de description
-                        rs.getString("statut"),              // Ajout de statut
-                        rs.getTimestamp("date_creation").toLocalDateTime(),  // Conversion en LocalDateTime
-                        rs.getString("mode_travail"),        // Ajout de mode de travail
-                        rs.getString("type_contrat"),        // Ajout de type de contrat
+                        rs.getString("description"),
+                        rs.getString("statut"),
+                        rs.getTimestamp("date_creation").toLocalDateTime(),
+                        rs.getString("mode_travail"),
+                        rs.getString("type_contrat"),
                         rs.getString("localisation"),
-                        rs.getString("niveau_experience"),   // Ajout du niveau d'expérience
+                        rs.getString("niveau_experience"),
                         rs.getInt("nb_postes"),
-                        rs.getTimestamp("date_expiration").toLocalDateTime()  // Conversion en LocalDateTime
+                        rs.getTimestamp("date_expiration").toLocalDateTime()
                 );
                 offres.add(offre);
             }
@@ -136,6 +136,7 @@ public class OffreService implements CRUD<Offre> {
             return new ArrayList<>();
         }
     }
+
 
 
     // Méthode pour récupérer les offres paginées et filtrées par recherche
@@ -210,5 +211,33 @@ public class OffreService implements CRUD<Offre> {
         }
         return offres;
     }
+    public Offre getOffreById(int id) {
+        String query = "SELECT * FROM offre WHERE id = ?";
+        try (PreparedStatement stmt = cnx.prepareStatement(query)) {
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return new Offre(
+                        rs.getInt("id"),
+                        rs.getString("poste"),
+                        rs.getString("description"),
+                        rs.getString("statut"),
+                        rs.getTimestamp("date_creation").toLocalDateTime(),
+                        rs.getString("mode_travail"),
+                        rs.getString("type_contrat"),
+                        rs.getString("localisation"),
+                        rs.getString("niveau_experience"),
+                        rs.getInt("nb_postes"),
+                        rs.getTimestamp("date_expiration") != null ? rs.getTimestamp("date_expiration").toLocalDateTime() : null
+                );
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
 }
 

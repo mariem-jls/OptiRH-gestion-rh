@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.LineChart?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox spacing="20" style="-fx-padding: 20;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.nexus.Controllers.Mission.MissionStatistiqueController">
+
+    <Label style="-fx-font-size: 24; -fx-font-weight: bold;" text="Tableau de Bord Analytique" />
+
+    <ScrollPane fitToWidth="true">
+        <VBox fx:id="statsContainer" spacing="15">
+
+            <!-- Bar Chart for Mission Status Distribution -->
+            <BarChart fx:id="statusDistributionChart" prefHeight="400" prefWidth="800">
+                <xAxis>
+                    <CategoryAxis label="Status" />
+                </xAxis>
+                <yAxis>
+                    <NumberAxis label="Nombre de Missions" />
+                </yAxis>
+            </BarChart>
+
+            <!-- Pie Chart for Mission Priority -->
+            <PieChart fx:id="priorityPieChart" prefHeight="300" prefWidth="400" />
+
+            <!-- Line Chart for Project Progress -->
+            <LineChart fx:id="timelineChart" prefHeight="400" prefWidth="800">
+                <xAxis>
+                    <CategoryAxis label="Projets" />
+                </xAxis>
+                <yAxis>
+                    <NumberAxis label="Missions Terminées" />
+                </yAxis>
+            </LineChart>
+
+            <!-- Area for displaying generated insights -->
+            <TextArea fx:id="insightsTextArea" editable="false" prefHeight="309.0" prefWidth="800.0" wrapText="true" />
+
+        </VBox>
+    </ScrollPane>
+   <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+      <children>
+      
+          <!-- Button to generate smart insights -->
+          <Button onAction="#generateSmartInsights" prefHeight="50.0" prefWidth="213.0" style="-fx-background-color: #4CAF50; -fx-text-fill: white;" text="Générer Rapport Intelligent" />
+      </children>
+   </HBox>
+
+</VBox>
