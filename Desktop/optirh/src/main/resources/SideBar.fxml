@@ -58,13 +58,14 @@
                         </FontAwesomeIconView>
                         <Button mnemonicParsing="false" styleClass="menu-button"
                                 onAction="#redirectToProjet"
-                            text="Gestion des missions">
+                            text="GestionProjet">
                             <opaqueInsets>
                                 <Insets />
                             </opaqueInsets>
                         </Button>
                     </children>
                 </HBox>
+
                 <HBox prefHeight="9.0" prefWidth="200.0">
                     <children>
                         <FontAwesomeIconView fill="WHITE" glyphName="RECLAMATIONS" selectionEnd="0"
