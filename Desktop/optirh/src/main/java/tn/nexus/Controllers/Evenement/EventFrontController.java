@@ -8,12 +8,14 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import tn.nexus.Entities.Evenement.Evenement;
 import tn.nexus.Services.Evenement.EvenementServices;
+import tn.nexus.Utils.WrapWithSideBar;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,7 +24,9 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
-public class EventFrontController {
+public class EventFrontController implements WrapWithSideBar {
+    @FXML
+    private AnchorPane sideBar;
 
     @FXML
     private FlowPane eventContainer;
@@ -37,6 +41,7 @@ public class EventFrontController {
     @FXML
     public void initialize() {
         try {
+            initializeSideBar(sideBar);
             events = evenementService.showAll();
             updatePagination();
         } catch (SQLException e) {

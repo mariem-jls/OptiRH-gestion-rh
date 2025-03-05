@@ -15,7 +15,7 @@ public class Reservation_evenementServices implements CRUD<Reservation_evenement
     @Override
     public int insert(Reservation_evenement reservationEvenement) throws SQLException {
         // Vérifie si l'utilisateur a déjà une réservation pour cet événement
-        if (isReservationExists(1, reservationEvenement.getIdEvenement())) {
+        if (isReservationExists(reservationEvenement.getIdUser(), reservationEvenement.getIdEvenement())) {
             System.out.println("⚠ L'utilisateur a déjà réservé cet événement !");
             return 0; // Bloque l'insertion
         }
@@ -23,7 +23,7 @@ public class Reservation_evenementServices implements CRUD<Reservation_evenement
         // Requête d'insertion
         String query = "INSERT INTO reservation_evenement (id_user, id_evenement, first_name, last_name, email, telephone, date_reservation) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = con.prepareStatement(query)) {
-            ps.setInt(1, 3); // idUser fixe à 1
+            ps.setInt(1, reservationEvenement.getIdUser());
             ps.setInt(2, reservationEvenement.getIdEvenement());
             ps.setString(3, reservationEvenement.getFirstName());
             ps.setString(4, reservationEvenement.getLastName());
@@ -84,7 +84,7 @@ public class Reservation_evenementServices implements CRUD<Reservation_evenement
         String query = "SELECT r.*, e.titre, e.date_debut FROM reservation_evenement r JOIN evenement e ON r.id_evenement = e.id_evenement WHERE r.id_user = ?";
 
         try (PreparedStatement ps = con.prepareStatement(query)) {
-            ps.setInt(1,3);
+            ps.setInt(1,user.getId() );
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Reservation_evenement reservation = new Reservation_evenement();

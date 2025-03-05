@@ -6,10 +6,9 @@ import com.twilio.type.PhoneNumber;
 import io.github.cdimascio.dotenv.Dotenv;
 
 public class SmsService {
-    static Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
-    private static final String ACCOUNT_SID = dotenv.get("AC48c9ba53ccbe73b030ad7d3084c38062");
-    private static final String AUTH_TOKEN = dotenv.get("f6c460a607cbde4e08e99849ab4b7544");
-    private static final String TWILIO_PHONE_NUMBER = dotenv.get("+17069189376"); // Ex: +123456789
+    private static final String ACCOUNT_SID = "AC48c9ba53ccbe73b030ad7d3084c38062";
+    private static final String AUTH_TOKEN = "f6c460a607cbde4e08e99849ab4b7544";
+    private static final String TWILIO_PHONE_NUMBER = "+17069189376"; // Ex: +123456789
 
     static {
         Twilio.init(ACCOUNT_SID, AUTH_TOKEN);

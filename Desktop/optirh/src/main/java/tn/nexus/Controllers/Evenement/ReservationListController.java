@@ -14,6 +14,7 @@ import javafx.stage.Stage;
 import tn.nexus.Entities.Evenement.Evenement;
 import tn.nexus.Entities.Evenement.Reservation_evenement;
 import tn.nexus.Entities.User;
+import tn.nexus.Services.Auth.UserSession;
 import tn.nexus.Services.Evenement.EvenementServices;
 import tn.nexus.Services.Evenement.Reservation_evenementServices;
 import tn.nexus.Utils.Enums.Role;
@@ -34,7 +35,9 @@ public class ReservationListController {
 
     private final Reservation_evenementServices reservationService = new Reservation_evenementServices();
     private final EvenementServices evenementService = new EvenementServices();
-    private final User currentUser = new User(3, "ikbel", "ikbel@esprit.tn", "$2a$10$X6j9uxlqquyTIaY9UBWnAO/82JZpQYIPWyRC5hsdWu5ew32oy.NK2", Role.Chef_Projet, "BorjLouzir");
+    //private final User currentUser = new User(3, "ikbel", "ikbel@esprit.tn", "$2a$10$X6j9uxlqquyTIaY9UBWnAO/82JZpQYIPWyRC5hsdWu5ew32oy.NK2", Role.Chef_Projet, "BorjLouzir");
+    private UserSession userSession = UserSession.getInstance();
+
     private ObservableList<Reservation_evenement> observableReservations;
 
     @FXML
@@ -48,7 +51,7 @@ public class ReservationListController {
     }
 
     private void updateReservationList() throws SQLException {
-        observableReservations = FXCollections.observableArrayList(reservationService.getReservationsByUserID(new User()));
+        observableReservations = FXCollections.observableArrayList(reservationService.getReservationsByUserID(userSession.getUser()));
         reservationTable.setItems(observableReservations);
     }
 
@@ -112,7 +115,7 @@ public class ReservationListController {
             dialogStage.setScene(new Scene(page));
 
             ReservationEditController controller = loader.getController();
-            controller.initData(reservation, currentUser);
+            controller.initData(reservation, userSession.getUser());
             dialogStage.showAndWait();
         } catch (IOException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir la modification.", e.getMessage());

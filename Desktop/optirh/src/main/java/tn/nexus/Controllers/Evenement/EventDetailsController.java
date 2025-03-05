@@ -12,6 +12,7 @@ import javafx.stage.Stage;
 import tn.nexus.Entities.Evenement.Evenement;
 import tn.nexus.Entities.Evenement.Reservation_evenement;
 import tn.nexus.Entities.User;
+import tn.nexus.Services.Auth.UserSession;
 import tn.nexus.Services.Evenement.Reservation_evenementServices;
 import tn.nexus.Utils.Enums.Role;
 
@@ -62,7 +63,9 @@ public class EventDetailsController {
     private Reservation_evenementServices reservationService = new Reservation_evenementServices();
 
 
-    User u1 = new User(3, "ikbel", "ikbel@esprit.tn", "$2a$10$X6j9uxlqquyTIaY9UBWnAO/82JZpQYIPWyRC5hsdWu5ew32oy.NK2", Role.Chef_Projet, "BorjLouzir");
+    //User u1 = new User(3, "ikbel", "ikbel@esprit.tn", "$2a$10$X6j9uxlqquyTIaY9UBWnAO/82JZpQYIPWyRC5hsdWu5ew32oy.NK2", Role.Chef_Projet, "BorjLouzir");
+    private UserSession userSession = UserSession.getInstance();
+
 
     /*******************get data******************/
     public void setEventData(Evenement event) {
@@ -74,8 +77,8 @@ public class EventDetailsController {
         PrixData.setText(String.valueOf(event.getPrix()));
         HeureData.setText(String.valueOf(event.getHeure()));
         LieuxData.setText(String.valueOf(event.getLieu()));
-        firstNameField.setText(u1.getNom());
-        emailField.setText(u1.getEmail());
+        firstNameField.setText(userSession.getUser().getNom());
+        emailField.setText(userSession.getUser().getEmail());
         File file = new File(event.getImage());
         if (file.exists()) {
             eventImage.setImage(new Image(file.toURI().toString()));
@@ -107,11 +110,11 @@ public class EventDetailsController {
 
         // Création de l'objet Reservation_evenement
         Reservation_evenement reservation = new Reservation_evenement();
-        reservation.setIdUser(1); // ID utilisateur fixe
+        reservation.setIdUser(userSession.getUser().getId()); // ID utilisateur fixe
         reservation.setIdEvenement(currentEvent.getIdEvenement()); // ID de l'événement
         reservation.setFirstName(firstName);
-        reservation.setLastName(u1.getNom());
-        reservation.setEmail(u1.getEmail());
+        reservation.setLastName(userSession.getUser().getNom());
+        reservation.setEmail(userSession.getUser().getEmail());
         reservation.setTelephone(phone);
         reservation.setDateReservation(LocalDate.now()); // Date actuelle
 

@@ -7,33 +7,34 @@
 <?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.AnchorPane?>
 
-<BorderPane prefHeight="571.0" prefWidth="900.0" style="-fx-background-color: #f4f4f4;" stylesheets="@styles/styles.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.nexus.Controllers.Evenement.EventFrontController">
+<BorderPane prefHeight="571.0" prefWidth="900.0" style="-fx-background-color: #f4f4f4; -fx-padding: 30;" stylesheets="@styles/styles.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.nexus.Controllers.Evenement.EventFrontController">
+    <left>
+        <AnchorPane fx:id="sideBar" prefHeight="200.0" prefWidth="200.0" styleClass="menu" BorderPane.alignment="CENTER" />
+    </left>
 
-    <!-- Titre et bouton alignés à gauche -->
-    <top>
-        <HBox spacing="20" style="-fx-padding: 20px; -fx-alignment: center-left; -fx-background-color: white; -fx-border-width: 0 0 2px 0; -fx-border-color: #ddd;">
-            <Label style="-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #333;" text="Nos Événements" />
-            <Button fx:id="myReservationButton" onAction="#handleMyReservation" styleClass="reservation-button" text="Mes Réservations" />
-            <Button fx:id="prevButton" onAction="#prevPage" text="Précédent" styleClass="reservation-button"/>
-            <Button fx:id="nextButton" onAction="#nextPage" text="Suivant" styleClass="reservation-button"/>
-        </HBox>
-    </top>
-
-    <!-- Conteneur des cartes d'événements -->
     <center>
-        <FlowPane fx:id="eventContainer" hgap="20" prefHeight="600" prefWidth="900" style="-fx-padding: 20px; -fx-background-color: transparent;" vgap="20">
-            <!-- Exemple d'une carte événement -->
-            <VBox styleClass="event-card">
-                <ImageView fx:id="eventImage" fitHeight="150" fitWidth="250" preserveRatio="true" styleClass="event-image" />
-                <Label fx:id="eventTitle" styleClass="event-title" text="Nom de l'Événement" />
-                <Label fx:id="eventDate" styleClass="event-date" text="Date: 12 Mars 2025" />
-                <Label fx:id="eventPrice" styleClass="event-price" text="Prix: 20 DT" />
-                <Button fx:id="viewDetailsButton" styleClass="event-button" text="Voir Détails" />
-            </VBox>
-        </FlowPane>
+        <VBox alignment="CENTER" spacing="10">
+            <!-- Titre et bouton alignés à gauche -->
+            <HBox spacing="20" style="-fx-padding: 20px; -fx-alignment: center-left; -fx-background-color: white; -fx-border-width: 0 0 2px 0; -fx-border-color: #ddd;">
+                <Label style="-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #333;" text="Nos Événements" />
+                <Button fx:id="myReservationButton" onAction="#handleMyReservation" styleClass="reservation-button" text="Mes Réservations" />
+                <Button fx:id="prevButton" onAction="#prevPage" text="Précédent" styleClass="reservation-button"/>
+                <Button fx:id="nextButton" onAction="#nextPage" text="Suivant" styleClass="reservation-button"/>
+            </HBox>
+
+            <!-- Conteneur des cartes d'événements -->
+            <FlowPane fx:id="eventContainer" hgap="20" prefHeight="600" prefWidth="900" style="-fx-padding: 20px; -fx-background-color: transparent;" vgap="20">
+                <!-- Exemple d'une carte événement -->
+                <VBox styleClass="event-card">
+                    <ImageView fx:id="eventImage" fitHeight="150" fitWidth="250" preserveRatio="true" styleClass="event-image" />
+                    <Label fx:id="eventTitle" styleClass="event-title" text="Nom de l'Événement" />
+                    <Label fx:id="eventDate" styleClass="event-date" text="Date: 12 Mars 2025" />
+                    <Label fx:id="eventPrice" styleClass="event-price" text="Prix: 20 DT" />
+                    <Button fx:id="viewDetailsButton" styleClass="event-button" text="Voir Détails" />
+                </VBox>
+            </FlowPane>
+        </VBox>
     </center>
-    <HBox alignment="center" spacing="10" />
-
-
 </BorderPane>
