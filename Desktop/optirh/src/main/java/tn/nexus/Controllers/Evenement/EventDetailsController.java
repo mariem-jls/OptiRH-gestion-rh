@@ -123,7 +123,7 @@ public class EventDetailsController {
 
         try {
             // Vérifier si l'utilisateur a déjà réservé cet événement
-            if (reservationService.isReservationExists(1, currentEvent.getIdEvenement())) {
+            if (reservationService.isReservationExists(userSession.getUser().getId(), currentEvent.getIdEvenement())) {
                 showAlert(Alert.AlertType.ERROR, "Réservation existante", null, "Vous avez déjà réservé cet événement !");
                 return; // Stopper le processus
             }
