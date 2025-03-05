@@ -1,4 +1,5 @@
 package tn.nexus.Controllers.Transport;
+
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -8,6 +9,7 @@ import javafx.scene.web.WebView;
 import tn.nexus.Entities.transport.ReservationTrajet;
 import tn.nexus.Entities.transport.Trajet;
 import tn.nexus.Entities.transport.Vehicule;
+import tn.nexus.Services.Auth.UserSession;
 import tn.nexus.Services.Transport.PayPalPaymentService;
 import tn.nexus.Services.Transport.ReservationTrajetService;
 import tn.nexus.Services.Transport.TrajetService;
@@ -20,6 +22,7 @@ import java.util.List;
 public class RechercheTrajetController  implements WrapWithSideBar {
 
     // Composants FXML
+<<<<<<< HEAD
     @FXML private TextField departField;
     @FXML private TextField arriveField;
     @FXML private TableView<Vehicule> vehiculeTable;
@@ -31,14 +34,34 @@ public class RechercheTrajetController  implements WrapWithSideBar {
     @FXML
     private AnchorPane sideBar;
     @FXML private WebView webView; // Référence au WebVie
+=======
+    @FXML
+    private TextField departField;
+    @FXML
+    private TextField arriveField;
+    @FXML
+    private TableView<Vehicule> vehiculeTable;
+    @FXML
+    private TableColumn<Vehicule, String> typeColumn;
+    @FXML
+    private TableColumn<Vehicule, String> disponibiliteColumn;
+    @FXML
+    private TableColumn<Vehicule, Integer> placesColumn;
+    @FXML
+    private TableColumn<Vehicule, Void> actionColumn;
+    @FXML
+    private Label errorMessage;
 
+    @FXML
+    private WebView webView; // Référence au WebVie
+>>>>>>> 987c7df6fc61ea6f6a77e155e9b15adb66c4cdf9
+
+    private UserSession userSession = UserSession.getInstance();
 
     // Services
     private final TrajetService trajetService = new TrajetService();
     private final VehiculeService vehiculeService = new VehiculeService();
     private final ReservationTrajetService reservationTrajetService = new ReservationTrajetService();
-
-
 
     // Méthode d'initialisation
     @FXML
@@ -48,7 +71,6 @@ public class RechercheTrajetController  implements WrapWithSideBar {
 
         String mapHtmlPath = getClass().getResource("/transport/map.html").toExternalForm();
         webView.getEngine().load(mapHtmlPath);
-
 
         // Configurer les colonnes de la TableView
         typeColumn.setCellValueFactory(new PropertyValueFactory<>("type"));
@@ -83,6 +105,7 @@ public class RechercheTrajetController  implements WrapWithSideBar {
             }
         });
     }
+
     // Gérer la recherche de trajets
     @FXML
     public void handleRechercher() {
@@ -127,11 +150,6 @@ public class RechercheTrajetController  implements WrapWithSideBar {
 
     }
 
-
-
-
-
-
     private void handleReserver(Vehicule vehicule) {
         try {
             // Vérifier si le véhicule a des places disponibles
@@ -141,7 +159,7 @@ public class RechercheTrajetController  implements WrapWithSideBar {
             }
 
             // Récupérer l'ID de l'utilisateur connecté
-            int userId = 1; // Remplacez par l'ID de l'utilisateur connecté
+            int userId = userSession.getUser().getId();
 
             // Créer une nouvelle réservation
             ReservationTrajet reservation = new ReservationTrajet();
@@ -184,6 +202,7 @@ public class RechercheTrajetController  implements WrapWithSideBar {
             showError("Erreur : " + e.getMessage());
         }
     }
+
     // Afficher un message d'erreur
     private void showError(String message) {
         errorMessage.setText(message);
@@ -221,4 +240,4 @@ public class RechercheTrajetController  implements WrapWithSideBar {
         }
     }
 
-} 
+}
