@@ -215,7 +215,7 @@ public class ReservationTrajetService implements tn.nexus.Services.CRUD<Reservat
 
     // Vérifier si un utilisateur existe
     private boolean userExists(int userId) throws SQLException {
-        String query = "SELECT id FROM utilisateur WHERE id = ?";
+        String query = "SELECT id FROM users WHERE id = ?";
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setInt(1, userId);
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -224,7 +224,7 @@ public class ReservationTrajetService implements tn.nexus.Services.CRUD<Reservat
         }
     }
     public String getUsernameByUserId(int userId) throws SQLException {
-        String query = "SELECT nom FROM utilisateur WHERE id = ?";
+        String query = "SELECT nom FROM users WHERE id = ?";
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setInt(1, userId);
             try (ResultSet resultSet = statement.executeQuery()) {

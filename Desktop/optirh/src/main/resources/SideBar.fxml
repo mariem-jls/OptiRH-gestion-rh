@@ -109,7 +109,7 @@
                         </FontAwesomeIconView>
                         <Button mnemonicParsing="false" styleClass="menu-button"
                                 onAction="#redirectToTransport"
-                                text="Transport">
+                                text="Gestion de Transport">
                             <opaqueInsets>
                                 <Insets />
                             </opaqueInsets>
