@@ -7,7 +7,10 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import tn.nexus.Entities.Recrutement.Demande;
+import tn.nexus.Entities.Recrutement.Offre;
+import tn.nexus.Services.EmailService;
 import tn.nexus.Services.Recrutement.DemandeService;
+import tn.nexus.Services.Recrutement.OffreService;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -24,9 +27,15 @@ public class ModifierDemandeController {
     @FXML private TextField txtAdresse;
     @FXML private DatePicker dateDebutDisponiblePicker;
     @FXML private TextField txtSituationActuelle;
+    @FXML private TextField txtPoste;
+
 
     private DemandeService demandeService = new DemandeService();
+    private EmailService emailService = new EmailService();
     private Demande demande;
+    private OffreService offreService = new OffreService();
+    private int offreId; // ID de l'offre associée
+
 
     @FXML
     public void initialize() {
@@ -69,6 +78,14 @@ public class ModifierDemandeController {
         }
 
         comboStatut.setValue(demande.getStatut().toString());
+        // 🔥 Récupérer le nom du poste associé
+        Offre offre = offreService.getOffreById(demande.getOffreId());
+        if (offre != null) {
+            System.out.println("Poste associé à la demande : " + offre.getPoste());
+            txtPoste.setText(offre.getPoste()); // Assurez-vous que txtPoste est un champ défini dans le FXML
+        } else {
+            System.out.println("Aucune offre trouvée pour cette demande.");
+        }
     }
 
     @FXML
@@ -83,47 +100,7 @@ public class ModifierDemandeController {
         LocalDate dateDebutDisponible = dateDebutDisponiblePicker.getValue();
         String situationActuelle = txtSituationActuelle.getText().trim();
 
-        // Validation des champs
-        if (description.isEmpty()) {
-            showError("La description ne peut pas être vide.");
-            return;
-        }
-        if (description.length() > 500) {
-            showError("La description ne peut pas dépasser 500 caractères.");
-            return;
-        }
-        if (date == null || date.isBefore(LocalDate.now())) {
-            showError("Veuillez sélectionner une date valide (aujourd'hui ou plus tard).");
-            return;
-        }
-        if (statut == null) {
-            showError("Veuillez sélectionner un statut.");
-            return;
-        }
-        if (nomComplet.isEmpty()) {
-            showError("Le nom complet ne peut pas être vide.");
-            return;
-        }
-        if (email.isEmpty()) {
-            showError("L'email ne peut pas être vide.");
-            return;
-        }
-        if (telephone.isEmpty()) {
-            showError("Le téléphone ne peut pas être vide.");
-            return;
-        }
-        if (adresse.isEmpty()) {
-            showError("L'adresse ne peut pas être vide.");
-            return;
-        }
-        if (dateDebutDisponible == null) {
-            showError("Veuillez sélectionner une date de début disponible.");
-            return;
-        }
-        if (situationActuelle.isEmpty()) {
-            showError("La situation actuelle ne peut pas être vide.");
-            return;
-        }
+
 
         // Mise à jour de la demande
         demande.setDescription(description);
@@ -138,12 +115,21 @@ public class ModifierDemandeController {
 
         try {
             demandeService.update(demande);
+            // Vérifier si le statut a été changé et envoyer un email en fonction du statut
+            if (statut.equals(Demande.Statut.ACCEPTEE.toString())) {
+                // Envoi de l'email pour une demande acceptée
+                emailService.sendAcceptedEmail(demande.getEmail(), demande.getNomComplet(), "Nom du Poste"); // Remplacez "Nom du Poste" par l'offre associée
+            } else if (statut.equals(Demande.Statut.REFUSEE.toString())) {
+                // Envoi de l'email pour une demande refusée
+                emailService.sendRejectedEmail(demande.getEmail(), demande.getNomComplet(), "Nom du Poste"); // Remplacez "Nom du Poste" par l'offre associée
+            }
             showSuccess("La demande a été modifiée avec succès.");
             fermerFenetre();
         } catch (SQLException e) {
             showError("Erreur lors de la modification de la demande : " + e.getMessage());
         }
     }
+
 
     @FXML
     private void annuler() {

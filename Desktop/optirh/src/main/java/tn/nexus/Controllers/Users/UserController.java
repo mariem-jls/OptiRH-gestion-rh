@@ -1,10 +1,11 @@
-package tn.nexus.Controllers;
+package tn.nexus.Controllers.Users;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Alert;
+import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
@@ -22,7 +23,6 @@ import java.util.ResourceBundle;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import io.github.palexdev.materialfx.controls.MFXButton;
-import io.github.palexdev.materialfx.controls.MFXComboBox;
 import io.github.palexdev.materialfx.controls.MFXPaginatedTableView;
 import io.github.palexdev.materialfx.controls.MFXTableColumn;
 import io.github.palexdev.materialfx.controls.MFXTextField;
@@ -38,32 +38,22 @@ public class UserController implements Initializable, WrapWithSideBar {
 
     @FXML
     private VBox userDetailsPanel;
-
     @FXML
     private MFXTextField nomField, emailField, addressField, passwordField;
-
-    @FXML
-    private MFXComboBox<Role> roleField;
-
     @FXML
     private MFXButton updateButton, deleteButton, addButton;
-
     @FXML
     private Button addUserButton;
-
     @FXML
     private AnchorPane sideBar;
-
     @FXML
     private MFXPaginatedTableView<User> tableView;
-
     @FXML
     private HBox buttonContainer;
-
+    @FXML
+    private VBox userPanel;
     private UserService userService = new UserService();
-
     private ObservableList<User> users = FXCollections.observableArrayList();
-
     private User selectedUser;
 
     @Override
@@ -80,36 +70,40 @@ public class UserController implements Initializable, WrapWithSideBar {
         tableView.getSelectionModel().selectionProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null && !newSelection.isEmpty()) {
                 selectedUser = tableView.getSelectionModel().getSelectedValues().get(0);
-                showUserDetails(selectedUser);
+                showUserDetails(selectedUser, true);
             }
         });
-
     }
 
-    private void showUserDetails(User user) {
-
-        initializeEmptyUserDetails();
-        selectedUser = user;
-        nomField.setText(user.getNom());
-        emailField.setText(user.getEmail());
-        roleField.selectItem(user.getRole());
-        addressField.setText(user.getAddress());
+    private void showUserDetails(User user, boolean isUpdate) {
+        boolean isPresent = isUpdate;
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Users/UserDetails.fxml"));
+            Parent root = loader.load();
+            UpdateUserController controller = loader.getController();
+            controller.setPageTitle(isPresent ? "Modifier Utilisateur" : "Ajouter Utilisateur");
+            controller.setUser(user);
+            controller.setUpdate(isPresent);
+            userPanel.getScene().setRoot(root);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    private void clearUserDetails() {
-        nomField.clear();
-        emailField.clear();
-        roleField.getSelectionModel().clearSelection();
-        addressField.clear();
-        passwordField.clear();
-        userDetailsPanel.setVisible(false);
-    }
+    // private void clearUserDetails() {
+    // nomField.clear();
+    // emailField.clear();
+    // roleField.getSelectionModel().clearSelection();
+    // addressField.clear();
+    // passwordField.clear();
+    // userDetailsPanel.setVisible(false);
+    // }
 
-    private void initializeEmptyUserDetails() {
+    // private void initializeEmptyUserDetails() {
 
-        roleField.getItems().setAll(Role.values());
-        userDetailsPanel.setVisible(true);
-    }
+    // roleField.getItems().setAll(Role.values());
+    // userDetailsPanel.setVisible(true);
+    // }
 
     private void setupTableColumns() {
         MFXTableColumn<User> nomColumn = new MFXTableColumn<>("Nom", true, Comparator.comparing(User::getNom));
@@ -117,95 +111,92 @@ public class UserController implements Initializable, WrapWithSideBar {
         MFXTableColumn<User> roleColumn = new MFXTableColumn<>("Role", true, Comparator.comparing(User::getRole));
         MFXTableColumn<User> addressColumn = new MFXTableColumn<>("Address", true,
                 Comparator.comparing(User::getAddress));
-
         nomColumn.setRowCellFactory(user -> new MFXTableRowCell<>(User::getNom));
         emailColumn.setRowCellFactory(user -> new MFXTableRowCell<>(User::getEmail));
         roleColumn.setRowCellFactory(user -> new MFXTableRowCell<>(User::getRole));
         addressColumn.setRowCellFactory(user -> new MFXTableRowCell<>(User::getAddress));
-
         tableView.getTableColumns().addAll(nomColumn, emailColumn, roleColumn, addressColumn);
         tableView.autosizeColumnsOnInitialization();
-        userDetailsPanel.setVisible(false);
+        // userDetailsPanel.setVisible(false);
 
-        updateButton.setOnAction(event -> {
-            if (selectedUser != null) {
-                selectedUser.setNom(nomField.getText());
-                selectedUser.setEmail(emailField.getText());
-                selectedUser.setRole(roleField.getValue());
-                selectedUser.setAddress(addressField.getText());
+        // updateButton.setOnAction(event -> {
+        // if (selectedUser != null) {
+        // selectedUser.setNom(nomField.getText());
+        // selectedUser.setEmail(emailField.getText());
+        // selectedUser.setRole(roleField.getValue());
+        // selectedUser.setAddress(addressField.getText());
 
-                try {
-                    userService.update(selectedUser);
-                    refreshTable();
-                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                    alert.setTitle("Succès de la mise à jour");
-                    alert.setHeaderText(null);
-                    alert.setContentText("Utilisateur mis à jour avec succès !");
-                    alert.showAndWait();
-                } catch (SQLException e) {
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle("Erreur de mise à jour");
-                    alert.setHeaderText("Erreur lors de la mise à jour de l'utilisateur");
-                    alert.setContentText(e.getMessage());
-                    alert.showAndWait();
-                }
-            }
-        });
+        // try {
+        // userService.update(selectedUser);
+        // refreshTable();
+        // Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        // alert.setTitle("Succès de la mise à jour");
+        // alert.setHeaderText(null);
+        // alert.setContentText("Utilisateur mis à jour avec succès !");
+        // alert.showAndWait();
+        // } catch (SQLException e) {
+        // Alert alert = new Alert(Alert.AlertType.ERROR);
+        // alert.setTitle("Erreur de mise à jour");
+        // alert.setHeaderText("Erreur lors de la mise à jour de l'utilisateur");
+        // alert.setContentText(e.getMessage());
+        // alert.showAndWait();
+        // }
+        // }
+        // });
 
-        deleteButton.setOnAction(event -> {
-            if (selectedUser != null) {
-                try {
-                    userService.delete(selectedUser);
-                    refreshTable();
-                    selectedUser = null;
-                    clearUserDetails();
-                    userDetailsPanel.setVisible(false);
+        // deleteButton.setOnAction(event -> {
+        // if (selectedUser != null) {
+        // try {
+        // userService.delete(selectedUser);
+        // refreshTable();
+        // selectedUser = null;
+        // clearUserDetails();
+        // userDetailsPanel.setVisible(false);
 
-                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                    alert.setTitle("Suppression réussie");
-                    alert.setHeaderText(null);
-                    alert.setContentText("Utilisateur supprimé avec succès");
-                    alert.showAndWait();
-                } catch (SQLException e) {
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle("Erreur de suppression");
-                    alert.setHeaderText("Erreur lors de la suppression de l'utilisateur");
-                    alert.setContentText(e.getMessage());
-                    alert.showAndWait();
-                }
-            }
-        });
+        // Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        // alert.setTitle("Suppression réussie");
+        // alert.setHeaderText(null);
+        // alert.setContentText("Utilisateur supprimé avec succès");
+        // alert.showAndWait();
+        // } catch (SQLException e) {
+        // Alert alert = new Alert(Alert.AlertType.ERROR);
+        // alert.setTitle("Erreur de suppression");
+        // alert.setHeaderText("Erreur lors de la suppression de l'utilisateur");
+        // alert.setContentText(e.getMessage());
+        // alert.showAndWait();
+        // }
+        // }
+        // });
 
-        addButton.setOnAction(event -> {
-            User user = new User();
-            user.setNom(nomField.getText());
-            user.setEmail(emailField.getText());
-            user.setRole(roleField.getValue());
-            user.setMotDePasse(passwordField.getText());
-            user.setAddress(addressField.getText());
+        // addButton.setOnAction(event -> {
+        // User user = new User();
+        // user.setNom(nomField.getText());
+        // user.setEmail(emailField.getText());
+        // user.setRole(roleField.getValue());
+        // user.setMotDePasse(passwordField.getText());
+        // user.setAddress(addressField.getText());
 
-            try {
-                userService.insert(user);
-                refreshTable();
+        // try {
+        // userService.insert(user);
+        // refreshTable();
 
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Insertion réussie");
-                alert.setHeaderText(null);
-                alert.setContentText("Utilisateur " + nomField.getText() + " ajouté avec succès");
-                alert.showAndWait();
-            } catch (SQLException e) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Erreur d'insertion");
-                alert.setHeaderText("Erreur lors de l'insertion de l'utilisateur");
-                alert.setContentText(e.getMessage());
-                alert.showAndWait();
-            }
-        });
-
+        // Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        // alert.setTitle("Insertion réussie");
+        // alert.setHeaderText(null);
+        // alert.setContentText("Utilisateur " + nomField.getText() + " ajouté avec
+        // succès");
+        // alert.showAndWait();
+        // } catch (SQLException e) {
+        // Alert alert = new Alert(Alert.AlertType.ERROR);
+        // alert.setTitle("Erreur d'insertion");
+        // alert.setHeaderText("Erreur lors de l'insertion de l'utilisateur");
+        // alert.setContentText(e.getMessage());
+        // alert.showAndWait();
+        // }
+        // });
         addUserButton.setOnAction(event -> {
-            initializeEmptyUserDetails();
+            showUserDetails(new User(), false);
         });
-
     }
 
     private void setupFilters() {
@@ -222,7 +213,6 @@ public class UserController implements Initializable, WrapWithSideBar {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         tableView.setItems(users);
     }
 
@@ -238,7 +228,6 @@ public class UserController implements Initializable, WrapWithSideBar {
         refreshIcon.setFill(javafx.scene.paint.Color.WHITE);
         refreshButton.setGraphic(refreshIcon);
         refreshButton.setOnAction(event -> refreshTable());
-
         MFXButton exportButton = new MFXButton("Exporter CSV");
         exportButton.getStyleClass().add("fancy-button");
         exportButton.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white;");
@@ -246,13 +235,10 @@ public class UserController implements Initializable, WrapWithSideBar {
         exportIcon.setFill(javafx.scene.paint.Color.WHITE);
         exportButton.setGraphic(exportIcon);
         exportButton.setOnAction(event -> exportToCSV());
-
         refreshButton.setPrefWidth(150);
         exportButton.setPrefWidth(150);
-
         VBox buttonContainer = new VBox(1);
         buttonContainer.getChildren().addAll(refreshButton, exportButton);
-
         this.buttonContainer.getChildren().add(buttonContainer);
     }
 
@@ -269,16 +255,13 @@ public class UserController implements Initializable, WrapWithSideBar {
         fileChooser.setTitle("Entregistrez le fichier CSV");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
         File file = fileChooser.showSaveDialog(tableView.getScene().getWindow());
-
         if (file != null) {
             try (FileWriter writer = new FileWriter(file)) {
                 writer.write("ID,Nom,Email,Role,Address\n");
-
                 for (User user : users) {
                     writer.write(user.getId() + "," + user.getNom() + "," + user.getEmail() + "," + user.getRole() + ","
                             + user.getAddress() + "\n");
                 }
-
                 writer.flush();
             } catch (IOException e) {
                 e.printStackTrace();
