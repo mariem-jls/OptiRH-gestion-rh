@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView?>
+<?import io.github.palexdev.materialfx.controls.MFXButton?>
+<?import io.github.palexdev.materialfx.controls.MFXTextField?>
+<?import io.github.palexdev.materialfx.controls.MFXToggleButton?>
+<?import io.github.palexdev.materialfx.controls.MFXPasswordField?>
+<?import io.github.palexdev.materialfx.controls.legacy.MFXLegacyComboBox?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
+    prefHeight="650.0" prefWidth="1100.0" stylesheets="@../dashboard.css"
+    xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+    fx:controller="tn.nexus.Controllers.Users.UpdateUserController">
+    <left>
+        <AnchorPane fx:id="sideBar" prefHeight="200.0" prefWidth="200.0" styleClass="menu"
+            BorderPane.alignment="CENTER" />
+    </left>
+    <center>
+        <AnchorPane prefHeight="200.0" prefWidth="200.0" styleClass="bg-white"
+            BorderPane.alignment="CENTER">
+            <children>
+                <VBox layoutX="41.0" layoutY="269.0" prefHeight="600.0" prefWidth="858.4"
+                    spacing="20.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                    AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <children>
+                        <Text fx:id="pageTitle">
+                            <font>
+                                <Font size="19.0" />
+                            </font>
+                        </Text>
+                        <MFXTextField fx:id="username" floatMode="BORDER"
+                            floatingText="Nom" floatingTextGap="3.0" prefHeight="50.0"
+                            prefWidth="794.0" />
+                        <MFXTextField fx:id="email" floatMode="BORDER"
+                            floatingText="Email" floatingTextGap="3.0" prefHeight="50.0"
+                            prefWidth="794.0" />
+                        <MFXLegacyComboBox fx:id="role"
+                            promptText="Role" prefHeight="50.0"
+                            prefWidth="794.0" />
+                        <MFXPasswordField fx:id="password"
+                            floatingText="Mot de passe" floatingTextGap="3.0" prefHeight="50.0"
+                            prefWidth="794.0" />
+                        <MFXTextField fx:id="address" floatMode="BORDER"
+                            floatingText="Address" floatingTextGap="3.0" prefHeight="50.0"
+                            prefWidth="794.0" />
+                        <HBox alignment="BASELINE_RIGHT" layoutX="35.0" layoutY="354.0"
+                            prefHeight="34.0" prefWidth="834.0" spacing="25.0">
+                            <children>
+                                <MFXButton fx:id="saveBtn" buttonType="RAISED" defaultButton="true"
+                                    depthLevel="LEVEL1" onAction="#onSave" prefHeight="39.0"
+                                    prefWidth="93.0" rippleColor="#816262" styleClass="save-btn"
+                                    text="Enregistrer" textFill="#030101">
+                                    <graphic>
+                                        <FontAwesomeIconView fill="WHITE" glyphName="PENCIL"
+                                            size="16" />
+                                    </graphic>
+                                </MFXButton>
+                                <MFXButton fx:id="cancelBtn" buttonType="RAISED"
+                                    defaultButton="true" depthLevel="LEVEL1"
+                                    onAction="#OnClickCancelBtn" prefHeight="39.0" prefWidth="93.0"
+                                    rippleColor="#808080" styleClass="cancel-btn" text="Annuler">
+                                    <graphic>
+                                        <FontAwesomeIconView fill="WHITE" glyphName="CLOSE"
+                                            size="16" />
+                                    </graphic>
+                                </MFXButton>
+                            </children>
+                        </HBox>
+                    </children>
+                    <opaqueInsets>
+                        <Insets />
+                    </opaqueInsets>
+                    <padding>
+                        <Insets left="25.0" right="25.0" top="25.0" />
+                    </padding>
+                </VBox>
+            </children>
+        </AnchorPane>
+    </center>
+</BorderPane>
