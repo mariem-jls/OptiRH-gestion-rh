@@ -8,7 +8,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import tn.nexus.Services.Evenement.EvenementServices;
+//import tn.nexus.Services.Evenement.EvenementServices;
 
 import java.io.IOException;
 
@@ -37,6 +37,7 @@ public class MainFx extends Application {
         // FXMLLoader(getClass().getResource("/formations/AjouterFormation.fxml"));
         // FXMLLoader loader = new FXMLLoader(getClass().getResource("/Users/ListUsers.fxml"));
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/Auth/Login.fxml"));
+
         Parent root = loader.load();
         Scene scene = new Scene(root);
 

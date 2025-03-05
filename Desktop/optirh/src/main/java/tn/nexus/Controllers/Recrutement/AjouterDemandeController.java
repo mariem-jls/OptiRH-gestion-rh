@@ -2,19 +2,16 @@ package tn.nexus.Controllers.Recrutement;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import tn.nexus.Entities.Recrutement.Demande;
 import tn.nexus.Entities.Recrutement.Offre;
+import tn.nexus.Services.EmailService;
 import tn.nexus.Services.Recrutement.DemandeService;
 import tn.nexus.Services.Recrutement.OffreService;
 
 import java.io.File;
-import java.io.IOException;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -34,8 +31,6 @@ public class AjouterDemandeController {
     @FXML
     private ComboBox<Offre> comboOffre;
     @FXML
-    private TextField txtUtilisateurId;
-    @FXML
     private TextField txtNomComplet;
     @FXML
     private TextField txtEmail;
@@ -49,6 +44,7 @@ public class AjouterDemandeController {
     private ComboBox<String> comboSituationActuelle; // Changement ici
     @FXML
     private Label fileLabel;
+    private EmailService emailService = new EmailService();
 
     private File selectedFile;
     private final DemandeService demandeService = new DemandeService();
@@ -99,7 +95,6 @@ public class AjouterDemandeController {
         String description = txtDescription.getText().trim();
         LocalDate date = datePicker.getValue();
         Offre offreSelectionnee = comboOffre.getValue();
-        int utilisateurId;
         String nomComplet = txtNomComplet.getText().trim();
         String email = txtEmail.getText().trim();
         String telephone = txtTelephone.getText().trim();
@@ -120,13 +115,6 @@ public class AjouterDemandeController {
             showError("Veuillez sélectionner une offre.");
             return;
         }
-        try {
-            utilisateurId = Integer.parseInt(txtUtilisateurId.getText().trim());
-        } catch (NumberFormatException e) {
-            showError("L'ID utilisateur doit être un nombre valide.");
-            return;
-        }
-
         if (nomComplet.isEmpty() || !isNameValid(nomComplet)) {
             showError("Le nom complet doit être valide (lettres et espaces seulement).");
             return;
@@ -156,7 +144,6 @@ public class AjouterDemandeController {
 
         // Création de la demande
         Demande demande = new Demande(
-                utilisateurId,
                 offreSelectionnee.getId(),
                 Demande.Statut.EN_ATTENTE,  // Statut par défaut
                 Timestamp.valueOf(LocalDateTime.now().atOffset(ZoneOffset.UTC).toLocalDateTime()),
@@ -177,6 +164,13 @@ public class AjouterDemandeController {
         } catch (SQLException e) {
             showError("Erreur lors de l'enregistrement de la demande : " + e.getMessage());
         }
+        // Envoi de l'e-mail de confirmation
+        String e_mail = txtEmail.getText(); // Vous devez récupérer l'email du candidat
+        emailService.sendWaitingEmail(e_mail);
+
+        // Affichage d'un message pour confirmer que la candidature a été enregistrée
+        System.out.println("Candidature enregistrée et email envoyé à " + e_mail);
+
     }
 
     @FXML

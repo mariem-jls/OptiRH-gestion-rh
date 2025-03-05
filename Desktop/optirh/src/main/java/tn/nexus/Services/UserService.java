@@ -105,7 +105,7 @@ public class UserService implements CRUD<User> {
         return null; // Aucun utilisateur trouvé avec cet email et ce rôle
     }
     public User getUserByEmail(String email) throws SQLException {
-        String req = "SELECT * FROM Users WHERE email = ?";
+        String req = "SELECT * FROM users WHERE email = ?";
         try (PreparedStatement ps = cnx.prepareStatement(req)) {
             ps.setString(1, email);
             try (ResultSet rs = ps.executeQuery()) {
@@ -139,7 +139,7 @@ public class UserService implements CRUD<User> {
 
     public User getUserById(int userId) throws SQLException {
         System.out.println("Recherche de l'utilisateur avec l'ID : " + userId); // Log pour débogage
-        String query = "SELECT * FROM utilisateur WHERE id = ?";
+        String query = "SELECT * FROM users WHERE id = ?";
         try (PreparedStatement ps = cnx.prepareStatement(query)) {
             ps.setInt(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -162,7 +162,7 @@ public class UserService implements CRUD<User> {
 
 
     public User getUserById2(int userId) throws SQLException {
-        String query = "SELECT * FROM utilisateur WHERE id = ?";
+        String query = "SELECT * FROM users WHERE id = ?";
         try (PreparedStatement ps = cnx.prepareStatement(query)) {
             ps.setInt(1, userId);
             try (ResultSet rs = ps.executeQuery()) {

@@ -6,23 +6,31 @@ import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import tn.nexus.Entities.reclamation.Reclamation;
 import tn.nexus.Services.reclamation.EmailService;
 import tn.nexus.Services.reclamation.ReclamationService;
+import tn.nexus.Utils.WrapWithSideBar;
 
 import java.io.IOException;
+import java.net.URL;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Objects;
+import java.util.ResourceBundle;
 
-public class ReclamationfrontController {
+public class ReclamationfrontController implements Initializable , WrapWithSideBar {
     @FXML
     private TableView<Reclamation> reclamationsTable;
+
+   @FXML
+   private AnchorPane sideBar;
     @FXML
     private TableColumn<Reclamation, String> descriptionColumn;
     @FXML
@@ -43,38 +51,46 @@ public class ReclamationfrontController {
     private final ReclamationService reclamationService = new ReclamationService();
     private ObservableList<Reclamation> observableReclamationList;
 
-    public void initialize() throws SQLException {
-        if (reclamationsTable == null || descriptionColumn == null || statusColumn == null || dateColumn == null) {
-            System.err.println("FXML components are not properly injected.");
-            return;
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        try {
+            initializeSideBar(sideBar);
+            if (reclamationsTable == null || descriptionColumn == null || statusColumn == null || dateColumn == null) {
+                System.err.println("FXML components are not properly injected.");
+                return;
+            }
+            if (statusField.getValue() == null) {
+                statusField.setValue("En attente");
+            }
+
+            // Configuration des colonnes de la table
+            descriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
+            statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
+            dateColumn.setCellValueFactory(new PropertyValueFactory<>("date"));
+
+            // Chargement des données
+            observableReclamationList = FXCollections.observableArrayList(reclamationService.showAll());
+
+            // Configuration des filtres
+            statusField.setItems(FXCollections.observableArrayList("En attente", "En cours", "Résolue"));
+            filterStatusField.setItems(FXCollections.observableArrayList("Tous", "En attente", "En cours", "Résolue"));
+            filterStatusField.setValue("Tous");
+
+            FilteredList<Reclamation> filteredData = new FilteredList<>(observableReclamationList, p -> true);
+            searchField.textProperty().addListener((observable, oldValue, newValue) -> applyFilters(filteredData));
+            filterStatusField.valueProperty().addListener((observable, oldValue, newValue) -> applyFilters(filteredData));
+
+            SortedList<Reclamation> sortedData = new SortedList<>(filteredData);
+            sortedData.comparatorProperty().bind(reclamationsTable.comparatorProperty());
+            reclamationsTable.setItems(sortedData);
+
+            // Ajouter la colonne "Réponse"
+            addResponseButtonToTable();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Erreur lors du chargement des réclamations !");
         }
-        if(statusField.getValue() == null) {
-            statusField.setValue("En attente");
-        }
-
-        // Configuration des colonnes de la table
-        descriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
-        statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
-        dateColumn.setCellValueFactory(new PropertyValueFactory<>("date"));
-
-        // Chargement des données
-        observableReclamationList = FXCollections.observableArrayList(reclamationService.showAll());
-
-        // Configuration des filtres
-        statusField.setItems(FXCollections.observableArrayList("En attente", "En cours", "Résolue"));
-        filterStatusField.setItems(FXCollections.observableArrayList("Tous", "En attente", "En cours", "Résolue"));
-        filterStatusField.setValue("Tous");
-
-        FilteredList<Reclamation> filteredData = new FilteredList<>(observableReclamationList, p -> true);
-        searchField.textProperty().addListener((observable, oldValue, newValue) -> applyFilters(filteredData));
-        filterStatusField.valueProperty().addListener((observable, oldValue, newValue) -> applyFilters(filteredData));
-
-        SortedList<Reclamation> sortedData = new SortedList<>(filteredData);
-        sortedData.comparatorProperty().bind(reclamationsTable.comparatorProperty());
-        reclamationsTable.setItems(sortedData);
-
-        // Ajouter la colonne "Réponse"
-        addResponseButtonToTable();
     }
 
     private void addResponseButtonToTable() {

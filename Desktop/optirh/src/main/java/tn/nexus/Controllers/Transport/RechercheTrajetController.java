@@ -2,10 +2,12 @@ package tn.nexus.Controllers.Transport;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import tn.nexus.Entities.transport.ReservationTrajet;
 import tn.nexus.Entities.transport.Trajet;
 import tn.nexus.Entities.transport.Vehicule;
+import tn.nexus.Services.Transport.PayPalPaymentService;
 import tn.nexus.Services.Transport.ReservationTrajetService;
 import tn.nexus.Services.Transport.TrajetService;
 import tn.nexus.Services.Transport.VehiculeService;
@@ -133,8 +135,6 @@ public class RechercheTrajetController {
                 return;
             }
 
-
-
             // Récupérer l'ID de l'utilisateur connecté
             int userId = 1; // Remplacez par l'ID de l'utilisateur connecté
 
@@ -166,7 +166,10 @@ public class RechercheTrajetController {
                 vehiculeTable.refresh();
 
                 // Afficher un message de succès
-                showSuccess("Réservation réussie !");
+                showSuccess("Réservation réussie ! Redirection vers PayPal en cours...");
+
+                // Rediriger l'utilisateur vers PayPal
+                redirectToPayPal(vehicule);
             } else {
                 showError("Échec de la réservation.");
             }
@@ -192,6 +195,25 @@ public class RechercheTrajetController {
 
     private void hideError() {
         errorMessage.setVisible(false); // Masquer le message d'erreur
+    }
+
+    private void redirectToPayPal(Vehicule vehicule) {
+        // Montant du paiement (par exemple, 10.00 USD)
+        double amount = 10.00; // Vous pouvez ajuster ce montant en fonction de votre logique
+        String currency = "USD"; // Devise
+        String description = "Paiement pour la réservation du véhicule " + vehicule.getType();
+
+        // Créer un paiement PayPal et récupérer l'URL d'approbation
+        PayPalPaymentService payPalService = new PayPalPaymentService();
+        String approvalUrl = payPalService.createPayment(amount, currency, description);
+
+        if (approvalUrl != null) {
+            // Rediriger l'utilisateur vers l'URL d'approbation PayPal
+            WebEngine webEngine = webView.getEngine();
+            webEngine.load(approvalUrl);
+        } else {
+            showError("Erreur lors de la création du paiement PayPal.");
+        }
     }
 
 } 
