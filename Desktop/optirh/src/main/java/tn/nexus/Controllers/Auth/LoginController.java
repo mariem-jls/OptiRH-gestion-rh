@@ -64,7 +64,7 @@ public class LoginController {
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();
-            statusLabel.setText("Erreur lors du chargement de l'ecran Mot de passe oubli .");
+            statusLabel.setText("Erreur lors du chargement de l'ecran <Mot de passe oublié>");
         }
     }
 

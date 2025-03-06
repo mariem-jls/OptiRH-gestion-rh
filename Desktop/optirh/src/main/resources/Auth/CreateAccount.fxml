@@ -15,7 +15,7 @@
     stylesheets="@styles.css">
 
     <!-- Logo -->
-    <ImageView fitHeight="200.0" fitWidth="200.0" preserveRatio="true">
+    <ImageView fitHeight="100.0" fitWidth="100.0" preserveRatio="true">
         <image>
             <Image
                 url="https://i.ibb.co/0yTLr7bq/408065252-0f3bdb15-6321-42da-b294-c12b76d025d3.png" />

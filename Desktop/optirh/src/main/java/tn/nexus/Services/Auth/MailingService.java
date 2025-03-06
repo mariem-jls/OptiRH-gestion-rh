@@ -71,4 +71,57 @@ public class MailingService {
             alert.showAndWait();
         }
     }
-}
+
+    
+    public void sendVerificationCode(String toEmail, String verificationCode) {
+        try {
+            // Configuration du serveur SMTP (exemple avec Gmail)
+            Mailer mailer = MailerBuilder
+                    .withSMTPServer(MAIL_HOST, MAIL_PORT, MAIL_ADDRESS, MAIL_PASSWORD)
+                    .withTransportStrategy(TransportStrategy.SMTP_TLS)
+                    .buildMailer();
+    
+            // Création de l'email
+            Email email = EmailBuilder.startingBlank()
+                    .from(MAIL_ADDRESS)
+                    .to(toEmail)
+                    .withSubject("Code de vérification pour réinitialisation du mot de passe")
+                    .withHTMLText("<html>" +
+                            "<head>" +
+                            "<style>" +
+                            "body { font-family: Arial, sans-serif; line-height: 1.6; }" +
+                            ".header { text-align: center; }" +
+                            ".logo { width: 150px; }" +
+                            ".content { margin: 20px; }" +
+                            ".footer { margin-top: 30px; font-size: small; color: gray; }" +
+                            "</style>" +
+                            "</head>" +
+                            "<body>" +
+                            "<div class='header'>" +
+                            "<img src='https://i.ibb.co/0yTLr7bq/408065252-0f3bdb15-6321-42da-b294-c12b76d025d3.png' class='logo' alt='Company Logo' />" +
+                            "<h1>Réinitialisation du mot de passe</h1>" +
+                            "</div>" +
+                            "<div class='content'>" +
+                            "<p>Votre code de vérification est : <strong>" + verificationCode + "</strong></p>" +
+                            "<p>Veuillez saisir ce code dans l'application pour réinitialiser votre mot de passe.</p>" +
+                            "<p>Si vous n'avez pas demandé de réinitialisation de mot de passe, veuillez ignorer cet email.</p>" +
+                            "</div>" +
+                            "<div class='footer'>" +
+                            "<p>Cordialement,</p>" +
+                            "<p>L'équipe OptiRH</p>" +
+                            "</div>" +
+                            "</body>" +
+                            "</html>")
+                    .buildEmail();
+    
+            // Envoi de l'email
+            mailer.sendMail(email);
+            System.out.println("Email de vérification envoyé avec succès à " + toEmail);
+        } catch (Exception e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Erreur d'envoi d'email");
+            alert.setHeaderText(null);
+            alert.setContentText("L'email de vérification n'a pas pu être envoyé : " + e.getMessage());
+            alert.showAndWait();
+        }
+    }}
