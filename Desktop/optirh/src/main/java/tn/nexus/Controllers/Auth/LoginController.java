@@ -45,10 +45,10 @@ public class LoginController {
                 stage.show();
             } catch (Exception e) {
                 e.getMessage();
-                statusLabel.setText("Failed to load user list.");
+                statusLabel.setText("Erreur lors de chargement de la liste des utilisateurs.");
             }
         } else {
-            statusLabel.setText("Invalid credentials.");
+            statusLabel.setText("Identifiants invalides.");
         }
     }
 

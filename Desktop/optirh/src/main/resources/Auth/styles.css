@@ -1,0 +1,95 @@
+/* styles.css */
+
+.root {
+    -fx-background-color: #f0f0f0;
+    /* Light background color */
+    -fx-padding: 20;
+    /* Padding around the VBox */
+}
+
+.cont {
+    -fx-background-color: white;
+    /* White background for the form */
+    -fx-border-radius: 10;
+    /* Rounded corners */
+    -fx-padding: 20;
+    /* Inner padding */
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 10, 0.0, 0, 0);
+    /* Shadow effect */
+    -fx-pref-width: 500;
+
+}
+
+.title-label {
+    -fx-font-size: 24px;
+    /* Title font size */
+    -fx-font-weight: bold;
+    /* Bold title */
+    -fx-text-fill: #333;
+    /* Dark text color */
+}
+
+.input-label {
+    -fx-font-size: 14px;
+    /* Font size for labels */
+    -fx-font-weight: bold;
+    -fx-text-fill: #555;
+    /* Darker text color */
+}
+
+MFXTextField,
+MFXPasswordField {
+    -fx-padding: 10;
+    /* Padding inside input fields */
+    -fx-font-size: 14px;
+    /* Font size for input fields */
+    -fx-pref-width: 300;
+    /* Preferred width for input fields */
+    -fx-margin-bottom: 30;
+}
+
+.login-button {
+    -fx-background-color: #007bff;
+    /* Primary button color */
+    -fx-text-fill: white;
+    /* White text color */
+    -fx-background-radius: 5;
+    /* Rounded corners for buttons */
+    -fx-font-weight: bold;
+    /* Bold text for buttons */
+    -fx-pref-width: 200;
+    /* Preferred width for button */
+    -fx-alignment: CENTER;
+    -fx-margin-top: 50;
+    
+}
+
+.login-button:hover {
+    -fx-background-color: #0056b3;
+    /* Darker blue on hover */
+}
+
+.link-button {
+    -fx-background-color: transparent;
+    /* No background for link buttons */
+    -fx-text-fill: #007bff;
+    /* Link color */
+    -fx-underline: true;
+    /* Underline the link */
+    -fx-font-size: 12px;
+    /* Link font size */
+}
+
+.link-button:hover {
+    -fx-text-fill: #0056b3;
+    /* Darker link color on hover */
+}
+
+.status-label {
+    -fx-text-fill: red;
+    /* Error message color */
+    -fx-font-size: 12px;
+    /* Font size for status label */
+    -fx-padding: 5;
+    /* Padding for status label */
+}
