@@ -1,6 +1,5 @@
 package tn.nexus.Controllers.Users;
 
-import io.github.cdimascio.dotenv.Dotenv;
 import io.github.palexdev.materialfx.controls.MFXButton;
 import io.github.palexdev.materialfx.controls.MFXPasswordField;
 import io.github.palexdev.materialfx.controls.MFXTextField;
@@ -16,6 +15,7 @@ import javafx.scene.text.Text;
 import tn.nexus.Entities.User;
 import tn.nexus.Exceptions.InvalidInputException;
 import tn.nexus.Services.UserService;
+import tn.nexus.Services.Auth.MailingService;
 import tn.nexus.Utils.WrapWithSideBar;
 import tn.nexus.Utils.Enums.Role;
 
@@ -23,20 +23,7 @@ import java.net.URL;
 import java.sql.SQLException;
 import java.util.*;
 
-import org.simplejavamail.api.email.Email;
-import org.simplejavamail.api.mailer.Mailer;
-import org.simplejavamail.api.mailer.config.TransportStrategy;
-import org.simplejavamail.email.EmailBuilder;
-import org.simplejavamail.mailer.MailerBuilder;
-
 public class UpdateUserController implements Initializable, WrapWithSideBar {
-
-    Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
-    private final String MAIL_ADDRESS = dotenv.get("MAIL_ADDRESS");
-    private final String MAIL_PASSWORD = dotenv.get("MAIL_PASSWORD");
-    private final int MAIL_PORT = Integer.parseInt(dotenv.get("MAIL_PORT"));
-    private final String MAIL_HOST = dotenv.get("MAIL_HOST");
-
     private User user;
     @FXML
     private AnchorPane sideBar;
@@ -57,21 +44,22 @@ public class UpdateUserController implements Initializable, WrapWithSideBar {
     @FXML
     private Text pageTitle;
     UserService us = new UserService();
+    MailingService ms = new MailingService();
     private boolean isUpdate;
 
     @FXML
     void onSave(ActionEvent event) {
         try {
-            if (username.getText() == null || username.getText().isEmpty()) {
-                throw new InvalidInputException("Le nom d'utilisateur est requis");
-            } else if (email.getText() == null || email.getText().isEmpty()) {
-                throw new InvalidInputException("L'email est requis");
-            } else if (address.getText() == null || address.getText().isEmpty()) {
-                throw new InvalidInputException("L'adresse est requise");
+            if (username.getText() == null || username.getText().isEmpty() || username.getText().length() < 3 || username.getText().length() > 50) {
+                throw new InvalidInputException("Le nom d'utilisateur doit contenir entre 3 et 50 caractères");
+            } else if (email.getText() == null || email.getText().isEmpty() || !email.getText().matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")) {
+                throw new InvalidInputException("L'email n'est pas valide");
+            } else if (address.getText() == null || address.getText().isEmpty() || address.getText().length() > 100) {
+                throw new InvalidInputException("L'adresse doit contenir moins de 100 caractères");
             } else if (role.getValue() == null) {
                 throw new InvalidInputException("Choisir un rôle");
-            } else if (!this.isUpdate && (password.getText() == null || password.getText().isEmpty())) {
-                throw new InvalidInputException("Le mot de passe est requis");
+            } else if (!this.isUpdate && (password.getText() == null || password.getText().isEmpty() || password.getText().length() < 8 || password.getText().length() > 100)) {
+                throw new InvalidInputException("Le mot de passe doit contenir entre 8 et 100 caractères");
             }
             user.setNom(username.getText());
             user.setMotDePasse(password.getText());
@@ -83,7 +71,7 @@ public class UpdateUserController implements Initializable, WrapWithSideBar {
                 us.update(user);
             else {
                 us.insert(user);
-                sendEmail(user);
+                ms.sendEmail(user);
             }
 
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -155,60 +143,5 @@ public class UpdateUserController implements Initializable, WrapWithSideBar {
 
     public void setPageTitle(String title) {
         this.pageTitle.setText(title);
-    }
-
-    private void sendEmail(User user) {
-        try {
-            // Configuration du serveur SMTP (exemple avec Gmail)
-            Mailer mailer = MailerBuilder
-                    .withSMTPServer(MAIL_HOST, MAIL_PORT, MAIL_ADDRESS, MAIL_PASSWORD)
-                    .withTransportStrategy(TransportStrategy.SMTP_TLS)
-                    .buildMailer();
-
-            // Création de l'email
-            Email email = EmailBuilder.startingBlank()
-                    .from(MAIL_ADDRESS)
-                    .to(user.getEmail())
-                    .withSubject("Bienvenue " + user.getNom())
-                    .withHTMLText("<html>" +
-                            "<head>" +
-                            "<style>" +
-                            "body { font-family: Arial, sans-serif; line-height: 1.6; }" +
-                            ".header { text-align: center; }" +
-                            ".logo { width: 150px; }" +
-                            ".content { margin: 20px; }" +
-                            ".footer { margin-top: 30px; font-size: small; color: gray; }" +
-                            "</style>" +
-                            "</head>" +
-                            "<body>" +
-                            "<div class='header'>" +
-                            "<img src='https://i.ibb.co/0yTLr7bq/408065252-0f3bdb15-6321-42da-b294-c12b76d025d3.png' class='logo' alt='Company Logo' />"
-                            +
-                            "<h1>Bienvenue sur notre plateforme!</h1>" +
-                            "</div>" +
-                            "<div class='content'>" +
-                            "<p>Bonjour " + user.getNom() + ",</p>" +
-                            "<p>Bienvenue sur notre plateforme. Votre compte a été créé avec succès.</p>" +
-                            "<p>Vous avez le rôle suivant : <strong>" + user.getRole() + "</strong>.</p>" +
-                            "<p>Nous vous remercions de votre confiance.</p>" +
-                            "</div>" +
-                            "<div class='footer'>" +
-                            "<p>Cordialement,</p>" +
-                            "<p>L'équipe OptiRH</p>" +
-                            "</div>" +
-                            "</body>" +
-                            "</html>")
-                    .buildEmail();
-
-            System.out.println("Email envoyé avec succès à " + user.getEmail());
-            // Envoi de l'email
-            mailer.sendMail(email);
-        } catch (Exception e) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Erreur d'envoi d'email");
-            alert.setHeaderText(null);
-            alert.setContentText("L'email n'a pas pu être envoyé : " + e.getMessage());
-            alert.showAndWait();
-        }
     }
 }
