@@ -1,0 +1,91 @@
+{% extends 'partials/layout-vertical.html.twig' %}
+
+{% block title %}Nouvelle Mission - {{ project.nom }}{% endblock %}
+
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', {
+        page_title: 'Créer une mission',
+        breadcrumb: [
+            { label: 'Projets', path: path('gs-projet_project_index') },
+            { label: project.nom, path: path('gs-projet_project_app_project_missions', {id: project.id}) },
+            { label: 'Nouvelle Mission' }
+        ]
+    }) }}
+{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="header-title">Création d'une nouvelle mission</h4>
+                <p class="text-muted">Remplissez les champs pour créer une nouvelle mission dans le projet <strong>{{ project.nom }}</strong></p>
+
+                {{ form_start(form) }}
+                    <div class="row g-3">
+                        <div class="col-md-12">
+                            {{ form_row(form.titre, {
+                                label: 'Titre de la mission',
+                                attr: { class: 'form-control' }
+                            }) }}
+                        </div>
+
+                        <div class="col-md-12">
+                            {{ form_row(form.description, {
+                                attr: { 
+                                    class: 'form-control',
+                                    rows: 3
+                                }
+                            }) }}
+                        </div>
+
+                        <div class="col-md-6">
+                            {{ form_row(form.status, {
+                                label: 'Statut',
+                                attr: { class: 'form-select' }
+                            }) }}
+                        </div>
+
+                        <div class="col-md-6">
+                            {{ form_row(form.assignedTo, {
+                                label: 'Assigné à',
+                                attr: { class: 'form-select' }
+                            }) }}
+                        </div>
+
+                        <div class="col-md-6">
+                            {{ form_row(form.dateTerminer, {
+                                label: 'Date de fin prévue',
+                                attr: { class: 'form-control flatpickr' }
+                            }) }}
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary waves-effect waves-light">
+                            <i class="ri-save-line me-2"></i>Créer la mission
+                        </button>
+                        
+                        <a href="{{ path('gs-projet_project_app_project_missions', {id: project.id}) }}" class="btn btn-light">
+                            <i class="ri-arrow-left-line me-2"></i>Annuler
+                        </a>
+                    </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        flatpickr('.flatpickr', {
+            dateFormat: "d/m/Y",
+            locale: "fr"
+        });
+    });
+</script>
+{% endblock %}

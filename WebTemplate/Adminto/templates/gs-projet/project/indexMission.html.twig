@@ -1,0 +1,155 @@
+{% extends 'partials/layout-horizontal.html.twig' %}
+
+{% block title %}Calendrier des Missions{% endblock %}
+
+{% block css %}
+<!-- Plugin css -->
+<link href="/libs/fullcalendar/main.min.css" rel="stylesheet" type="text/css"/>
+{% endblock %}
+
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', { page_title: 'Calendrier des Missions' }) }}
+{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-12">
+        <div class="row">
+            <!-- Partie latérale avec les légendes -->
+            <div class="col-lg-3">
+                <div class="mb-3">
+                    <h5>Légende des Statuts :</h5>
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="badge bg-success me-2" style="width: 20px; height: 20px;"></div>
+                        <span>Terminé</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="badge bg-warning me-2" style="width: 20px; height: 20px;"></div>
+                        <span>En Cours</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="badge bg-danger me-2" style="width: 20px; height: 20px;"></div>
+                        <span>À Faire</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calendrier -->
+            <div class="col-lg-9">
+                <div class="card">
+                    <div class="card-body">
+                        <div id="calendar"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{# Dans la section body #}
+<div class="modal fade" id="statusModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Modifier le statut</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="statusForm">
+                <div class="modal-body">
+                    <input type="hidden" id="missionId">
+                    <div class="mb-3">
+                        <label class="form-label">Statut</label>
+                        <select class="form-select" id="statusSelect" name="status">
+                            <option value="To Do">À faire</option>
+                            <option value="In Progress">En cours</option>
+                            <option value="Done">Terminé</option>
+                        </select>
+                    </div>
+                    <input type="hidden" name="_token" value="{{ csrf_token('mission_status') }}">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    <button type="submit" class="btn btn-primary">Sauvegarder</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<!-- Bibliothèques nécessaires -->
+<script src="/libs/moment/min/moment.min.js"></script>
+<script src="/libs/fullcalendar/main.min.js"></script>
+<script src="/libs/fullcalendar/locales/fr.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const calendarEl = document.getElementById('calendar');
+    const modal = new bootstrap.Modal('#statusModal');
+    let currentEvent = null;
+
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        locale: 'fr',
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        events: {{ missions|json_encode|raw }},
+        eventDidMount: function(info) {
+            // Correction de l'accès aux propriétés
+            var status = info.event.extendedProps.statut;
+            var color = 'gray';
+            
+            if(status === 'Done') color = '#28a745';
+            else if(status === 'In Progress') color = '#ffc107';
+            else if(status === 'To Do') color = '#dc3545';
+            
+            info.el.style.backgroundColor = color;
+            info.el.style.borderColor = color;
+            info.el.style.color = 'white';
+        },
+        eventContent: function(arg) {
+            return {
+                html: `<div class="fc-event-title p-1">
+                        ${arg.event.extendedProps.titre}
+                       </div>`
+            };
+        }, // <-- VIRGULE AJOUTÉE ICI
+        eventClick: function(info) {
+            currentEvent = info.event;
+            document.getElementById('missionId').value = info.event.id;
+            document.getElementById('statusSelect').value = info.event.extendedProps.statut;
+            modal.show();
+        }
+    });
+
+    calendar.render();
+
+    // Gestion de la soumission du formulaire
+    document.getElementById('statusForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const missionId = document.getElementById('missionId').value;
+
+        fetch(`/gs-projet/project/missions/${missionId}/update-status`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Erreur réseau');
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                currentEvent.setExtendedProp('statut', formData.get('status'));
+                calendar.refetchEvents();
+                modal.hide();
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+});
+</script>
+{% endblock %}

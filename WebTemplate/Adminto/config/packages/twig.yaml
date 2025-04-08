@@ -1,0 +1,10 @@
+twig:
+    default_path: '%kernel.project_dir%/templates'
+    autoescape: 'name'  # Active l'auto-échappement intelligent
+    debug: '%kernel.debug%'
+    strict_variables: '%kernel.debug%'
+
+
+when@test:
+    twig:
+        strict_variables: true

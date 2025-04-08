@@ -1,0 +1,71 @@
+{% extends 'partials/layout-vertical.html.twig' %}
+
+{% block title %}Liste des projets{% endblock %}
+
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', { page_title: 'Gestion des projets' }) }}
+{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-sm-4">
+            <a href="{{ path('gs-projet_project_new') }}" class="btn btn-purple rounded-pill w-md waves-effect waves-light mb-3">
+                <i class="mdi mdi-plus"></i>
+                Créer un projet
+            </a>
+        </div>
+        <div class="col-sm-8">
+            <div class="float-end">
+                {{ form_start(filterForm) }}
+                    <div class="row g-2 align-items-center mb-2 mb-sm-0">
+                        <div class="col-auto">
+                            <div class="d-flex">
+                                {{ form_row(filterForm.status, {
+                                    label: 'Statut',
+                                    attr: { class: 'form-select form-select-sm ms-2' }
+                                }) }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="d-flex">
+                                {{ form_row(filterForm.sort, {
+                                    label: 'Trier par',
+                                    attr: { class: 'form-select form-select-sm ms-2' }
+                                }) }}
+                            </div>
+                        </div>
+                    </div>
+                {{ form_end(filterForm) }}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        {% for project in projects %}
+            <div class="col-xl-4 mb-4">
+                <div class="card">
+                    <div class="card-body project-box">
+                        <div class="badge bg-{{ project.status|status_badge }} float-end">{{ project.status }}</div>
+                        <h4 class="mt-0">
+                            <a href="{{ path('gs-projet_project_show', {id: project.id}) }}" class="text-dark">
+                                {{ project.nom }}
+                            </a>
+                        </h4>
+                        <p class="text-{{ project.status|type_color }} text-uppercase font-13">
+                            {{ project.status }}
+                        </p>
+                        <p class="text-muted font-13">
+                            {{ project.description|u.truncate(100, '...') }}
+                            <a href="{{ path('gs-projet_project_show', {id: project.id}) }}" class="text-primary">Voir plus</a>
+                        </p>
+
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info">Aucun projet trouvé</div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

@@ -1,0 +1,202 @@
+{% extends 'partials/layout-vertical.html.twig' %}
+
+{% block title %}Détails du projet - {{ project.nom }}{% endblock %}
+
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', {
+        page_title: 'Détails du projet',
+        breadcrumb: [
+            { label: 'Projets', path: path('gs-projet_project_index') },
+            { label: project.nom }
+        ]
+    }) }}
+{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="header-title">{{ project.nom }}</h4>
+                    <span class="badge bg-{{ project.status == 'Terminé' ? 'success' : 'warning' }} rounded-pill">
+                        {{ project.status ?? 'En cours' }}
+                    </span>
+                </div>
+
+                <div class="mb-4">
+                    <h5 class="sub-header">Description du projet</h5>
+                    <p class="text-muted">{{ project.description ?? 'Aucune description fournie' }}</p>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <h5 class="sub-header">Informations générales</h5>
+                            <dl class="mb-0">
+                                <dt>Créé le :</dt>
+                                <dd>{{ project.createdAt|date('d/m/Y H:i') }}</dd>
+                                <dt>Responsable :</dt>
+                                <dd>{{ project.createdBy.nom ?? 'Non attribué' }}</dd>
+                            </dl>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <h5 class="sub-header">Statistiques</h5>
+                            <div class="d-grid gap-3">
+                                <div class="d-flex align-items-center">
+                                    <i class="ri-task-line me-2 h4"></i>
+                                    <div>
+                                        <p class="mb-0">Tâches complétées</p>
+                                        <h3 class="mb-0">12/15</h3>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <i class="ri-calendar-event-line me-2 h4"></i>
+                                    <div>
+                                        <p class="mb-0">Date d'échéance</p>
+                                        <h3 class="mb-0">{{ project.dueDate is defined ? project.dueDate|date('d/m/Y') : 'Non défini' }}</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <a href="{{ path('gs-projet_project_index') }}" class="btn btn-light">
+                        <i class="ri-arrow-left-line me-2"></i>Retour
+                    </a>
+                    <a href="{{ path('gs-projet_project_edit', {'id': project.id}) }}" class="btn btn-warning">
+                        <i class="ri-edit-2-line me-2"></i>Modifier
+                    </a>
+                    <form method="post" action="{{ path('gs-projet_project_delete', {'id': project.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce projet ?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ project.id) }}">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="ri-delete-bin-line me-2"></i>Supprimer
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    {% for status, missions in groupedMissions %}
+    <div class="col-xl-4">
+        <div class="card">
+            <div class="card-body taskboard-box">
+                <h4 class="header-title mt-0 mb-3 {% if status == 'To Do' %}text-primary {% elseif status == 'In Progress' %}text-warning {% else %}text-success {% endif %}">
+                    {{ status }}
+                </h4>
+
+              <ul class="sortable-list list-unstyled taskList" id="{{ status|lower|replace({' ': '-'}) }}">
+    {% for mission in missions %}
+    <li>
+        <div class="kanban-box">
+            <div class="checkbox-wrapper float-start">
+                <div class="form-check form-check-success">
+                    <input 
+                        class="form-check-input status-checkbox" 
+                        type="checkbox" 
+                        id="mission-{{ mission.id }}"
+                        data-mission-id="{{ mission.id }}"
+                        {{ mission.status == 'Done' ? 'checked' : '' }}>
+                </div>
+            </div>
+
+            <div class="kanban-detail">
+                <h5 class="mt-0">
+                    <a href="{{ path('gs-projet_project_app_missions_show', {'id': mission.id}) }}" 
+                       class="text-dark">
+                        {{ mission.titre }}
+                    </a>
+                </h5>
+                <div class="d-flex align-items-center mb-2">
+                  <span class="badge bg-{{ mission.status == 'Done' ? 'success' : mission.status == 'In Progress' ? 'warning' : 'primary' }}">
+    {{ mission.status }}
+</span>
+                </div>
+                <p class="text-muted mb-2">{{ mission.description|u.truncate(50, '...') }}</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">
+                        <i class="ri-time-line"></i> {{ mission.dateTerminer|date('d/m/Y') }}
+                    </small>
+                    {% if mission.assignedTo %}
+                    <div class="avatar-xs">
+                        <span class="avatar-title rounded-circle bg-soft-primary text-primary">
+                            {{ mission.assignedTo.nom|first|upper }}
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </li>
+    {% else %}
+    <li class="text-center text-muted p-2">
+        Aucune mission dans cette section
+    </li>
+    {% endfor %}
+</ul>
+
+                <div class="text-center pt-2">
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+<a href="{{ path('gs-projet_project_app_missions_new', {'projectId': project.id}) }}" 
+   class="btn btn-sm btn-primary waves-effect waves-light">
+    <i class="mdi mdi-plus"></i> Ajouter une mission
+</a>
+</div>
+</div>
+</div>
+
+</div>
+{% endblock %}
+{% block javascripts %}
+{{ parent() }}
+<meta name="csrf-token" content="{{ csrf_token('mission_status') }}">
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+    
+    document.querySelectorAll('.status-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const missionId = this.dataset.missionId;
+            const newStatus = this.checked ? 'Done' : 'To Do';
+            const badge = this.closest('.kanban-box').querySelector('.badge');
+
+            fetch(`{{ path('app_missions_update_status', {id: 'MISSION_ID'}) }}`.replace('MISSION_ID', missionId), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: `status=${encodeURIComponent(newStatus)}&_token=${encodeURIComponent(csrfToken)}`
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Network error');
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    badge.textContent = newStatus;
+                    badge.className = `badge bg-${newStatus === 'Done' ? 'success' : 'primary'}`;
+                } else {
+                    throw new Error(data.error || 'Unknown error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                this.checked = !this.checked; // Revert checkbox on error
+            });
+        });
+    });
+});
+</script>
+{% endblock %}
