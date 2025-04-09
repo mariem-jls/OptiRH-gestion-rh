@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 	<head>
-		{{ include('partials/title-meta.html.twig', {title: 'Register & Signup'}) }}
+		{{ include('partials/title-meta.html.twig', {title: 'Inscription'}) }}
 		{{ include('partials/head-css.html.twig') }}
 	</head>
 
@@ -12,13 +12,13 @@
 					<div class="col-md-8 col-lg-6 col-xl-4">
 						<div class="text-center">
 							<a href="index">
-								<img src="/images/logo-dark.png" alt="app_logo" height="140" class="mx-auto">
+								<img src="/images/logo-dark.png" alt="logo" height="140" class="mx-auto">
 							</a>
 						</div>
 						<div class="card mt-2">
 							<div class="card-body p-4">
 								<div class="text-center mb-4">
-									<h4 class="text-uppercase mt-0">Register</h4>
+									<h4 class="text-uppercase mt-0">Inscription</h4>
 								</div>
 
 								{% for flash_error in app.flashes('verify_email_error') %}
@@ -28,7 +28,7 @@
 								{{ form_start(registrationForm, {'attr': {'action': '#', 'novalidate': 'novalidate'}}) }}
 
 								<div class="mb-3">
-									<label for="{{ registrationForm.nom.vars.id }}" class="form-label">Full Name</label>
+									<label for="{{ registrationForm.nom.vars.id }}" class="form-label">Nom complet</label>
 									{{ form_widget(registrationForm.nom, {'attr': {'class': 'form-control'}}) }}
 									{% if form_errors(registrationForm.nom) %}
 										<div class="text-danger">{{ form_errors(registrationForm.nom) }}</div>
@@ -36,7 +36,7 @@
 								</div>
 
 								<div class="mb-3">
-									<label for="{{ registrationForm.email.vars.id }}" class="form-label">Email address</label>
+									<label for="{{ registrationForm.email.vars.id }}" class="form-label">Adresse e-mail</label>
 									{{ form_widget(registrationForm.email, {'attr': {'class': 'form-control'}}) }}
 									{% if form_errors(registrationForm.email) %}
 										<div class="text-danger">{{ form_errors(registrationForm.email) }}</div>
@@ -44,7 +44,7 @@
 								</div>
 
 								<div class="mb-3">
-									<label for="{{ registrationForm.plainPassword.vars.id }}" class="form-label">Password</label>
+									<label for="{{ registrationForm.plainPassword.vars.id }}" class="form-label">Mot de passe</label>
 									{{ form_widget(registrationForm.plainPassword, {'attr': {'class': 'form-control'}}) }}
 									{% if form_errors(registrationForm.plainPassword) %}
 										<div class="text-danger">{{ form_errors(registrationForm.plainPassword) }}</div>
@@ -54,8 +54,8 @@
 								<div class="mb-3">
 									<div class="form-check">
 										{{ form_widget(registrationForm.agreeTerms, {'attr': {'class': 'form-check-input'}}) }}
-										<label class="form-check-label" for="{{ registrationForm.agreeTerms.vars.id }}">I accept
-											<a href="javascript: void(0);" class="text-dark">Terms and Conditions</a>
+										<label class="form-check-label" for="{{ registrationForm.agreeTerms.vars.id }}">J'accepte
+											<a href="javascript: void(0);" class="text-dark">les conditions d'utilisation</a>
 										</label>
 										{% if form_errors(registrationForm.agreeTerms) %}
 											<div class="text-danger">{{ form_errors(registrationForm.agreeTerms) }}</div>
@@ -64,7 +64,7 @@
 								</div>
 
 								<div class="mb-3 text-center d-grid">
-									<button class="btn btn-primary" type="submit">Sign Up</button>
+									<button class="btn btn-primary" type="submit">S'inscrire</button>
 								</div>
 
 								{{ form_end(registrationForm) }}
@@ -76,9 +76,9 @@
 
 						<div class="row mt-3">
 							<div class="col-12 text-center">
-								<p class="text-muted">Already have account?
-									<a href="auth-login" class="text-dark ms-1">
-										<b>Sign In</b>
+								<p class="text-muted">Déjà un compte?
+									<a href="login" class="text-dark ms-1">
+										<b>Se connecter</b>
 									</a>
 								</p>
 							</div>
@@ -100,3 +100,4 @@
 		<script src="/js/app.min.js"></script>
 	</body>
 </html>
+
