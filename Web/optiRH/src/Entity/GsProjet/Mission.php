@@ -2,11 +2,11 @@
 
 namespace App\Entity\GsProjet;
 
-use App\Repository\GsProjet\MissionRepository;
-use Doctrine\ORM\Mapping as ORM;
+use App\Entity\User;
 use Doctrine\DBAL\Types\Types;
 use App\Entity\GsProjet\Project;
-use App\Entity\GsProjet\User; // Ajout du bon namespace pour User
+use Doctrine\ORM\Mapping as ORM;
+use App\Repository\GsProjet\MissionRepository;
 
 #[ORM\Entity(repositoryClass: MissionRepository::class)]
 #[ORM\Table(name: "missions")]
