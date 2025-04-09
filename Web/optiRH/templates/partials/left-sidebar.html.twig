@@ -57,87 +57,6 @@
         <!--- Sidemenu -->
         <div id="sidebar-menu">
             <ul id="side-menu">
-
-                <li class="menu-title">Navigation</li>
-
-                <!-- Switch Interface -->
-                <li>
-                    <div class="btn-group w-100 mb-2">
-                        <a href="{{ path('front_reclamations') }}" class="btn btn-outline-light btn-sm {{ app.request.attributes.get('_route') starts with 'front_' ? 'active' : '' }}">
-                            Front Reclamation
-                        </a>
-                        <a href="{{ path('admin_reclamations') }}" class="btn btn-outline-light btn-sm {{ app.request.attributes.get('_route') starts with 'admin_' ? 'active' : '' }}">
-                            Back Reclamation
-                        </a>
-                    </div>
-                </li>
-
-                <!-- Front Office Menu -->
-                {% if app.request.attributes.get('_route') starts with 'front_' %}
-                    <li class="menu-title text-uppercase text-muted mt-3">Front Office</li>
-
-                    <li>
-                        <a href="{{ path('front_reclamations') }}" class="text-white {{ app.request.attributes.get('_route') == 'front_reclamations' ? 'active' : '' }}">
-                            <i class="mdi mdi-view-dashboard-outline"></i>
-                            <span>Tableau de bord</span>
-                        </a>
-                    </li>
-
-                    <li>
-                        <a href="#sidebarFrontReclamations" class="text-white" data-bs-toggle="collapse" aria-expanded="{{ app.request.attributes.get('_route') in ['front_reclamation_add', 'front_reclamations', 'front_edit_reclamation'] ? 'true' : 'false' }}">
-                            <i class="mdi mdi-message-alert-outline"></i>
-                            <span>Réclamations</span>
-                            <span class="menu-arrow"></span>
-                        </a>
-                        <div class="collapse {{ app.request.attributes.get('_route') in ['front_reclamation_add', 'front_reclamations', 'front_edit_reclamation'] ? 'show' : '' }}" id="sidebarFrontReclamations">
-                            <ul class="nav-second-level list-unstyled ps-3">
-                                <li>
-                                    <a href="{{ path('front_add_reclamation') }}" class="text-white {{ app.request.attributes.get('_route') == 'front_add_reclamation' ? 'active' : '' }}">
-                                        <i class="mdi mdi-plus-circle-outline me-1"></i>
-                                        Ajouter Réclamation
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="{{ path('front_reclamations') }}" class="text-white {{ app.request.attributes.get('_route') == 'front_reclamations' ? 'active' : '' }}">
-                                        <i class="mdi mdi-format-list-bulleted me-1"></i>
-                                        Mes Réclamations
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </li>
-                {% endif %}
-
-                <!-- Back Office Menu -->
-                {% if app.request.attributes.get('_route') starts with 'admin_' %}
-                    <li class="menu-title text-uppercase text-muted mt-3">Back Office</li>
-
-                    <li>
-                        <a href="{{ path('admin_reclamations') }}" class="text-white {{ app.request.attributes.get('_route') == 'admin_reclamations' ? 'active' : '' }}">
-                            <i class="mdi mdi-view-dashboard-outline"></i>
-                            <span>Tableau de bord</span>
-                        </a>
-                    </li>
-
-                    <li>
-                        <a href="#sidebarReclamations" class="text-white" data-bs-toggle="collapse" aria-expanded="{{ app.request.attributes.get('_route') in ['admin_reclamations', 'admin_reclamation_reponses'] ? 'true' : 'false' }}">
-                            <i class="mdi mdi-message-alert-outline"></i>
-                            <span>Gestion Réclamations</span>
-                            <span class="menu-arrow"></span>
-                        </a>
-                        <div class="collapse {{ app.request.attributes.get('_route') in ['admin_reclamations', 'admin_reclamation_reponses'] ? 'show' : '' }}" id="sidebarReclamations">
-                            <ul class="nav-second-level list-unstyled ps-3">
-                                <li>
-                                    <a href="{{ path('admin_reclamations') }}" class="text-white {{ app.request.attributes.get('_route') == 'admin_reclamations' ? 'active' : '' }}">
-                                        <i class="mdi mdi-format-list-bulleted me-1"></i>
-                                        Liste des Réclamations
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </li>
-                {% endif %}
-
                 <!-- Apps Section -->
                 <li class="menu-title mt-2">Applications</li>
                 <li>
@@ -161,6 +80,17 @@
                         </ul>
                     </div>
                 </li>
+                <li>
+                    <a href="{{ path('admin_reclamations') }}">
+                        <i class="mdi mdi-briefcase-variant-outline"></i>
+                        <span> Gestion Réclamation </span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path('front_reclamations') }}">
+                        <i class="mdi mdi-briefcase-variant-outline"></i>
+                        <span> Réclamation </span>
+                    </a>
 
                 <!-- Project -->
                 <li>

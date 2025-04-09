@@ -34,7 +34,9 @@
         }
     </style>
 {% endblock %}
-
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', { page_title: 'Réponse' }) }}
+{% endblock %}
 {% block body %}
     <div class="container edit-container py-5">
         <div class="card">
