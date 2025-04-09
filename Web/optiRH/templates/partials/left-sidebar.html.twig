@@ -90,6 +90,27 @@
 
                 <!-- Apps Section -->
                 <li class="menu-title mt-2">Applications</li>
+                <li>
+                    <a href="#email" data-bs-toggle="collapse">
+                        <i class="mdi mdi-account-group"></i>
+                        <span> Recrutement </span>
+                        <span class="menu-arrow"></span>
+                    </a>
+                    <div class="collapse" id="email">
+                        <ul class="nav-second-level">
+                            <li>
+                                <a href="{{ path('app_offre_index') }}">
+                                    <i class="mdi mdi-briefcase-outline me-2"></i>
+                                    Offres</a>
+                            </li>
+                            <li>
+                                <a href="{{ path('app_demande_index') }}">
+                                    <i class="mdi mdi-clipboard-text-outline me-2"></i>
+                                    Demandes</a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
 
                 <!-- Project -->
                 <li>
