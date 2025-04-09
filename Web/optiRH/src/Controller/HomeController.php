@@ -5,9 +5,7 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\Request;
 use Twig\Environment;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class HomeController extends AbstractController
 {
@@ -23,15 +21,15 @@ class HomeController extends AbstractController
         return $this->render('index.html.twig');
     }
 
-    #[Route('/{path}', requirements: ['path' => '^(?!register).*'])]
-    public function root($path)
-    {
-        if ($this->loader->exists($path.'.html.twig')) {
-            if ($path == '/' || $path == 'home') {
-                die('Home');
-            }
-            return $this->render($path.'.html.twig');
-        }
-        throw $this->createNotFoundException();
-    }
+    // #[Route('/{path}', requirements: ['path' => '^(?!register|login).*'])]
+    // public function root($path)
+    // {
+    //     if ($this->loader->exists($path . '.html.twig')) {
+    //         if ($path == '/' || $path == 'home') {
+    //             die('Home');
+    //         }
+    //         return $this->render($path . '.html.twig');
+    //     }
+    //     throw $this->createNotFoundException();
+    // }
 }
