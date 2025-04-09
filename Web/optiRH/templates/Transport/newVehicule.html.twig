@@ -1,0 +1,60 @@
+{% extends 'partials/layout-vertical.html.twig' %}
+
+{% block title %}Nouveau Véhicule{% endblock %}
+
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', { page_title: 'Ajouter un Véhicule' }) }}
+{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box">
+            <h4 class="page-title">Nouveau Véhicule pour Trajet #{{ trajet_id }}</h4>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                {{ form_start(form) }}
+                    <div class="row">
+                        <div class="col-md-4">
+                            {{ form_row(form.type, {
+                                'attr': {'class': 'form-select'},
+                                'label_attr': {'class': 'form-label'}
+                            }) }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form_row(form.disponibilite, {
+                                'attr': {'class': 'form-select'},
+                                'label_attr': {'class': 'form-label'}
+                            }) }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form_row(form.nbrplace, {
+                                'attr': {
+                                    'class': 'form-control',
+                                    'min': 1
+                                },
+                                'label_attr': {'class': 'form-label'}
+                            }) }}
+                        </div>
+                    </div>
+
+                    <div class="text-end mt-3">
+                        <button type="submit" class="btn btn-success">
+                            <i class="mdi mdi-content-save"></i> Enregistrer
+                        </button>
+                        <a href="{{ path('app_transport_trajet_vehicules', {'id': trajet_id}) }}" class="btn btn-secondary">
+                            Annuler
+                        </a>
+                    </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

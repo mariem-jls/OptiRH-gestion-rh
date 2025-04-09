@@ -1,0 +1,114 @@
+{% extends 'partials/layout-vertical.html.twig' %}
+
+{% block title %}Modifier Trajet{% endblock %}
+
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', { page_title: 'Modifier Trajet' }) }}
+{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box">
+            <h4 class="page-title">Modifier Trajet #{{ trajet.id }}</h4>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                {{ form_start(form) }}
+                    <div class="row">
+                        <div class="col-md-6">
+                            {{ form_row(form.type, {
+                                'attr': {'class': 'form-control'},
+                                'label_attr': {'class': 'form-label'}
+                            }) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_row(form.station, {
+                                'attr': {
+                                    'class': 'form-control',
+                                    'maxlength': 10
+                                },
+                                'label_attr': {'class': 'form-label'}
+                            }) }}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            {{ form_row(form.depart, {
+                                'attr': {
+                                    'class': 'form-control',
+                                    'maxlength': 10
+                                },
+                                'label_attr': {'class': 'form-label'}
+                            }) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_row(form.arrive, {
+                                'attr': {
+                                    'class': 'form-control',
+                                    'maxlength': 10
+                                },
+                                'label_attr': {'class': 'form-label'}
+                            }) }}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-3">
+                            {{ form_row(form.longitudeDepart, {
+                                'attr': {
+                                    'class': 'form-control',
+                                    'step': '0.000001'
+                                },
+                                'label_attr': {'class': 'form-label'}
+                            }) }}
+                        </div>
+                        <div class="col-md-3">
+                            {{ form_row(form.latitudeDepart, {
+                                'attr': {
+                                    'class': 'form-control',
+                                    'step': '0.000001'
+                                },
+                                'label_attr': {'class': 'form-label'}
+                            }) }}
+                        </div>
+                        <div class="col-md-3">
+                            {{ form_row(form.longitudeArrivee, {
+                                'attr': {
+                                    'class': 'form-control',
+                                    'step': '0.000001'
+                                },
+                                'label_attr': {'class': 'form-label'}
+                            }) }}
+                        </div>
+                        <div class="col-md-3">
+                            {{ form_row(form.latitudeArrivee, {
+                                'attr': {
+                                    'class': 'form-control',
+                                    'step': '0.000001'
+                                },
+                                'label_attr': {'class': 'form-label'}
+                            }) }}
+                        </div>
+                    </div>
+                    
+                    <div class="text-end mt-3">
+                        <button type="submit" class="btn btn-success">
+                            <i class="mdi mdi-content-save"></i> Mettre à jour
+                        </button>
+                        <a href="{{ path('app_transport_trajet_index') }}" class="btn btn-secondary">
+                            Annuler
+                        </a>
+                    </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends 'partials/layout-horizontal.html.twig' %}
+
+{% block title %}Réservation de trajets{% endblock %}
+
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', { page_title: 'Réservation de trajets' }) }}
+{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <!-- Barre de recherche -->
+                <div class="row mb-3">
+                    <div class="col-md-5">
+                        <input type="text" id="depart" class="form-control" placeholder="Point de départ" required>
+                    </div>
+                    <div class="col-md-5">
+                        <input type="text" id="arrive" class="form-control" placeholder="Point d'arrivée" required>
+                    </div>
+                    <div class="col-md-2">
+                        <button id="searchBtn" class="btn btn-primary w-100">
+                            <i class="mdi mdi-magnify me-1"></i> Rechercher
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Résultats -->
+                <div id="resultsContainer">
+                    <div class="alert alert-info">
+                        Veuillez entrer des points de départ et d'arrivée
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion de la recherche
+    document.getElementById('searchBtn').addEventListener('click', function() {
+        const depart = document.getElementById('depart').value;
+        const arrive = document.getElementById('arrive').value;
+
+        if (!depart || !arrive) {
+            alert('Veuillez entrer un point de départ et d\'arrivée');
+            return;
+        }
+
+        fetch(`{{ path('app_transport_reservation_search') }}?depart=${encodeURIComponent(depart)}&arrive=${encodeURIComponent(arrive)}`)
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('resultsContainer').innerHTML = html;
+            });
+    });
+
+     // Gestion des réservations - version améliorée
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.reserve-btn')) {
+            e.preventDefault();
+            const btn = e.target.closest('.reserve-btn');
+            const vehiculeId = btn.dataset.vehiculeId;
+            
+            fetch(`/transport/reservation/reserve/${vehiculeId}`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Mise à jour complète de la ligne
+                    const row = btn.closest('tr');
+                    
+                    // Mise à jour des places
+                    row.querySelector('.places').textContent = data.newPlaces;
+                    
+                    // Mise à jour du statut
+                    const statusBadge = row.querySelector('.status');
+                    statusBadge.className = 'badge bg-' + (data.newStatus === 'Disponible' ? 'success' : 'danger');
+                    statusBadge.textContent = data.newStatus;
+                    
+                    // Désactivation du bouton si nécessaire
+                    if (data.isDisabled) {
+                        btn.disabled = true;
+                        btn.innerHTML = '<i class="mdi mdi-calendar-remove"></i> Complet';
+                        btn.classList.remove('btn-primary');
+                        btn.classList.add('btn-secondary');
+                    }
+                    
+                    // Feedback utilisateur
+                    document
+                alert(data.message);
+                } else {
+                    alert(data.message);
+                    if (data.isDisabled) {
+                        btn.disabled = true;
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Une erreur est survenue lors de la réservation');
+            });
+        }
+    });
+});
+</script>
+{% endblock %}
