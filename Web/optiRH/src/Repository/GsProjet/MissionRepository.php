@@ -2,12 +2,12 @@
 
 namespace App\Repository\GsProjet;
 
+use App\Entity\User;
+use Doctrine\ORM\QueryBuilder;
 use App\Entity\GsProjet\Mission;
 use App\Entity\GsProjet\Project;
-use App\Entity\GsProjet\User;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 /**
  * @method Mission|null find($id, $lockMode = null, $lockVersion = null)

@@ -2,16 +2,16 @@
 
 namespace App\Controller\GsProjet;
 
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Entity\User;
 use App\Entity\GsProjet\Project;
 use App\Form\GsProjet\ProjectType;
 use App\Form\GsProjet\ProjectFilterType;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\Request;
 use App\Repository\GsProjet\ProjectRepository;
-use App\Entity\GsProjet\User; 
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 
 #[Route('/gs-projet/project', name: 'gs-projet_project_')]

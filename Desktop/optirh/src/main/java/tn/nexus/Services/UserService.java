@@ -25,7 +25,7 @@ public class UserService implements CRUD<User> {
 
         ps.setString(1, user.getNom());
         ps.setString(2, user.getEmail());
-        ps.setString(3, BCrypt.hashpw(user.getMotDePasse(), BCrypt.gensalt()));
+        ps.setString(3, BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
         ps.setString(4, user.getRole().name());
         ps.setString(5, user.getAddress());
 
@@ -40,7 +40,7 @@ public class UserService implements CRUD<User> {
 
         ps.setString(1, person.getNom());
         ps.setString(2, person.getEmail());
-        ps.setString(3, BCrypt.hashpw(person.getMotDePasse(), BCrypt.gensalt()));
+        ps.setString(3, BCrypt.hashpw(person.getPassword(), BCrypt.gensalt()));
         ps.setString(4, person.getRole().name());
         ps.setString(5, person.getAddress());
         ps.setInt(6, person.getId());
@@ -114,7 +114,7 @@ public class UserService implements CRUD<User> {
                     user.setId(rs.getInt("id"));
                     user.setNom(rs.getString("nom"));
                     user.setEmail(rs.getString("email"));
-                    user.setMotDePasse(rs.getString("motDePasse"));
+                    user.setPassword(rs.getString("motDePasse"));
                     user.setRole(Role.valueOf(rs.getString("role")));
                     user.setAddress(rs.getString("address"));
                     return user;

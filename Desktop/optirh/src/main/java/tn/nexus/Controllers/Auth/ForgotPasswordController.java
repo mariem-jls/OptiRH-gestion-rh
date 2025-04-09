@@ -138,7 +138,7 @@ public class ForgotPasswordController {
             try {
                 User user = userService.getUserByEmail(email);
                 if (user != null) {
-                    user.setMotDePasse(newPassword);
+                    user.setPassword(newPassword);
                     userService.update(user);
 
                     Alert alert = new Alert(Alert.AlertType.INFORMATION);

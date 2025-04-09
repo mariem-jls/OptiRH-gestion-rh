@@ -2,11 +2,11 @@
 
 namespace App\Repository\GsProjet;
 
-use App\Entity\GsProjet\Project;
-use App\Entity\GsProjet\User;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use App\Entity\User;
 use Doctrine\ORM\QueryBuilder;
+use App\Entity\GsProjet\Project;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 class ProjectRepository extends ServiceEntityRepository
 {

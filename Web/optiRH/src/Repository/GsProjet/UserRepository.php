@@ -2,13 +2,13 @@
 
 namespace App\Repository\GsProjet;
 
-use App\Entity\GsProjet\User;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use App\Entity\User;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
-use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 
 /**
  * @method User|null find($id, $lockMode = null, $lockVersion = null)
@@ -29,7 +29,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', get_class($user)));
         }
 
-        $user->setMotDePasse($newHashedPassword);
+        $user->setPassword($newHashedPassword);
         $this->_em->persist($user);
         $this->_em->flush();
     }

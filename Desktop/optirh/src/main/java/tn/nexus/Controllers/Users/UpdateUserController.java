@@ -62,7 +62,7 @@ public class UpdateUserController implements Initializable, WrapWithSideBar {
                 throw new InvalidInputException("Le mot de passe doit contenir entre 8 et 100 caractères");
             }
             user.setNom(username.getText());
-            user.setMotDePasse(password.getText());
+            user.setPassword(password.getText());
             user.setEmail(email.getText());
             user.setAddress(address.getText());
             user.setRole(role.getValue());
@@ -119,7 +119,7 @@ public class UpdateUserController implements Initializable, WrapWithSideBar {
         this.user = user;
         // Initialize the form with the user data
         username.setText(user.getNom());
-        password.setText(user.getMotDePasse());
+        password.setText(user.getPassword());
         email.setText(user.getEmail());
         address.setText(user.getAddress());
         role.setValue(user.getRole());

@@ -16,7 +16,7 @@ public class AuthService {
             User user = userService.getUserByEmail(email);
 
             System.out.println(user);
-            if (user != null && BCrypt.checkpw(motDePasse, user.getMotDePasse())) {
+            if (user != null && BCrypt.checkpw(motDePasse, user.getPassword())) {
                 // User is authenticated
                 UserSession.getInstance().setUser(user);
                 return user;

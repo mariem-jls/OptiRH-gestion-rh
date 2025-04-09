@@ -5,7 +5,6 @@ use Doctrine\ORM\EntityManagerInterface;
 
 use App\Entity\GsProjet\Mission;
 use App\Entity\GsProjet\Project;
-use App\Entity\GsProjet\User;
 use App\Repository\GsProjet\UserRepository;
 use App\Form\GsProjet\MissionType;
 

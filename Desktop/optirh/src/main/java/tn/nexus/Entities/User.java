@@ -58,11 +58,11 @@ public class User {
         this.email = email;
     }
 
-    public String getMotDePasse() {
+    public String getPassword() {
         return motDePasse;
     }
 
-    public void setMotDePasse(String motDePasse) {
+    public void setPassword(String motDePasse) {
         this.motDePasse = motDePasse;
     }
 
