@@ -44,7 +44,9 @@
         }
     </style>
 {% endblock %}
-
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', { page_title: 'Réclamations' }) }}
+{% endblock %}
 {% block body %}
     <div class="container-fluid">
         <div class="d-flex justify-content-between align-items-center mb-4">
