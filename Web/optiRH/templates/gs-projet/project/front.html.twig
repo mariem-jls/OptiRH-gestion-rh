@@ -1,0 +1,59 @@
+{% extends 'partials/layout-vertical.html.twig' %}
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        events: {{ missions|json_encode|raw }},
+        editable: true,
+        eventDrop: function(info) {
+            updateMissionStatus(info.event.id, info.event.start);
+        },
+        eventClick: function(info) {
+            changeStatus(info.event.id, info.event.title);
+        }
+    });
+    calendar.render();
+});
+
+function updateMissionStatus(missionId, newDate) {
+    fetch(`/gs-projet/mission/${missionId}/update-status`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': '{{ csrf_token("mission_status") }}'
+        },
+        body: JSON.stringify({ status: 'In Progress', date: newDate })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Statut mis à jour avec succès');
+        } else {
+            alert('Erreur lors de la mise à jour');
+        }
+    });
+}
+
+function changeStatus(missionId, missionTitle) {
+    let newStatus = prompt(`Changer le statut de la mission "${missionTitle}" : (To Do, In Progress, Done)`);
+    if (newStatus && ['To Do', 'In Progress', 'Done'].includes(newStatus)) {
+        fetch(`/gs-projet/mission/${missionId}/update-status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': '{{ csrf_token("mission_status") }}'
+            },
+            body: JSON.stringify({ status: newStatus })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Statut mis à jour avec succès');
+                location.reload();
+            } else {
+                alert('Erreur lors de la mise à jour');
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

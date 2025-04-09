@@ -2,11 +2,11 @@
 
 namespace App\Repository\GsProjet;
 
-use App\Entity\User;
-use Doctrine\ORM\QueryBuilder;
 use App\Entity\GsProjet\Project;
-use Doctrine\Persistence\ManagerRegistry;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
+use Doctrine\Persistence\ManagerRegistry;
 
 class ProjectRepository extends ServiceEntityRepository
 {
@@ -24,27 +24,31 @@ class ProjectRepository extends ServiceEntityRepository
             ->getResult();
     }
     // ...
+    public function findByFilters(
+        ?string $search = null,
+        ?string $status = null,
+        ?string $sort = null
+    ): array {
+        $qb = $this->createQueryBuilder('p');
 
-public function findFiltered(?string $status, ?string $sort): array
-{
-    $qb = $this->createQueryBuilder('p');
+        if ($search) {
+            $qb->andWhere('p.nom LIKE :search OR p.description LIKE :search')
+               ->setParameter('search', '%' . $search . '%');
+        }
 
-    // Filtrage par statut
-    if ($status && $status !== 'all') {
-        $qb->andWhere('p.status = :status')
-           ->setParameter('status', $status);
+        if ($status) {
+            $qb->andWhere('p.status = :status')
+               ->setParameter('status', $status);
+        }
+
+        if ($sort) {
+            $direction = str_starts_with($sort, '-') ? 'DESC' : 'ASC';
+            $field = ltrim($sort, '-');
+            $qb->orderBy('p.' . $field, $direction);
+        }
+
+        return $qb->getQuery()->getResult();
     }
-
-    // Tri
-    if ($sort) {
-        $sortParts = explode(' ', $sort);
-        $qb->orderBy('p.' . $sortParts[0], $sortParts[1] ?? 'ASC');
-    } else {
-        $qb->orderBy('p.createdAt', 'DESC'); // Tri par défaut
-    }
-
-    return $qb->getQuery()->getResult();
-}
 
     public function findByCreator(User $user): array
     {
@@ -72,6 +76,7 @@ public function findFiltered(?string $status, ?string $sort): array
             ->getQuery()
             ->getResult();
     }
+    
 
     public function paginationQuery(): QueryBuilder
     {

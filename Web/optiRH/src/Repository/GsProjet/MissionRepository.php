@@ -2,12 +2,12 @@
 
 namespace App\Repository\GsProjet;
 
-use App\Entity\User;
-use Doctrine\ORM\QueryBuilder;
 use App\Entity\GsProjet\Mission;
 use App\Entity\GsProjet\Project;
-use Doctrine\Persistence\ManagerRegistry;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
+use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @method Mission|null find($id, $lockMode = null, $lockVersion = null)
@@ -22,6 +22,49 @@ class MissionRepository extends ServiceEntityRepository
         parent::__construct($registry, Mission::class);
     }
 
+    public function getProjectStats(Project $project): array
+{
+    $qb = $this->createQueryBuilder('m');
+    
+    $result = $qb->select(
+            'COUNT(m.id) as total',
+            'SUM(CASE WHEN m.status = :done THEN 1 ELSE 0 END) as completed',
+            'SUM(CASE WHEN m.dateTerminer < CURRENT_DATE() AND m.status != :done THEN 1 ELSE 0 END) as overdue',
+            'COUNT(DISTINCT m.assignedTo) as members'
+        )
+        ->where('m.project = :project')
+        ->setParameters([
+            'project' => $project,
+            'done' => 'Done'
+        ])
+        ->getQuery()
+        ->getSingleResult();
+
+    return [
+        'total' => (int) $result['total'],
+        'completed' => (int) $result['completed'],
+        'overdue' => (int) $result['overdue'],
+        'members' => (int) $result['members']
+    ];
+}
+
+public function findGroupedByStatus(Project $project): array
+{
+    $missions = $this->createQueryBuilder('m')
+        ->where('m.project = :project')
+        ->setParameter('project', $project)
+        ->getQuery()
+        ->getResult();
+
+    $grouped = ['To Do' => [], 'In Progress' => [], 'Done' => []];
+    
+    foreach ($missions as $mission) {
+        $status = $mission->getStatus() ?? 'To Do';
+        $grouped[$status][] = $mission;
+    }
+
+    return $grouped;
+}
     public function findByStatus(string $status): array
     {
         return $this->createQueryBuilder('m')
@@ -81,4 +124,8 @@ class MissionRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+   
+
+
+
 }

@@ -2,7 +2,7 @@
 
 namespace App\Entity\Transport;
 
-use App\Entity\Users\Users; // Notez le bon namespace
+use App\Entity\User; // Correct namespace
 use App\Entity\Transport\Vehicule;
 use App\Entity\Transport\Trajet;
 use App\Repository\Transport\ReservationTrajetRepository;
@@ -27,13 +27,12 @@ class ReservationTrajet
     #[ORM\JoinColumn(nullable: false)]
     private ?Trajet $trajet = null;
 
-    #[ORM\ManyToOne(targetEntity: Users::class)]
+    // Corrected the targetEntity and type declaration here
+    #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Users $user = null;
+    private ?User $user = null; // Changed from Users to User
 
-    // Supprimez la propriété userId qui est remplacée par la relation
-
-    // Getters et setters
+    // Getters and setters
     public function getId(): ?int
     {
         return $this->id;
@@ -72,12 +71,14 @@ class ReservationTrajet
         return $this;
     }
 
-    public function getUser(): ?Users
+    // Corrected the return type here
+    public function getUser(): ?User
     {
         return $this->user;
     }
 
-    public function setUser(?Users $user): self
+    // Corrected the parameter type here
+    public function setUser(?User $user): self
     {
         $this->user = $user;
         return $this;

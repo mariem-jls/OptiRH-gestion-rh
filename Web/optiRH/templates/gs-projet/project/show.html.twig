@@ -1,0 +1,241 @@
+{% extends 'partials/layout-vertical.html.twig' %}
+
+{% block title %}Détails du projet - {{ project.nom }}{% endblock %}
+
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', {
+        page_title: 'Détails du projet',
+        breadcrumb: [
+            { label: 'Projets', path: path('gs-projet_project_index') },
+            { label: project.nom }
+        ]
+    }) }}
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- En-tête du projet -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h1 class="h3 mb-0 text-primary">{{ project.nom }}</h1>
+                            <p class="text-muted mb-0">Créé le {{ project.createdAt|date('d/m/Y') }}</p>
+                        </div>
+                        <span class="badge fs-6 bg-{{ project.status|status_badge }} rounded-pill p-2">
+                            <i class="ri-{{ project.status|status_icon }} me-1"></i>
+                            {{ project.status ?? 'En cours' }}
+                        </span>
+                    </div>
+
+                    <div class="row g-4 mt-2">
+                       <div class="row g-3">
+    <div class="col-6 col-md-3">
+        <div class="border-start border-3 border-primary p-3">
+            <h6 class="text-muted mb-1">Tâches</h6>
+            <h3 class="mb-0">{{ totalTasks }}</h3>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="border-start border-3 border-success p-3">
+            <h6 class="text-muted mb-1">Terminées</h6>
+            <h3 class="mb-0">{{ completedTasks }}</h3>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="border-start border-3 border-warning p-3">
+            <h6 class="text-muted mb-1">En retard</h6>
+            <h3 class="mb-0">{{ overdueTasks }}</h3>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="border-start border-3 border-info p-3">
+            <h6 class="text-muted mb-1">Membres</h6>
+            <h3 class="mb-0">{{ membersCount }}</h3>
+        </div>
+    </div>
+</div>
+
+                        <!-- Actions -->
+                        <div class="col-12 col-lg-4">
+                            <div class="d-grid gap-2 d-lg-flex justify-content-lg-end">
+                                <a href="{{ path('gs-projet_project_edit', {'id': project.id}) }}" 
+                                   class="btn btn-outline-primary btn-lg rounded-pill">
+                                    <i class="ri-pencil-line me-2"></i>Modifier
+                                </a>
+                                <form method="post" 
+                                      action="{{ path('gs-projet_project_delete', {'id': project.id}) }}" 
+                                      class="delete-form">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ project.id) }}">
+                                    <button type="submit" 
+                                            class="btn btn-outline-danger btn-lg rounded-pill"
+                                            data-bs-toggle="tooltip" 
+                                            title="Supprimer définitivement">
+                                        <i class="ri-delete-bin-line"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenu principal -->
+    <div class="row g-4">
+        <!-- Description et détails -->
+        <div class="col-12 col-xl-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">
+                        <i class="ri-information-line me-2"></i>Description
+                    </h5>
+                    <div class="alert alert-light mb-0">
+                        {{ project.description|default('Aucune description fournie')|nl2br }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tableau des missions -->
+        <div class="col-12 col-xl-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="card-title mb-0">
+                            <i class="ri-task-line me-2"></i>Missions
+                        </h5>
+                        <a href="{{ path('gs-projet_project_app_missions_new', {'projectId': project.id}) }}" 
+                           class="btn btn-primary btn-sm rounded-pill">
+                            <i class="ri-add-line me-2"></i>Nouvelle mission
+                        </a>
+                    </div>
+
+                   
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    {% for status, missions in groupedMissions %}
+    <div class="col">
+        <div class="card border-0 bg-light">
+            <div class="card-body">
+                {# Correction du filtre status_icon et status_color #}
+                <h6 class="card-subtitle mb-3 text-{{ status|status_color }}">
+                    <i class="ri-{{ status|status_icon }} me-2"></i>{{ status }}
+                </h6>
+                <div class="kanban-list">
+                    {% for mission in missions %}
+                    <div class="card mb-3 shadow-sm-hover">
+                        <div class="card-body">
+                            <div class="d-flex align-items-start">
+                                <div class="form-check form-switch me-2">
+                                    <input class="form-check-input status-checkbox" 
+                                           type="checkbox"
+                                           data-mission-id="{{ mission.id }}"
+                                           {{ mission.status == 'Done' ? 'checked' : '' }}>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="card-title mb-1">
+                                        <a href="{{ path('gs-projet_project_app_missions_show', {'id': mission.id}) }}" 
+                                           class="text-dark stretched-link">
+                                            {{ mission.titre }}
+                                        </a>
+                                    </h6>
+                                    <div class="d-flex align-items-center mb-2">
+                                        {# Application du filtre status_color #}
+                                        <span class="badge bg-{{ mission.status|status_color }} me-2">
+                                            {{ mission.status }}
+                                        </span>
+                                        <small class="text-muted">
+                                            <i class="ri-calendar-line me-1"></i>
+                                            {{ mission.dateTerminer|date('d/m/Y') }}
+                                        </small>
+                                    </div>
+                                    {% if mission.assignedTo %}
+                                    <div class="d-flex align-items-center">
+                                
+                                        <small>{{ mission.assignedTo.nom }}</small>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted py-3">
+                        <i class="ri-emotion-sad-line h3"></i>
+                        <p class="mb-0">Aucune mission</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<meta name="csrf-token" content="{{ csrf_token('mission_status') }}">
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion des checkboxes avec animation
+    document.querySelectorAll('.status-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const card = this.closest('.card');
+            card.style.transition = 'transform 0.3s ease';
+            card.style.transform = 'scale(0.98)';
+            
+            setTimeout(() => {
+                updateMissionStatus(this);
+                card.style.transform = '';
+            }, 300);
+        });
+    });
+
+    async function updateMissionStatus(checkbox) {
+        const missionId = checkbox.dataset.missionId;
+        const newStatus = checkbox.checked ? 'Done' : 'To Do';
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+        try {
+            const response = await fetch(`/missions/${missionId}/status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    status: newStatus,
+                    _token: csrfToken
+                })
+            });
+
+            if (!response.ok) throw new Error('Échec de la mise à jour');
+            
+            // Animation de confirmation
+            checkbox.parentElement.classList.add('text-success');
+            setTimeout(() => {
+                checkbox.parentElement.classList.remove('text-success');
+            }, 1000);
+
+        } catch (error) {
+            console.error(error);
+            checkbox.checked = !checkbox.checked;
+            // Afficher une notification d'erreur
+        }
+    }
+
+    // Tooltips Bootstrap
+    const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    [...tooltips].map(t => new bootstrap.Tooltip(t));
+});
+</script>
+{% endblock %}

@@ -1,0 +1,158 @@
+{% extends 'partials/layout-vertical.html.twig' %}
+
+{% block title %}Liste des projets{% endblock %}
+
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', { page_title: 'Gestion des projets' }) }}
+{% endblock %}
+{% block body %}
+    <div class="row align-items-center mb-4">
+        <div class="col-md-6">
+            <a href="{{ path('gs-projet_project_new') }}" class="btn btn-purple rounded-pill w-md waves-effect waves-light">
+                <i class="mdi mdi-plus me-2"></i>
+                Créer un projet
+            </a>
+        </div>
+        <div class="col-md-6 mt-3 mt-md-0">
+            {{ form_start(filterForm, { attr: {'id': 'filter-form', 'data-search-url': path('gs-projet_project_index'), 'class': 'filter-form'} }) }}
+                <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+                    <div class="flex-grow-1" style="min-width: 200px;">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-transparent"><i class="mdi mdi-magnify"></i></span>
+                            {{ form_widget(filterForm.search, {
+                                'attr': { 
+                                    'class': 'form-control form-control-sm border-start-0',
+                                    'placeholder': 'Rechercher un projet...',
+                                    'aria-label': 'Rechercher'
+                                }
+                            }) }}
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <div class="input-group input-group-sm" style="width: 150px;">
+                            {{ form_widget(filterForm.status, {
+                                attr: { 
+                                    class: 'form-select form-select-sm',
+                                    'aria-label': 'Statut'
+                                }
+                            }) }}
+                        </div>
+                        
+                        <div class="input-group input-group-sm" style="width: 150px;">
+                            {{ form_widget(filterForm.sort, {
+                                attr: { 
+                                    class: 'form-select form-select-sm',
+                                    'aria-label': 'Trier par'
+                                }
+                            }) }}
+                        </div>
+                    </div>
+                </div>
+            {{ form_end(filterForm) }}
+        </div>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+        {% for project in projects %}
+            <div class="col">
+                <div class="card h-100 shadow-sm-hover">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h5 class="card-title mb-0">
+                                <a href="{{ path('gs-projet_project_show', {id: project.id}) }}" class="text-dark text-decoration-none">
+                                    {{ project.nom }}
+                                </a>
+                            </h5>
+                            <span class="badge bg-{{ project.status|status_badge }} rounded-pill">{{ project.status }}</span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <p class="text-muted small mb-2">{{ project.description|u.truncate(120, '...') }}</p>
+                            <a href="{{ path('gs-projet_project_show', {id: project.id}) }}" class="btn btn-link btn-sm p-0 text-primary">
+                                Détails <i class="mdi mdi-arrow-right"></i>
+                            </a>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center text-muted small">
+                            <div>
+                                <i class="mdi mdi-calendar-outline me-1"></i>
+                                {{ project.createdAt|date('d/m/Y') }}
+                            </div>
+                            {# Ajouter d'autres métadonnées si nécessaire #}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info mb-0">Aucun projet trouvé</div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+{% block javascript %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const filterForm = document.getElementById('filter-form');
+    const projectList = document.querySelector('.row-cols-1');
+    const searchUrl = filterForm.dataset.searchUrl;
+    let timeout;
+
+    // Gestion des événements
+    filterForm.addEventListener('input', debounceHandleFilter);
+    filterForm.addEventListener('change', handleFilter);
+
+    function debounceHandleFilter(e) {
+        if (e.target.name === 'filter[search]') {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => handleFilter(e), 500);
+        }
+    }
+
+    async function handleFilter(e) {
+        e.preventDefault();
+        
+        const loader = document.createElement('div');
+        loader.className = 'position-absolute top-0 start-0 w-100 h-100 bg-white bg-opacity-50 d-flex justify-content-center align-items-center';
+        loader.innerHTML = '<div class="spinner-border text-primary"></div>';
+        projectList.parentElement.style.position = 'relative';
+        projectList.parentElement.prepend(loader);
+
+        try {
+            const formData = new FormData(filterForm);
+            
+            // Ajout des paramètres manquants
+            const params = new URLSearchParams();
+            for (const [key, value] of formData) {
+                params.append(key, value);
+            }
+
+            const response = await fetch(searchUrl, {
+                method: 'POST',
+                body: params,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                }
+            });
+            
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            
+            const html = await response.text();
+            projectList.innerHTML = html;
+            
+        } catch (error) {
+            console.error('Erreur:', error);
+            projectList.innerHTML = `
+                <div class="col-12">
+                    <div class="alert alert-danger">Erreur de filtrage : ${error.message}</div>
+                </div>
+            `;
+        } finally {
+            loader.remove();
+        }
+    }
+});
+</script>
+{% endblock %}
