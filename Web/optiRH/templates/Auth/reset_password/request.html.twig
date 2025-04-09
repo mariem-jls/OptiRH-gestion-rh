@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="fr">
+	<head>
+		{{ include('partials/title-meta.html.twig', {title: 'Réinitialiser le mot de passe'}) }}
+		{{ include('partials/head-css.html.twig') }}
+	</head>
+
+	<body class="authentication-bg authentication-bg-pattern">
+		<div class="account-pages mt-5 mb-5">
+			<div class="container">
+				<div class="row justify-content-center">
+					<div class="col-md-8 col-lg-6 col-xl-4">
+						<div class="text-center">
+							<a href="index">
+								<img src="/images/logo-dark.png" alt="app_logo" height="140" class="mx-auto">
+							</a>
+						</div>
+						<div class="card">
+							<div class="card-body p-4">
+								<div class="text-center mb-4">
+									<h4 class="text-uppercase mt-0 mb-3">Réinitialiser le mot de passe</h4>
+									<p class="text-muted mb-0 font-13">Entrez votre adresse e-mail et nous vous enverrons un e-mail avec des instructions pour réinitialiser votre mot de passe.</p>
+								</div>
+
+								{% for flash_error in app.flashes('reset_password_error') %}
+									<div class="alert alert-danger" role="alert">{{ flash_error }}</div>
+								{% endfor %}
+
+								{{ form_start(requestForm, {'attr': {'action': '#'}}) }}
+								<div class="mb-3">
+									<label for="{{ requestForm.email.vars.id }}" class="form-label">Adresse e-mail</label>
+									{{ form_widget(requestForm.email, {'attr': {'class': 'form-control', 'placeholder': 'Entrez votre e-mail'}}) }}
+									{% if form_errors(requestForm.email) %}
+										<div class="text-danger">{{ form_errors(requestForm.email) }}</div>
+									{% endif %}
+								</div>
+
+								<div class="mb-3 text-center d-grid">
+									<button class="btn btn-primary" type="submit">Envoyer l'e-mail de réinitialisation</button>
+								</div>
+								{{ form_end(requestForm) }}
+							</div>
+							<!-- end card-body -->
+						</div>
+						<!-- end card -->
+
+						<div class="row mt-3">
+							<div class="col-12 text-center">
+								<p class="text-dark">Retour à
+									<a href="login" class="text-dark ms-1">
+										<b>Connexion</b>
+									</a>
+								</p>
+							</div>
+							<!-- end col -->
+						</div>
+						<!-- end row -->
+					</div>
+					<!-- end col -->
+				</div>
+				<!-- end row -->
+			</div>
+			<!-- end container -->
+		</div>
+		<!-- end page -->
+
+		{{ include('partials/vendor.html.twig') }}
+
+		<!-- App js -->
+		<script src="/js/app.min.js"></script>
+	</body>
+</html>

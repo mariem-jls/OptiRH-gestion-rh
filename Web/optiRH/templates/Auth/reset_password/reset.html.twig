@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="fr">
+	<head>
+		{{ include('partials/title-meta.html.twig', {title: 'Réinitialiser votre mot de passe'}) }}
+		{{ include('partials/head-css.html.twig') }}
+	</head>
+
+	<body class="authentication-bg authentication-bg-pattern">
+		<div class="account-pages mt-5 mb-5">
+			<div class="container">
+				<div class="row justify-content-center">
+					<div class="col-md-8 col-lg-6 col-xl-4">
+						<div class="text-center mb-4">
+							<a href="{{ path('home') }}">
+								<img src="{{ asset('images/logo-dark.png') }}" alt="Logo OptiRH" height="140" class="mx-auto">
+							</a>
+						</div>
+						<div class="card shadow-sm border-0">
+							<div class="card-body p-4">
+								<div class="text-center mb-4">
+									<h4 class="text-uppercase fw-bold mt-0 mb-2">Réinitialiser votre mot de passe</h4>
+									<p class="text-muted font-14 mb-0">Saisissez un nouveau mot de passe pour sécuriser votre compte.</p>
+								</div>
+
+								{{ form_start(resetForm) }}
+								{% if form_errors(resetForm) %}
+									<div class="alert alert-danger" role="alert">{{ form_errors(resetForm) }}</div>
+								{% endif %}
+
+								<div class="mb-3">
+									<label for="{{ resetForm.plainPassword.first.vars.id }}" class="form-label fw-semibold">Nouveau mot de passe</label>
+									{{ form_widget(resetForm.plainPassword.first, {'attr': {'class': 'form-control', 'placeholder': 'Entrez un nouveau mot de passe'}}) }}
+								</div>
+
+								<div class="mb-3">
+									<label for="{{ resetForm.plainPassword.second.vars.id }}" class="form-label fw-semibold">Confirmer le mot de passe</label>
+									{{ form_widget(resetForm.plainPassword.second, {'attr': {'class': 'form-control', 'placeholder': 'Entrez à nouveau le mot de passe'}}) }}
+								</div>
+
+								<div class="text-center d-grid">
+									<button class="btn btn-primary btn-lg fw-semibold" type="submit">Réinitialiser le mot de passe</button>
+								</div>
+								{{ form_end(resetForm) }}
+
+							</div>
+							<!-- end card-body -->
+						</div>
+						<!-- end card -->
+
+						<div class="row mt-3">
+							<div class="col-12 text-center">
+								<p class="text-dark mb-0">
+									Retour à
+									<a href="{{ path('app_login') }}" class="text-dark fw-bold ms-1">Connexion</a>
+								</p>
+							</div>
+							<!-- end col -->
+						</div>
+						<!-- end row -->
+					</div>
+					<!-- end col -->
+				</div>
+				<!-- end row -->
+			</div>
+			<!-- end container -->
+		</div>
+		<!-- end page -->
+
+		{{ include('partials/vendor.html.twig') }}
+
+		<!-- App js -->
+		<script src="{{ asset('js/app.min.js') }}"></script>
+	</body>
+</html>
