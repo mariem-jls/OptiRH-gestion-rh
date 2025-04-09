@@ -1,0 +1,91 @@
+{# templates/front/reclamation/list.html.twig #}
+{% extends 'partials/layout-horizontal.html.twig' %}
+
+
+
+{% block title %}Mes Réclamations{% endblock %}
+
+{% block body %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="page-title-box">
+                    <div class="page-title-right">
+                        <a href="{{ path('front_add_reclamation') }}" class="btn btn-primary">
+                            <i class="mdi mdi-plus-circle"></i> Ajouter une réclamation
+                        </a>
+                    </div>
+                    <h4 class="page-title">Mes Réclamations</h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-centered mb-0">
+                                <thead>
+                                <tr>
+                                    <th>Description</th>
+                                    <th>Date</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for reclamation in reclamations %}
+                                    <tr>
+                                        <td>{{ reclamation.description|slice(0, 50) }}{% if reclamation.description|length > 50 %}...{% endif %}</td>
+                                        <td>{{ reclamation.date|date('d/m/Y H:i') }}</td>
+                                        <td>
+                                        <span class="badge bg-{{ reclamation.status == 'Résolue' ? 'success' : (reclamation.status == 'En cours' ? 'info' : 'warning') }}">
+                                            {{ reclamation.status }}
+                                        </span>
+                                        </td>
+                                        <td>
+                                            <a href="{{ path('front_reclamation_reponses', {'id': reclamation.id}) }}"
+                                               class="btn btn-sm btn-primary" title="Voir les réponses">
+                                                <i class="mdi mdi-eye"></i>
+                                            </a>
+                                            <a href="{{ path('front_edit_reclamation', {'id': reclamation.id}) }}"
+                                               class="btn btn-sm btn-secondary" title="Modifier">
+                                                <i class="mdi mdi-pencil"></i>
+                                            </a>
+                                            <form method="post" action="{{ path('front_delete_reclamation', {'id': reclamation.id}) }}"
+                                                  onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette réclamation ?');"
+                                                  style="display: inline-block;">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reclamation.id) }}">
+                                                <button class="btn btn-sm btn-danger" title="Supprimer">
+                                                    <i class="mdi mdi-delete"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="4" class="text-center">Vous n'avez aucune réclamation</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ajout de tooltips pour les boutons d'action
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
+{% endblock %}

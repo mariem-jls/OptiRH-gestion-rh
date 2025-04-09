@@ -1,0 +1,67 @@
+{# templates/front/reclamation/edit.html.twig #}
+{% extends 'partials/layout-horizontal.html.twig' %}
+
+
+{% block title %}Modifier Réclamation - {{ parent() }}{% endblock %}
+
+{% block body %}
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h4 class="mb-0">
+                                <i class="fas fa-edit me-2"></i>Modifier votre réclamation
+                            </h4>
+                            <a href="{{ path('front_reclamations') }}" class="btn btn-sm btn-light">
+                                <i class="fas fa-arrow-left me-1"></i> Retour
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+
+                        <div class="mb-3">
+                            {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                            {{ form_widget(form.description, {
+                                'attr': {
+                                    'class': 'form-control' ~ (form.description.vars.errors|length ? ' is-invalid' : ''),
+                                    'rows': 5,
+                                    'minlength': 5
+                                }
+                            }) }}
+                            {% if form.description.vars.errors|length %}
+                                <div class="invalid-feedback">
+                                    {{ form_errors(form.description) }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Minimum 5 caractères</small>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.status, 'Statut', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                            {{ form_widget(form.status, {
+                                'attr': {
+                                    'class': 'form-select'
+                                }
+                            }) }}
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <button type="submit" class="btn btn-primary me-md-2">
+                                <i class="fas fa-save me-1"></i> Enregistrer
+                            </button>
+                            <a href="{{ path('front_reclamations') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-1"></i> Annuler
+                            </a>
+                        </div>
+
+                        {{ form_end(form) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

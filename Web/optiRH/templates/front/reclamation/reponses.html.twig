@@ -1,0 +1,117 @@
+{# templates/front/reclamation/reponses.html.twig #}
+{% extends 'partials/layout-horizontal.html.twig' %}
+
+
+{% block title %}Réponses à la Réclamation #{{ reclamation.id }}{% endblock %}
+
+{% block body %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="page-title-box">
+                    <div class="page-title-right">
+                        <a href="{{ path('front_reclamations') }}" class="btn btn-secondary">
+                            <i class="mdi mdi-arrow-left"></i> Retour
+                        </a>
+                    </div>
+                    <h4 class="page-title">Réponses à la Réclamation #{{ reclamation.id }}</h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="header-title mb-3">Détails de la Réclamation</h4>
+                        <div class="mb-3">
+                            <strong>Description:</strong>
+                            <p>{{ reclamation.description }}</p>
+                        </div>
+                        <div class="mb-3">
+                            <strong>Date:</strong> {{ reclamation.date|date('d/m/Y H:i') }}
+                        </div>
+                        <div class="mb-3">
+                            <strong>Statut:</strong>
+                            <span class="badge bg-{{ reclamation.status == 'Résolue' ? 'success' : (reclamation.status == 'En cours' ? 'info' : 'warning') }}">
+                            {{ reclamation.status }}
+                        </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div class="col-md-8 offset-md-2">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="header-title mb-3">Réponses</h4>
+
+                        {% if reclamation.reponses|length > 0 %}
+                            {% for reponse in reclamation.reponses %}
+                                <div class="border p-3 mb-3 rounded">
+                                    <div class="d-flex justify-content-between">
+                                        <h5>Réponse #{{ loop.index }}</h5>
+                                        <small class="text-muted">{{ reponse.date|date('d/m/Y H:i') }}</small>
+                                    </div>
+                                    <p>{{ reponse.description }}</p>
+
+                                    <div class="rating-section mt-2">
+                                        <form method="post" action="{{ path('front_rate_reponse', {'id': reponse.id}) }}">
+                                            <div class="mb-2">
+                                                <strong>Évaluer cette réponse:</strong>
+                                            </div>
+                                            <div class="star-rating">
+                                                {% for i in 5..1 %}
+                                                    <input type="radio" id="star{{ i }}-{{ reponse.id }}" name="rating" value="{{ i }}"
+                                                           {% if reponse.rating == i %}checked{% endif %}>
+                                                    <label for="star{{ i }}-{{ reponse.id }}">★</label>
+                                                {% endfor %}
+                                            </div>
+                                            <button type="submit" class="btn btn-sm btn-primary mt-2">
+                                                <i class="mdi mdi-star"></i> Noter
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="alert alert-info">Aucune réponse pour cette réclamation</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .star-rating {
+            display: flex;
+            flex-direction: row-reverse;
+            font-size: 1.5em;
+            justify-content: space-around;
+            padding: 0 .2em;
+            text-align: center;
+            width: 5em;
+        }
+
+        .star-rating input {
+            display: none;
+        }
+
+        .star-rating label {
+            color: #ccc;
+            cursor: pointer;
+        }
+
+        .star-rating :checked ~ label {
+            color: #f90;
+        }
+
+        .star-rating label:hover,
+        .star-rating label:hover ~ label {
+            color: #fc0;
+        }
+    </style>
+{% endblock %}
