@@ -1,0 +1,126 @@
+{% extends 'partials/layout-vertical.html.twig' %}
+
+{% block title %}Détails de la demande | Gestion RH{% endblock %}
+
+{% block css %}
+    {{ parent() }}
+    <style>
+        .detail-card { border-radius: 0.5rem; }
+        .detail-section { background-color: #f8f9fa; padding: 1.5rem; border-radius: 0.5rem; }
+        .detail-label { font-weight: 500; color: #6c757d; min-width: 200px; }
+        .file-preview {
+            max-width: 100%;
+            height: 500px;
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+            background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=') center/contain no-repeat;
+        }    </style>
+{% endblock %}
+
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', {
+        page_title: 'Détails de la demande',
+        breadcrumb: {
+            'Liste des demandes': path('app_demande_index'),
+            'Détails': ''
+        }
+    }) }}
+{% endblock %}
+
+{% block body %}
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card detail-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="header-title">
+                            <i class="mdi mdi-file-document-outline me-2"></i>
+                            Dossier de {{ demande.nomComplet }}
+                        </h4>
+                        <div class="d-flex gap-2">
+                            <a href="{{ path('app_demande_index') }}" class="btn btn-sm btn-light">
+                                <i class="mdi mdi-arrow-left me-1"></i> Retour
+                            </a>
+                            <a href="{{ path('app_demande_edit', {'id': demande.id}) }}" class="btn btn-sm btn-warning">
+                                <i class="mdi mdi-pencil-outline me-1"></i> Modifier
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="detail-section mb-4">
+                        <h5 class="mb-3 text-primary"><i class="mdi mdi-account-circle-outline me-2"></i>Informations personnelles</h5>
+                        <dl class="row">
+                            <dt class="col-sm-3 detail-label">Statut</dt>
+                            <dd class="col-sm-9">
+                                {% set status_class = demande.statut|lower == 'en_attente' ? 'warning' : demande.statut|lower == 'acceptee' ? 'success' : 'danger' %}
+                                <span class="badge bg-{{ status_class }} fs-6">{{ demande.statut|capitalize }}</span>
+                            </dd>
+
+                            <dt class="col-sm-3 detail-label">Date de dépôt</dt>
+                            <dd class="col-sm-9">{{ demande.date|date('d/m/Y à H:i') }}</dd>
+
+                            <dt class="col-sm-3 detail-label">Coordonnées</dt>
+                            <dd class="col-sm-9">
+                                <div>{{ demande.email }}</div>
+                                <div>{{ demande.telephone }}</div>
+                                <div>{{ demande.adresse }}</div>
+                            </dd>
+
+                            <dt class="col-sm-3 detail-label">Situation actuelle</dt>
+                            <dd class="col-sm-9">{{ demande.situationActuelle }}</dd>
+                        </dl>
+                    </div>
+
+                    <div class="detail-section mb-4">
+                        <h5 class="mb-3 text-primary"><i class="mdi mdi-calendar-clock-outline me-2"></i>Disponibilité</h5>
+                        <dl class="row">
+                            <dt class="col-sm-3 detail-label">Date début disponible</dt>
+                            <dd class="col-sm-9">
+                                {{ demande.dateDebutDisponible ? demande.dateDebutDisponible|date('d/m/Y') : 'Non spécifiée' }}
+                            </dd>
+                        </dl>
+                    </div>
+
+                    <div class="detail-section mb-4">
+                        <h5 class="mb-3 text-primary"><i class="mdi mdi-text-box-outline me-2"></i>Description</h5>
+                        <div class="ql-editor">
+                            {{ demande.description|raw }}
+                        </div>
+                    </div>
+
+
+                    <!-- Section Documents corrigée -->
+                    <div class="detail-section mb-4">
+                        <h5 class="mb-3 text-primary"><i class="mdi mdi-file-check-outline me-2"></i>Documents</h5>
+                        <div class="row">
+                            <div class="col-12">
+                                {% if demande.fichierPieceJointe %}
+                                        <div class="mb-3">
+                                            <a href="{{ asset('uploads/pieces_jointes/' ~ demande.fichierPieceJointe) }}"
+                                               target="_blank"
+                                               class="btn btn-outline-primary">
+                                                <i class="mdi mdi-file-pdf-box me-2"></i>Télécharger le PDF
+                                            </a>
+                                        </div>
+                                        <iframe
+                                                src="{{ asset('uploads/' ~ demande.fichierPieceJointe) }}#toolbar=0&view=fitH"
+                                                class="file-preview w-100"
+                                                onerror="this.style.display='none'"
+                                        ></iframe>
+
+                                {% else %}
+                                    <div class="alert alert-info">
+                                        <i class="mdi mdi-information-outline me-2"></i>
+                                        Aucun document joint à cette demande
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+{% endblock %}

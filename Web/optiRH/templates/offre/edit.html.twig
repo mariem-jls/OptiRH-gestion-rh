@@ -1,0 +1,294 @@
+{% extends 'partials/layout-vertical.html.twig' %}
+
+{% block title %}Modifier l'offre | Gestion RH{% endblock %}
+
+{% block css %}
+    {{ parent() }}
+    <!-- Quill CSS -->
+    <link href="{{ asset('/libs/quill/quill.core.css') }}" rel="stylesheet">
+    <link href="{{ asset('/libs/quill/quill.snow.css') }}" rel="stylesheet">
+    <!-- SweetAlert2 CSS -->
+    <link href="{{ asset('/libs/sweetalert2/sweetalert2.min.css') }}" rel="stylesheet">
+    <style>
+        .edit-warning {
+            border-left: 4px solid #ffc107;
+            background-color: #fff9e6;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+        .form-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+    </style>
+{% endblock %}
+
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', {
+        page_title: 'Modification d\'offre',
+        breadcrumb: {
+            'Liste des offres': path('app_offre_index'),
+            'Détails': path('app_offre_show', {id: offre.id}),
+            'Modification': ''
+        }
+    }) }}
+{% endblock %}
+
+{% block body %}
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="header-title mb-4">
+                        <i class="mdi mdi-file-edit-outline me-1"></i>
+                        Modification de l'offre
+                    </h4>
+
+                    <div class="edit-warning mb-4">
+                        <i class="mdi mdi-alert-outline me-2"></i>
+                        Les modifications affecteront immédiatement l'affichage public de l'offre.
+                    </div>
+
+                    {{ form_start(form, {'attr': {'id': 'editOffreForm'}}) }}
+
+                    <!-- Section Principale -->
+                    <div class="form-section">
+                        <div class="row g-3">
+                            <!-- Poste -->
+                            <div class="col-12">
+                                {{ form_row(form.poste, {
+                                    label: 'Poste à pourvoir',
+                                    attr: {
+                                        class: 'form-control',
+                                        placeholder: 'Ex: Développeur Symfony Senior'
+                                    }
+                                }) }}
+                            </div>
+
+                            <!-- Type Contrat + Localisation -->
+                            <div class="col-md-6">
+                                {{ form_row(form.typeContrat, {
+                                    label: 'Type de contrat',
+                                    attr: { class: 'form-select' }
+                                }) }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form_row(form.localisation, {
+                                    label: 'Localisation',
+                                    attr: { class: 'form-control' }
+                                }) }}
+                            </div>
+
+                            <!-- Date Expiration + Nombre de postes -->
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    {{ form_row(form.dateExpiration, {
+                                        label: 'Date expiration',
+                                        attr: { class: 'form-control flatpickr' }
+                                    }) }}
+                                    <span class="input-group-text"><i class="mdi mdi-calendar"></i></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                {{ form_row(form.nbPostes, {
+                                    label: 'Nombre de postes',
+                                    attr: { class: 'form-control' }
+                                }) }}
+                            </div>
+
+                            <!-- Mode de travail -->
+                            <div class="col-12">
+                                {{ form_row(form.modeTravail, {
+                                    label: 'Mode de travail',
+                                    attr: { class: 'form-select' }
+                                }) }}
+                            </div>
+
+                            <!-- Statut -->
+                            <div class="col-12">
+                                {{ form_row(form.statut, {
+                                    label: 'Statut',
+                                    attr: { class: 'form-select' }
+                                }) }}
+                            </div>
+
+                            <!-- Niveau d'expérience -->
+                            <div class="col-12">
+                                {{ form_row(form.niveauExperience, {
+                                    label: 'Niveau d\'expérience',
+                                    attr: { class: 'form-select' }
+                                }) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="form-section">
+                        {{ form_label(form.description, 'Description détaillée') }}
+                        <div id="quill-editor" style="height: 300px;">{{ offre.description|raw }}</div>
+                        {{ form_widget(form.description, {
+                            attr: {
+                                class: 'd-none',
+                                value: offre.description|raw
+                            }
+                        }) }}
+                    </div>
+
+                    <!-- Boutons de soumission -->
+                    <div class="mt-4 d-flex justify-content-end gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="mdi mdi-content-save-check me-1"></i>
+                            Mettre à jour
+                        </button>
+                        <a href="{{ path('app_offre_index') }}" class="btn btn-light" id="cancelBtn">
+                            Annuler
+                        </a>
+                    </div>
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+
+            <!-- Section Actions -->
+            <div class="mt-4 d-flex justify-content-between align-items-center">
+                <a href="{{ path('app_offre_show', {'id': offre.id}) }}"
+                   class="btn btn-outline-primary btn-sm">
+                    <i class="mdi mdi-eye-outline me-1"></i>
+                    Voir la version actuelle
+                </a>
+
+                <div class="d-flex gap-2">
+                    <a href="{{ path('app_offre_index') }}"
+                       class="btn btn-secondary btn-sm">
+                        <i class="mdi mdi-arrow-left me-1"></i>
+                        Retour à la liste
+                    </a>
+
+                    {{ include('offre/_delete_form.html.twig') }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascript %}
+{{ parent() }}
+<!-- Quill JS -->
+<script src="{{ asset('/libs/quill/quill.min.js') }}"></script>
+<!-- Flatpickr -->
+<script src="{{ asset('/libs/flatpickr/flatpickr.min.js') }}"></script>
+<script src="{{ asset('/libs/flatpickr/l10n/fr.js') }}"></script>
+<!-- SweetAlert2 JS -->
+<script src="{{ asset('/libs/sweetalert2/sweetalert2.all.min.js') }}"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Configuration Flatpickr
+        flatpickr('.flatpickr', {
+            dateFormat: "Y-m-d H:i",
+            minDate: "today",
+            locale: "fr",
+            disableMobile: true
+        });
+
+        // Configuration Quill
+        const quill = new Quill('#quill-editor', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    ['bold', 'italic', 'underline', 'strike'],
+                    ['blockquote', 'code-block'],
+                    [{ 'header': 1 }, { 'header': 2 }],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    [{ 'script': 'sub'}, { 'script': 'super' }],
+                    ['link', 'image'],
+                    ['clean']
+                ]
+            },
+            placeholder: 'Rédigez votre description ici...'
+        });
+
+        // Synchronisation avec le champ caché
+        const descriptionField = document.querySelector('#{{ form.description.vars.id }}');
+        quill.root.innerHTML = '{{ offre.description|raw|escape('js') }}';
+        quill.on('text-change', () => descriptionField.value = quill.root.innerHTML);
+        descriptionField.value = quill.root.innerHTML;
+
+        // Gestion de la soumission du formulaire avec SweetAlert
+        const editForm = document.getElementById('editOffreForm');
+        editForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            Swal.fire({
+                title: 'Confirmer les modifications ?',
+                text: 'Voulez-vous vraiment mettre à jour cette offre ?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Oui, mettre à jour',
+                cancelButtonText: 'Annuler'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Soumission du formulaire après confirmation
+                    editForm.submit();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Mis à jour !',
+                        text: 'L\'offre a été modifiée avec succès.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.href = "{{ path('app_offre_show', {'id': offre.id}) }}";
+                    });
+                }
+            });
+        });
+
+        // Gestion du bouton Annuler avec SweetAlert
+        document.getElementById('cancelBtn').addEventListener('click', function(event) {
+            event.preventDefault();
+            Swal.fire({
+                title: 'Annuler les modifications ?',
+                text: 'Toutes les modifications non enregistrées seront perdues.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Oui, annuler',
+                cancelButtonText: 'Continuer l\'édition'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "{{ path('app_offre_index') }}";
+                }
+            });
+        });
+
+        // Gestion de la suppression avec SweetAlert
+        const deleteForm = document.querySelector('form[action*="{{ path('app_offre_delete', {'id': offre.id}) }}"]');
+        if (deleteForm) {
+            deleteForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                Swal.fire({
+                    title: 'Confirmer la suppression ?',
+                    text: 'Cette action est irréversible et supprimera l\'offre définitivement.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Oui, supprimer',
+                    cancelButtonText: 'Annuler',
+                    confirmButtonColor: '#dc3545'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        deleteForm.submit();
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Supprimée !',
+                            text: 'L\'offre a été supprimée avec succès.',
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            window.location.href = "{{ path('app_offre_index') }}";
+                        });
+                    }
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}

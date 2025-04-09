@@ -1,0 +1,146 @@
+{% extends 'partials/layout-vertical.html.twig' %}
+
+{% block title %}Modifier le statut | Gestion RH{% endblock %}
+
+{% block css %}
+    {{ parent() }}
+    <!-- SweetAlert2 CSS -->
+    <link href="{{ asset('/libs/sweetalert2/sweetalert2.min.css') }}" rel="stylesheet">
+    <style>
+        .hidden-form {
+            position: absolute;
+            height: 0;
+            width: 0;
+            overflow: hidden;
+            opacity: 0;
+            z-index: -1;
+        }
+        .status-card {
+            border-left: 4px solid #727cf5;
+            background-color: #f8f9fa;
+        }
+        .current-status-badge {
+            font-size: 1.1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+        }
+    </style>
+{% endblock %}
+
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', {
+        page_title: 'Modification du statut',
+        breadcrumb: {
+            'Liste des demandes': path('app_demande_index'),
+            'Détails': path('app_demande_show', {id: demande.id}),
+            'Modification': ''
+        }
+    }) }}
+{% endblock %}
+
+{% block body %}
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card status-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <h4 class="header-title mb-0">
+                            <i class="mdi mdi-badge-account-horizontal-outline me-2"></i>
+                            Statut actuel :
+                        </h4>
+                        <span class="current-status-badge bg-{{
+                        demande.statut|lower == 'en_attente' ? 'warning' :
+                        demande.statut|lower == 'acceptee' ? 'success' :
+                        'danger'
+                        }}">
+                            {{ demande.statut|capitalize }}
+                        </span>
+                    </div>
+
+                    {{ form_start(form, {'attr': {'id': 'editDemandeForm'}}) }}
+
+                    <div class="mb-4">
+                        {{ form_label(form.statut, 'Nouveau statut', {
+                            label_attr: { class: 'form-label fw-bold' }
+                        }) }}
+                        {{ form_widget(form.statut, {
+                            attr: { class: 'form-select' }
+                        }) }}
+                    </div>
+
+                    <div class="hidden-form" aria-hidden="true" style="display: none;">
+                        {{ form_rest(form) }}
+                    </div>
+
+                    <div class="d-flex justify-content-between gap-3">
+                        <a href="{{ path('app_demande_show', {'id': demande.id}) }}"
+                           class="btn btn-light flex-grow-1" id="cancelBtn">
+                            <i class="mdi mdi-arrow-left me-2"></i>
+                            Annuler
+                        </a>
+                        <button type="submit" class="btn btn-primary flex-grow-1">
+                            <i class="mdi mdi-check-bold me-2"></i>
+                            Valider
+                        </button>
+                    </div>
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascript %}
+{{ parent() }}
+<!-- SweetAlert2 JS -->
+<script src="{{ asset('/libs/sweetalert2/sweetalert2.all.min.js') }}"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Gestion de la soumission du formulaire avec SweetAlert
+        const editForm = document.getElementById('editDemandeForm');
+        editForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            Swal.fire({
+                title: 'Confirmer la modification ?',
+                text: 'Voulez-vous vraiment mettre à jour le statut de cette demande ?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Oui, valider',
+                cancelButtonText: 'Annuler'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Soumission du formulaire après confirmation
+                    editForm.submit();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Statut mis à jour !',
+                        text: 'Le statut de la demande a été modifié avec succès.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.href = "{{ path('app_demande_show', {'id': demande.id}) }}";
+                    });
+                }
+            });
+        });
+
+        // Gestion du bouton Annuler avec SweetAlert
+        document.getElementById('cancelBtn').addEventListener('click', function(event) {
+            event.preventDefault();
+            Swal.fire({
+                title: 'Annuler la modification ?',
+                text: 'Voulez-vous abandonner les changements et retourner aux détails ?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Oui, annuler',
+                cancelButtonText: 'Continuer l\'édition'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "{{ path('app_demande_show', {'id': demande.id}) }}";
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

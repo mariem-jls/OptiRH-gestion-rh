@@ -1,0 +1,193 @@
+{% extends 'front-base.html.twig' %}
+
+{% block title %}{{ offre.poste }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .job-details-card {
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .job-header {
+            border-bottom: 2px solid #f5f5f5;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .job-meta {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .job-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #ffffff;
+        }
+        .job-meta-item i {
+            color: #ffffff;
+        }
+        .detail-item {
+            margin-bottom: 15px;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .status-badge {
+            background: #8b92dd;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+        .hero-solid {
+            background: linear-gradient(45deg, #3ab5ce, #8b92dd);
+            height: 400px;
+            display: flex;
+            align-items: center;
+        }
+    </style>
+{% endblock %}
+
+{% block slider %}
+    <!-- Hero Area Start -->
+    <div class="slider-area">
+        <div class="single-slider section-overly slider-height2 d-flex align-items-center hero-solid" data-background="{{ asset('img-front/hero/about.jpg') }}">
+            <div class="container">
+                <div class="row">
+                    <div class="col-xl-12">
+                        <div class="hero-cap text-center">
+                            <h2>{{ offre.poste }}</h2>
+                            <div class="job-meta justify-content-center">
+                                <div class="job-meta-item">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    {{ offre.localisation }}
+                                </div>
+                                <div class="job-meta-item">
+                                    <i class="fas fa-briefcase"></i>
+                                    {{ offre.typeContrat }}
+                                </div>
+                                <div class="job-meta-item">
+                                    <i class="fas fa-clock"></i>
+                                    Expire le {{ offre.dateExpiration|date('d/m/Y') }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Hero Area End -->
+{% endblock %}
+
+{% block body %}
+    <div class="job-listing-area pt-120 pb-120">
+        <div class="container">
+            <div class="row">
+                <!-- Main Content -->
+                <div class="col-xl-8">
+                    <div class="job-details-card">
+                        <div class="job-header">
+                            <h3>Détails de l'offre</h3>
+                        </div>
+
+                        <div class="detail-item">
+                            <div class="detail-label">Description du poste</div>
+                            <div class="detail-value">{{ offre.description }}</div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="detail-item">
+                                    <div class="detail-label">Type de contrat</div>
+                                    <div class="detail-value">{{ offre.typeContrat }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="detail-item">
+                                    <div class="detail-label">Mode de travail</div>
+                                    <div class="detail-value">{{ offre.modeTravail }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="detail-item">
+                                    <div class="detail-label">Niveau d'expérience</div>
+                                    <div class="detail-value">{{ offre.niveauExperience }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="detail-item">
+                                    <div class="detail-label">Nombre de postes</div>
+                                    <div class="detail-value">{{ offre.nbPostes }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="detail-item">
+                                    <div class="detail-label">Date de publication</div>
+                                    <div class="detail-value">{{ offre.dateCreation|date('d/m/Y H:i') }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="detail-item">
+                                    <div class="detail-label">Statut</div>
+                                    <div class="detail-value">
+                                        <span class="status-badge">{{ offre.statut }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="col-xl-4">
+                    <div class="job-details-card">
+                        <div class="job-header">
+                            <h3>Postuler</h3>
+                        </div>
+
+                        <div class="text-center">
+                            <a href="{{ path('app_demande_new', {'offre_id': offre.id}) }}" class="btn btn-outline-secondary btn-lg btn-block">
+                                <i class="fas fa-paper-plane mr-2"></i>Postuler maintenant
+                            </a>
+
+                            <div class="mt-4">
+                                <a href="{{ path('app_front_active') }}" class="btn btn-outline-secondary btn-block">
+                                    <i class="fas fa-arrow-left mr-2"></i>Retour aux offres
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="job-details-card mt-4">
+                        <div class="job-header">
+                            <h3>Informations clés</h3>
+                        </div>
+                        <ul class="list-unstyled">
+                            <li class="detail-item">
+                                <div class="detail-label">Date d'expiration</div>
+                                <div class="detail-value">{{ offre.dateExpiration|date('d/m/Y') }}</div>
+                            </li>
+                            <li class="detail-item">
+                                <div class="detail-label">Adresse</div>
+                                <div class="detail-value">{{ offre.localisation }}</div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

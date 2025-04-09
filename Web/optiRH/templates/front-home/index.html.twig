@@ -1,0 +1,175 @@
+{% extends 'front-base.html.twig' %}
+
+{% block title %}OptiRH{% endblock %}
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', { page_title: 'Project' }) }}
+{% endblock %}
+{% block stylesheets %}
+    {{ parent() }} {# Conserve les styles de la base #}
+    <style>
+        .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
+        .search-form button {
+            width: 100%;
+            height: 70px;
+            background: #fb246a;
+            font-size: 14px;
+            line-height: 38px;
+            text-align: center;
+            color: #fff;
+            display: block;
+            padding: 15px;
+            border-radius: 0;
+            text-transform: capitalize;
+            font-family: "Muli", sans-serif;
+            letter-spacing: 0.1em;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .search-form button:hover {
+            background: #d91d5b;
+        }
+
+    </style>
+{% endblock %}
+
+    {% block slider %}
+        <!-- slider Area Start-->
+        <div class="slider-area ">
+            <!-- Mobile Menu -->
+            <div class="slider-active">
+                <div class="single-slider slider-height d-flex align-items-center" data-background="{{ asset('img-front/hero/h1_hero.jpg') }}">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-xl-6 col-lg-9 col-md-10">
+                                <div class="hero__caption">
+                                    <h1>Find the most exciting startup jobs</h1>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Search Box -->
+                        <div class="row">
+                            <div class="col-xl-8">
+                                <!-- form -->
+                                <form id="search-form" class="search-box">
+                                    <div class="input-form">
+                                        <input type="text" id="search-keyword" name="keyword" placeholder="Job Title or keyword">
+                                    </div>
+                                    <div class="select-form">
+                                        <div class="select-itms">
+                                            <select name="niveauExperience" id="niveauExperience">
+                                                <option value="">Niveau d'expérience</option>
+                                                <option value="Junior">Junior</option>
+                                                <option value="Senior">Senior</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="search-form">
+                                        <button type="submit">Find job</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- slider Area End-->
+    {% endblock %}
+
+
+{% block body %}
+
+    {% block categories %}
+    {% endblock categories %}
+
+
+    <!-- Featured_job_start -->
+    <section class="featured-job-area feature-padding">
+        <div class="container">
+            <!-- Section Tittle -->
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="section-tittle text-center">
+                        <span>Recent Job</span>
+                        <h2>Featured Jobs</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-xl-10" id="offre-results">
+                    {% for offre in offres %}
+                        <!-- single-job-content -->
+                        {% include 'front-home/_offre_card.html.twig' with {'offre': offre} %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Featured_job_end -->
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.getElementById('search-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const keyword = document.getElementById('search-keyword').value;
+            const niveau = document.getElementById('niveauExperience').value;
+
+            const resultsContainer = document.getElementById('offre-results');
+            resultsContainer.innerHTML = '<div class="text-center">Recherche en cours...</div>';
+
+            fetch(`/offre/search?q=${encodeURIComponent(keyword)}&niveauExperience=${encodeURIComponent(niveau)}`)
+                .then(response => response.json())
+                .then(data => {
+                    const resultsContainer = document.getElementById('offre-results');
+                    resultsContainer.innerHTML = '';
+
+                    if (data.length === 0) {
+                        resultsContainer.innerHTML = '<p>Aucune offre trouvée.</p>';
+                        return;
+                    }
+
+                    data.forEach(offre => {
+                        const offreHTML = `
+                            <div class="single-job-items mb-30">
+                                <div class="job-items">
+                                    <div class="company-img">
+                                        <a href="#"><img src="/img-front/icon/job-list2.png" alt=""></a>
+                                    </div>
+                                    <div class="job-tittle job-tittle2">
+                                        <a href="/offre/${offre.id}/edit">
+                                            <h4>${offre.poste}</h4>
+                                        </a>
+                                        <ul>
+                                            <li><i class="fas fa-briefcase"></i> ${offre.modeTravail}</li>
+                                            <li><i class="fas fa-map-marker-alt"></i> ${offre.localisation}</li>
+                                            <li><i class="fas fa-users"></i> ${offre.nbPostes}</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="items-link items-link2 f-right">
+                                    <a href="/offre/${offre.id}/show">Show more</a>
+                                    <span>${offre.timeAgo ?? ''}</span>
+                                </div>
+                            </div>
+                        `;
+                        resultsContainer.insertAdjacentHTML('beforeend', offreHTML);
+                    });
+                    resultsContainer.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start' // Aligne le haut des résultats avec le haut de la vue
+                    });
+                })
+                .catch(error => {
+                    console.error('Erreur lors de la recherche :', error);
+                    resultsContainer.innerHTML = '<p>Erreur lors de la recherche</p>';
+                });
+
+        });
+    </script>
+{% endblock %}
+
+

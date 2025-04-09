@@ -1,0 +1,17 @@
+{{ form_start(form, {'attr': {'class': 'parsley-examples', 'novalidate': 'novalidate'}}) }}
+
+<!-- Vos champs de formulaire ici... -->
+
+<div class="mt-4 d-flex justify-content-end gap-2">
+    <button type="submit" class="btn btn-primary">
+        {% if button_icon is defined %}
+            <i class="mdi mdi-{{ button_icon }} me-1"></i>
+        {% endif %}
+        {{ button_label|default('Enregistrer') }}
+    </button>
+    <a href="{{ path('app_offre_index') }}" class="btn btn-light">
+        Annuler
+    </a>
+</div>
+
+{{ form_end(form) }}

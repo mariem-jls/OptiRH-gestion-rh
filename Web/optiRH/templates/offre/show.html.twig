@@ -1,0 +1,214 @@
+{% extends 'partials/layout-vertical.html.twig' %}
+
+{% block title %}Détails de l'offre | Gestion RH{% endblock %}
+
+{% block css %}
+    {{ parent() }}
+    <!-- SweetAlert2 CSS -->
+    <link href="{{ asset('/libs/sweetalert2/sweetalert2.min.css') }}" rel="stylesheet">
+    <!-- Styles spécifiques à la vue -->
+    <style>
+        .detail-card .card-body {
+            padding: 2rem;
+        }
+        .detail-label {
+            font-weight: 500;
+            color: #6c757d;
+        }
+        .detail-value {
+            font-size: 1.05rem;
+            color: #495057;
+        }
+        .badge {
+            font-size: 0.9em;
+            padding: 0.5em 0.75em;
+        }
+        /* Styles communs aux vues show/edit/new */
+        .ql-editor {
+            font-family: inherit;
+            line-height: 1.6;
+            padding: 0 !important;
+        }
+        .ql-editor h1, .ql-editor h2 {
+            margin-top: 1.5rem;
+        }
+        .detail-card .card-body {
+            background-color: #f8f9fa;
+            border-radius: 0.5rem;
+        }
+        .btn-light {
+            border: 1px solid #dee2e6;
+        }
+    </style>
+{% endblock %}
+
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', {
+        page_title: 'Détails de l\'offre',
+        breadcrumb: {
+            'Liste des offres': path('app_offre_index'),
+            'Détails': ''
+        }
+    }) }}
+{% endblock %}
+
+{% block body %}
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card detail-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="header-title">Fiche de l'offre</h4>
+                        <div class="d-flex gap-2">
+                            <a href="{{ path('app_offre_edit', {'id': offre.id}) }}"
+                               class="btn btn-warning btn-sm d-flex align-items-center">
+                                <i class="mdi mdi-pencil-outline me-1"></i>
+                                <span>Modifier</span>
+                            </a>
+                            <a href="{{ path('app_offre_index') }}"
+                               class="btn btn-secondary btn-sm d-flex align-items-center" id="returnBtn">
+                                <i class="mdi mdi-arrow-left me-1"></i>
+                                <span>Retour</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <!-- Section Principale -->
+                        <div class="col-md-6">
+                            <dl class="mb-0">
+                                <dt class="detail-label">Poste</dt>
+                                <dd class="detail-value">{{ offre.poste }}</dd>
+
+                                <dt class="detail-label mt-3">Type de contrat</dt>
+                                <dd class="detail-value">{{ offre.typeContrat }}</dd>
+
+                                <dt class="detail-label mt-3">Localisation</dt>
+                                <dd class="detail-value">{{ offre.localisation }}</dd>
+                            </dl>
+                        </div>
+
+                        <div class="col-md-6">
+                            <dl class="mb-0">
+                                <dt class="detail-label">Statut</dt>
+                                <dd class="detail-value">
+                                    {% set status_class = offre.statut|lower == 'active' ? 'success' :
+                                        offre.statut|lower == 'en attente' ? 'warning' : 'secondary' %}
+                                    <span class="badge bg-{{ status_class }}">
+                                        {{ offre.statut|capitalize }}
+                                    </span>
+                                </dd>
+
+                                <dt class="detail-label mt-3">Date d'expiration</dt>
+                                <dd class="detail-value">
+                                    {{ offre.dateExpiration ? offre.dateExpiration|date('d/m/Y') : 'Non définie' }}
+                                </dd>
+
+                                <dt class="detail-label mt-3">Nombre de postes</dt>
+                                <dd class="detail-value">{{ offre.nbPostes }}</dd>
+                            </dl>
+                        </div>
+                    </div>
+
+                    <!-- Description détaillée -->
+                    <div class="mb-4">
+                        <h5 class="mb-3">Description du poste</h5>
+                        <div class="ql-snow">
+                            <div class="ql-editor" style="border: none; padding: 0;">
+                                {{ offre.description|raw }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Métadonnées -->
+                    <div class="border-top pt-3 mt-4 text-muted">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <small>Créée le : {{ offre.dateCreation|date('d/m/Y à H:i') }}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section de suppression -->
+    <div class="row justify-content-center mt-4">
+        <div class="col-lg-8">
+            <div class="card border-danger">
+                <div class="card-body">
+                    <h5 class="text-danger mb-3 d-flex align-items-center">
+                        <i class="mdi mdi-alert-circle-outline me-2"></i>
+                        Zone dangereuse
+                    </h5>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <p class="mb-0 text-muted">Cette action est irréversible</p>
+                            <small class="text-danger">Les données associées seront perdues</small>
+                        </div>
+                        {{ include('offre/_delete_form.html.twig') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascript %}
+{{ parent() }}
+<!-- SweetAlert2 JS -->
+<script src="{{ asset('/libs/sweetalert2/sweetalert2.all.min.js') }}"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Gestion de la suppression avec SweetAlert
+        const deleteForm = document.querySelector('form[action*="{{ path('app_offre_delete', {'id': offre.id}) }}"]');
+        if (deleteForm) {
+            deleteForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                Swal.fire({
+                    title: 'Confirmer la suppression ?',
+                    text: 'Cette action est irréversible et supprimera l\'offre définitivement.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Oui, supprimer',
+                    cancelButtonText: 'Annuler',
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Soumission du formulaire après confirmation
+                        deleteForm.submit();
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Supprimée !',
+                            text: 'L\'offre a été supprimée avec succès.',
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            window.location.href = "{{ path('app_offre_index') }}";
+                        });
+                    }
+                });
+            });
+        }
+
+        // Gestion du bouton Retour (optionnel)
+        document.getElementById('returnBtn').addEventListener('click', function(event) {
+            event.preventDefault();
+            Swal.fire({
+                title: 'Retourner à la liste ?',
+                text: 'Voulez-vous quitter cette page ?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Oui, retourner',
+                cancelButtonText: 'Rester'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "{{ path('app_offre_index') }}";
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

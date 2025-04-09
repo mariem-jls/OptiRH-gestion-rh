@@ -1,0 +1,205 @@
+{% extends 'partials/layout-vertical.html.twig' %}
+
+{% block title %}Gestion des offres{% endblock %}
+
+{% block css %}
+    {{ parent() }}
+    <!-- DataTables -->
+    <link href="{{ asset('libs/datatables.net-bs5/css/dataTables.bootstrap5.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('libs/datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css') }}" rel="stylesheet">
+    <link href="https://cdn.datatables.net/v/bs5/dt-2.0.7/b-3.0.2/b-html5-3.0.2/r-3.0.2/datatables.min.css" rel="stylesheet">
+    <link href="{{ asset('libs/datatables.net-buttons-bs5/css/buttons.bootstrap5.min.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', {
+        page_title: 'Gestion des offres',
+    }) }}
+{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="header-title">Liste des offres</h4>
+                    <p class="text-muted mb-3">
+                        Gestion complète des offres d'emploi avec fonctionnalités avancées
+                    </p>
+
+                    <table id="datatable" class="table table-striped table-bordered dt-responsive nowrap">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Poste</th>
+                            <th>Description</th>
+                            <th>Statut</th>
+                            <th>Type contrat</th>
+                            <th>Localisation</th>
+                            <th>Expiration</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for offre in offres %}
+                            <tr>
+                                <td>{{ offre.poste }}</td>
+                                <td>{{ offre.description|slice(0, 50) ~ '...' }}</td>
+                                <td>
+
+                                    {% set status_class =
+                                        offre.statut|lower == 'active' ? 'success' :
+                                        offre.statut|lower == 'en attente' ? 'warning' :
+                                        'danger' %}
+                                    <span class="badge bg-{{ status_class }}">
+                                    {{ offre.statut|capitalize }}
+                                </span>
+                                </td>
+                                <td>{{ offre.typeContrat }}</td>
+                                <td>{{ offre.localisation }}</td>
+                                <td>{{ offre.dateExpiration|date('d/m/Y') }}</td>
+                                <td class="text-nowrap">
+                                    <a href="{{ path('app_offre_show', {'id': offre.id}) }}"
+                                       class="btn btn-sm btn-soft-primary"
+                                       data-bs-toggle="tooltip"
+                                       title="Voir détails">
+                                        <i class="mdi mdi-eye-outline"></i>
+                                    </a>
+                                    <a href="{{ path('app_offre_edit', {'id': offre.id}) }}"
+                                       class="btn btn-sm btn-soft-warning"
+                                       data-bs-toggle="tooltip"
+                                       title="Modifier">
+                                        <i class="mdi mdi-pencil-outline"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center">Aucune offre trouvée</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascript %}
+{{ parent() }}
+<!-- DataTables -->
+<script src="{{ asset('libs/datatables.net/js/jquery.dataTables.min.js') }}"></script>
+<script src="{{ asset('libs/datatables.net-bs5/js/dataTables.bootstrap5.min.js') }}"></script>
+<script src="{{ asset('libs/datatables.net-responsive/js/dataTables.responsive.min.js') }}"></script>
+<script src="{{ asset('libs/datatables.net-responsive-bs5/js/responsive.bootstrap5.min.js') }}"></script>
+<!-- DataTables avec extensions -->
+<script type="text/javascript" src="https://cdn.datatables.net/v/bs5/dt-2.0.7/b-3.0.2/b-html5-3.0.2/r-3.0.2/datatables.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        $('#datatable').DataTable({
+         dom: 'Blfrtip',
+        buttons: [
+            {
+                extend: 'copy',
+                className: 'btn btn-light',
+                text: '<i class="mdi mdi-content-copy"></i> Copier',
+                titleAttr: 'Copier dans le presse-papier'
+            },
+            {
+                extend: 'pdf',
+                className: 'btn btn-danger me-2',
+                text: '<i class="mdi mdi-file-pdf"></i> PDF',
+                title: 'Liste des offres',
+                filename: 'offres_' + new Date().toISOString().slice(0,10),
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4, 5] // Index des colonnes à exporter
+                },
+
+                customize: function(doc) {
+
+
+                    doc.content.splice(0, 0, {
+                        columns: [
+                            {
+                                text: 'Rapport des offres\n\n',
+                                alignment: 'right',
+                                fontSize: 16,
+                                margin: [0, 20, 0, 0]
+                            }
+                        ],
+                        margin: [20, 0, 20, 0]
+                    });
+                    // Style du tableau
+                    doc.content[2].table = {
+                        widths: ['*', '*', 'auto', 'auto','auto', '*'],
+                        headerRows: 1,
+                        body: doc.content[2].table.body
+                    };
+
+                    // En-têtes de colonnes
+                    doc.content[2].table.body[0].forEach(function(cell) {
+                        cell.fillColor = '#1b3583';
+                        cell.color = '#ffffff';
+                        cell.bold = true;
+                    });
+
+                    // Pied de page
+                    doc.footer = function(currentPage, pageCount) {
+                        return {
+                            columns: [
+                                {
+                                    text: '© ' + new Date().getFullYear() + ' OptiRH',
+                                    alignment: 'left',
+                                    fontSize: 10
+                                },
+                                {
+                                    text: 'Page ' + currentPage.toString() + ' sur ' + pageCount,
+                                    alignment: 'right',
+                                    fontSize: 10
+                                }
+                            ],
+                            margin: [20, 20]
+                        };
+                    };
+
+                    // Styles globaux
+                    doc.defaultStyle = {
+                        fontSize: 10,
+                        color: '#333333'
+                    };
+
+                    // Marges
+                    doc.pageMargins = [40, 100, 40, 80];
+
+}
+            },
+            {
+                text: '<i class="mdi mdi-plus-circle me-2"></i> Nouvelle offre',
+                className: 'btn btn-blue', // Classe personnalisée
+                action: function() {
+                    window.location.href = '{{ path('app_offre_new') }}';
+                }
+            }
+        ],
+            language: {
+            url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/fr-FR.json"            },
+            order: [[5, 'asc']],
+            responsive: true,
+            columnDefs: [
+                { responsivePriority: 1, targets: 0 },
+                { responsivePriority: 2, targets: -1 },
+                { orderable: false, targets: -1 }
+            ]
+        });
+
+        // Activation des tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    });
+</script>
+{% endblock %}
