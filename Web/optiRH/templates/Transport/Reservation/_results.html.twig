@@ -1,0 +1,44 @@
+{% if vehicules is empty %}
+    <div class="alert alert-warning">
+        Aucun véhicule disponible pour ce trajet
+    </div>
+{% else %}
+    <div class="table-responsive">
+        <table class="table table-hover table-centered table-nowrap mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Type</th>
+                    <th>Trajet</th>
+                    <th>Disponibilité</th>
+                    <th>Places</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vehicule in vehicules %}
+                <tr>
+                    <td>
+                        <span class="badge bg-{{ vehicule.type == 'Bus' ? 'info' : 'success' }}">
+                            {{ vehicule.type }}
+                        </span>
+                    </td>
+                    <td>{{ vehicule.trajet.depart }} → {{ vehicule.trajet.arrive }}</td>
+                    <td>
+                        <span class="badge bg-{{ vehicule.disponibilite == 'Disponible' ? 'success' : 'danger' }} status">
+                            {{ vehicule.disponibilite }}
+                        </span>
+                    </td>
+                    <td class="places">{{ vehicule.nbrplace }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary reserve-btn" 
+                                data-vehicule-id="{{ vehicule.id }}"
+                                {{ vehicule.nbrplace <= 0 ? 'disabled' : '' }}>
+                            <i class="mdi mdi-calendar-check"></i> Réserver
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}

@@ -1,0 +1,92 @@
+{% extends 'partials/layout-vertical.html.twig' %}
+
+{% block title %}Véhicules du Trajet #{{ trajet.id }}{% endblock %}
+
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', { page_title: 'Véhicules du Trajet #' ~ trajet.id }) }}
+{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <a href="{{ path('app_transport_vehicule_new', {'trajet_id': trajet.id}) }}" 
+                           class="btn btn-primary">
+                            <i class="mdi mdi-plus-circle-outline me-1"></i> Nouveau Véhicule
+                        </a>
+                        <a href="{{ path('app_transport_trajet_index') }}" 
+                           class="btn btn-secondary">
+                            <i class="mdi mdi-arrow-left me-1"></i> Retour aux Trajets
+                        </a>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover table-centered table-nowrap mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Type</th>
+                                <th>Disponibilité</th>
+                                <th>Places</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for vehicule in vehicules %}
+                            <tr>
+                                <td>{{ vehicule.type }}</td>
+                                <td>
+                                    <span class="badge bg-{{ vehicule.disponibilite == 'disponible' ? 'success' : 'danger' }}">
+                                        {{ vehicule.disponibilite }}
+                                    </span>
+                                </td>
+                                <td>{{ vehicule.nbrplace }}</td>
+                                <td>{{ vehicule.nbrReservation }}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                     <!-- Bouton Réservations -->
+                                        <a href="{{ path('app_transport_vehicule_reservations', {'id': vehicule.id}) }}" 
+                                        class="btn btn-outline-primary" title="Voir les réservations">
+                                            <i class="mdi mdi-calendar-check"></i>
+                                        </a>
+                                        <a href="{{ path('app_transport_vehicule_edit', {'id': vehicule.id}) }}" 
+                                           class="btn btn-outline-warning" title="Modifier">
+                                            <i class="mdi mdi-pencil-outline"></i>
+                                        </a>
+                                        <form method="post" action="{{ path('app_transport_vehicule_delete', {'id': vehicule.id}) }}" 
+                                              style="display:inline;" id="delete-form-{{ vehicule.id }}">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ vehicule.id) }}">
+                                            <button type="button" class="btn btn-outline-danger" title="Supprimer" 
+                                                    onclick="confirmDelete({{ vehicule.id }})">
+                                                <i class="mdi mdi-delete-outline"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center">Aucun véhicule trouvé pour ce trajet</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+function confirmDelete(vehiculeId) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce véhicule ?')) {
+        document.getElementById('delete-form-' + vehiculeId).submit();
+    }
+}
+</script>
+{% endblock %}

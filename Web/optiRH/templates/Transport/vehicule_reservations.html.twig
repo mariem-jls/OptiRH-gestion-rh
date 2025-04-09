@@ -1,0 +1,56 @@
+{% extends 'partials/layout-vertical.html.twig' %}
+
+{% block title %}Réservations du Véhicule #{{ vehicule.id }}{% endblock %}
+
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', { 
+        page_title: 'Réservations du Véhicule ' ~ vehicule.type ~ ' (Trajet #' ~ vehicule.trajet.id ~ ')'
+    }) }}
+{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <a href="{{ path('app_transport_trajet_vehicules', {'id': vehicule.trajet.id}) }}" 
+                           class="btn btn-secondary">
+                            <i class="mdi mdi-arrow-left me-1"></i> Retour aux véhicules
+                        </a>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover table-centered table-nowrap mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nom</th>
+                                <th>Email</th>
+                                <th>Rôle</th>
+                                <th>Adresse</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for reservation in reservations %}
+                            {% set user = reservation.user %}
+                            <tr>
+                                <td>{{ user.nom }}</td>
+                                <td>{{ user.email }}</td>
+                                <td>{{ user.role }}</td>
+                                <td>{{ user.address ?? 'N/A' }}</td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center">Aucune réservation trouvée</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

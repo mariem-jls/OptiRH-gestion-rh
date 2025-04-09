@@ -1,0 +1,294 @@
+{% extends 'partials/layout-vertical.html.twig' %}
+
+{% block title %}Gestion des Trajets{% endblock %}
+
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', { page_title: 'Gestion des Trajets' }) }}
+{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <!-- Barre d'actions simplifiée -->
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <a href="{{ path('app_transport_trajet_new') }}" class="btn btn-primary">
+                            <i class="mdi mdi-plus-circle-outline me-1"></i> Nouveau Trajet
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Tableau optimisé -->
+                <div class="table-responsive">
+                    <table class="table table-hover table-centered table-nowrap mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Type</th>
+                                <th>Station</th>
+                                <th>Départ</th>
+                                <th>Arrivée</th>
+                                <th>Coordonnées</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for trajet in trajets %}
+                            <tr>
+                                <td>
+                                    <span class="badge bg-{{ trajet.type == 'Train' ? 'info' : 'success' }}">
+                                        {{ trajet.type }}
+                                    </span>
+                                </td>
+                                <td>{{ trajet.station }}</td>
+                                <td>{{ trajet.depart }}</td>
+                                <td>{{ trajet.arrive }}</td>
+                                <td>
+                                    <small class="text-muted">
+                                        Départ: {{ trajet.latitudeDepart|number_format(4) }}, {{ trajet.longitudeDepart|number_format(4) }}<br>
+                                        Arrivée: {{ trajet.latitudeArrivee|number_format(4) }}, {{ trajet.longitudeArrivee|number_format(4) }}
+                                    </small>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{{ path('app_transport_trajet_vehicules', {'id': trajet.id}) }}" 
+                                    class="btn btn-outline-info" title="Véhicules">
+                                        <i class="mdi mdi-car"></i>
+                                    </a>
+                                        <a href="{{ path('app_transport_trajet_edit', {'id': trajet.id}) }}" 
+                                           class="btn btn-outline-warning" title="Modifier">
+                                            <i class="mdi mdi-pencil-outline"></i>
+                                        </a>
+                                        <form method="post" action="{{ path('app_transport_trajet_delete', {'id': trajet.id}) }}" 
+                                              style="display:inline;" id="delete-form-{{ trajet.id }}">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ trajet.id) }}">
+                                            <button type="button" class="btn btn-outline-danger" title="Supprimer" 
+                                                    onclick="confirmDelete({{ trajet.id }})">
+                                                <i class="mdi mdi-delete-outline"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center">Aucun trajet trouvé</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="row mt-3">
+                    <div class="col-sm-12">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1">Précédent</a>
+                            </li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                            <li class="page-item">
+                                <a class="page-link" href="#">Suivant</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- Bouton Statistiques -->
+                <div class="row mt-3">
+                    <div class="col-12 text-center">
+                    <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#statsModal">
+                        <i class="mdi mdi-chart-bar me-1"></i> Statistiques des réservations par type
+                    </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+function confirmDelete(trajetId) {
+    Swal.fire({
+        title: 'Confirmer la suppression',
+        text: "Êtes-vous sûr de vouloir supprimer ce trajet?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Oui, supprimer',
+        cancelButtonText: 'Annuler',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById('delete-form-' + trajetId).submit();
+        }
+    });
+}
+
+// Initialisation des tooltips
+document.addEventListener('DOMContentLoaded', function() {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // Charger les données statistiques lorsque le modal s'ouvre
+    const statsModal = document.getElementById('statsModal');
+    if (statsModal) {
+        statsModal.addEventListener('show.bs.modal', function() {
+            fetchStatsData();
+        });
+    }
+});
+
+function fetchStatsData() {
+    fetch('{{ path("app_transport_trajet_stats") }}')
+    .then(response => {
+        if (!response.ok) throw new Error('Erreur réseau');
+        return response.json();
+    })
+    .then(data => {
+        if (!data || data.length === 0) {
+            throw new Error('Aucune donnée disponible');
+        }
+        renderCharts(data);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        // Afficher un message d'erreur dans le modal
+        document.getElementById('mostReservedChart').parentElement.innerHTML = `
+            <div class="alert alert-danger">
+                ${error.message}
+            </div>`;
+    });
+}
+
+function renderCharts(data) {
+    // Vérifier si des données sont disponibles
+    if (!data || data.length === 0) {
+        document.getElementById('mostReservedChart').parentElement.innerHTML = `
+            <div class="alert alert-info">
+                Aucune donnée de réservation disponible
+            </div>`;
+        return;
+    }
+
+    const ctx = document.getElementById('mostReservedChart');
+    if (!ctx) return;
+
+    // Trier les données
+    data.sort((a, b) => b.reservationCount - a.reservationCount);
+
+    // Détruire l'ancien graphique si existant
+    if (ctx.chart) {
+        ctx.chart.destroy();
+    }
+
+    // Préparer les données pour Chart.js
+    const labels = data.map(item => {
+        // Formater les types de véhicules
+        switch(item.vehicleType) {
+            case 'car': return 'Voiture';
+            case 'bus': return 'Bus';
+            case 'minibus': return 'Minibus';
+            default: return item.vehicleType;
+        }
+    });
+    
+    const counts = data.map(item => item.reservationCount);
+
+    // Créer le graphique
+    ctx.chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Nombre de réservations',
+                data: counts,
+                backgroundColor: [
+                    'rgba(54, 162, 235, 0.7)',  // Bleu
+                    'rgba(75, 192, 192, 0.7)',  // Vert
+                    'rgba(255, 99, 132, 0.7)'   // Rouge
+                ],
+                borderColor: [
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(255, 99, 132, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Statistiques des réservations par type de véhicule',
+                    font: {
+                        size: 16,
+                        weight: 'bold'
+                    }
+                },
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.parsed.y} réservations`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Nombre de réservations'
+                    },
+                    ticks: {
+                        stepSize: 1,
+                        precision: 0
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Type de véhicule'
+                    }
+                }
+            }
+        }
+    });
+}
+</script>
+
+<!-- Modal pour les statistiques -->
+<div class="modal fade" id="statsModal" tabindex="-1" aria-labelledby="statsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="statsModalLabel">Statistiques des réservations par type de véhicule</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-12">
+                        <canvas id="mostReservedChart" height="400"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
