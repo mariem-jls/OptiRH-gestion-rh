@@ -3,7 +3,57 @@
 
     <div class="h-100" data-simplebar>
 
+        <!-- User box -->
+        <div class="user-box text-center">
 
+            <img src="{{ asset('images/users/user-1.jpg') }}" alt="user-img" title="Mat Helme" class="rounded-circle img-thumbnail avatar-md">
+            <div class="dropdown">
+                <a href="#" class="user-name dropdown-toggle h5 mt-2 mb-1 d-block" data-bs-toggle="dropdown"  aria-expanded="false">Nowak Helme</a>
+                <div class="dropdown-menu user-pro-dropdown">
+
+                    <!-- item-->
+                    <a href="javascript:void(0);" class="dropdown-item notify-item">
+                        <i class="fe-user me-1"></i>
+                        <span>My Account</span>
+                    </a>
+
+                    <!-- item-->
+                    <a href="javascript:void(0);" class="dropdown-item notify-item">
+                        <i class="fe-settings me-1"></i>
+                        <span>Settings</span>
+                    </a>
+
+                    <!-- item-->
+                    <a href="javascript:void(0);" class="dropdown-item notify-item">
+                        <i class="fe-lock me-1"></i>
+                        <span>Lock Screen</span>
+                    </a>
+
+                    <!-- item-->
+                    <a href="javascript:void(0);" class="dropdown-item notify-item">
+                        <i class="fe-log-out me-1"></i>
+                        <span>Logout</span>
+                    </a>
+
+                </div>
+            </div>
+
+            <p class="text-muted left-user-info">Admin Head</p>
+
+            <ul class="list-inline">
+                <li class="list-inline-item">
+                    <a href="#" class="text-muted left-user-info">
+                        <i class="mdi mdi-cog"></i>
+                    </a>
+                </li>
+
+                <li class="list-inline-item">
+                    <a href="#">
+                        <i class="mdi mdi-power"></i>
+                    </a>
+                </li>
+            </ul>
+        </div>
         <!--- Sidemenu -->
         <div id="sidebar-menu">
             <ul id="side-menu">
@@ -151,61 +201,6 @@
 </div>
 <!-- Left Sidebar End -->
 
-<style>
-    /* Active Button Style */
-    .btn-group .btn.active {
-        background-color: rgba(255,255,255,0.15);
-        color: #fff;
-        border-color: rgba(255,255,255,0.3);
-    }
-
-    /* Menu Item Styles */
-    #side-menu a {
-        transition: all 0.3s;
-        position: relative;
-    }
-
-    #side-menu a.active {
-        background-color: rgba(255,255,255,0.1);
-        color: #fff !important;
-        border-left: 3px solid #727cf5;
-    }
-
-    #side-menu a:hover:not(.active) {
-        background-color: rgba(255,255,255,0.05);
-    }
-
-    /* Submenu Styles */
-    .nav-second-level a {
-        padding-left: 15px !important;
-        font-size: 0.9rem;
-    }
-
-    .nav-second-level a.active {
-        border-left: 2px solid #727cf5;
-    }
-
-    /* Menu Arrow Animation */
-    .menu-arrow {
-        transition: transform 0.2s;
-        display: inline-block;
-    }
-
-    [aria-expanded="true"] .menu-arrow {
-        transform: rotate(90deg);
-    }
-
-    /* User Box Enhancements */
-    .user-box {
-        padding: 20px 10px;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
-
-    .left-user-info {
-        font-size: 0.8rem;
-        margin-bottom: 5px;
-    }
-</style>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
