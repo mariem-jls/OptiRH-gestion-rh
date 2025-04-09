@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
     <head>
-        {{ include('partials/title-meta.html.twig', {title: 'Log In'}) }}
+        {{ include('partials/title-meta.html.twig', {title: 'Connexion'}) }}
         {{ include('partials/head-css.html.twig') }}
     </head>
 
@@ -18,7 +18,7 @@
                         <div class="card mt-2">
                             <div class="card-body p-4">
                                 <div class="text-center mb-4">
-                                    <h4 class="text-uppercase mt-0">Sign In</h4>
+                                    <h4 class="text-uppercase mt-0">Connexion</h4>
                                 </div>
 
                                 {% if error %}
@@ -27,32 +27,32 @@
 
                                 {% if app.user %}
                                     <div class="mb-3 text-center">
-                                        You are logged in as {{ app.user.userIdentifier }}, <a href="{{ path('app_logout') }}">Logout</a>
+                                        Vous êtes connecté en tant que {{ app.user.userIdentifier }}, <a href="{{ path('app_logout') }}">Déconnexion</a>
                                     </div>
                                 {% endif %}
 
                                 <form method="post" novalidate>
                                     <div class="mb-3">
-                                        <label for="username" class="form-label">Email address</label>
-                                        <input type="email" value="{{ last_username }}" name="_username" id="username" class="form-control" autocomplete="email" placeholder="Enter your email" autofocus>
+                                        <label for="username" class="form-label">Adresse e-mail</label>
+                                        <input type="email" value="{{ last_username }}" name="_username" id="username" class="form-control" autocomplete="email" placeholder="Entrez votre e-mail" autofocus>
                                     </div>
 
                                     <div class="mb-3">
-                                        <label for="password" class="form-label">Password</label>
-                                        <input type="password" name="_password" id="password" class="form-control" autocomplete="current-password" placeholder="Enter your password">
+                                        <label for="password" class="form-label">Mot de passe</label>
+                                        <input type="password" name="_password" id="password" class="form-control" autocomplete="current-password" placeholder="Entrez votre mot de passe">
                                     </div>
 
                                     <div class="mb-3">
                                         <div class="form-check">
                                             <input type="checkbox" name="_remember_me" id="_remember_me" class="form-check-input" checked>
-                                            <label class="form-check-label" for="_remember_me">Remember me</label>
+                                            <label class="form-check-label" for="_remember_me">Se souvenir de moi</label>
                                         </div>
                                     </div>
 
                                     <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
                                     <div class="mb-3 d-grid text-center">
-                                        <button class="btn btn-primary" type="submit">Log In</button>
+                                        <button class="btn btn-primary" type="submit">Connexion</button>
                                     </div>
                                 </form>
 
@@ -62,8 +62,8 @@
 
                         <div class="row mt-3">
                             <div class="col-12 text-center">
-                                <p><a href="auth-recoverpw" class="text-muted ms-1"><i class="fa fa-lock me-1"></i>Forgot your password?</a></p>
-                                <p class="text-muted">Don't have an account? <a href="auth-register" class="text-dark ms-1"><b>Sign Up</b></a></p>
+                                <p><a href="auth-recoverpw" class="text-muted ms-1"><i class="fa fa-lock me-1"></i>Mot de passe oublié ?</a></p>
+                                <p class="text-muted">Vous n'avez pas de compte ? <a href="auth-register" class="text-dark ms-1"><b>Inscrivez-vous</b></a></p>
                             </div> <!-- end col -->
                         </div>
                         <!-- end row -->

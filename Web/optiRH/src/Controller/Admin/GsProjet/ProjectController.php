@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\GsProjet;
+namespace App\Controller\Admin\GsProjet;
 
 use App\Entity\User;
 use App\Entity\GsProjet\Project;
@@ -25,52 +25,51 @@ class ProjectController extends AbstractController
 
         $status = $filterForm->get('status')->getData();
         $sort = $filterForm->get('sort')->getData();
-        
+
         $projects = $projectRepository->findFiltered($status, $sort);
 
-        return $this->render('gs-projet/project/index.html.twig', [
+        return $this->render('admin/gs-projet/project/index.html.twig', [
             'projects' => $projects,
             'filterForm' => $filterForm->createView(),
         ]);
     }
 
     #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
-   // src/Controller/GsProjet/ProjectController.php
+    // src/Controller/GsProjet/ProjectController.php
 
-// Modifiez la méthode new
-public function new(Request $request, EntityManagerInterface $entityManager): Response
-{
-    $project = new Project();
-    $form = $this->createForm(ProjectType::class, $project);
-    $form->handleRequest($request);
+    // Modifiez la méthode new
+    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $project = new Project();
+        $form = $this->createForm(ProjectType::class, $project);
+        $form->handleRequest($request);
 
-    if ($form->isSubmitted() && $form->isValid()) {
-        try {
-            // Récupération sécurisée de l'utilisateur
-            $user = $entityManager->getRepository(User::class)->find(1);
-            
-            if (!$user) {
-                $this->addFlash('error', 'Aucun utilisateur administrateur trouvé');
+        if ($form->isSubmitted() && $form->isValid()) {
+            try {
+                // Récupération sécurisée de l'utilisateur
+                $user = $entityManager->getRepository(User::class)->find(1);
+
+                if (!$user) {
+                    $this->addFlash('error', 'Aucun utilisateur administrateur trouvé');
+                    return $this->redirectToRoute('gs-projet_project_index');
+                }
+
+                $project->setCreatedBy($user);
+
+                $entityManager->persist($project);
+                $entityManager->flush();
+
+                $this->addFlash('success', 'Projet créé avec succès');
                 return $this->redirectToRoute('gs-projet_project_index');
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Erreur de base de données : ' . $e->getMessage());
             }
-
-            $project->setCreatedBy($user);
-            
-            $entityManager->persist($project);
-            $entityManager->flush();
-
-            $this->addFlash('success', 'Projet créé avec succès');
-            return $this->redirectToRoute('gs-projet_project_index');
-
-        } catch (\Exception $e) {
-            $this->addFlash('error', 'Erreur de base de données : ' . $e->getMessage());
         }
-    }
 
-    return $this->render('gs-projet/project/new.html.twig', [
-        'form' => $form->createView(),
-    ]);
-}
+        return $this->render('admin/gs-projet/project/new.html.twig', [
+            'form' => $form->createView(),
+        ]);
+    }
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Project $project, EntityManagerInterface $entityManager): Response
     {
@@ -84,7 +83,7 @@ public function new(Request $request, EntityManagerInterface $entityManager): Re
             return $this->redirectToRoute('gs-projet_project_index');
         }
 
-        return $this->render('gs-projet/project/edit.html.twig', [
+        return $this->render('admin/gs-projet/project/edit.html.twig', [
             'project' => $project,
             'form' => $form->createView(),
         ]);
@@ -97,25 +96,25 @@ public function new(Request $request, EntityManagerInterface $entityManager): Re
             'In Progress' => [],
             'Done' => []
         ];
-    
+
         foreach ($project->getMissions() as $mission) {
             $groupedMissions[$mission->getStatus()][] = $mission;
         }
-    
-        return $this->render('gs-projet/project/show.html.twig', [
+
+        return $this->render('admin/gs-projet/project/show.html.twig', [
             'project' => $project,
             'groupedMissions' => $groupedMissions,
         ]);
     }
-#[Route('/{id}', name: 'delete', methods: ['POST'])]
-public function delete(Request $request, Project $project, EntityManagerInterface $entityManager): Response
-{
-    if ($this->isCsrfTokenValid('delete' . $project->getId(), $request->request->get('_token'))) {
-        $entityManager->remove($project);
-        $entityManager->flush();
-        $this->addFlash('success', 'Projet supprimé avec succès');
-    }
+    #[Route('/{id}', name: 'delete', methods: ['POST'])]
+    public function delete(Request $request, Project $project, EntityManagerInterface $entityManager): Response
+    {
+        if ($this->isCsrfTokenValid('delete' . $project->getId(), $request->request->get('_token'))) {
+            $entityManager->remove($project);
+            $entityManager->flush();
+            $this->addFlash('success', 'Projet supprimé avec succès');
+        }
 
-    return $this->redirectToRoute('gs-projet_project_index');
-}
+        return $this->redirectToRoute('gs-projet_project_index');
+    }
 }
