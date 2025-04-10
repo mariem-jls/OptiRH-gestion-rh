@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+
+<title>ReservationEvenement index</title>
+
+{% block body %}
+    <h1>ReservationEvenement index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>First_name</th>
+                <th>Last_name</th>
+                <th>Email</th>
+                <th>Telephone</th>
+                <th>Date_reservation</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for reservation_evenement in reservation_evenements %}
+            <tr>
+                <td>{{ reservation_evenement.id }}</td>
+                <td>{{ reservation_evenement.firstName }}</td>
+                <td>{{ reservation_evenement.lastName }}</td>
+                <td>{{ reservation_evenement.email }}</td>
+                <td>{{ reservation_evenement.telephone }}</td>
+                <td>{{ reservation_evenement.dateReservation ? reservation_evenement.dateReservation|date('Y-m-d H:i:s') : '' }}</td>
+                <td>
+                    <a href="{{ path('app_reservation_evenement_show', {'id': reservation_evenement.id}) }}">show</a>
+                    <a href="{{ path('app_reservation_evenement_edit', {'id': reservation_evenement.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="7">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="">Create new</a>
+{% endblock %}

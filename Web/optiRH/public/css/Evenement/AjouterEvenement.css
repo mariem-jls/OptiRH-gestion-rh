@@ -1,0 +1,86 @@
+/* Icônes dans les champs */
+.input-with-icon {
+    position: relative;
+}
+
+.input-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    z-index: 4;
+}
+
+.textarea-icon {
+    top: 22px;
+    transform: none;
+}
+
+/* Ajustement des champs avec icônes */
+.input-with-icon .form-control,
+.input-with-icon .form-select {
+    padding-left: 35px;
+}
+
+.input-with-icon textarea.form-control {
+    padding-left: 35px;
+}
+
+
+
+
+/* Boutons améliorés */
+.btn-cancel {
+    background-color: #f8f9fa;
+    color: #dc3545;
+    border: 1px solid #dc3545;
+    transition: all 0.3s ease;
+}
+
+.btn-cancel:hover {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-submit {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(40, 167, 69, 0.3);
+}
+
+.btn-submit:hover {
+    background-color: #218838;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+/* Upload de fichier amélioré */
+.custom-file-upload {
+    display: flex;
+    align-items: center;
+}
+
+.file-select-btn {
+    transition: all 0.3s ease;
+}
+
+.file-select-btn:hover {
+    background-color: #0056b3;
+    color: white;
+}
+
+.file-name {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+input[readonly].bg-light {
+    background-color: #f8f9fa !important;
+    color: #6c757d !important;
+}
+
+input[readonly].bg-light::placeholder {
+    color: #adb5bd !important;
+}

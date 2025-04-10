@@ -1,0 +1,60 @@
+{% extends 'partials/layout-vertical.html.twig' %}
+
+{% block title %}Détails de l'Événement{% endblock %}
+
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', { page_title: ' Liste des Réservations' }) }}
+{% endblock %}
+
+{% block body %}
+
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        <div class="search-box">
+            <div class="position-relative">
+                <input type="text" class="form-control" placeholder="Rechercher .">
+                    <i class="mdi mdi-magnify search-icon"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if reservations is empty %}
+    <div class="alert alert-info">Aucune réservation pour cet événement.</div>
+{% else %}
+<div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <!-- Barre de recherche -->
+                <div class="table-responsive">
+                                <table class="table table-hover table-centered table-nowrap mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Nom</th>
+                                            <th>prenom</th>
+                                            <th>Email</th>
+                                            <th>Téléphone</th>
+                                            <th>Date de réservation</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for reservation in reservations %}
+                                        <tr>
+                                            <td>{{ reservation.User.nom }}</td>
+                                            <td>{{ reservation.getLastName() }}</td>
+                                            <td>{{ reservation.email }}</td>
+                                            <td>{{ reservation.telephone }}</td>
+                                            <td>{{ reservation.dateReservation|date('Y-m-d H:i') }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<a href="{{ path('app_evenement_index') }}" class="btn btn-secondary mt-3">Retour</a>
+{% endblock %}

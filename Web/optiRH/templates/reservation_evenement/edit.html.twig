@@ -1,0 +1,45 @@
+{% extends 'partials/layout-horizontal.html.twig' %}
+
+{% block title %}Edit ReservationEvenement{% endblock %}
+
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', { page_title: 'Edit ReservationEvenement' }) }}
+{% endblock %}
+
+{% block css %}
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/Evenement/frontevenement.css') }}">    
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-4">
+    <!-- Section des événements (visible par défaut) -->
+    <div id="eventsSection">
+        <!-- Header avec dégradé vibrant -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="event-header text-center py-5 position-relative overflow-hidden rounded-3">
+                    <div class="position-relative z-index-1">
+                        <h1 class="display-4 fw-bold text-white mb-3 animate__animated animate__fadeInDown">Modifier votre réservation</h1>
+                        <p class="lead text-white mb-4 animate__animated animate__fadeIn animate__delay-1s">Mettez à jour les informations de votre réservation</p>
+                        <a href="{{ path('app_user_reservations') }}" class="btn btn-light rounded-pill px-4 mt-3 animate__animated animate__fadeIn animate__delay-1s">
+                            <i class="mdi mdi-ticket-account me-1"></i> Mes Réservations
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {{ include('reservation_evenement/_form.html.twig', {'button_label': 'Mettre à jour la réservation'}) }}
+
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{{ path('app_evenement_indexfront') }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-arrow-left me-1"></i> Retour aux événements
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+ </div>
+ {% endblock %}

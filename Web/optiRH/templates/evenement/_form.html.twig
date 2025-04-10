@@ -1,0 +1,172 @@
+{{ form_start(form, {'attr': {'id': 'event-form', 'class': 'form-horizontal', 'enctype': 'multipart/form-data','novalidate': 'novalidate' }}) }}
+    <div class="row g-3">
+        <!-- Colonne gauche -->
+        <div class="col-md-6">
+            <!-- Titre -->
+            <div class="mb-3 input-with-icon">
+                <i class="fas fa-heading input-icon"></i>
+                {{ form_label(form.titre, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.titre, {'attr': {'class': 'form-control form-control-sm'}}) }}
+                {{ form_errors(form.titre) }}
+            </div>
+
+            <!-- Lieu -->
+            <div class="mb-3 input-with-icon">
+                <i class="fas fa-map-marker-alt input-icon"></i>
+                {{ form_label(form.lieu, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.lieu, {'attr': {'class': 'form-control form-control-sm', 'id': 'event_lieu'}}) }}
+                {{ form_errors(form.lieu) }}
+            </div>
+
+            <!-- Dates -->
+            <div class="row g-2">
+                <div class="col-md-6 mb-3 input-with-icon">
+                    <i class="far fa-calendar-alt input-icon"></i>
+                    {{ form_label(form.date_debut, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.date_debut, {'attr': {'class': 'form-control form-control-sm flatpickr-date'}}) }}
+                    {{ form_errors(form.date_debut) }}
+                </div>
+                <div class="col-md-6 mb-3 input-with-icon">
+                    <i class="far fa-calendar-alt input-icon"></i>
+                    {{ form_label(form.date_fin, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.date_fin, {'attr': {'class': 'form-control form-control-sm flatpickr-date'}}) }}
+                    {{ form_errors(form.date_fin) }}
+                </div>
+            </div>
+
+            <!-- Heure -->
+            <div class="mb-3 input-with-icon">
+                <i class="far fa-clock input-icon"></i>
+                {{ form_label(form.heure, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.heure, {'attr': {'class': 'form-control form-control-sm flatpickr-time'}}) }}
+                {{ form_errors(form.heure) }}
+            </div>
+        </div>
+
+        <!-- Colonne droite -->
+        <div class="col-md-6">
+            <!-- Type et Modalité -->
+            <div class="row g-2">
+                <div class="col-md-6 mb-3 input-with-icon">
+                    <i class="fas fa-laptop-house input-icon"></i>
+                    {{ form_label(form.modalite, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.modalite, {'attr': {'class': 'form-select form-select-sm select2', 'id': 'event_modalite'}}) }}
+                    {{ form_errors(form.modalite) }}
+                </div>
+                <div class="col-md-6 mb-3 input-with-icon">
+                    <i class="fas fa-tags input-icon"></i>
+                    {{ form_label(form.type, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.type, {'attr': {'class': 'form-select form-select-sm select2'}}) }}
+                    {{ form_errors(form.type) }}
+                </div>
+            </div>
+
+            <!-- Image -->
+            <div class="mb-3">
+                <label class="form-label">Image</label>
+                <div class="custom-file-upload">
+                    <button type="button" class="btn btn-sm btn-outline-primary file-select-btn">
+                        <i class="fas fa-image me-2"></i>Choisir une image
+                    </button>
+                    <span class="file-name ms-2">Aucun fichier sélectionné</span>
+                    {{ form_widget(form.image) }}
+                </div>
+                {{ form_errors(form.image) }}
+            </div>
+
+            <!-- Prix -->
+            <div class="mb-3 input-with-icon">
+                <i class="fas fa-euro-sign input-icon"></i>
+                {{ form_label(form.prix, null, {'label_attr': {'class': 'form-label'}}) }}
+                <div class="input-group input-group-sm">
+                    {{ form_widget(form.prix, {'attr': {'class': 'form-control'}}) }}
+                    <span class="input-group-text bg-transparent">€</span>
+                </div>
+                {{ form_errors(form.prix) }}
+            </div>
+
+            <!-- Coordonnées -->
+            <div class="row g-2">
+                <div class="col-md-6 mb-3 geo-input-group input-with-icon">
+                    <i class="fas fa-globe-americas input-icon"></i>
+                    {{ form_label(form.latitude, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.latitude, {'attr': {'class': 'form-control form-control-sm'}}) }}
+                    {{ form_errors(form.latitude) }}
+                </div>
+                <div class="col-md-6 mb-3 geo-input-group input-with-icon">
+                    <i class="fas fa-globe-americas input-icon"></i>
+                    {{ form_label(form.longitude, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.longitude, {'attr': {'class': 'form-control form-control-sm'}}) }}
+                    {{ form_errors(form.longitude) }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Description -->
+        <div class="col-12 mb-3 input-with-icon">
+            <i class="fas fa-align-left input-icon textarea-icon"></i>
+            {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.description, {'attr': {'class': 'form-control form-control-sm', 'rows': '3'}}) }}
+            {{ form_errors(form.description) }}
+        </div>
+
+        <!-- Boutons -->
+        <div class="col-12 text-end mt-2">
+            <a href="{{ path('app_evenement_index') }}" class="btn btn-sm btn-cancel me-2">
+                <i class="fas fa-times-circle me-1"></i> Annuler
+            </a>
+            <button type="submit" class="btn btn-sm btn-submit">
+                <i class="fas fa-save me-1"></i> Enregistrer
+            </button>
+        </div>
+    </div>
+{{ form_end(form) }}
+
+{% block css %}
+    <link rel="stylesheet" href="{{ asset('css/Evenement/AjouterEvenement.css') }}">    
+{% endblock %}
+
+
+{% block javascripts %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gestion de l'upload de fichier
+            const fileInput = document.querySelector('.file-input');
+            const fileSelectBtn = document.querySelector('.file-select-btn');
+            const fileNameSpan = document.querySelector('.file-name');
+
+            fileSelectBtn.addEventListener('click', function() {
+                fileInput.click();
+            });
+
+            fileInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    fileNameSpan.textContent = this.files[0].name;
+                    fileNameSpan.style.color = '#28a745';
+                } else {
+                    fileNameSpan.textContent = 'Aucun fichier sélectionné';
+                    fileNameSpan.style.color = '#6c757d';
+                }
+            });
+
+            // Initialisation de Flatpickr pour les dates
+            flatpickr('.flatpickr-date', {
+                dateFormat: 'd/m/Y',
+                locale: 'fr',
+                allowInput: true
+            });
+
+            // Initialisation de Flatpickr pour l'heure
+            flatpickr('.flatpickr-time', {
+                enableTime: true,    // Activer la sélection de l'heure
+                noCalendar: true,    // Cacher le calendrier pour ne pas afficher la date
+                dateFormat: 'H:i',   // Format de l'heure (24 heures)
+                time_24hr: true,     // Format 24 heures
+                allowInput: true,    // Permet à l'utilisateur de saisir l'heure manuellement
+            });
+
+            
+        });
+    </script>
+    
+{% endblock %}

@@ -1,0 +1,286 @@
+{% extends 'partials/layout-horizontal.html.twig' %}
+
+{% block title %}Liste des Événements{% endblock %}
+
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', { page_title: 'Liste des Événements' }) }}
+{% endblock %}
+
+{% block css %}
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/Evenement/frontevenement.css') }}">    
+{% endblock %}
+{% block body %}
+<div class="container-fluid px-4">
+    <!-- Section des événements (visible par défaut) -->
+     <div id="eventsSection">
+        <!-- Header avec dégradé vibrant -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="event-header text-center py-5 position-relative overflow-hidden rounded-3">
+                    <div class="position-relative z-index-1">
+                        <h1 class="display-4 fw-bold text-white mb-3 animate__animated animate__fadeInDown">Nos Événements</h1>
+                        <p class="lead text-white mb-4 animate__animated animate__fadeIn animate__delay-1s">Découvrez des expériences mémorables</p>
+                        <div class="search-container mx-auto animate__animated animate__fadeIn animate__delay-1s" style="max-width: 500px;">
+                            <div class="input-group">
+                                <input type="text" class="form-control rounded-start-pill border-0 shadow-sm py-2 px-4" placeholder="Rechercher un événement...">
+                                <button class="btn btn-primary rounded-end-pill px-4" type="button">
+                                    <i class="mdi mdi-magnify"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <a href="{{ path('app_user_reservations') }}" class="btn btn-light rounded-pill px-4 mt-3 animate__animated animate__fadeIn animate__delay-1s">
+                            <i class="mdi mdi-ticket-account me-1"></i> Mes Réservations
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtres simplifiés -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-center flex-wrap gap-2">
+                    <button type="button" class="btn btn-pill btn-outline-dark active" data-filter="all">
+                        <i class="mdi mdi-star-circle-outline me-1"></i>Tous
+                    </button>
+                    <button type="button" class="btn btn-pill btn-outline-info" data-filter="presentiel">
+                        <i class="mdi mdi-monitor me-1"></i>Présentiel
+                    </button>
+                    <button type="button" class="btn btn-pill btn-outline-success" data-filter="online">
+                        <i class="mdi mdi-account-group me-1"></i>En ligne
+                    </button>
+                    <button type="button" class="btn btn-pill btn-outline-danger" data-filter="rh">
+                        <i class="mdi mdi-briefcase me-1"></i>RH
+                    </button>
+                    <button type="button" class="btn btn-pill btn-outline-warning" data-filter="loisir">
+                        <i class="mdi mdi-palm-tree me-1"></i>Loisir
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Grille de cartes -->
+        <div class="row g-4" id="event-grid">
+            {% for evenement in evenements %}
+            <div class="col-xl-3 col-lg-4 col-md-6" data-category="{{ evenement.modalite|lower }} {{ evenement.type|lower }}">
+                <div class="card event-card h-100 border-0 overflow-hidden ">
+                    <!-- Badge de modalite -->
+                    <div class="card-badge {{ evenement.modalite == 'Présentiel' or evenement.modalite == 'en_ligne' ? 'bg-success' : 'bg-info' }}">
+                        {{ evenement.modalite }}
+                    </div>
+
+                    
+                    <!-- Image de l'événement -->
+                    {% if evenement.image %}
+                        <div class="card-image" style="background-image: url('{{ asset(evenement.image) }}')">
+                            <div class="card-date text-white">
+                                <span class="day fw-bold">{{ evenement.dateDebut|date('d') }}</span>
+                                <span class="month">{{ evenement.dateDebut|date('M') }}</span>
+                                <span class="year">{{ evenement.dateDebut|date('Y') }}</span>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="card-image" style="background: var(--secondary-gradient)">
+                            <div class="card-date text-white">
+                                <span class="day fw-bold">{{ evenement.dateDebut|date('d') }}</span>
+                                <span class="month">{{ evenement.dateDebut|date('M') }}</span>
+                                <span class="year">{{ evenement.dateDebut|date('Y') }}</span>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Contenu de la carte -->
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h3 class="card-title h5 mb-0">{{ evenement.titre }}</h3>
+                            <span class="badge bg-light text-dark">
+                                {{ evenement.prix ? evenement.prix ~ 'DT' : 'Gratuit' }}
+                            </span>
+                        </div>
+                        
+                        <div class="card-meta mb-3">
+                            <span class="d-block text-muted mb-1">
+                                <i class="mdi mdi-map-marker-outline me-1"></i> 
+                                {{ evenement.lieu }}
+                            </span>
+                            <span class="d-block text-muted">
+                                <i class="mdi mdi-clock-outline me-1"></i>
+                                {% if evenement.heure is not null %}
+                                    {{ evenement.heure|date('H:i') }}h
+                                {% else %}
+                                    Non spécifié
+                                {% endif %}
+                            </span>
+                        </div>
+                        
+                        <!-- type -->
+                        <div class="mb-3">
+                            {% if evenement.type|lower == 'rh' %}
+                                <span class="badge bg-danger-light text-danger">{{ evenement.type }}</span>
+                            {% elseif evenement.type|lower == 'tech et inno' %}
+                                <span class="badge bg-success-light text-success">{{ evenement.type }}</span>
+                            {% elseif evenement.type|lower == 'loisir' %}
+                                <span class="badge bg-info-light text-info">{{ evenement.type }}</span>
+                            {% elseif evenement.type|lower == 'softskills' %}
+                                <span class="badge bg-warning-light text-warning">{{ evenement.type }}</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ evenement.type }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="card-footer bg-transparent border-top-0 pt-0 pb-3 px-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <!-- Bouton pour ouvrir le modal -->
+                            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill flex-grow-1 me-1" data-toggle="modal" data-target="#eventModal{{ evenement.id }}">
+                                <i class="mdi mdi-information-outline me-1"></i> Détails
+                            </button>
+                            <a href="{{ path('app_reservation_evenement_new', {id: evenement.id}) }}" class="btn btn-sm btn-outline-primary rounded-pill flex-grow-1 me-1">
+                                <i class="mdi mdi-ticket-confirmation me-1"></i> Réserver
+                            </a>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+                <div class="col-12">
+                    <div class="alert alert-info text-center">
+                        <i class="mdi mdi-information-outline me-2"></i>
+                        Aucun événement disponible pour le moment.
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    {% for evenement in evenements %}
+    <!-- Modal de détails de l'événement -->
+    <div class="modal fade" id="eventModal{{ evenement.id }}" tabindex="-1" role="dialog" aria-labelledby="eventModalLabel{{ evenement.id }}" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content border-0 overflow-hidden">
+                <!-- En-tête avec image de fond -->
+                <div class="modal-header position-relative p-0" style="height: 200px;">
+                    {% if evenement.image %}
+                    <div class="w-100 h-100" style="background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('{{ asset(evenement.image) }}'); background-size: cover; background-position: center;"></div>
+                    {% else %}
+                    <div class="w-100 h-100" style="background: var(--primary-gradient);"></div>
+                    {% endif %}
+                    
+                    <div class="position-absolute w-100 h-100 d-flex flex-column justify-content-between p-4">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h3 class="modal-title text-white mb-0" id="eventModalLabel{{ evenement.id }}">{{ evenement.titre }}</h3>
+                            <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-end">
+                            <div class="event-badge {{ evenement.modalite == 'En ligne' ? 'bg-info' : 'bg-success' }} px-3 py-1 rounded-pill">
+                                {{ evenement.modalite }}
+                            </div>
+                            <div class="text-white">
+                                <span class="badge p-2 fs-6 shadow-sm border-0" 
+                                    style="background: linear-gradient(45deg, #ffffff, #f8f9fa); border-radius: 20px; transition: all 0.3s;"
+                                    onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.2)';"
+                                    onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)';">
+                                    <i class="mdi mdi-ticket-confirmation mr-2 fs-5 text-primary"></i>
+                                    <strong class="text-dark">{{ evenement.prix ? evenement.prix ~ 'DT' : 'Gratuit' }}</strong>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Corps du modal -->
+                <div class="modal-body p-0">
+                    <div class="row no-gutters">
+                        <!-- Colonne gauche - Détails -->
+                        <div class="col-lg-6 p-4">
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="icon-circle bg-light-primary mr-3">
+                                    <i class="mdi mdi-calendar text-primary"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">Date et Heure</h6>
+                                    <p class="mb-0 text-muted">
+                                        Du: {{ evenement.dateDebut|date('d M Y') }}<br>
+                                        Jusqu'à: {{ evenement.dateFin|date('d M Y') }}<br>
+                                        {% if evenement.heure %}
+                                            Heure: {{ evenement.heure|date('H:i') }}h
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="icon-circle bg-light-success mr-3">
+                                    <i class="mdi mdi-map-marker text-success"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">Lieu</h6>
+                                    <p class="mb-0 text-muted">{{ evenement.lieu }}</p>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="icon-circle bg-light-info mr-3">
+                                    <i class="mdi mdi-information text-info"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">Type</h6>
+                                    <p class="mb-0 text-muted">{{ evenement.type }}</p>
+                                </div>
+                            </div>
+
+                            <div class="event-description mt-4">
+                                <h5 class="mb-3">Description</h5>
+                                <p class="text-muted">{{ evenement.description }}</p>
+                            </div>
+                        </div>
+
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Ajout des scripts nécessaires -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Filtrage des événements
+        $('[data-filter]').click(function() {
+            const filter = $(this).data('filter');
+            
+            // Mise à jour des boutons actifs
+            $('[data-filter]').removeClass('active');
+            $(this).addClass('active');
+            
+            // Filtrage des cartes
+            if (filter === 'all') {
+                $('.event-card').parent().show();
+            } else {
+                $('.event-card').parent().hide();
+                $(`.event-card[data-category*="${filter}"]`).parent().show();
+            }
+        });
+        
+        // Animation au survol des cartes
+        $('.event-card').hover(
+            function() {
+                $(this).find('.card-image').css('transform', 'scale(1.03)');
+            },
+            function() {
+                $(this).find('.card-image').css('transform', 'scale(1)');
+            }
+        );
+    });
+</script>
+{% endblock %}

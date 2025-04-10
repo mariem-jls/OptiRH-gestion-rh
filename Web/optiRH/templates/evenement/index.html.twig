@@ -1,0 +1,101 @@
+{% extends 'partials/layout-vertical.html.twig' %}
+
+{% block title %}Liste des Événements{% endblock %}
+
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', { page_title: 'Liste des événements' }) }}
+{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <!-- Barre de recherche -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="search-box">
+                            <div class="position-relative">
+                                <input type="text" class="form-control" 
+                                       placeholder="Rechercher par titre, lieu ou modalité...">
+                                <i class="mdi mdi-magnify search-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tableau optimisé -->
+                <div class="table-responsive">
+                    <table class="table table-hover table-centered table-nowrap mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Titre</th>
+                                <th>Lieu</th>
+                                <th>Dates</th>
+                                <th>Heure</th>
+                                <th>Type</th>
+                                <th>Modalité</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for evenement in evenements %}
+                            <tr>
+                                <td>{{ evenement.titre }}</td>
+                                <td>{{ evenement.lieu }}</td>
+                                <td>
+                                    <div>{{ evenement.dateDebut ? evenement.dateDebut|date('Y-m-d') : '' }}</div>
+                                    <small class="text-muted">au{{ evenement.dateFin ? evenement.dateFin|date('Y-m-d') : '' }}  </small>
+                                </td>
+                                <td>{{ evenement.heure ? evenement.heure|date('H:i') : '' }}</td>
+                                <td>{{ evenement.type }}</td>
+                                <td>
+                                    {% if evenement.modalite|lower == 'presentiel' %}
+                                        <span class="badge bg-primary">{{ evenement.modalite }}</span>
+                                    {% elseif evenement.modalite|lower == 'en_ligne' %}
+                                        <span class="badge bg-warning">{{ evenement.modalite }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if evenement.status == 'TERMINE' %}
+                                        <span class="badge bg-danger">{{ evenement.status }}</span>
+                                    {% elseif evenement.status == 'EN_COURS' %}
+                                        <span class="badge bg-warning">{{ evenement.status }}</span>
+                                    {% elseif evenement.status == 'A_VENIR' %}
+                                        <span class="badge bg-success">{{ evenement.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ path('app_evenement_show', {'id': evenement.id}) }}"class="btn btn-sm btn-outline-primary" title="Voir les reservations">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ path('app_evenement_edit', {'id': evenement.id}) }}"class="btn btn-sm btn-outline-secondary" title="Modifier cet evenement">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form action="{{ path('app_evenement_delete', {'id': evenement.id}) }}" method="post" style="display:inline;">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ evenement.id) }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger"title="Supprimer" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet élément?');">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                                
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="8">Aucun événement trouvé</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <a href="{{ path('app_evenement_new') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Créer nouveau
+    </a>
+{% endblock %}

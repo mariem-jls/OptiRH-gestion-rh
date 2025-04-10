@@ -1,0 +1,30 @@
+{% extends 'partials/layout-vertical.html.twig' %}
+
+{% block title %}Nouvel Événement{% endblock %}
+
+{% block css %}
+    <link rel="stylesheet" href="{{ asset('css/Evenement/ajouterevenement.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', { page_title: 'Créer un nouvel événement' }) }}
+{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card form-card">
+            <div class="card-body p-4">
+                <div class="form-header">
+                    <h4 class="header-title mb-0">Nouvel Événement</h4>
+                    <p class="text-muted mb-0">Renseignez les détails de votre événement</p>
+                </div>
+                 {{ include('evenement/_form.html.twig') }}
+            </div>
+        </div>
+    </div>
+    <a href="{{ path('app_evenement_index') }}">back to list</a>
+</div>
+
+{% endblock %}
