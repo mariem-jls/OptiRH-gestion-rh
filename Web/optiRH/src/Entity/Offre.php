@@ -53,6 +53,7 @@ class Offre
     private ?string $typeContrat = null;
 
     #[ORM\Column(type: Types::STRING, length: 100, nullable: true)]
+    #[Assert\NotBlank(message: "La localisation ne peut pas être vide.")]
     #[Groups(['offres'])]
     private ?string $localisation = null;
     #[ORM\Column(type: Types::STRING, length: 50, nullable: true)]

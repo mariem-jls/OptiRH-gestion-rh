@@ -40,17 +40,14 @@ class OffreRepository extends ServiceEntityRepository
     }
     public function findActiveOffres(): array
     {
-        $query = $this->createQueryBuilder('o')
+        return $this->createQueryBuilder('o')
             ->where('o.statut = :statut')
+            ->andWhere('o.dateExpiration IS NULL OR o.dateExpiration >= :now')
             ->setParameter('statut', 'Active')
+            ->setParameter('now', new \DateTime())
             ->orderBy('o.dateCreation', 'DESC')
-            ->getQuery();
-
-        // Debug la requête SQL
-        dump($query->getSQL());
-        dump($query->getParameters());
-
-        return $query->getResult();
+            ->getQuery()
+            ->getResult();
     }
 
     public function findOffreByKeywords(string $keywords, ?string $niveauExperience = null): array
@@ -67,6 +64,21 @@ class OffreRepository extends ServiceEntityRepository
         }
 
         return $qb->getQuery()->getResult();
+    }
+    public function updateExpiredOffresToBrouillon(): void
+    {
+        $qb = $this->createQueryBuilder('o')
+            ->update()
+            ->set('o.statut', ':brouillon')
+            ->where('o.dateExpiration IS NOT NULL')
+            ->andWhere('o.dateExpiration < :now')
+            ->andWhere('o.statut = :active')
+            ->setParameter('brouillon', 'Brouillon')
+            ->setParameter('now', new \DateTime())
+            ->setParameter('active', 'Active')
+            ->getQuery();
+
+        $qb->execute();
     }
 //    /**
 //     * @return Offre[] Returns an array of Offre objects

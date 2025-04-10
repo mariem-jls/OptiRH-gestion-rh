@@ -62,9 +62,17 @@ class OffreType extends AbstractType
                 'required' => false,
             ])
             ->add('nbPostes')
+            // OffreType.php - Modifiez le champ dateExpiration
             ->add('dateExpiration', DateTimeType::class, [
                 'widget' => 'single_text',
                 'required' => false,
+                'html5' => false, // Désactive le datetime-local natif
+                'format' => 'dd/MM/yyyy HH:mm', // Format compatible avec Flatpickr
+                'attr' => [
+                    'class' => 'flatpickr',
+                    'data-date-format' => 'd/m/Y H:i', // Format d'affichage
+                    'data-enable-time' => 'true'
+                ]
             ])
         ;
     }

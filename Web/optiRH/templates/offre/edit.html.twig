@@ -4,6 +4,7 @@
 
 {% block css %}
     {{ parent() }}
+    <link href="{{ asset('/libs/flatpickr/flatpickr.min.css') }}" rel="stylesheet">
     <!-- Quill CSS -->
     <link href="{{ asset('/libs/quill/quill.core.css') }}" rel="stylesheet">
     <link href="{{ asset('/libs/quill/quill.snow.css') }}" rel="stylesheet">
@@ -175,21 +176,23 @@
 
 {% block javascript %}
 {{ parent() }}
-<!-- Quill JS -->
-<script src="{{ asset('/libs/quill/quill.min.js') }}"></script>
 <!-- Flatpickr -->
 <script src="{{ asset('/libs/flatpickr/flatpickr.min.js') }}"></script>
 <script src="{{ asset('/libs/flatpickr/l10n/fr.js') }}"></script>
+<!-- Quill JS -->
+<script src="{{ asset('/libs/quill/quill.min.js') }}"></script>
 <!-- SweetAlert2 JS -->
 <script src="{{ asset('/libs/sweetalert2/sweetalert2.all.min.js') }}"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        // Configuration Flatpickr
+        // Configuration Flatpickr corrigée
         flatpickr('.flatpickr', {
-            dateFormat: "Y-m-d H:i",
+            enableTime: true,
+            time_24hr: true,
+            dateFormat: "d/m/Y H:i", // Doit matcher le data-date-format
             minDate: "today",
             locale: "fr",
-            disableMobile: true
+            disableMobile: true // Important pour le bon fonctionnement mobile
         });
 
         // Configuration Quill

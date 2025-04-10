@@ -100,8 +100,10 @@
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         $('#datatable').DataTable({
-         dom: 'Blfrtip',
-        buttons: [
+            dom: 'Blfrtip',
+            paging: true,
+            pageLength: 10,
+            buttons: [
             {
                 extend: 'copy',
                 className: 'btn btn-light',

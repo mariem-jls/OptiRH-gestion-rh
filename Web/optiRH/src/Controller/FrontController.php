@@ -14,7 +14,9 @@ class FrontController extends AbstractController
     #[Route('/front', name: 'app_front')]
     public function index(OffreRepository $offreRepository): Response
     {
-        // Récupérer les offres actives
+        // 1. Mettre à jour les offres expirées
+        $offreRepository->updateExpiredOffresToBrouillon();
+        // 2. Afficher les offres actives non expirées
         $offres = $offreRepository->findActiveOffres();
 
         return $this->render('front-home/index.html.twig', [
@@ -27,6 +29,9 @@ class FrontController extends AbstractController
     #[Route('/active', name: 'app_front_active')]
     public function offresActives(OffreRepository $offreRepository): Response
     {
+        // 1. Mettre à jour les offres expirées
+        $offreRepository->updateExpiredOffresToBrouillon();
+        // 2. Afficher les offres actives non expirées
         $offres = $offreRepository->findActiveOffres();
         $totalOffres = count($offres);
 
