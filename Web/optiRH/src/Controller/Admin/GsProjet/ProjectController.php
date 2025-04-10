@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\GsProjet;
+namespace App\Controller\Admin\GsProjet;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;

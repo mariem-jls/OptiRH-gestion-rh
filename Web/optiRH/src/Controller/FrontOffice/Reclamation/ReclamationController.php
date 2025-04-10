@@ -1,5 +1,5 @@
 <?php
-namespace App\Controller\FrontReclamation;
+namespace App\Controller\FrontOffice\Reclamation;
 
 use App\Entity\Reclamation;
 use App\Entity\Reponse;

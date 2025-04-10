@@ -1,14 +1,14 @@
 <?php
-namespace App\Controller\Transport;
-use App\Entity\Users\Users;
-use App\Entity\Transport\ReservationTrajet;
+namespace App\Controller\Admin\Transport;
+use App\Entity\User;
 use App\Entity\Transport\Vehicule;
-use App\Repository\Transport\VehiculeRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Entity\Transport\ReservationTrajet;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Repository\Transport\VehiculeRepository;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 #[Route('/transport/reservation')]
 class ReservationController extends AbstractController
@@ -38,7 +38,7 @@ public function reserve(Vehicule $vehicule, EntityManagerInterface $em, Vehicule
 {
     try {
         // Remplacez $this->getUser() par un utilisateur statique (ID = 1)
-        $user = $em->getRepository(Users::class)->find(1);
+        $user = $em->getRepository(User::class)->find(1);
         
         if (!$user) {
             return $this->json(['success' => false, 'message' => 'Utilisateur introuvable'], 404);

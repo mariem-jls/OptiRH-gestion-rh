@@ -1,6 +1,6 @@
 <?php
 // src/Controller/ReclamationController.php
-namespace App\Controller\backReclamation;
+namespace App\Controller\Admin\Reclamation;
 
 use App\Entity\Reclamation;
 use App\Entity\Reponse;
@@ -17,7 +17,7 @@ use Symfony\Component\Validator\Constraints\Length;
 
 class ReclamationController extends AbstractController
 {
-    #[Route('/admin/reclamations', name: 'admin_reclamations', methods: ['GET'])]
+    #[Route('/reclamations', name: 'admin_reclamations', methods: ['GET'])]
     public function list(EntityManagerInterface $em): Response
     {
         $reclamations = $em->getRepository(Reclamation::class)->findAll();
@@ -26,7 +26,7 @@ class ReclamationController extends AbstractController
         ]);
     }
 
-    #[Route('/admin/reclamation/{id}/delete', name: 'admin_reclamation_delete', methods: ['POST'])]
+    #[Route('/reclamation/{id}/delete', name: 'admin_reclamation_delete', methods: ['POST'])]
     public function delete(Request $request, Reclamation $reclamation, EntityManagerInterface $em): Response
     {
         if ($this->isCsrfTokenValid('delete'.$reclamation->getId(), $request->request->get('_token'))) {
@@ -44,7 +44,7 @@ class ReclamationController extends AbstractController
         return $this->redirectToRoute('admin_reclamations');
     }
 
-    #[Route('/admin/reclamation/{id}/reponses', name: 'admin_reclamation_reponses', methods: ['GET', 'POST'])]
+    #[Route('/reclamation/{id}/reponses', name: 'admin_reclamation_reponses', methods: ['GET', 'POST'])]
     public function reponses(Reclamation $reclamation, Request $request, EntityManagerInterface $em): Response
     {
         $reponse = new Reponse();
@@ -97,7 +97,7 @@ class ReclamationController extends AbstractController
 
 
 
-    #[Route('/admin/reponse/{id}/delete', name: 'admin_reponse_delete', methods: ['POST'])]
+    #[Route('/reponse/{id}/delete', name: 'admin_reponse_delete', methods: ['POST'])]
     public function deleteReponse(Request $request, Reponse $reponse, EntityManagerInterface $em): Response
     {
         $reclamationId = $reponse->getReclamation()->getId();
@@ -110,7 +110,7 @@ class ReclamationController extends AbstractController
     }
     // src/Controller/ReclamationController.php
 
-    #[Route('/admin/reponse/{id}/edit', name: 'admin_reponse_edit', methods: ['GET', 'POST'])]
+    #[Route('/reponse/{id}/edit', name: 'admin_reponse_edit', methods: ['GET', 'POST'])]
     public function editReponse(Request $request, Reponse $reponse, EntityManagerInterface $em): Response
     {
         $form = $this->createFormBuilder($reponse)

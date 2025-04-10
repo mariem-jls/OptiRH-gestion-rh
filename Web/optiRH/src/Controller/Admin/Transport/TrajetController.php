@@ -1,5 +1,5 @@
 <?php
-namespace App\Controller\Transport;
+namespace App\Controller\Admin\Transport;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 use App\Entity\Transport\Trajet;

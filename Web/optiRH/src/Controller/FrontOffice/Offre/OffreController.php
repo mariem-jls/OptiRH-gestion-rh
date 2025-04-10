@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller;
+namespace App\Controller\FrontOffice\Offre;
 
 use App\Entity\Offre;
 use App\Form\OffreType;
