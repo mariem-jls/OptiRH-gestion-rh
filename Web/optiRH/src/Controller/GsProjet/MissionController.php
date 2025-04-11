@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\Admin\GsProjet;
+namespace App\Controller\GsProjet;
 use Doctrine\ORM\EntityManagerInterface;
 
 use App\Entity\GsProjet\Mission;

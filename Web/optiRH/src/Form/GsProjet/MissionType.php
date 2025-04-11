@@ -3,6 +3,7 @@
 namespace App\Form\GsProjet;
 
 use App\Entity\GsProjet\Mission;
+use App\Entity\GsProjet\Project;
 use App\Entity\User;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;

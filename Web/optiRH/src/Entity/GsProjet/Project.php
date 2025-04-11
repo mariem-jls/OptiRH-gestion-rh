@@ -2,11 +2,11 @@
 
 namespace App\Entity\GsProjet;
 
-use App\Entity\User;
-use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\Collection;
-use App\Repository\GsProjet\ProjectRepository;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
+use App\Repository\GsProjet\ProjectRepository;
+use App\Entity\User; // Ajout du bon namespace pour User
 
 #[ORM\Entity(repositoryClass: ProjectRepository::class)]
 #[ORM\Table(name: 'projects')]
@@ -126,5 +126,20 @@ class Project
     {
         $this->status = $status;
         return $this;
+    }
+    public function getProgress(): int
+    {
+        $missions = $this->getMissions();
+        
+        if ($missions->isEmpty()) {
+            return 0;
+        }
+
+        $totalMissions = $missions->count();
+        $completedMissions = $missions->filter(function(Mission $mission) {
+            return $mission->getStatus() === 'Done';
+        })->count();
+
+        return (int) round(($completedMissions / $totalMissions) * 100);
     }
 }
