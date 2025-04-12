@@ -5,129 +5,68 @@
 
 {% block stylesheets %}
     <style>
-        .status-badge {
-            font-size: 0.85rem;
-            padding: 0.35em 0.65em;
-            display: inline-flex;
-            align-items: center;
+        .status-select {
+            width: 150px;
+            border-radius: 4px;
+            padding: 5px;
         }
-        .status-badge i {
-            margin-right: 5px;
-        }
-        .action-btn {
-            /* Modifié pour accommoder le texte */
-            min-width: 100px;
-            height: 30px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 2px;
-            padding: 0.25rem 0.5rem;
-        }
-        .action-btn i {
-            margin-right: 5px;
-        }
-        .table-responsive {
-            overflow-x: auto;
-        }
-        .table {
-            font-size: 0.9rem;
-        }
-        .table th {
-            white-space: nowrap;
-        }
-        .truncate-text {
-            max-width: 200px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+        .status-pending { background-color: #fff3cd; }
+        .status-in-progress { background-color: #d1ecf1; }
+        .status-resolved { background-color: #d4edda; }
     </style>
 {% endblock %}
-{% block topbar %}
-    {{ include('partials/topbar.html.twig', { page_title: 'Réclamations' }) }}
-{% endblock %}
+
 {% block body %}
     <div class="container-fluid">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h3 mb-0 text-gray-800">Gestion des Réclamations</h1>
-        </div>
-
         <div class="card shadow mb-4">
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-bordered table-hover">
-                        <thead class="thead-light">
-                        <tr>
-                            <th>Type</th>
-                            <th>Description</th>
-                            <th>Utilisateur</th>
-                            <th>Date</th>
-                            <th>Statut</th>
-                            <th>Actions</th>
-                        </tr>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Description</th>
+                                <th>Utilisateur</th>
+                                <th>Date</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
                         </thead>
                         <tbody>
-                        {% for reclamation in reclamations %}
-                            <tr>
-                                <td>{{ reclamation.type }}</td>
-                                <td class="truncate-text" title="{{ reclamation.description }}">
-                                    {{ reclamation.description|slice(0, 50) }}{% if reclamation.description|length > 50 %}...{% endif %}
-                                </td>
-                                <td>{{ reclamation.utilisateur.nom }}</td>
-                                <td>{{ reclamation.date|date('d/m/Y H:i') }}</td>
-                                <td>
-                                <span class="badge bg-{{ reclamation.getStatusColor(reclamation.status) }} status-badge">
-                                    {{ reclamation.getStatusIcon(reclamation.status) }} {{ reclamation.status }}
-                                </span>
-                                </td>
-                                <td class="text-center">
-                                    <a href="{{ path('admin_reclamation_reponses', {'id': reclamation.id}) }}"
-                                       class="btn btn-sm btn-primary action-btn" title="Gérer les réponses">
-                                        <i class="fas fa-comments"></i> Gérer
-                                    </a>
-
-                                    <form method="post" action="{{ path('admin_reclamation_delete', {'id': reclamation.id}) }}"
-                                          class="d-inline"
-                                          onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer définitivement cette réclamation ?')">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reclamation.id) }}">
-                                        <button class="btn btn-sm btn-danger action-btn" title="Supprimer définitivement">
-                                            <i class="fas fa-trash-alt"></i> Supprimer
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                        {% endfor %}
+                            {% for reclamation in reclamations %}
+                                <tr>
+                                    <td>{{ reclamation.type }}</td>
+                                    <td>{{ reclamation.description|slice(0, 50) }}{% if reclamation.description|length > 50 %}...{% endif %}</td>
+                                    <td>{{ reclamation.utilisateur.nom }}</td>
+                                    <td>{{ reclamation.date|date('d/m/Y H:i') }}</td>
+                                    <td>
+                                        <form method="post" action="{{ path('admin_update_status', {'id': reclamation.id}) }}">
+                                            <select name="status" class="status-select status-{{ reclamation.status|lower|replace({' ': '-'}) }}"
+                                                    onchange="this.form.submit()">
+                                                <option value="En attente" {% if reclamation.status == 'En attente' %}selected{% endif %}>
+                                                    En attente
+                                                </option>
+                                                <option value="En cours" {% if reclamation.status == 'En cours' %}selected{% endif %}>
+                                                    En cours
+                                                </option>
+                                                <option value="Résolue" {% if reclamation.status == 'Résolue' %}selected{% endif %}>
+                                                    Résolue
+                                                </option>
+                                            </select>
+                                        </form>
+                                    </td>
+                                    <td>
+                                        <a href="{{ path('admin_reclamation_reponses', {'id': reclamation.id}) }}" 
+                                           class="btn btn-primary btn-sm">
+                                            Gérer
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
     </div>
-{% endblock %}
-
-{% block javascripts %}
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialiser les tooltips
-            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
-            tooltipTriggerList.map(function (tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl);
-            });
-
-            // Gestion des couleurs dans le select de statut
-            document.querySelectorAll('select[name="status"]').forEach(select => {
-                select.addEventListener('change', function() {
-                    const selectedOption = this.options[this.selectedIndex];
-                    const color = selectedOption.getAttribute('data-color');
-                    this.className = `form-select bg-${color}-subtle text-${color}`;
-                });
-
-                // Initialiser la couleur au chargement
-                const selectedOption = select.options[select.selectedIndex];
-                const color = selectedOption.getAttribute('data-color');
-                select.className = `form-select bg-${color}-subtle text-${color}`;
-            });
-        });
-    </script>
 {% endblock %}

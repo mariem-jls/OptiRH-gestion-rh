@@ -39,6 +39,7 @@ class Reponse
         $this->date = new \DateTime();
     }
 
+
     // Getters et Setters
     public function getId(): ?int { return $this->id; }
     public function getDescription(): ?string { return $this->description; }
@@ -48,5 +49,16 @@ class Reponse
     public function getReclamation(): ?Reclamation { return $this->reclamation; }
     public function setReclamation(?Reclamation $reclamation): self { $this->reclamation = $reclamation; return $this; }
     public function getRating(): int { return $this->rating; }
-    public function setRating(int $rating): self { $this->rating = $rating; return $this; }
+
+    public function setRating(int $rating): self
+    {
+        $this->rating = $rating;
+
+        // Mettre à jour le statut de la réclamation si notation >= 4
+        if ($rating >= 4 && $this->reclamation) {
+            $this->reclamation->setStatus(Reclamation::STATUS_RESOLVED);
+        }
+
+        return $this;
+    }
 }

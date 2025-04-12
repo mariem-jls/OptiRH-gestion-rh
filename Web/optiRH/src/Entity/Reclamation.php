@@ -1,16 +1,15 @@
 <?php
 // src/Entity/Reclamation.php
+
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: "App\Repository\ReclamationRepository")]
 class Reclamation
 {
-    // Statuts existants
     public const STATUS_PENDING = 'En attente';
     public const STATUS_IN_PROGRESS = 'En cours';
     public const STATUS_RESOLVED = 'Résolue';
@@ -138,13 +137,12 @@ public static function getTypeChoices(): array
 
     public static function getStatusColor(string $status): string
     {
-        $colors = [
+        return match($status) {
             self::STATUS_PENDING => 'warning',
             self::STATUS_IN_PROGRESS => 'info',
-            self::STATUS_RESOLVED => 'success'
-        ];
-
-        return $colors[$status] ?? 'secondary';
+            self::STATUS_RESOLVED => 'success',
+            default => 'secondary'
+        };
     }
 
     public static function getStatusIcon(string $status): string
