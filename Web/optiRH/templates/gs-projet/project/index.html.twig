@@ -5,6 +5,7 @@
 {% block topbar %}
     {{ include('partials/topbar.html.twig', { page_title: 'Gestion des projets' }) }}
 {% endblock %}
+
 {% block body %}
     <div class="row align-items-center mb-4">
         <div class="col-md-6">
@@ -14,7 +15,13 @@
             </a>
         </div>
         <div class="col-md-6 mt-3 mt-md-0">
-            {{ form_start(filterForm, { attr: {'id': 'filter-form', 'data-search-url': path('gs-projet_project_index'), 'class': 'filter-form'} }) }}
+            {{ form_start(filterForm, { 
+                attr: {
+                    'id': 'filter-form', 
+                    'data-search-url': path('gs-projet_project_index'), 
+                    'class': 'filter-form'
+                } 
+            }) }}
                 <div class="d-flex flex-wrap gap-2 justify-content-md-end">
                     <div class="flex-grow-1" style="min-width: 200px;">
                         <div class="input-group input-group-sm">
@@ -32,8 +39,8 @@
                     <div class="d-flex gap-2">
                         <div class="input-group input-group-sm" style="width: 150px;">
                             {{ form_widget(filterForm.status, {
-                                attr: { 
-                                    class: 'form-select form-select-sm',
+                                'attr': { 
+                                    'class': 'form-select form-select-sm',
                                     'aria-label': 'Statut'
                                 }
                             }) }}
@@ -41,118 +48,223 @@
                         
                         <div class="input-group input-group-sm" style="width: 150px;">
                             {{ form_widget(filterForm.sort, {
-                                attr: { 
-                                    class: 'form-select form-select-sm',
+                                'attr': { 
+                                    'class': 'form-select form-select-sm',
                                     'aria-label': 'Trier par'
                                 }
                             }) }}
                         </div>
                     </div>
                 </div>
-            {{ form_end(filterForm) }}
+            {{ form_end(filterForm, {'render_rest': false}) }}
         </div>
     </div>
 
-    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
-        {% for project in projects %}
-            <div class="col">
-                <div class="card h-100 shadow-sm-hover">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <h5 class="card-title mb-0">
-                                <a href="{{ path('gs-projet_project_show', {id: project.id}) }}" class="text-dark text-decoration-none">
-                                    {{ project.nom }}
-                                </a>
-                            </h5>
-                            <span class="badge bg-{{ project.status|status_badge }} rounded-pill">{{ project.status }}</span>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <p class="text-muted small mb-2">{{ project.description|u.truncate(120, '...') }}</p>
-                            <a href="{{ path('gs-projet_project_show', {id: project.id}) }}" class="btn btn-link btn-sm p-0 text-primary">
-                                Détails <i class="mdi mdi-arrow-right"></i>
-                            </a>
-                        </div>
-                        
-                        <div class="d-flex justify-content-between align-items-center text-muted small">
-                            <div>
-                                <i class="mdi mdi-calendar-outline me-1"></i>
-                                {{ project.createdAt|date('d/m/Y') }}
-                            </div>
-                            {# Ajouter d'autres métadonnées si nécessaire #}
-                        </div>
-                    </div>
-                </div>
+    <div class="table-responsive" id="project-table-container">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Nom du projet</th>
+                    <th>Description</th>
+                    <th>Statut</th>
+                    <th>Date de création</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="project-list-body">
+                {% include 'gs-projet/project/_list.html.twig' with { projects: projects } %}
+            </tbody>
+        </table>
+
+        {# Correction de la pagination #}
+        {% if projects is not empty and projects.getPageCount() > 1 %}
+            <div id="project-pagination" class="mt-3">
+                {{ knp_pagination_render(projects, '@KnpPaginator/Pagination/twitter_bootstrap_v5_pagination.html.twig', {
+                    'queryParamName': 'page',
+                    'size': 'medium',
+                    'alignment': 'center'
+                }) }}
             </div>
-        {% else %}
-            <div class="col-12">
-                <div class="alert alert-info mb-0">Aucun projet trouvé</div>
-            </div>
-        {% endfor %}
+        {% endif %}
     </div>
 {% endblock %}
+
 {% block javascript %}
+{{ parent() }}
+<!-- SweetAlert2 JS -->
+<script src="{{ asset('/libs/sweetalert2/sweetalert2.all.min.js') }}"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const filterForm = document.getElementById('filter-form');
-    const projectList = document.querySelector('.row-cols-1');
-    const searchUrl = filterForm.dataset.searchUrl;
-    let timeout;
+    const DEBOUNCE_DELAY = 300;
+    const TABLE_BODY_ID = 'project-list-body';
+    const PAGINATION_ID = 'project-pagination';
 
-    // Gestion des événements
-    filterForm.addEventListener('input', debounceHandleFilter);
-    filterForm.addEventListener('change', handleFilter);
+    // Fonctions utilitaires
+    const debounce = (fn, delay) => {
+        let timer;
+        return (...args) => {
+            clearTimeout(timer);
+            timer = setTimeout(() => fn(...args), delay);
+        };
+    };
 
-    function debounceHandleFilter(e) {
-        if (e.target.name === 'filter[search]') {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => handleFilter(e), 500);
-        }
-    }
+    const safeUpdateElement = (elementId, content) => {
+        const element = document.getElementById(elementId);
+        if (element) element.innerHTML = content;
+    };
 
-    async function handleFilter(e) {
-        e.preventDefault();
-        
-        const loader = document.createElement('div');
-        loader.className = 'position-absolute top-0 start-0 w-100 h-100 bg-white bg-opacity-50 d-flex justify-content-center align-items-center';
-        loader.innerHTML = '<div class="spinner-border text-primary"></div>';
-        projectList.parentElement.style.position = 'relative';
-        projectList.parentElement.prepend(loader);
+    const showLoader = () => {
+        safeUpdateElement(TABLE_BODY_ID, `
+            <tr>
+                <td colspan="5" class="text-center py-4">
+                    <div class="spinner-border text-primary"></div>
+                    <p class="mt-2 text-muted">Chargement des résultats...</p>
+                </td>
+            </tr>
+        `);
+    };
 
-        try {
-            const formData = new FormData(filterForm);
-            
-            // Ajout des paramètres manquants
-            const params = new URLSearchParams();
-            for (const [key, value] of formData) {
-                params.append(key, value);
-            }
+    // Gestion des suppressions
+    const initDeleteHandlers = () => {
+        document.querySelectorAll('.delete-project').forEach(button => {
+            button.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const form = button.closest('form');
+                const { id: projectId, name: projectName } = button.dataset;
 
-            const response = await fetch(searchUrl, {
-                method: 'POST',
-                body: params,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                try {
+                    const { isConfirmed } = await Swal.fire({
+                        title: 'Confirmer la suppression',
+                        html: `Êtes-vous sûr de vouloir supprimer <b>${projectName}</b> ?`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc3545',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Oui, supprimer',
+                        cancelButtonText: 'Annuler'
+                    });
+
+                    if (!isConfirmed) return;
+
+                    Swal.fire({
+                        title: 'Suppression en cours...',
+                        html: `
+                            <div class="text-center">
+                                <div class="spinner-border text-danger"></div>
+                                <p class="mt-2 text-muted">Suppression de "${projectName}"</p>
+                            </div>
+                        `,
+                        allowOutsideClick: false,
+                        showConfirmButton: false
+                    });
+
+                    const response = await fetch(form.action, {
+                        method: 'POST',
+                        body: new FormData(form),
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+
+                    if (!response.ok) throw new Error('Erreur lors de la suppression');
+                    
+                    const data = await response.json();
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Succès !',
+                        text: data.message,
+                        showConfirmButton: false,
+                        timer: 1500
+                    }).then(() => window.location.reload());
+
+                } catch (error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Échec de la suppression',
+                        html: `
+                            <div class="text-start">
+                                <p class="mb-2">${error.message}</p>
+                                <small class="text-muted">Code: ${error.status || 'N/A'}</small>
+                            </div>
+                        `,
+                        confirmButtonText: 'OK'
+                    });
                 }
             });
+        });
+    };
+
+    // Gestion du filtrage
+    const handleFilterUpdate = debounce(async () => {
+        try {
+            showLoader();
             
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const form = document.getElementById('filter-form');
+            const formData = new FormData(form);
+            const params = new URLSearchParams(formData);
+            params.append('ajax', 1);
+
+            const response = await fetch(`${form.dataset.searchUrl}?${params}`, {
+                headers: { 
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'text/html'
+                }
+            });
+
+            if (!response.ok) throw new Error(`Erreur ${response.status}: ${response.statusText}`);
             
             const html = await response.text();
-            projectList.innerHTML = html;
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
             
+            // Mise à jour du tableau
+            const newBody = doc.getElementById(TABLE_BODY_ID);
+            if (!newBody) throw new Error('Réponse serveur invalide');
+            safeUpdateElement(TABLE_BODY_ID, newBody.innerHTML);
+
+            // Mise à jour de la pagination
+            const newPagination = doc.getElementById(PAGINATION_ID);
+            const currentPagination = document.getElementById(PAGINATION_ID);
+            
+            if (newPagination) {
+                currentPagination 
+                    ? currentPagination.innerHTML = newPagination.innerHTML
+                    : document.getElementById('project-table-container').insertAdjacentElement('beforeend', newPagination);
+            } else if (currentPagination) {
+                currentPagination.remove();
+            }
+
+            initDeleteHandlers();
+
         } catch (error) {
             console.error('Erreur:', error);
-            projectList.innerHTML = `
-                <div class="col-12">
-                    <div class="alert alert-danger">Erreur de filtrage : ${error.message}</div>
-                </div>
-            `;
-        } finally {
-            loader.remove();
+            safeUpdateElement(TABLE_BODY_ID, `
+                <tr>
+                    <td colspan="5" class="text-center text-danger py-4">
+                        ${error.message}
+                    </td>
+                </tr>
+            `);
         }
-    }
+    }, DEBOUNCE_DELAY);
+
+    const initFilterHandler = () => {
+        const form = document.getElementById('filter-form');
+        if (!form) return;
+
+        form.querySelectorAll('input, select').forEach(element => {
+            element.addEventListener('input', handleFilterUpdate);
+            element.addEventListener('change', handleFilterUpdate);
+        });
+    };
+
+    // Initialisation
+    const init = () => {
+        initDeleteHandlers();
+        initFilterHandler();
+    };
+
+    init();
 });
 </script>
 {% endblock %}

@@ -14,71 +14,9 @@
                 <h4 class="header-title">Formulaire de modification de projet</h4>
                 <p class="sub-header">Tous les champs marqués d'une astérisque (*) sont obligatoires</p>
 
-                {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate', 'data-parsley-validate': ''}}) }}
-
-                <div class="alert alert-warning d-none fade show">
-                    <h4 class="mt-0 text-warning">Erreur !</h4>
-                    <p class="mb-0">Veuillez corriger les erreurs dans le formulaire</p>
+                <div id="form-container">
+                    {{ include('gs-projet/project/_form.html.twig') }}
                 </div>
-
-                <div class="mb-3">
-                    {{ form_label(form.nom, null, {'label_attr': {'class': 'form-label'}}) }}
-                    {{ form_widget(form.nom, {
-                        'attr': {
-                            'class': 'form-control',
-                            'placeholder': 'Nom du projet*',
-                            'required': 'required',
-                            'data-parsley-trigger': 'change'
-                        }
-                    }) }}
-                    <div class="invalid-feedback">
-                        {{ form_errors(form.nom)|striptags }}
-                    </div>
-                </div>
-
-                <div class="mb-3">
-                    {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
-                    {{ form_widget(form.description, {
-                        'attr': {
-                            'class': 'form-control',
-                            'rows': 5,
-                            'placeholder': 'Description détaillée du projet*',
-                            'required': 'required',
-                            'data-parsley-minlength': '20',
-                            'data-parsley-maxlength': '500'
-                        }
-                    }) }}
-                    <div class="invalid-feedback">
-                        {{ form_errors(form.description)|striptags }}
-                    </div>
-                </div>
-
-                <div class="mb-3">
-                    {{ form_label(form.status, null, {'label_attr': {'class': 'form-label'}}) }}
-                    {{ form_widget(form.status, {
-                        'attr': {
-                            'class': 'form-select',
-                            'required': 'required',
-                            'data-parsley-errors-container': '#status-errors'
-                        }
-                    }) }}
-                    <div id="status-errors" class="invalid-feedback">
-                        {{ form_errors(form.status)|striptags }}
-                    </div>
-                </div>
-
-                <div class="d-flex justify-content-end gap-2">
-                    <button type="submit" class="btn btn-success">
-                        <i class="ri-save-line me-1"></i>
-                        Enregistrer1
-                    </button>
-                    <a href="{{ path('gs-projet_project_index') }}" class="btn btn-secondary">
-                        <i class="ri-arrow-left-line me-1"></i>
-                        Retour
-                    </a>
-                </div>
-
-                {{ form_end(form) }}
             </div>
         </div>
     </div>
@@ -88,20 +26,97 @@
 {% block javascript %}
     {{ parent() }}
     <!-- Libs Parsley -->
-    <script src="/libs/parsleyjs/parsley.min.js"></script>
-    <script src="/libs/parsleyjs/i18n/fr.js"></script>
+    <script src="{{ asset('/libs/parsleyjs/parsley.min.js') }}"></script>
+    <script src="{{ asset('/libs/parsleyjs/i18n/fr.js') }}"></script>
+    <!-- SweetAlert2 JS -->
+    <script src="{{ asset('/libs/sweetalert2/sweetalert2.all.min.js') }}"></script>
     
-    <!-- Configuration personnalisée -->
     <script>
-        $(document).ready(function() {
-            $('#project_form').parsley({
-                errorClass: 'is-invalid',
-                successClass: 'is-valid',
-                errorsWrapper: '<div class="invalid-feedback"></div>',
-                errorTemplate: '<span></span>'
-            });
+        document.addEventListener('DOMContentLoaded', function() {
+            const formContainer = document.getElementById('form-container');
             
-            window.Parsley.setLocale('fr');
+            const initForm = () => {
+                const form = document.getElementById('editProjectForm');
+                if (!form) return;
+
+                // Configuration Parsley
+                window.Parsley.setLocale('fr');
+                
+                window.Parsley.options = {
+                    errorClass: 'is-invalid',
+                    successClass: 'is-valid',
+                    errorsWrapper: '<div class="invalid-feedback"></div>',
+                    errorTemplate: '<span></span>',
+                    trigger: 'change'
+                };
+
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const parsley = $(form).parsley();
+                    
+                    if (!parsley.validate()) {
+                        return;
+                    }
+
+                    Swal.fire({
+                        title: 'Mise à jour en cours...',
+                        allowOutsideClick: false,
+                        didOpen: () => Swal.showLoading()
+                    });
+
+                    const formData = new FormData(form);
+
+                    fetch(form.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(async response => {
+                        const contentType = response.headers.get('content-type');
+                        
+                        if (contentType && contentType.includes('application/json')) {
+                            return response.json();
+                        }
+                        
+                        const text = await response.text();
+                        throw new Error(`Réponse inattendue : ${text.substring(0, 100)}...`);
+                    })
+                    .then(data => {
+                        if (data.status === 'success') {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Succès !',
+                                text: data.message,
+                                showConfirmButton: false,
+                                timer: 1500
+                            }).then(() => {
+                                window.location.href = "{{ path('gs-projet_project_index') }}";
+                            });
+                        } 
+                        else if (data.status === 'form_error') {
+                            Swal.close();
+                            formContainer.innerHTML = data.formHtml;
+                            initForm();
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }
+                        else {
+                            throw new Error(data.message || 'Erreur inconnue');
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Erreur',
+                            html: `<small>${error.message}</small>`,
+                            scrollbarPadding: false
+                        });
+                    });
+                });
+            };
+
+            initForm();
         });
     </script>
 {% endblock %}

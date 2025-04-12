@@ -12,17 +12,30 @@
 {% endblock %}
 
 {% block topbar %}
-    {{ include('partials/topbar.html.twig', { 
+    {{ include('partials/topbar.html.twig', {
         page_title: 'Détails mission',
         breadcrumb: [
             { label: 'Projets', path: path('gs-projet_project_index') },
-            { label: project.nom, path: path('gs-projet_project_app_project_missions', {id: project.id}) },
+            { label: project.nom, path: path('gs-projet_project_mission_show', {id: project.id}) },
             { label: mission.titre }
         ]
     }) }}
 {% endblock %}
 
 {% block body %}
+<div class="row">
+    <div class="col-md-12">
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endfor %}
+    </div>
+</div>
+
 <div class="row">
     <div class="col-md-8">
         <div class="card">
@@ -32,12 +45,12 @@
                         <i class="mdi mdi-dots-vertical"></i>
                     </a>
                     <div class="dropdown-menu dropdown-menu-end">
-                        <a href="{{ path('gs-projet_project_app_missions_edit', {'id': mission.id}) }}" class="dropdown-item">
+                        <a href="{{ path('gs-projet_project_mission_edit', {'id': mission.id}) }}" class="dropdown-item">
                             <i class="ri-edit-line me-1"></i>Modifier
                         </a>
-                        <form method="POST" action="{{ path('gs-projet_project_app_missions_delete', {'id': mission.id}) }}">
+                        <form method="post" action="{{ path('gs-projet_project_mission_delete', {'id': mission.id}) }}" class="d-inline">
                             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ mission.id) }}">
-                            <button type="submit" class="dropdown-item text-danger">
+                            <button type="button" class="dropdown-item text-danger delete-mission" data-name="{{ mission.titre }}">
                                 <i class="ri-delete-bin-line me-1"></i>Supprimer
                             </button>
                         </form>
@@ -80,49 +93,35 @@
                     <h5>Assigné à</h5>
                     <div class="d-flex align-items-center">
                         {% if mission.assignedTo %}
-                        <div class="avatar me-3">
-                            <span class="avatar-title rounded-circle bg-soft-primary text-primary">
-                                {{ mission.assignedTo.nom|first|upper }}
-                            </span>
-                        </div>
-                        <div>
-                            <h6 class="mb-0">{{ mission.assignedTo.nom }}</h6>
-                            <small class="text-muted">{{ mission.assignedTo.poste|default('Non spécifié') }}</small>
-                        </div>
+                            <div class="avatar me-3">
+                                <span class="avatar-title rounded-circle bg-soft-primary text-primary">
+                                    {{ mission.assignedTo.nom|first|upper }}
+                                </span>
+                            </div>
+                            <div>
+                                <h6 class="mb-0">{{ mission.assignedTo.nom }}</h6>
+                                <small class="text-muted">{{ mission.assignedTo.poste|default('Non spécifié') }}</small>
+                            </div>
                         {% else %}
-                        <span class="text-muted">Non assigné</span>
+                            <span class="text-muted">Non assigné</span>
                         {% endif %}
                     </div>
                 </div>
 
-                <div class="attached-files mt-4">
-                    <h5>Fichiers joints</h5>
-                    <ul class="list-inline files-list">
-                        <li class="list-inline-item file-box">
-                            <div class="alert alert-info mb-0">
-                                Aucun fichier joint pour le moment
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-
                 <div class="row mt-4">
-                    <div class="col-sm-12">
-                        <div class="text-end">
-                            <a href="{{ path('gs-projet_project_app_missions_edit', {'id': mission.id}) }}" 
-                               class="btn btn-warning waves-effect waves-light me-1">
-                                <i class="ri-edit-line me-2"></i>Modifier
-                            </a>
-                            <form method="POST" class="d-inline" 
-                                  action="{{ path('gs-projet_project_app_missions_delete', {'id': mission.id}) }}">
-                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ mission.id) }}">
-                                <button type="submit" class="btn btn-danger waves-effect waves-light">
-                                    <i class="ri-delete-bin-line me-2"></i>Supprimer
-                                </button>
-                            </form>
-                        </div>
+                    <div class="col-sm-12 text-end">
+                        <a href="{{ path('gs-projet_project_mission_edit', {'id': mission.id}) }}" class="btn btn-warning me-2">
+                            <i class="ri-edit-line me-1"></i> Modifier
+                        </a>
+                        <form method="post" action="{{ path('gs-projet_project_mission_delete', {'id': mission.id}) }}" class="d-inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ mission.id) }}">
+                            <button type="button" class="btn btn-danger delete-mission" data-name="{{ mission.titre }}">
+                                <i class="ri-delete-bin-line me-1"></i> Supprimer
+                            </button>
+                        </form>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
@@ -137,12 +136,12 @@
                         <p>{{ mission.updatedAt|date('d/m/Y H:i') }}</p>
                     </div>
                     {% if mission.dateTerminer %}
-                    <div class="mb-3">
-                        <h5 class="font-600 m-b-5">Jours restants</h5>
-                        <p class="text-{{ date() < mission.dateTerminer ? 'success' : 'danger' }}">
-                            {{ (mission.dateTerminer.diff(date('now')).days) }} jours
-                        </p>
-                    </div>
+                        <div class="mb-3">
+                            <h5 class="font-600 m-b-5">Jours restants</h5>
+                            <p class="text-{{ date() < mission.dateTerminer ? 'success' : 'danger' }}">
+                                {{ mission.dateTerminer.diff(date('now')).days }} jours
+                            </p>
+                        </div>
                     {% endif %}
                 </div>
             </div>
@@ -158,10 +157,49 @@
     <script src="/libs/multiselect/js/jquery.multi-select.js"></script>
     <script src="/libs/select2/js/select2.min.js"></script>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        $(document).ready(function() {
-            $('.select2').select2();
-            $('[data-toggle="tagsinput"]').tagsinput();
+        document.addEventListener('DOMContentLoaded', function () {
+            // Gestion des notifications
+            {% for label, messages in app.flashes %}
+                {% for message in messages %}
+                    Swal.fire({
+                        icon: '{{ label == 'success' ? 'success' : (label == 'error' ? 'error' : 'info') }}',
+                        title: '{{ message|e('js') }}',
+                        showConfirmButton: false,
+                        timer: 2500
+                    });
+                {% endfor %}
+            {% endfor %}
+
+            // Gestion de la suppression des missions
+            document.querySelectorAll('.delete-mission').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const form = this.closest('form');
+                    const missionName = this.dataset.name;
+
+                    Swal.fire({
+                        title: 'Confirmer la suppression',
+                        html: `Êtes-vous sûr de vouloir supprimer <strong>"${missionName}"</strong> ?<br>Cette action est irréversible.`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Oui, supprimer',
+                        cancelButtonText: 'Annuler',
+                        customClass: {
+                            confirmButton: 'btn btn-danger me-2',
+                            cancelButton: 'btn btn-secondary'
+                        },
+                        buttonsStyling: false
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+                });
+            });
         });
     </script>
 {% endblock %}

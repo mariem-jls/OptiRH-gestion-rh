@@ -1,14 +1,14 @@
 {% extends 'partials/layout-vertical.html.twig' %}
 
-{% block title %}Nouvelle Mission - {{ project.nom }}{% endblock %}
+{% block title %}Nouvelle mission{% endblock %}
 
 {% block topbar %}
     {{ include('partials/topbar.html.twig', {
-        page_title: 'Créer une mission',
+        page_title: 'Créer une nouvelle mission',
         breadcrumb: [
             { label: 'Projets', path: path('gs-projet_project_index') },
-            { label: project.nom, path: path('gs-projet_project_app_project_missions', {id: project.id}) },
-            { label: 'Nouvelle Mission' }
+            { label: 'Missions', path: path('gs-projet_project_missions_index', {'id': project.id}) },
+            { label: 'Créer' }
         ]
     }) }}
 {% endblock %}
@@ -18,74 +18,100 @@
     <div class="col-12">
         <div class="card">
             <div class="card-body">
-                <h4 class="header-title">Création d'une nouvelle mission</h4>
-                <p class="text-muted">Remplissez les champs pour créer une nouvelle mission dans le projet <strong>{{ project.nom }}</strong></p>
+                <h4 class="header-title">Formulaire de création</h4>
+                <p class="sub-header">Tous les champs marqués d'une astérisque (*) sont obligatoires</p>
 
-                {{ form_start(form) }}
-                    <div class="row g-3">
-                        <div class="col-md-12">
-                            {{ form_row(form.titre, {
-                                label: 'Titre de la mission',
-                                attr: { class: 'form-control' }
-                            }) }}
-                        </div>
-
-                        <div class="col-md-12">
-                            {{ form_row(form.description, {
-                                attr: { 
-                                    class: 'form-control',
-                                    rows: 3
-                                }
-                            }) }}
-                        </div>
-
-                        <div class="col-md-6">
-                            {{ form_row(form.status, {
-                                label: 'Statut',
-                                attr: { class: 'form-select' }
-                            }) }}
-                        </div>
-
-                        <div class="col-md-6">
-                            {{ form_row(form.assignedTo, {
-                                label: 'Assigné à',
-                                attr: { class: 'form-select' }
-                            }) }}
-                        </div>
-
-                        <div class="col-md-6">
-                            {{ form_row(form.dateTerminer, {
-                                label: 'Date de fin prévue',
-                                attr: { class: 'form-control flatpickr' }
-                            }) }}
-                        </div>
-                    </div>
-
-                    <div class="mt-4">
-                        <button type="submit" class="btn btn-primary waves-effect waves-light">
-                            <i class="ri-save-line me-2"></i>Créer la mission
-                        </button>
-                        
-                        <a href="{{ path('gs-projet_project_app_project_missions', {id: project.id}) }}" class="btn btn-light">
-                            <i class="ri-arrow-left-line me-2"></i>Annuler
-                        </a>
-                    </div>
-                {{ form_end(form) }}
+                {{ include('gs-projet/project/_formMiss.html.twig', {form: form, project: project}) }}
             </div>
         </div>
     </div>
 </div>
 {% endblock %}
 
-{% block javascripts %}
-{{ parent() }}
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        flatpickr('.flatpickr', {
-            dateFormat: "d/m/Y",
-            locale: "fr"
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="/libs/flatpickr/flatpickr.min.css">
+    <!-- Ajout de Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block javascript %}
+    {{ parent() }}
+    <script src="/libs/parsleyjs/parsley.min.js"></script>
+    <script src="/libs/parsleyjs/i18n/fr.js"></script>
+    <script src="/libs/flatpickr/flatpickr.min.js"></script>
+    <script src="/libs/flatpickr/l10n/fr.js"></script>
+    <!-- Ajout de Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/i18n/fr.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        $(document).ready(function () {
+            // Configuration Flatpickr
+            flatpickr('.flatpickr', {
+                dateFormat: 'd/m/Y',
+                locale: 'fr',
+                allowInput: true,
+                minDate: 'today'
+            });
+
+            // Configuration Select2 pour le champ assignedTo
+            $('#assigned-to-select').select2({
+                theme: 'bootstrap-5',
+                placeholder: 'Sélectionnez un utilisateur',
+                allowClear: true,
+                language: 'fr',
+                matcher: function(params, data) {
+                    // Affiche tous les résultats si la recherche est vide
+                    if ($.trim(params.term) === '') {
+                        return data;
+                    }
+                    
+                    // Vérifie si le texte commence par la recherche (case insensitive)
+                    if (data.text.toUpperCase().indexOf(params.term.toUpperCase()) === 0) {
+                        return data;
+                    }
+                    
+                    return null;
+                }
+            });
+
+            // Configuration Parsley
+            window.Parsley.addValidator('dateAfter', {
+                validateString: function (value) {
+                    const parts = value.split('/');
+                    const selectedDate = new Date(parts[2], parts[1] - 1, parts[0]);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    return selectedDate > today;
+                },
+                messages: {
+                    fr: "La date doit être postérieure à aujourd'hui"
+                }
+            });
+
+            $('form').parsley({
+                errorClass: 'is-invalid',
+                successClass: 'is-valid',
+                errorsWrapper: '<div class="invalid-feedback"></div>',
+                errorTemplate: '<span></span>'
+            });
+
+            window.Parsley.setLocale('fr');
+
+            // Gestion des alertes SweetAlert
+            {% if showSuccessAlert %}
+                Swal.fire({
+                    title: 'Mission créée avec succès',
+                    text: 'La mission a été ajoutée au projet.',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = "{{ path('gs-projet_project_show', {'id': project.id}) }}";
+                });
+            {% endif %}
         });
-    });
-</script>
+    </script>
 {% endblock %}

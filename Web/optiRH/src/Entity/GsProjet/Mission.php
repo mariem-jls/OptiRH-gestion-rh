@@ -31,15 +31,19 @@ class Mission
     #[ORM\JoinColumn(nullable: false)]
     private ?Project $project = null;
     #[ORM\ManyToOne(inversedBy: 'missions')]
-    #[ORM\JoinColumn(name: 'assigned_to', referencedColumnName: 'id', nullable: true)]
-    private ?User $assignedTo = null;
+    
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $createdAt = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $updatedAt = null;
-
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'created_by_id', referencedColumnName: 'id')]
+    private ?User $createdBy = null;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'assigned_to', referencedColumnName: 'id')]
+    private ?User $assignedTo = null;
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $dateTerminer = null;
 

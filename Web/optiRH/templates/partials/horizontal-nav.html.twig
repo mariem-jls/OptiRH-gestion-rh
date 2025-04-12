@@ -28,7 +28,8 @@
 <li class="nav-item dropdown">
                    
 
-                        <a class="nav-link arrow-none"href="{{ path('gs-projet_project_app_missions_index') }}" id="topnav-dashboard" role="button"
+                        <a class="nav-link arrow-none"href="{{ path('gs-projet_project_missions_index', { id: app.user.id }) }}" 
+   class="{{ app.request.attributes.get('_route') starts with 'gs-projet_project_missions_index' ? 'active' : '' }}" id="topnav-dashboard" role="button"
                             aria-haspopup="true" aria-expanded="false">
                             <i class="mdi mdi-view-dashboard me-1"></i> Mission
                         </a>

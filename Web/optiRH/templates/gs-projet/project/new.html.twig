@@ -6,6 +6,12 @@
     {{ include('partials/topbar.html.twig', { page_title: 'Ajouter un projet' }) }}
 {% endblock %}
 
+{% block css %}
+    {{ parent() }}
+    <!-- SweetAlert2 CSS -->
+    <link href="{{ asset('/libs/sweetalert2/sweetalert2.min.css') }}" rel="stylesheet">
+{% endblock %}
+
 {% block body %}
 <div class="row">
     <div class="col-12">
@@ -14,7 +20,14 @@
                 <h4 class="header-title">Formulaire de création de projet</h4>
                 <p class="sub-header">Tous les champs marqués d'une astérisque (*) sont obligatoires</p>
 
-                {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate', 'data-parsley-validate': ''}}) }}
+                {{ form_start(form, {
+                    'attr': {
+                        'class': 'needs-validation', 
+                        'novalidate': 'novalidate',
+                        'data-parsley-validate': '',
+                        'id': 'projectForm'
+                    }
+                }) }}
 
                 <div class="alert alert-warning d-none fade show">
                     <h4 class="mt-0 text-warning">Erreur !</h4>
@@ -68,10 +81,9 @@
                 </div>
 
                 <div class="d-flex justify-content-end gap-2">
-                    <button type="submit" class="btn btn-success">
+                    <button type="submit" class="btn btn-success" id="submitBtn">
                         <i class="ri-save-line me-1"></i>
-                        {{ form_label(form.submit) }}
-                        Enregistrer1
+                        Enregistrer
                     </button>
                     <a href="{{ path('gs-projet_project_index') }}" class="btn btn-secondary">
                         <i class="ri-arrow-left-line me-1"></i>
@@ -89,20 +101,92 @@
 {% block javascript %}
     {{ parent() }}
     <!-- Libs Parsley -->
-    <script src="/libs/parsleyjs/parsley.min.js"></script>
-    <script src="/libs/parsleyjs/i18n/fr.js"></script>
+    <script src="{{ asset('/libs/parsleyjs/parsley.min.js') }}"></script>
+    <script src="{{ asset('/libs/parsleyjs/i18n/fr.js') }}"></script>
+    <!-- SweetAlert2 JS -->
+    <script src="{{ asset('/libs/sweetalert2/sweetalert2.all.min.js') }}"></script>
     
-    <!-- Configuration personnalisée -->
     <script>
-        $(document).ready(function() {
-            $('#project_form').parsley({
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('projectForm');
+            const submitBtn = document.getElementById('submitBtn');
+
+            // Configuration Parsley
+            window.Parsley.setLocale('fr');
+            
+            // Configuration globale Parsley
+            window.Parsley.options = {
                 errorClass: 'is-invalid',
                 successClass: 'is-valid',
                 errorsWrapper: '<div class="invalid-feedback"></div>',
-                errorTemplate: '<span></span>'
+                errorTemplate: '<span></span>',
+                trigger: 'change'
+            };
+
+            // Gestion de la soumission
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                // Validation Parsley
+                const parsley = $(form).parsley();
+                
+                if (!parsley.validate()) {
+                    return;
+                }
+
+                // Afficher le loader
+                Swal.fire({
+                    title: 'Enregistrement en cours...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Création FormData
+                const formData = new FormData(form);
+
+                // Soumission AJAX
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.text();
+                    }
+                    throw new Error('Erreur réseau');
+                })
+                .then(() => {
+                    // Succès
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Succès !',
+                        text: 'Projet enregistré avec succès',
+                        showConfirmButton: false,
+                        timer: 1500
+                    }).then(() => {
+                        window.location.href = "{{ path('gs-projet_project_index') }}";
+                    });
+                })
+                .catch(error => {
+                    // Erreur
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erreur',
+                        text: error.message || 'Échec de l\'enregistrement'
+                    });
+                });
             });
-            
-            window.Parsley.setLocale('fr');
+
+            // Gestion de la fermeture de page avec formulaire modifié
+            window.addEventListener('beforeunload', function(e) {
+                if (form.checkValidity()) {
+                    return undefined;
+                }
+                e.preventDefault();
+                e.returnValue = '';
+            });
         });
     </script>
 {% endblock %}

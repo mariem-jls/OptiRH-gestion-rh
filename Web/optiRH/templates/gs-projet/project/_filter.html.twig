@@ -1,0 +1,33 @@
+{{ form_start(filterForm, {
+    'attr': {
+        'class': 'd-flex gap-3',
+        'data-turbo-frame': 'projects-list'
+    }
+}) }}
+    <div class="input-group" style="width: 300px;">
+        {{ form_widget(filterForm.search, {
+            'attr': {
+                'class': 'form-control',
+                'placeholder': 'Rechercher...'
+            }
+        }) }}
+    </div>
+    
+    {{ form_widget(filterForm.status, {
+        'attr': {
+            'class': 'form-select',
+            'style': 'width: 150px;'
+        }
+    }) }}
+    
+    {{ form_widget(filterForm.sort, {
+        'attr': {
+            'class': 'form-select',
+            'style': 'width: 150px;'
+        }
+    }) }}
+
+    <button type="submit" class="btn btn-outline-primary">
+        <i class="ri-filter-line"></i>
+    </button>
+{{ form_end(filterForm) }}
