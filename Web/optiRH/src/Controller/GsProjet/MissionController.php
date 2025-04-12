@@ -5,7 +5,10 @@ namespace App\Controller\GsProjet;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\GsProjet\Mission;
 use App\Entity\GsProjet\Project;
+use App\Entity\User;
+
 use App\Form\GsProjet\MissionType;
+use App\Repository\UserRepository;
 use App\Repository\GsProjet\MissionRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
@@ -17,15 +20,83 @@ use Symfony\Component\Routing\Annotation\Route;
 class MissionController extends AbstractController
 {
     #[Route('/{id}/missions', name: 'missions_index', methods: ['GET'])]
-    public function index(Project $project, MissionRepository $missionRepository): Response
+    public function index(User $user, MissionRepository $missionRepository): Response
     {
-        $user = $this->getUser();
-        $missions = $missionRepository->findByProjectAndUser($project, $user);
-
+        // Vérification de l'existence de l'utilisateur
+        if (!$user) {
+            throw $this->createNotFoundException('Utilisateur non trouvé');
+        }
+    
+        // Récupération des missions avec jointure
+        $missions = $missionRepository->createQueryBuilder('m')
+            ->leftJoin('m.assignedTo', 'u')
+            ->addSelect('u')
+            ->where('u.id = :userId')
+            ->setParameter('userId', $user->getId())
+            ->getQuery()
+            ->getResult();
+    
+        // Formatage des données
+        $formattedMissions = [];
+        foreach ($missions as $mission) {
+            $endDate = $mission->getDateTerminer();
+            if (!$endDate) continue;
+    
+            $formattedMissions[] = [
+                'id' => $mission->getId(),
+                'title' => $mission->getTitre() ?? 'Sans titre',
+                'start' => $endDate->format('Y-m-d'),
+                'allDay' => true,
+                'statut' => $mission->getStatus() ?? 'To Do',
+                'description' => $mission->getDescription() ?? 'Aucune description'
+            ];
+        }
+    
         return $this->render('gs-projet/project/indexMission.html.twig', [
-            'project' => $project,
-            'missions' => $missions
+            'missions' => $formattedMissions,
+            'user' => $user
         ]);
+    }
+    
+    #[Route('/missions/{id}/update-status', name: 'missions_update_status', methods: ['POST'])]
+    public function updateStatus(Request $request, Mission $mission, EntityManagerInterface $em): Response
+    {
+        // Récupération des données JSON
+        $data = json_decode($request->getContent(), true);
+        
+        // Vérification CSRF
+        if (!$this->isCsrfTokenValid('mission_status', $data['_token'] ?? '')) {
+            return $this->json(['error' => 'Token CSRF invalide'], 403);
+        }
+    
+        // Validation du statut
+        $allowedStatuses = ['To Do', 'In Progress', 'Done'];
+        if (!in_array($data['status'] ?? null, $allowedStatuses)) {
+            return $this->json(['error' => 'Statut invalide'], 400);
+        }
+    
+        try {
+            // Mise à jour et sauvegarde
+            $mission->setStatus($data['status']);
+            $em->flush();
+    
+            return $this->json([
+                'success' => true,
+                'newStatus' => $mission->getStatus(),
+                'newColor' => $this->getStatusColor($mission->getStatus())
+            ]);
+        } catch (\Exception $e) {
+            return $this->json(['error' => 'Erreur de base de données : ' . $e->getMessage()], 500);
+        }
+    }
+    
+    private function getStatusColor(string $status): string
+    {
+        return match($status) {
+            'Done' => '#28a745',
+            'In Progress' => '#ffc107',
+            default => '#dc3545'
+        };
     }
     #[Route('/{id}/missions/new', name: 'mission_new', methods: ['GET', 'POST'])]
     public function new(Request $request, Project $project, EntityManagerInterface $em): Response
@@ -109,18 +180,7 @@ class MissionController extends AbstractController
         ]);
     }
 
-    #[Route('/mission/{id}/status', name: 'mission_update_status', methods: ['POST'])]
-    public function updateStatus(Request $request, Mission $mission, EntityManagerInterface $em): Response
-    {
-        $newStatus = $request->request->get('status');
-        
-        if (in_array($newStatus, ['To Do', 'In Progress', 'Done'])) {
-            $mission->setStatus($newStatus);
-            $em->flush();
-        }
-
-        return $this->json(['status' => 'success']);
-    }
+   
     #[Route('/mission/{id}/delete', name: 'mission_delete', methods: ['POST'])]
     public function delete(Request $request, Mission $mission, EntityManagerInterface $em): Response
     {

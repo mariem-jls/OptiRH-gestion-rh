@@ -141,6 +141,12 @@
                         <span> Réclamation </span>
                     </a>
 <!-- Projets -->
+<a href="{{ path('gs-projet_project_missions_index', { id: app.user.id }) }}" 
+   class="{{ app.request.attributes.get('_route') starts with 'gs-projet_project_missions_index' ? 'active' : '' }}">
+    <i class="mdi mdi-briefcase-variant-outline"></i>
+    <span>Mission</span>
+</a>
+
 <li>
     <a href="{{ path('gs-projet_project_index') }}" 
        class="{{ app.request.attributes.get('_route') starts with 'gs-projet_project_' ? 'active' : '' }}">
@@ -148,7 +154,6 @@
         <span>Projets</span>
     </a>
 </li>
-
 
  <li>
     <a href="{{ path('app_transport_trajet_index') }}">

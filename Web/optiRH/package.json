@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "@fullcalendar/core": "^6.1.17",
+    "@fullcalendar/daygrid": "^6.1.17",
     "@ttskch/select2-bootstrap4-theme": "^1.5.2",
     "select2": "^4.1.0-rc.0"
   }
