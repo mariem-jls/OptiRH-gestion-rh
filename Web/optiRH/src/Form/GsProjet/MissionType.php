@@ -12,6 +12,8 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
+
 
 class MissionType extends AbstractType
 {
@@ -38,11 +40,17 @@ class MissionType extends AbstractType
                 'required' => false,
                 'placeholder' => 'Non assigné'
             ])
-            ->add('dateTerminer', null, [
+            ->add('dateTerminer', DateType::class, [
                 'widget' => 'single_text',
                 'required' => false,
-                'label' => 'Date de fin prévue'
-            ]);
+                'label' => 'Date de fin prévue',
+                'html5' => false,
+                'format' => 'dd/MM/yyyy',
+                'attr' => [
+                    'class' => 'form-control flatpickr',
+                    'placeholder' => 'Date limite*'
+                ]
+                ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void

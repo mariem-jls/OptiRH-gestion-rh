@@ -26,12 +26,18 @@ class Project
     #[ORM\Column(type: 'datetime')]
     private ?\DateTimeInterface $createdAt = null;
 
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'projects')]
-    #[ORM\JoinColumn(name: 'created_by_id', referencedColumnName: 'id', nullable: false)]
-    private ?User $createdBy = null;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: "created_by_id", referencedColumnName: "id", nullable: false)]
+    private User $createdBy;
 
     #[ORM\OneToMany(mappedBy: 'project', targetEntity: Mission::class)]
     private Collection $missions;
+    public const STATUS_ACTIVE = 'Actif';
+public const STATUS_INACTIVE = 'Inactif';
+public const STATUS_COMPLETED = 'Terminé';
+public const STATUS_DELAYED = 'En retard';
+
+
 
     #[ORM\Column(type: 'string', length: 20, nullable: true)]
     private ?string $status = null;
@@ -117,11 +123,44 @@ class Project
         return $this;
     }
 
-    public function getStatus(): ?string
+    public function getStatus(): string
     {
+        if ($this->status === null) {
+            $this->updateStatus();
+        }
         return $this->status;
     }
-
+    
+    public function updateStatus(): void
+    {
+        $now = new \DateTime();
+        $status = 'Actif';
+    
+        if ($this->missions->count() === 0) {
+            $status = 'Inactif';
+        } else {
+            $allDone = true;
+            $hasOverdue = false;
+    
+            foreach ($this->missions as $mission) {
+                if ($mission->getStatus() !== 'Done') {
+                    $allDone = false;
+                }
+                if ($mission->getDateTerminer() < $now && $mission->getStatus() !== 'Done') {
+                    $hasOverdue = true;
+                    break;
+                }
+            }
+    
+            if ($hasOverdue) {
+                $status = 'En retard';
+            } elseif ($allDone) {
+                $status = 'Terminé';
+            }
+        }
+    
+        $this->status = $status;
+    }
     public function setStatus(?string $status): static
     {
         $this->status = $status;
@@ -142,4 +181,16 @@ class Project
 
         return (int) round(($completedMissions / $totalMissions) * 100);
     }
+   
+
+    public static function getStatusChoices(): array
+    {
+        return [
+            'Actif' => self::STATUS_ACTIVE,
+            'Inactif' => self::STATUS_INACTIVE,
+            'Terminé' => self::STATUS_COMPLETED,
+            'En retard' => self::STATUS_DELAYED,
+        ];
+    }
+    
 }

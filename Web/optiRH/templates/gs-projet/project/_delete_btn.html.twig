@@ -1,0 +1,7 @@
+<button class="btn btn-sm btn-danger delete-project"
+        data-id="{{ project.id }}"
+        data-name="{{ project.nom }}"
+        data-token="{{ csrf_token('delete' ~ project.id) }}"
+        data-url="{{ path('gs-projet_project_delete', {'id': project.id}) }}">
+    <i class="ri-delete-bin-line"></i>
+</button>

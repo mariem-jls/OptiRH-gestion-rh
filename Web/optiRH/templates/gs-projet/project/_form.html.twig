@@ -1,0 +1,72 @@
+{{ form_start(form, {
+    'attr': {
+        'class': 'needs-validation',
+        'novalidate': 'novalidate',
+        'data-parsley-validate': '',
+        'id': 'editProjectForm'
+    }
+}) }}
+
+<div class="alert alert-warning d-none fade show">
+    <h4 class="mt-0 text-warning">Erreur !</h4>
+    <p class="mb-0">Veuillez corriger les erreurs dans le formulaire</p>
+</div>
+
+<div class="mb-3">
+    {{ form_label(form.nom, null, {'label_attr': {'class': 'form-label'}}) }}
+    {{ form_widget(form.nom, {
+        'attr': {
+            'class': 'form-control',
+            'placeholder': 'Nom du projet*',
+            'required': 'required',
+            'data-parsley-trigger': 'change'
+        }
+    }) }}
+    <div class="invalid-feedback">
+        {{ form_errors(form.nom)|striptags }}
+    </div>
+</div>
+
+<div class="mb-3">
+    {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
+    {{ form_widget(form.description, {
+        'attr': {
+            'class': 'form-control',
+            'rows': 5,
+            'placeholder': 'Description détaillée du projet*',
+            'required': 'required',
+            'data-parsley-minlength': '20',
+            'data-parsley-maxlength': '500'
+        }
+    }) }}
+    <div class="invalid-feedback">
+        {{ form_errors(form.description)|striptags }}
+    </div>
+</div>
+
+<div class="mb-3">
+    {{ form_label(form.status, null, {'label_attr': {'class': 'form-label'}}) }}
+    {{ form_widget(form.status, {
+        'attr': {
+            'class': 'form-select',
+            'required': 'required',
+            'data-parsley-errors-container': '#status-errors'
+        }
+    }) }}
+    <div id="status-errors" class="invalid-feedback">
+        {{ form_errors(form.status)|striptags }}
+    </div>
+</div>
+
+<div class="d-flex justify-content-end gap-2">
+    <button type="submit" class="btn btn-success">
+        <i class="ri-save-line me-1"></i>
+        Enregistrer
+    </button>
+    <a href="{{ path('gs-projet_project_index') }}" class="btn btn-secondary">
+        <i class="ri-arrow-left-line me-1"></i>
+        Retour
+    </a>
+</div>
+
+{{ form_end(form) }}

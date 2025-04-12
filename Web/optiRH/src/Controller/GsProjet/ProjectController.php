@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Controller\GsProjet;
-
+use Symfony\Component\Form\FormInterface; // Correction de l'import
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
@@ -11,110 +11,150 @@ use App\Entity\GsProjet\Project;
 use App\Form\GsProjet\ProjectType;
 use App\Form\GsProjet\ProjectFilterType;
 use App\Repository\GsProjet\ProjectRepository;
-use App\Entity\User; 
 use App\Repository\GsProjet\MissionRepository;
 
-
-
 #[Route('/gs-projet/project', name: 'gs-projet_project_')]
-class ProjectController extends AbstractController
-{#[Route('/', name: 'index', methods: ['GET', 'POST'])]
-   
+class ProjectController extends AbstractController {
+    #[Route('/', name: 'index', methods: ['GET'])]
     public function index(Request $request, ProjectRepository $projectRepository): Response
     {
         $filterForm = $this->createForm(ProjectFilterType::class);
         $filterForm->handleRequest($request);
-
-        $projects = [];
-
-        if ($filterForm->isSubmitted() && $filterForm->isValid()) {
-            $data = $filterForm->getData();
-            $projects = $projectRepository->findByFilters(
-                $data['search'],
-                $data['status'],
-                $data['sort']
-            );
-        } else {
-            $projects = $projectRepository->findAll();
-        }
-
-        // Gestion des requêtes AJAX
+    
+        // Récupération indépendante des paramètres
+        $search = $request->query->get('search');
+        $status = $request->query->get('status');
+        $sort = $request->query->get('sort');
+    
+        // Appel indépendant au repository
+        $projects = $projectRepository->findByIndependentFilters(
+            $search,
+            $status,
+            $sort,
+            $request->query->getInt('page', 1)
+        );
+    
         if ($request->isXmlHttpRequest()) {
-            return $this->render('gs-projet/project/_list.html.twig', [
-                'projects' => $projects
-            ]);
+            return $this->render('gs-projet/project/_list.html.twig', ['projects' => $projects]);
         }
-
-        // Rendu normal pour les requêtes non-AJAX
+    
         return $this->render('gs-projet/project/index.html.twig', [
             'projects' => $projects,
             'filterForm' => $filterForm->createView()
         ]);
     }
     #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
-   // src/Controller/GsProjet/ProjectController.php
-
-// Modifiez la méthode new
-public function new(Request $request, EntityManagerInterface $entityManager): Response
-{
-    $project = new Project();
-    $form = $this->createForm(ProjectType::class, $project);
-    $form->handleRequest($request);
-
-    if ($form->isSubmitted() && $form->isValid()) {
-        try {
-            // Récupération sécurisée de l'utilisateur
-            $user = $entityManager->getRepository(User::class)->find(1);
-            
-            if (!$user) {
-                $this->addFlash('error', 'Aucun utilisateur administrateur trouvé');
-                return $this->redirectToRoute('gs-projet_project_index');
-            }
-
-            $project->setCreatedBy($user);
-            
+    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $project = new Project();
+        $form = $this->createForm(ProjectType::class, $project);
+        $form->handleRequest($request);
+    
+        if ($form->isSubmitted() && $form->isValid()) {
+            $project->setCreatedBy($this->getUser());
             $entityManager->persist($project);
             $entityManager->flush();
-
-            $this->addFlash('success', 'Projet créé avec succès');
+    
+            if ($request->isXmlHttpRequest()) {
+                return $this->json([
+                    'status' => 'success',
+                    'message' => 'Projet créé avec succès !'
+                ]);
+            }
+    
+            $this->addFlash('success', 'Projet créé avec succès !');
             return $this->redirectToRoute('gs-projet_project_index');
-
-        } catch (\Exception $e) {
-            $this->addFlash('error', 'Erreur de base de données : ' . $e->getMessage());
         }
+    
+        // Gestion des erreurs AJAX
+        if ($request->isXmlHttpRequest()) {
+            return $this->json([
+                'status' => 'error',
+                'errors' => $this->getFormErrors($form)
+            ], 400);
+        }
+    
+        return $this->render('gs-projet/project/new.html.twig', [
+            'form' => $form->createView(),
+        ]);
     }
-
-    return $this->render('gs-projet/project/new.html.twig', [
-        'form' => $form->createView(),
-    ]);
-}
+    
+    private function getFormErrors(FormInterface $form): array
+    {
+        $errors = [];
+        foreach ($form->getErrors(true) as $error) {
+            $errors[$error->getOrigin()->getName()][] = $error->getMessage();
+        }
+        return $errors;
+    }
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Project $project, EntityManagerInterface $entityManager): Response
     {
+        $user = $this->getUser();
+        if ($project->getCreatedBy() !== $user) {
+            if ($request->isXmlHttpRequest()) {
+                return $this->json(['error' => 'Accès refusé'], 403);
+            }
+            throw $this->createAccessDeniedException();
+        }
+    
         $form = $this->createForm(ProjectType::class, $project);
         $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
-
-            $this->addFlash('success', 'Projet mis à jour avec succès');
-            return $this->redirectToRoute('gs-projet_project_index');
+    
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                try {
+                    $entityManager->flush();
+    
+                    return $this->json([
+                        'status' => 'success',
+                        'message' => 'Projet mis à jour avec succès'
+                    ]);
+                    
+                } catch (\Exception $e) {
+                    return $this->json([
+                        'status' => 'error',
+                        'message' => 'Erreur de base de données : ' . $e->getMessage()
+                    ], 500);
+                }
+            }
+    
+            // Gestion spécifique pour les requêtes AJAX
+            if ($request->isXmlHttpRequest()) {
+                return $this->json([
+                    'status' => 'form_error',
+                    'errors' => $this->getFormErrors($form),
+                    'formHtml' => $this->renderView('gs-projet/project/_form.html.twig', [
+                        'form' => $form->createView()
+                    ])
+                ], 400);
+            }
         }
-
+    
+        if ($request->isXmlHttpRequest()) {
+            return $this->json([
+                'status' => 'error',
+                'message' => 'Requête invalide'
+            ], 400);
+        }
+    
         return $this->render('gs-projet/project/edit.html.twig', [
             'project' => $project,
             'form' => $form->createView(),
         ]);
     }
+   
     #[Route('/{id}', name: 'show', methods: ['GET'])]
     public function show(Project $project, MissionRepository $missionRepository): Response
     {
-        // Récupération des statistiques
+        $user = $this->getUser();
+        if ($project->getCreatedBy() !== $user) {
+            throw $this->createAccessDeniedException();
+        }
+
         $stats = $missionRepository->getProjectStats($project);
-        
-        // Groupement des missions par statut
         $groupedMissions = $missionRepository->findGroupedByStatus($project);
-    
+
         return $this->render('gs-projet/project/show.html.twig', [
             'project' => $project,
             'groupedMissions' => $groupedMissions,
@@ -124,15 +164,43 @@ public function new(Request $request, EntityManagerInterface $entityManager): Re
             'membersCount' => $stats['members'] ?? 0
         ]);
     }
-#[Route('/{id}', name: 'delete', methods: ['POST'])]
-public function delete(Request $request, Project $project, EntityManagerInterface $entityManager): Response
-{
-    if ($this->isCsrfTokenValid('delete' . $project->getId(), $request->request->get('_token'))) {
-        $entityManager->remove($project);
-        $entityManager->flush();
-        $this->addFlash('success', 'Projet supprimé avec succès');
+    #[Route('/{id}', name: 'delete', methods: ['POST'])]
+    public function delete(Request $request, Project $project, EntityManagerInterface $entityManager): Response
+    {
+        $user = $this->getUser();
+        if ($project->getCreatedBy() !== $user) {
+            return $this->json([
+                'status' => 'error',
+                'message' => 'Accès non autorisé'
+            ], 403);
+        }
+    
+        if ($this->isCsrfTokenValid('delete'.$project->getId(), $request->request->get('_token'))) {
+            try {
+                $entityManager->remove($project);
+                $entityManager->flush();
+    
+                if ($request->isXmlHttpRequest()) {
+                    return $this->json([
+                        'status' => 'success',
+                        'message' => 'Projet supprimé avec succès'
+                    ]);
+                }
+    
+                $this->addFlash('success', 'Projet supprimé avec succès');
+            } catch (\Exception $e) {
+                if ($request->isXmlHttpRequest()) {
+                    return $this->json([
+                        'status' => 'error',
+                        'message' => 'Erreur de suppression : ' . $e->getMessage()
+                    ], 500);
+                }
+                $this->addFlash('error', 'Erreur lors de la suppression');
+            }
+        }
+    
+        return $this->redirectToRoute('gs-projet_project_index');
     }
+ 
 
-    return $this->redirectToRoute('gs-projet_project_index');
-}
 }

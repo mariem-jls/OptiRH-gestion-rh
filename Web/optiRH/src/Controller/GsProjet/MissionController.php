@@ -1,100 +1,78 @@
 <?php
 
 namespace App\Controller\GsProjet;
-use Doctrine\ORM\EntityManagerInterface;
 
+use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\GsProjet\Mission;
 use App\Entity\GsProjet\Project;
-use App\Entity\User;
-use App\Repository\UserRepository;
 use App\Form\GsProjet\MissionType;
-
 use App\Repository\GsProjet\MissionRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/gs-projet/project', name: 'gs-projet_project_')]
 class MissionController extends AbstractController
 {
-   // Dans MissionController.php
-#[Route('/missions', name: 'app_missions_index', methods: ['GET'])]
-public function index(UserRepository $userRepository, MissionRepository $missionRepository): Response
-{
-    $user = $userRepository->find(1);
-    $missions = $missionRepository->findBy(['assignedTo' => $user]);
+    #[Route('/{id}/missions', name: 'missions_index', methods: ['GET'])]
+    public function index(Project $project, MissionRepository $missionRepository): Response
+    {
+        $user = $this->getUser();
+        $missions = $missionRepository->findByProjectAndUser($project, $user);
 
-    $formattedMissions = [];
-    foreach ($missions as $mission) {
-        $formattedMissions[] = [
-            'id' => $mission->getId(), // Ajout de l'ID
-            'title' => $mission->getTitre(),
-            'start' => $mission->getDateTerminer()->format('Y-m-d'),
-            'allDay' => true,
-            'statut' => $mission->getStatus(),
-            'description' => $mission->getDescription()
-        ];
-    }
-
-    return $this->render('gs-projet/Project/indexMission.html.twig', [
-        'missions' => $formattedMissions,
-        'user' => $user
-    ]);
-}
-
-#[Route('/missions/{id}/update-status', name: 'app_missions_update_status', methods: ['POST'])]
-public function updateStatus(Request $request, Mission $mission, EntityManagerInterface $em): Response
-{
-    $newStatus = $request->request->get('status');
-    $submittedToken = $request->request->get('_token');
-
-    if (!$this->isCsrfTokenValid('mission_status', $submittedToken)) {
-        return $this->json(['error' => 'Token CSRF invalide'], 403);
-    }
-
-    $allowedStatuses = ['To Do', 'In Progress', 'Done'];
-    if (in_array($newStatus, $allowedStatuses)) {
-        $mission->setStatus($newStatus);
-        $em->flush();
-
-        return $this->json([
-            'success' => true,
-            'newStatus' => $newStatus,
-            'newTitle' => $mission->getTitre() // Ajout du titre actualisé
+        return $this->render('gs-projet/project/indexMission.html.twig', [
+            'project' => $project,
+            'missions' => $missions
         ]);
     }
-
-    return $this->json(['error' => 'Statut invalide'], 400);
-
-}
-    #[Route('/{projectId}/missions/new', name: 'app_missions_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $em, int $projectId): Response
+    #[Route('/{id}/missions/new', name: 'mission_new', methods: ['GET', 'POST'])]
+    public function new(Request $request, Project $project, EntityManagerInterface $em): Response
     {
-        $project = $em->getRepository(Project::class)->find($projectId);
-        $mission = (new Mission())->setProject($project);
-        
+        $mission = new Mission();
         $form = $this->createForm(MissionType::class, $mission);
         $form->handleRequest($request);
-
+    
         if ($form->isSubmitted() && $form->isValid()) {
-            $em->persist($mission);
-            $em->flush();
-            return $this->redirectToRoute('gs-projet_project_show', [
-                'id' => $project->getId() // Redirection vers la page du projet
-            ]);
+            try {
+                $mission->setProject($project);
+                $em->persist($mission);
+                $em->flush();
+    
+                // Ajouter une variable de session pour le succès
+                $request->getSession()->set('showSuccessAlert', true);
+    
+                // Rediriger vers la page du projet, mais on le fera après l'alerte avec JavaScript
+                return $this->render('gs-projet/project/newMiss.html.twig', [
+                    'form' => $form->createView(),
+                    'project' => $project,
+                    'showSuccessAlert' => true, // Passage de la variable dans le template
+                ]);
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Erreur technique : ' . $e->getMessage());
+            }
         }
-
-        return $this->render('gs-projet/Project/newMiss.html.twig', [
+    
+        return $this->render('gs-projet/project/newMiss.html.twig', [
             'form' => $form->createView(),
-            'project' => $project
+            'project' => $project,
+            'showSuccessAlert' => false, // Si le formulaire n'est pas encore soumis
         ]);
     }
+    
+    
+    private function getFormErrors(FormInterface $form): array
+    {
+        $errors = [];
+        foreach ($form->getErrors(true) as $error) {
+            $errors[$error->getOrigin()->getName()][] = $error->getMessage();
+        }
+        return $errors;
+    }
+    
 
-
-   
-    #[Route('/missions/{id}/edit', name: 'app_missions_edit', methods: ['GET', 'POST'])]
+    #[Route('/mission/{id}/edit', name: 'mission_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Mission $mission, EntityManagerInterface $em): Response
     {
         $form = $this->createForm(MissionType::class, $mission);
@@ -102,49 +80,72 @@ public function updateStatus(Request $request, Mission $mission, EntityManagerIn
     
         if ($form->isSubmitted() && $form->isValid()) {
             $em->flush();
-            return $this->redirectToRoute('gs-projet_project_show', [
-                'id' => $mission->getProject()->getId() // Correction ici
+    
+            // Mettre un flag pour afficher l'alerte
+            $request->getSession()->set('showEditSuccess', true);
+    
+            // On rend la même page, l'alerte déclenchera la redirection
+            return $this->render('gs-projet/project/editMission.html.twig', [
+                'form' => $form->createView(),
+                'mission' => $mission,
+                'showEditSuccess' => true,
             ]);
         }
     
-        return $this->render('gs-projet/Project/editMission.html.twig', [
+        return $this->render('gs-projet/project/editMission.html.twig', [
             'form' => $form->createView(),
             'mission' => $mission,
-            'project' => $mission->getProject() // Ajout crucial
+            'showEditSuccess' => false,
         ]);
     }
+    
 
-    #[Route('/missions/{id}', name: 'app_missions_show', methods: ['GET'])]
+    #[Route('/mission/{id}', name: 'mission_show', methods: ['GET'])]
     public function show(Mission $mission): Response
     {
-        return $this->render('gs-projet/Project/showMission.html.twig', [
+        return $this->render('gs-projet/project/showMission.html.twig', [
             'mission' => $mission,
             'project' => $mission->getProject()
         ]);
     }
 
-    #[Route('/missions/{id}/delete', name: 'app_missions_delete', methods: ['POST'])]
-    public function delete(Request $request, Mission $mission, EntityManagerInterface $em): Response
+    #[Route('/mission/{id}/status', name: 'mission_update_status', methods: ['POST'])]
+    public function updateStatus(Request $request, Mission $mission, EntityManagerInterface $em): Response
     {
-        $project = $mission->getProject(); // Récupération du projet avant suppression
+        $newStatus = $request->request->get('status');
         
-        if ($this->isCsrfTokenValid('delete'.$mission->getId(), $request->request->get('_token'))) {
-            $em->remove($mission);
+        if (in_array($newStatus, ['To Do', 'In Progress', 'Done'])) {
+            $mission->setStatus($newStatus);
             $em->flush();
         }
-    
-        return $this->redirectToRoute('gs-projet_project_show', [
-            'id' => $project->getId() // Redirection vers la page du projet
-        ]);
-    }
 
-    #[Route('/{id}/missions', name: 'app_project_missions', methods: ['GET'])]
-    public function projectMissions(Project $project, MissionRepository $repo): Response
+        return $this->json(['status' => 'success']);
+    }
+    #[Route('/mission/{id}/delete', name: 'mission_delete', methods: ['POST'])]
+    public function delete(Request $request, Mission $mission, EntityManagerInterface $em): Response
     {
-        return $this->render('gs-projet/Project/project_missions.html.twig', [
-            'project' => $project,
-            'missions' => $repo->findBy(['project' => $project])
+        $projectId = $mission->getProject()?->getId();
+    
+        if (!$projectId) {
+            throw $this->createNotFoundException('Projet introuvable');
+        }
+    
+        // Vérification du token CSRF
+        if ($this->isCsrfTokenValid('delete' . $mission->getId(), $request->request->get('_token'))) {
+            try {
+                $em->remove($mission);
+                $em->flush();
+                $this->addFlash('success', 'Mission supprimée avec succès');
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Erreur lors de la suppression : ' . $e->getMessage());
+            }
+        }
+    
+        // Redirection vers la page du projet après suppression
+        return $this->redirectToRoute('gs-projet_project_show', [
+            'id' => $projectId
         ]);
     }
-  
+    
+    
 }

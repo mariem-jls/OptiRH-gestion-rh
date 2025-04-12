@@ -140,22 +140,15 @@
                         <i class="mdi mdi-briefcase-variant-outline"></i>
                         <span> Réclamation </span>
                     </a>
+<!-- Projets -->
+<li>
+    <a href="{{ path('gs-projet_project_index') }}" 
+       class="{{ app.request.attributes.get('_route') starts with 'gs-projet_project_' ? 'active' : '' }}">
+        <i class="mdi mdi-briefcase-variant-outline"></i>
+        <span>Projets</span>
+    </a>
+</li>
 
-                <!-- Project -->
-                <li>
-                    <a href="{{ path('gs-projet_project_index') }}" class="{{ app.request.attributes.get('_route') starts with 'gs-projet_project' ? 'active' : '' }}">
-                        <i class="mdi mdi-briefcase-variant-outline"></i>
-                        <span>Projets</span>
-                    </a>
-                </li>
-
-                <!-- Mission -->
-                <li>
-                    <a href="{{ path('gs-projet_project_app_missions_index') }}" class="{{ app.request.attributes.get('_route') starts with 'gs-projet_project_app_missions' ? 'active' : '' }}">
-                        <i class="mdi mdi-rocket-launch-outline"></i>
-                        <span>Missions</span>
-                    </a>
-                </li>
 
  <li>
     <a href="{{ path('app_transport_trajet_index') }}">
