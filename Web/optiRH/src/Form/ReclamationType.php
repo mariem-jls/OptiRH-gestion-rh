@@ -9,8 +9,6 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Validator\Constraints\Length;
-use Symfony\Component\Validator\Constraints\NotBlank;
 
 class ReclamationType extends AbstractType
 {
@@ -23,17 +21,16 @@ class ReclamationType extends AbstractType
                     'rows' => 5,
                     'placeholder' => 'Décrivez votre problème en détail...',
                     'minlength' => 5
-                ],
-                'constraints' => [
-                    new NotBlank([
-                        'message' => 'La description ne peut pas être vide',
-                    ]),
-                    new Length([
-                        'min' => 5,
-                        'minMessage' => 'La description doit contenir au moins {{ limit }} caractères',
-                        'max' => 5000,
-                    ]),
-                ],
+                ]
+            ])
+            ->add('type', ChoiceType::class, [
+                'label' => 'Type de réclamation',
+                'choices' => array_flip(Reclamation::getTypeChoices()),
+                'placeholder' => 'Sélectionnez un type',
+                'attr' => [
+                    'class' => 'form-select',
+                    'required' => true
+                ]
             ])
             ->add('status', ChoiceType::class, [
                 'label' => 'Statut',

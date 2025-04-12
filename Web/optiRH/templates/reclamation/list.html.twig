@@ -59,6 +59,7 @@
                     <table class="table table-bordered table-hover">
                         <thead class="thead-light">
                         <tr>
+                            <th>Type</th>
                             <th>Description</th>
                             <th>Utilisateur</th>
                             <th>Date</th>
@@ -69,6 +70,7 @@
                         <tbody>
                         {% for reclamation in reclamations %}
                             <tr>
+                                <td>{{ reclamation.type }}</td>
                                 <td class="truncate-text" title="{{ reclamation.description }}">
                                     {{ reclamation.description|slice(0, 50) }}{% if reclamation.description|length > 50 %}...{% endif %}
                                 </td>

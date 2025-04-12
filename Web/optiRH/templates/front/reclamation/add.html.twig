@@ -1,7 +1,6 @@
 {# templates/front/reclamation/add.html.twig #}
 {% extends 'partials/layout-horizontal.html.twig' %}
 
-
 {% block title %}Ajouter une Réclamation{% endblock %}
 
 {% block body %}
@@ -26,12 +25,18 @@
                                     'minlength': 5
                                 }
                             }) }}
-                            {% if form.description.vars.errors|length %}
-                                <div class="invalid-feedback">
-                                    {{ form_errors(form.description) }}
-                                </div>
-                            {% endif %}
+                            {{ form_errors(form.description) }}
                             <small class="form-text text-muted">Minimum 5 caractères</small>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.type) }}
+                            {{ form_widget(form.type, {
+                                'attr': {
+                                    'class': 'form-select' ~ (form.type.vars.errors|length ? ' is-invalid' : '')
+                                }
+                            }) }}
+                            {{ form_errors(form.type) }}
                         </div>
 
                         <div class="mb-3">

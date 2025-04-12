@@ -10,9 +10,18 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: "App\Repository\ReclamationRepository")]
 class Reclamation
 {
+    // Statuts existants
     public const STATUS_PENDING = 'En attente';
     public const STATUS_IN_PROGRESS = 'En cours';
     public const STATUS_RESOLVED = 'Résolue';
+
+    // Types de réclamation
+    public const TYPE_SALAIRE = 'Salaire';
+    public const TYPE_REMUNERATION = 'Rémunération';
+    public const TYPE_CONGES = 'Congés';
+    public const TYPE_RELATIONS_PRO = 'Relations professionnelles';
+    public const TYPE_CONDITIONS = 'Conditions de travail';
+    public const TYPE_AUTRE = 'Autre';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -34,6 +43,21 @@ class Reclamation
 
     #[ORM\Column(type: "datetime")]
     private ?\DateTimeInterface $date;
+
+    #[ORM\Column(length: 50)]
+    #[Assert\NotBlank(message: "Le type de réclamation est obligatoire")]
+    #[Assert\Choice(
+        choices: [
+            self::TYPE_SALAIRE,
+            self::TYPE_REMUNERATION,
+            self::TYPE_CONGES,
+            self::TYPE_RELATIONS_PRO,
+            self::TYPE_CONDITIONS,
+            self::TYPE_AUTRE
+        ],
+        message: "Veuillez sélectionner un type de réclamation valide"
+    )]
+    private ?string $type = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "reclamations")]
     #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
@@ -59,6 +83,30 @@ class Reclamation
     public function getUtilisateur(): ?User { return $this->utilisateur; }
     public function setUtilisateur(?User $utilisateur): self { $this->utilisateur = $utilisateur; return $this; }
     public function getReponses(): Collection { return $this->reponses; }
+
+
+public function getType(): ?string
+{
+    return $this->type;
+}
+
+public function setType(string $type): self
+{
+    $this->type = $type;
+    return $this;
+}
+
+public static function getTypeChoices(): array
+{
+    return [
+        self::TYPE_SALAIRE => self::TYPE_SALAIRE,
+        self::TYPE_REMUNERATION => self::TYPE_REMUNERATION,
+        self::TYPE_CONGES => self::TYPE_CONGES,
+        self::TYPE_RELATIONS_PRO => self::TYPE_RELATIONS_PRO,
+        self::TYPE_CONDITIONS => self::TYPE_CONDITIONS,
+        self::TYPE_AUTRE => self::TYPE_AUTRE,
+    ];
+}
 
     public function addReponse(Reponse $reponse): self
     {
