@@ -19,9 +19,16 @@ class EvenementController extends AbstractController
     #[Route('/', name: 'app_evenement_index', methods: ['GET'])]
     public function index(EvenementRepository $evenementRepository): Response
     {
-        return $this->render('evenement/index.html.twig', [
-            'evenements' => $evenementRepository->findAll(),
-        ]);
+         // Récupérer tous les événements
+    $evenements = $evenementRepository->findAll();
+    
+    // Mettre à jour le statut pour chaque événement
+    foreach ($evenements as $evenement) {
+        $evenement->updateStatus();
+    }
+    return $this->render('evenement/index.html.twig', [
+        'evenements' => $evenements,
+    ]);
     }
 
   
@@ -51,7 +58,7 @@ class EvenementController extends AbstractController
         
                     // Stocker le chemin de l'image dans l'entité Evenement
                     $evenement->setImage('uploads/evenements/' . $newFilename);
-                } catch (FileException $e) {
+                } catch (\Exception $e) {
                     $this->addFlash('error', 'L\'upload de l\'image a échoué.');
                     return $this->redirectToRoute('app_evenement_new');
                 }
@@ -76,58 +83,54 @@ class EvenementController extends AbstractController
     #[Route('/{id}/edit', name: 'app_evenement_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Evenement $evenement, EvenementRepository $evenementRepository): Response
     {
-        // Stocker l'ancien chemin d'image au cas où on ne change pas l'image
         $ancienneImage = $evenement->getImage();
-
+    
         $form = $this->createForm(EvenementType::class, $evenement);
         $form->handleRequest($request);
-
+    
         if ($form->isSubmitted() && $form->isValid()) {
             $imageFile = $form->get('image')->getData();
             $evenement->updateStatus();
-
+    
             if ($imageFile) {
                 // Supprimer l'ancienne image si elle existe
-                if ($ancienneImage) {
-                    $cheminComplet = $this->getParameter('kernel.project_dir').'/public/'.$ancienneImage;
-                    if (file_exists($cheminComplet)) {
-                        unlink($cheminComplet);
-                    }
+                $cheminComplet = $this->getParameter('kernel.project_dir') . '/public/' . $ancienneImage;
+                if ($ancienneImage && file_exists($cheminComplet)) {
+                    unlink($cheminComplet);
                 }
-
-                // Conserver le nom original du fichier
-                $originalFilename = $imageFile->getClientOriginalName();
-                // Générer un nom unique avec identifiant mais en gardant les caractères originaux
-                $newFilename = pathinfo($originalFilename, PATHINFO_FILENAME) . '-' . uniqid() . '.' . $imageFile->guessExtension();
-
+    
+                // Générer un nom unique et déplacer le fichier
+                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $newFilename = $originalFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
+    
                 try {
-                    // Déplacer le fichier dans le répertoire des uploads
                     $imageFile->move(
                         $this->getParameter('evenements_directory'),
                         $newFilename
                     );
-
-                    // Stocker le chemin de l'image dans l'entité Evenement
-                    $evenement->setImage('uploads/evenements/'.$newFilename);
-                } catch (FileException $e) {
-                    $this->addFlash('error', 'L\'upload de l\'image a échoué.');
+    
+                    $evenement->setImage('uploads/evenements/' . $newFilename);
+                } catch (\Exception $e) {
+                    $this->addFlash('error', 'Échec de l\'upload de l\'image.');
                     return $this->redirectToRoute('app_evenement_edit', ['id' => $evenement->getId()]);
                 }
             } else {
-                // Si aucun nouveau fichier n'est uploadé, on conserve l'ancienne image
+                // Aucun nouveau fichier => conserver l'ancienne image
                 $evenement->setImage($ancienneImage);
             }
-
+    
             $evenementRepository->save($evenement, true);
+    
             return $this->redirectToRoute('app_evenement_index', [], Response::HTTP_SEE_OTHER);
         }
-
+    
         return $this->renderForm('evenement/edit.html.twig', [
             'evenement' => $evenement,
             'form' => $form,
-            'current_image' => $ancienneImage // Passer l'image actuelle au template
+            'current_image' => $ancienneImage,
         ]);
     }
+    
 
     /************Supprimer evenement************** */
 
@@ -157,6 +160,8 @@ class EvenementController extends AbstractController
     #[Route('/evenements/indexfront', name: 'app_evenement_indexfront', methods: ['GET'])]
     public function showall(EvenementRepository $evenementRepository): Response
     {
+        $user = $this->getUser();
+        
         return $this->render('evenement/indexfront.html.twig', [
             'evenements' => $evenementRepository->findAll(),
         ]);
