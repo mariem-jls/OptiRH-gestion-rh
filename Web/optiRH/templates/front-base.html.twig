@@ -23,6 +23,79 @@
         <link rel="stylesheet" href="{{ asset('css-front/slick.css') }}">
         <link rel="stylesheet" href="{{ asset('css-front/nice-select.css') }}">
         <link rel="stylesheet" href="{{ asset('css-front/style.css') }}">
+        <style>
+            .section-tittle span {
+                color: #3AB5CE;
+                text-transform: uppercase;
+                margin-bottom: 28px;
+                display: block;
+            }
+            .head-btn2 {
+                background: none;
+                border: 1px solid #3AB5CE;
+                color: #3AB5CE;
+            }
+            .btn {
+                background: #3AB5CE;
+                -moz-user-select: none;
+                text-transform: capitalize;
+                color: #fff;
+                cursor: pointer;
+                display: inline-block;
+                font-size: 14px;
+                font-weight: 500;
+                letter-spacing: 1px;
+                line-height: 0;
+                margin-bottom: 0;
+                padding: 27px 44px;
+                border-radius: 0;
+                border: 0;
+                overflow: hidden;
+                position: relative;
+                z-index: 1;
+                transition: color 0.4s linear;
+            }
+            .btn::before {
+                content: "";
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 101%;
+                height: 101%;
+                background: #2A8A9E;
+                z-index: -1;
+                transition: transform 0.5s cubic-bezier(0.5, 1.6, 0.4, 0.7);
+                transform: scaleX(0);
+            }
+            #scrollUp {
+                background: #3AB5CE;
+                height: 50px;
+                width: 50px;
+                right: 31px;
+                bottom: 18px;
+                color: #fff;
+                font-size: 20px;
+                text-align: center;
+                border-radius: 50%;
+                line-height: 48px;
+                border: 2px solid transparent;
+            }
+            .header-area .main-menu ul li:hover>a{color:#3AB5CE}
+            .preloader .preloader-circle {
+                width: 100px;
+                height: 100px;
+                border-top-color: #3AB5CE;
+                border-bottom-color: transparent;
+                border-left-color: transparent;
+                border-right-color: transparent;
+                box-shadow: 0 1px 5px rgba(58, 181, 206, 0.15);
+                animation: zoom 2000ms infinite ease;
+            }
+            .job-category-listing .single-listing .select-Categories .container input:checked ~ .checkmark{background-color: #3ab5ce;border:2px solid transparent}
+            .slicknav_menu .slicknav_icon-bar{background-color:#3AB5CE !important}
+            .footer-area .footer-form form .form-icon button{position:absolute;top:0;right:0;background:none;border:0;cursor:pointer;padding:13px 22px;background:#22237C ;line-height:1;border-radius:0 3px 3px 0}
+
+        </style>
     {% endblock %}
 
 </head>
@@ -63,9 +136,9 @@
                                 <div class="main-menu">
                                     <nav class="d-none d-lg-block">
                                         <ul id="navigation">
-                                            <li><a href="{{path('app_front')  }}">Home</a></li>
-                                            <li><a href="{{path('app_front_active')  }}">Find a Job </a></li>
-                                            <li><a href="{{path('app_front_about')  }}">About</a></li>
+                                            <li><a href="{{path('app_front')  }}"> Accueil</a></li>
+                                            <li><a href="{{path('app_front_active')  }}">Trouver un Emploi</a></li>
+                                            <li><a href="{{path('app_front_about')  }}">À Propos</a></li>
                                         </ul>
                                     </nav>
                                 </div>
@@ -535,9 +608,9 @@
                     <div class="single-footer-caption mb-50">
                         <div class="single-footer-caption mb-30">
                             <div class="footer-tittle">
-                                <h4>About Us</h4>
+                                <h4>À propos de nous</h4>
                                 <div class="footer-pera">
-                                    <p>OptiRH is a smart and scalable HR management solution designed to simplify and automate HR processes through an intuitive desktop and web platform.</p>
+                                    <p>OptiRH est une solution de gestion RH intelligente et évolutive, conçue pour simplifier et automatiser les processus RH grâce à une plateforme intuitive, disponible sur ordinateur et sur le web.</p>
                                 </div>
                             </div>
                         </div>
@@ -547,12 +620,11 @@
                 <div class="col-xl-3 col-lg-3 col-md-4 col-sm-5">
                     <div class="single-footer-caption mb-50">
                         <div class="footer-tittle">
-                            <h4>Contact Info</h4>
-                            <ul>
+                            <h4>Informations de contact</h4>                            <ul>
                                 <li>
-                                    <p>Address : Tunisia </p>
+                                    <p>Adresse : Tunisie </p>
                                 </li>
-                                <li><a href="#">Phone : +216 XX XXX XXX</a></li>
+                                <li><a href="#">Téléphone : +216 XX XXX XXX</a></li>
                                 <li><a href="#">Email : contact@optirh.com</a></li>
                             </ul>
                         </div>
@@ -562,11 +634,11 @@
                 <div class="col-xl-3 col-lg-3 col-md-4 col-sm-5">
                     <div class="single-footer-caption mb-50">
                         <div class="footer-tittle">
-                            <h4>Important Link</h4>
+                            <h4>Lien important</h4>
                             <ul>
-                                <li><a href="{{ path('app_front') }}">Home</a></li>
-                                <li><a href="{{ path('app_front_active') }}">Find a Job</a></li>
-                                <li><a href="{{ path('app_front_about') }}">About</a></li>
+                                <li><a href="{{ path('app_front') }}">Accueil</a></li>
+                                <li><a href="{{ path('app_front_active') }}">Trouver Un Emploi</a></li>
+                                <li><a href="{{ path('app_front_about') }}">À propos de nous</a></li>
                             </ul>
                         </div>
                     </div>
@@ -576,8 +648,7 @@
                         <div class="footer-tittle">
                             <h4>Newsletter</h4>
                             <div class="footer-pera footer-pera2">
-                                <p>Heaven fruitful doesn't over lesser in days. Appear creeping.</p>
-                            </div>
+                                <p>Inscrivez-vous à notre newsletter pour recevoir les dernières offres d'emploi et actualités RH directement dans votre boîte mail.</p>                            </div>
                             <!-- Form -->
                             <div class="footer-form" >
                                 <div id="mc_embed_signup">
