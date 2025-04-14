@@ -7,6 +7,8 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
+
 use App\Entity\GsProjet\Project;
 use App\Form\GsProjet\ProjectType;
 use App\Form\GsProjet\ProjectFilterType;
@@ -50,28 +52,29 @@ class ProjectController extends AbstractController {
         $form = $this->createForm(ProjectType::class, $project);
         $form->handleRequest($request);
     
-        if ($form->isSubmitted() && $form->isValid()) {
-            $project->setCreatedBy($this->getUser());
-            $entityManager->persist($project);
-            $entityManager->flush();
+        try {
+            if ($form->isSubmitted()) {
+                if ($form->isValid()) {
+                    $project->setCreatedBy($this->getUser());
+                    $entityManager->persist($project);
+                    $entityManager->flush();
     
-            if ($request->isXmlHttpRequest()) {
-                return $this->json([
-                    'status' => 'success',
-                    'message' => 'Projet créé avec succès !'
-                ]);
+                    return $this->json([
+                        'status' => 'success',
+                        'message' => 'Projet créé avec succès !'
+                    ]);
+                } else {
+                    return new JsonResponse([
+                        'status' => 'error',
+                        'errors' => $this->getFormErrors($form)
+                    ], 400);
+                }
             }
-    
-            $this->addFlash('success', 'Projet créé avec succès !');
-            return $this->redirectToRoute('gs-projet_project_index');
-        }
-    
-        // Gestion des erreurs AJAX
-        if ($request->isXmlHttpRequest()) {
+        } catch (\Exception $e) {
             return $this->json([
                 'status' => 'error',
-                'errors' => $this->getFormErrors($form)
-            ], 400);
+                'message' => 'Erreur serveur : ' . $e->getMessage()
+            ], 500);
         }
     
         return $this->render('gs-projet/project/new.html.twig', [
@@ -82,11 +85,22 @@ class ProjectController extends AbstractController {
     private function getFormErrors(FormInterface $form): array
     {
         $errors = [];
-        foreach ($form->getErrors(true) as $error) {
-            $errors[$error->getOrigin()->getName()][] = $error->getMessage();
+    
+        foreach ($form->getErrors(true, true) as $error) {
+            $formField = $error->getOrigin();
+            $fieldName = $formField ? $formField->getName() : 'form';
+    
+            if (!isset($errors[$fieldName])) {
+                $errors[$fieldName] = [];
+            }
+    
+            $errors[$fieldName][] = $error->getMessage();
         }
+    
         return $errors;
     }
+    
+    
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Project $project, EntityManagerInterface $entityManager): Response
     {
@@ -110,32 +124,22 @@ class ProjectController extends AbstractController {
                         'status' => 'success',
                         'message' => 'Projet mis à jour avec succès'
                     ]);
-                    
                 } catch (\Exception $e) {
                     return $this->json([
                         'status' => 'error',
-                        'message' => 'Erreur de base de données : ' . $e->getMessage()
+                        'message' => 'Erreur : ' . $e->getMessage()
                     ], 500);
                 }
+            } else {
+                if ($request->isXmlHttpRequest()) {
+                    return $this->json([
+                        'status' => 'form_error',
+                        'formHtml' => $this->renderView('gs-projet/project/_form.html.twig', [
+                            'form' => $form->createView()
+                        ])
+                    ], 400);
+                }
             }
-    
-            // Gestion spécifique pour les requêtes AJAX
-            if ($request->isXmlHttpRequest()) {
-                return $this->json([
-                    'status' => 'form_error',
-                    'errors' => $this->getFormErrors($form),
-                    'formHtml' => $this->renderView('gs-projet/project/_form.html.twig', [
-                        'form' => $form->createView()
-                    ])
-                ], 400);
-            }
-        }
-    
-        if ($request->isXmlHttpRequest()) {
-            return $this->json([
-                'status' => 'error',
-                'message' => 'Requête invalide'
-            ], 400);
         }
     
         return $this->render('gs-projet/project/edit.html.twig', [
@@ -143,6 +147,7 @@ class ProjectController extends AbstractController {
             'form' => $form->createView(),
         ]);
     }
+    
    
     #[Route('/{id}', name: 'show', methods: ['GET'])]
     public function show(Project $project, MissionRepository $missionRepository): Response

@@ -79,7 +79,8 @@
         {# Correction de la pagination #}
         {% if projects is not empty and projects.getPageCount() > 1 %}
             <div id="project-pagination" class="mt-3">
-                {{ knp_pagination_render(projects, '@KnpPaginator/Pagination/twitter_bootstrap_v5_pagination.html.twig', {
+            {{ knp_pagination_render(projects, '@KnpPaginator/Pagination/twitter_bootstrap_v4_pagination.html.twig') }}
+
                     'queryParamName': 'page',
                     'size': 'medium',
                     'alignment': 'center'
