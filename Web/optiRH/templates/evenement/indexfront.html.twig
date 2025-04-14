@@ -4,13 +4,24 @@
 
 {% block topbar %}
     {{ include('partials/topbar.html.twig', { page_title: 'Liste des Événements' }) }}
+
 {% endblock %}
 
 {% block css %}
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/Evenement/frontevenement.css') }}">    
+    <link rel="stylesheet" href="{{ asset('css/Evenement/frontevenement.css') }}">  
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.5.6/dist/sweetalert2.min.css" rel="stylesheet">
+  
 {% endblock %}
 {% block body %}
+{% for label, messages in app.flashes %}
+    {% for message in messages %}
+        <div class="alert alert-{{ label }}">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endfor %}
+
 <div class="container-fluid px-4">
     <!-- Section des événements (visible par défaut) -->
      <div id="eventsSection">
@@ -41,20 +52,36 @@
         <div class="row mb-4">
             <div class="col-12">
                 <div class="d-flex justify-content-center flex-wrap gap-2">
+                    <!-- Boutons de filtre -->
                     <button type="button" class="btn btn-pill btn-outline-dark active" data-filter="all">
                         <i class="mdi mdi-star-circle-outline me-1"></i>Tous
                     </button>
                     <button type="button" class="btn btn-pill btn-outline-info" data-filter="presentiel">
                         <i class="mdi mdi-monitor me-1"></i>Présentiel
                     </button>
-                    <button type="button" class="btn btn-pill btn-outline-success" data-filter="online">
+                    <button type="button" class="btn btn-pill btn-outline-success" data-filter="En Ligne">
                         <i class="mdi mdi-account-group me-1"></i>En ligne
                     </button>
-                    <button type="button" class="btn btn-pill btn-outline-danger" data-filter="rh">
+                    <button type="button" class="btn btn-pill btn-outline-danger" data-filter="RH">
                         <i class="mdi mdi-briefcase me-1"></i>RH
                     </button>
-                    <button type="button" class="btn btn-pill btn-outline-warning" data-filter="loisir">
+                   <button type="button" class="btn btn-pill marketing-btn" data-filter="Marketing">
+                        <i class="mdi mdi-chart-bar me-1"></i>Marketing
+                    </button>
+                    <button type="button" class="btn btn-pill finance-btn" data-filter="Finance">
+                        <i class="mdi mdi-cash me-1"></i>Finance
+                    </button>
+                    <button type="button" class="btn btn-pill management-btn" data-filter="Management">
+                        <i class="mdi mdi-account-tie me-1"></i>Management
+                    </button>
+                    <button type="button" class="btn btn-pill btn-outline-success" data-filter="Technologie & Innovation">
+                        <i class="mdi mdi-robot me-1"></i>Technologie & Innovation
+                    </button>
+                    <button type="button" class="btn btn-pill btn-outline-info" data-filter="Loisir">
                         <i class="mdi mdi-palm-tree me-1"></i>Loisir
+                    </button>
+                    <button type="button" class="btn btn-pill btn-outline-warning" data-filter="Soft Skills">
+                        <i class="mdi mdi-account-voice me-1"></i>Soft Skills
                     </button>
                 </div>
             </div>
@@ -66,7 +93,7 @@
             <div class="col-xl-3 col-lg-4 col-md-6" data-category="{{ evenement.modalite|lower }} {{ evenement.type|lower }}">
                 <div class="card event-card h-100 border-0 overflow-hidden ">
                     <!-- Badge de modalite -->
-                    <div class="card-badge {{ evenement.modalite == 'Présentiel' or evenement.modalite == 'en_ligne' ? 'bg-success' : 'bg-info' }}">
+                    <div class="card-badge {{ evenement.modalite == 'En ligne' ? 'bg-success' : 'bg-info' }}">
                         {{ evenement.modalite }}
                     </div>
 
@@ -116,16 +143,22 @@
                         
                         <!-- type -->
                         <div class="mb-3">
-                            {% if evenement.type|lower == 'rh' %}
-                                <span class="badge bg-danger-light text-danger">{{ evenement.type }}</span>
-                            {% elseif evenement.type|lower == 'tech et inno' %}
-                                <span class="badge bg-success-light text-success">{{ evenement.type }}</span>
-                            {% elseif evenement.type|lower == 'loisir' %}
-                                <span class="badge bg-info-light text-info">{{ evenement.type }}</span>
-                            {% elseif evenement.type|lower == 'softskills' %}
-                                <span class="badge bg-warning-light text-warning">{{ evenement.type }}</span>
+                            {% if evenement.type== 'RH' %}
+                                <span class="badge bg-danger text-white">{{ evenement.type }}</span>
+                            {% elseif evenement.type == 'Technologie & Innovation' %}
+                                <span class="badge bg-success text-white">{{ evenement.type }}</span>
+                            {% elseif evenement.type == 'Loisir' %}
+                                <span class="badge bg-info text-white">{{ evenement.type }}</span>
+                            {% elseif evenement.type == 'Soft Skills' %}
+                                <span class="badge bg-warning text-dark">{{ evenement.type }}</span>
+                            {% elseif evenement.type == 'Finance' %}
+                                <span class="badge" style="background-color: #6f42c1; color: white">{{ evenement.type }}</span>
+                            {% elseif evenement.type == 'Marketing' %}
+                                <span class="badge" style="background-color: #d63384; color: white">{{ evenement.type }}</span>
+                            {% elseif evenement.type == 'Management' %}
+                                <span class="badge" style="background-color: #6610f2; color: white">{{ evenement.type }}</span>
                             {% else %}
-                                <span class="badge bg-secondary">{{ evenement.type }}</span>
+                                <span class="badge bg-secondary text-white">{{ evenement.type }}</span>
                             {% endif %}
                         </div>
                     </div>
@@ -140,6 +173,7 @@
                             <a href="{{ path('app_reservation_evenement_new', {id: evenement.id}) }}" class="btn btn-sm btn-outline-primary rounded-pill flex-grow-1 me-1">
                                 <i class="mdi mdi-ticket-confirmation me-1"></i> Réserver
                             </a>
+                            
 
                         </div>
                     </div>
@@ -162,32 +196,29 @@
         <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
             <div class="modal-content border-0 overflow-hidden">
                 <!-- En-tête avec image de fond -->
-                <div class="modal-header position-relative p-0" style="height: 200px;">
+                <div class="modal-header position-relative p-0" style="height: 250px;">
                     {% if evenement.image %}
-                    <div class="w-100 h-100" style="background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('{{ asset(evenement.image) }}'); background-size: cover; background-position: center;"></div>
+                    <div class="w-100 h-100 bg-blur" style="background: url('{{ asset(evenement.image) }}'); background-size: cover; background-position: center;"></div>
                     {% else %}
-                    <div class="w-100 h-100" style="background: var(--primary-gradient);"></div>
+                    <div class="w-100 h-100" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
                     {% endif %}
                     
-                    <div class="position-absolute w-100 h-100 d-flex flex-column justify-content-between p-4">
+                    <div class="position-absolute w-100 h-100 d-flex flex-column justify-content-between p-4 overlay-dark">
                         <div class="d-flex justify-content-between align-items-start">
-                            <h3 class="modal-title text-white mb-0" id="eventModalLabel{{ evenement.id }}">{{ evenement.titre }}</h3>
+                            <div>
+                                <h3 class="modal-title text-white mb-0" id="eventModalLabel{{ evenement.id }}">{{ evenement.titre }}</h3>
+                                <p class="text-white-50 mb-0">{{ evenement.type }}</p>
+                            </div>
                             <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
                         
                         <div class="d-flex justify-content-between align-items-end">
-                            <div class="event-badge {{ evenement.modalite == 'En ligne' ? 'bg-info' : 'bg-success' }} px-3 py-1 rounded-pill">
-                                {{ evenement.modalite }}
-                            </div>
-                            <div class="text-white">
-                                <span class="badge p-2 fs-6 shadow-sm border-0" 
-                                    style="background: linear-gradient(45deg, #ffffff, #f8f9fa); border-radius: 20px; transition: all 0.3s;"
-                                    onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.2)';"
-                                    onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)';">
-                                    <i class="mdi mdi-ticket-confirmation mr-2 fs-5 text-primary"></i>
-                                    <strong class="text-dark">{{ evenement.prix ? evenement.prix ~ 'DT' : 'Gratuit' }}</strong>
+                            <div class="price-badge pulse">
+                                <span class="text-white">
+                                    <i class="mdi mdi-ticket-confirmation mr-1"></i>
+                                    <strong>{{ evenement.prix ? evenement.prix ~ 'DT' : 'Gratuit' }}</strong>
                                 </span>
                             </div>
                         </div>
@@ -195,83 +226,141 @@
                 </div>
 
                 <!-- Corps du modal -->
-                <div class="modal-body p-0">
-                    <div class="row no-gutters">
-                        <!-- Colonne gauche - Détails -->
-                        <div class="col-lg-6 p-4">
-                            <div class="d-flex align-items-center mb-4">
-                                <div class="icon-circle bg-light-primary mr-3">
-                                    <i class="mdi mdi-calendar text-primary"></i>
-                                </div>
-                                <div>
-                                    <h6 class="mb-0">Date et Heure</h6>
-                                    <p class="mb-0 text-muted">
-                                        Du: {{ evenement.dateDebut|date('d M Y') }}<br>
-                                        Jusqu'à: {{ evenement.dateFin|date('d M Y') }}<br>
-                                        {% if evenement.heure %}
-                                            Heure: {{ evenement.heure|date('H:i') }}h
-                                        {% endif %}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div class="d-flex align-items-center mb-4">
-                                <div class="icon-circle bg-light-success mr-3">
-                                    <i class="mdi mdi-map-marker text-success"></i>
-                                </div>
-                                <div>
-                                    <h6 class="mb-0">Lieu</h6>
-                                    <p class="mb-0 text-muted">{{ evenement.lieu }}</p>
-                                </div>
-                            </div>
-
-                            <div class="d-flex align-items-center mb-4">
-                                <div class="icon-circle bg-light-info mr-3">
-                                    <i class="mdi mdi-information text-info"></i>
-                                </div>
-                                <div>
-                                    <h6 class="mb-0">Type</h6>
-                                    <p class="mb-0 text-muted">{{ evenement.type }}</p>
-                                </div>
-                            </div>
-
-                            <div class="event-description mt-4">
+                <div class="modal-body p-4">
+                    <div class="row">
+                        <!-- Colonne de gauche - Description -->
+                        <div class="col-md-6">
+                            <div class="event-description">
                                 <h5 class="mb-3">Description</h5>
                                 <p class="text-muted">{{ evenement.description }}</p>
                             </div>
                         </div>
-
                         
+                        <!-- Colonne de droite - Autres détails -->
+                        <div class="col-md-6">
+                            <div class="event-details">
+                                <div class="d-flex align-items-center mb-4">
+                                    <div class="icon-circle bg-light-primary mr-3">
+                                        <i class="mdi mdi-calendar text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">Date et Heure</h6>
+                                        <p class="mb-0 text-muted">
+                                            Du: {{ evenement.dateDebut|date('d M Y') }}<br>
+                                            Jusqu'à: {{ evenement.dateFin|date('d M Y') }}<br>
+                                            {% if evenement.heure %}
+                                                Heure: {{ evenement.heure|date('H:i') }}h
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex align-items-center mb-4">
+                                    <div class="icon-circle bg-light-success mr-3">
+                                        <i class="mdi mdi-map-marker text-success"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">Lieu</h6>
+                                        <p class="mb-0 text-muted">{{ evenement.lieu }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Bouton de réservation centré en bas -->
+                    <div class="text-center mt-4">
+                        <a href="{{ path('app_reservation_evenement_new', {id: evenement.id}) }}" class="btn btn-sm btn-outline-primary rounded-pill">
+                            <i class="mdi mdi-ticket-confirmation me-1"></i> Réserver
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    {% endfor %}
+{% endfor %}
+    <style>
+        .marketing-btn {
+            color: #d63384;
+            border-color: #d63384;
+            background-color: transparent;
+        }
+        .marketing-btn:hover {
+            background-color: #d63384;
+            border-color: #d63384;
+            color: white;
+        }
+
+        /* Bouton Finance */
+        .finance-btn {
+            color: #6f42c1;
+            border-color: #6f42c1;
+            background-color: transparent;
+        }
+        .finance-btn:hover {
+            background-color: #6f42c1;
+            border-color: #6f42c1;
+            color: white;
+        }
+
+        /* Bouton Management */
+        .management-btn {
+            color: #6610f2;
+            border-color: #6610f2;
+            background-color: transparent;
+        }
+        .management-btn:hover {
+            background-color: #6610f2;
+            border-color: #6610f2;
+            color: white;
+        }
+        
+        .bg-blur {
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
+        }
+        
+        .overlay-dark {
+            background: rgba(0, 0, 0, 0.4);
+        }
+        
+        .price-badge {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 50px;
+            padding: 8px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+            }
+        }
+        
+        .modal-content {
+            border-radius: 15px;
+            overflow: hidden;
+        }
+    </style>
 </div>
 
-<!-- Ajout des scripts nécessaires -->
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
     $(document).ready(function() {
-        // Filtrage des événements
-        $('[data-filter]').click(function() {
-            const filter = $(this).data('filter');
-            
-            // Mise à jour des boutons actifs
-            $('[data-filter]').removeClass('active');
-            $(this).addClass('active');
-            
-            // Filtrage des cartes
-            if (filter === 'all') {
-                $('.event-card').parent().show();
-            } else {
-                $('.event-card').parent().hide();
-                $(`.event-card[data-category*="${filter}"]`).parent().show();
-            }
-        });
-        
         // Animation au survol des cartes
         $('.event-card').hover(
             function() {

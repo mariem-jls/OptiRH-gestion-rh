@@ -31,21 +31,22 @@ class ReclamationType extends AbstractType
                     'class' => 'form-select',
                     'required' => true
                 ]
-            ])
-            ->add('status', ChoiceType::class, [
+            ]);
+
+        if ($options['is_admin']) {
+            $builder->add('status', ChoiceType::class, [
                 'label' => 'Statut',
                 'choices' => array_flip(Reclamation::getStatusChoices()),
-                'data' => Reclamation::STATUS_PENDING,
-                'attr' => [
-                    'class' => 'form-select'
-                ]
+                'attr' => ['class' => 'form-select']
             ]);
+        }
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Reclamation::class,
+            'is_admin' => false,
         ]);
     }
 }

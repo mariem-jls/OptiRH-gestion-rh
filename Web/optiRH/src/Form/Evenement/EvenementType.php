@@ -31,6 +31,7 @@ class EvenementType extends AbstractType
                 'attr' => ['class' => 'form-control form-control-sm'],
                 'required' => false,  // Permet de laisser vide
                 'empty_data' => null,  // Définit la valeur par défaut à null
+                'invalid_message' => 'Merci de mettre une date valide.',
             ])
             ->add('date_fin', DateType::class, [
                 'widget' => 'single_text',
@@ -38,6 +39,7 @@ class EvenementType extends AbstractType
                 'attr' => ['class' => 'form-control form-control-sm'],
                 'required' => false,  // Permet de laisser vide
                 'empty_data' => null,  // Définit la valeur par défaut à null
+                'invalid_message' => 'Merci de mettre une date valide.',
             ])
             ->add('image', FileType::class, [
                 'required' => false,
@@ -68,22 +70,20 @@ class EvenementType extends AbstractType
                 ],
             ])
             
-            
-            
-                        
+         
             
             ->add('longitude')
             ->add('latitude')
             ->add('type', ChoiceType::class, [
                 'label' => 'Type*',
                 'choices' => [
-                    'RH' => 'rh',
-                    'Marketing' => 'marketing',
-                    'Finance' => 'finance',
-                    'Management' => 'management',
-                    'Technologie & Innovation' => 'techno_inno',
-                    'Loisir' => 'loisir',
-                    'Soft Skills' => 'soft_skills'
+                    'RH' => 'RH',
+                    'Marketing' => 'Marketing',
+                    'Finance' => 'Finance',
+                    'Management' => 'Management',
+                    'Technologie & Innovation' => 'Technologie & Innovation',
+                    'Loisir' => 'Loisir',
+                    'Soft Skills' => 'Soft Skills'
                 ],
                 'attr' => ['class' => 'form-select form-select-sm select2'],
                 'placeholder' => 'Sélectionnez...',
@@ -92,8 +92,8 @@ class EvenementType extends AbstractType
             ->add('modalite', ChoiceType::class, [
                 'label' => 'Modalité*',
                 'choices' => [
-                    'En ligne' => 'en_ligne',
-                    'Présentiel' => 'presentiel'
+                    'En ligne' => 'En ligne',
+                    'Présentiel' => 'Présentiel'
                 ],
                 'attr' => ['class' => 'form-select form-select-sm select2'],
                 'placeholder' => 'Sélectionnez...',

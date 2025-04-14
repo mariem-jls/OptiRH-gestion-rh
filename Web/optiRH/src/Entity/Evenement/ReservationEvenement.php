@@ -33,20 +33,29 @@ class ReservationEvenement
     )]
     private ?string $last_name = null;
 
+   
+
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "L'email ne peut pas être vide.")]
     #[Assert\Email(message: "L'email '{{ value }}' n'est pas valide.")]
+    #[Assert\Regex(
+        pattern: "/^[a-zA-Z0-9._%+-]+@esprit\.tn$/",
+        message: "L'email doit être au format exemple@esprit.tn"
+    )]
     #[Assert\Length(
         max: 255,
-        maxMessage: "L'email ne doit pas dépasser 255 caractères."
+        maxMessage: "L'email ne doit pas dépasser 13 caractères."
     )]
     private ?string $email = null;
+
+
+
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Le téléphone ne peut pas être vide.")]
     #[Assert\Regex(
-        pattern: "/^\+?[0-9]{1,4}?[-.\s]?(?:\(?\d{1,3}?\)?[-.\s]?)?(\d{1,4}[-.\s]?)?\d{1,4}[-.\s]?\d{1,4}$/",
-        message: "Le numéro de téléphone n'est pas valide."
+        pattern: "/^\+[0-9]{1,4}[0-9]{7,14}$/",
+        message: "Le numéro doit commencer par + (ex: +21612345678)"
     )]
     #[Assert\Length(
         max: 255,

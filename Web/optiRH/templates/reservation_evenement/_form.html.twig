@@ -1,92 +1,62 @@
-{{ form_start(form, {
-    action: action is defined ? action : '', 
-    method: method is defined ? method : 'POST',
-    attr: { class: 'event-booking-form', novalidate: 'novalidate' }
-}) }}
-   
-
+{{ form_start(form, {action: action is defined ? action : '',method: method is defined ? method : 'POST',attr: { class: 'event-booking-form', novalidate: 'novalidate' }}) }}
         <div class="booking-body">
             <div class="row">
                 <div class="col-md-6">
-                    {{ form_label(form.first_name, 'Prénom', {
-                        'label_attr': {'class': 'form-label mt-2'}
-                    }) }}
+                    {{ form_label(form.first_name, 'Nom', {'label_attr': {'class': 'form-label mt-2'}}) }}
                     <div class="form-group mb-4">
                         <div class="input-group">
                             <span class="input-group-text">
                                 <i class="mdi mdi-account-outline"></i>
                             </span>
-                            {{ form_widget(form.first_name, {
-                                'attr': {
-                                    'class': 'form-control',
-                                    'placeholder': 'Prénom',
-                                    'autocomplete': 'given-name'
-                                }
-                            }) }}
+                            {{ form_widget(form.first_name, {'attr': {'class': 'form-control','readonly': 'readonly'}}) }}
                         </div>
-                        {{ form_errors(form.first_name) }}  <!-- Affiche les erreurs -->
+                        <div class="text-danger">
+                            {{ form_errors(form.first_name) }}  
+                        </div>
                     </div>
                 </div>
                 
                 <div class="col-md-6">
-                    {{ form_label(form.last_name, 'Nom', {
-                        'label_attr': {'class': 'form-label mt-2'}
-                    }) }}
+                    {{ form_label(form.last_name, 'Prénom', {'label_attr': {'class': 'form-label mt-2'}}) }}
                     <div class="form-group mb-4">
                         <div class="input-group">
                             <span class="input-group-text">
                                 <i class="mdi mdi-account-outline"></i>
                             </span>
                             
-                            {{ form_widget(form.last_name, {
-                                'attr': {
-                                    'class': 'form-control',
-                                    'placeholder': 'Nom',
-                                    'autocomplete': 'family-name'
-                                }
-                            }) }}
+                            {{ form_widget(form.last_name, {'attr': {'class': 'form-control','placeholder': 'Prénom','autocomplete': 'given-name'}}) }}
                         </div>
-                        {{ form_errors(form.last_name) }}  <!-- Affiche les erreurs -->
+                        <div class="text-danger">
+                            {{ form_errors(form.last_name) }}
+                        </div>    
                     </div>
                 </div>
             </div>
 
             <div class="form-group mb-4">
-                {{ form_label(form.email, 'Email', {
-                    'label_attr': {'class': 'form-label mt-2'}
-                }) }}
+                {{ form_label(form.email, 'Email', {'label_attr': {'class': 'form-label mt-2'}}) }}
                 <div class="input-group">
                     <span class="input-group-text">
                         <i class="mdi mdi-email-outline"></i>
                     </span>
-                    {{ form_widget(form.email, {
-                        'attr': {
-                            'class': 'form-control',
-                            'placeholder': 'Email',
-                            'autocomplete': 'email'
-                        }
-                    }) }}
+                    {{ form_widget(form.email, {'attr': {'class': 'form-control','readonly': 'readonly'}}) }}
                 </div>
-                {{ form_errors(form.email) }}  <!-- Affiche les erreurs -->
+                <div class="text-danger">
+                    {{ form_errors(form.email) }}
+                </div>
             </div>
 
             <div class="form-group mb-4">
-                {{ form_label(form.telephone, 'Téléphone', {
-                    'label_attr': {'class': 'form-label mt-2'}
-                }) }}
+                {{ form_label(form.telephone, 'Téléphone', {'label_attr': {'class': 'form-label mt-2'}}) }}
                 <div class="input-group">
                     <span class="input-group-text">
                         <i class="mdi mdi-phone-outline"></i>
                     </span>
-                    {{ form_widget(form.telephone, {
-                        'attr': {
-                            'class': 'form-control',
-                            'placeholder': 'Téléphone',
-                            'autocomplete': 'tel'
-                        }
-                    }) }}
+                    {{ form_widget(form.telephone, {'attr': {'class': 'form-control','placeholder': 'Téléphone','autocomplete': 'tel'}}) }}
                 </div>
-                {{ form_errors(form.telephone) }}  <!-- Affiche les erreurs -->
+                <div class="text-danger">
+                    {{ form_errors(form.telephone) }}
+                </div>
             </div>
         </div>
 

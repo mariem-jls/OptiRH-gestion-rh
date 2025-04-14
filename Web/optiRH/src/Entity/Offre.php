@@ -230,17 +230,17 @@ class Offre
         $diff = $now->diff($this->dateCreation);
 
         if ($diff->y > 0) {
-            return $diff->y . ' year(s) ago';
+            return $diff->y . ' an' . ($diff->y > 1 ? 's' : '') . ' plus tôt';
         } elseif ($diff->m > 0) {
-            return $diff->m . ' month(s) ago';
+            return $diff->m . ' mois plus tôt';
         } elseif ($diff->d > 0) {
-            return $diff->d . ' day(s) ago';
+            return $diff->d . ' jour' . ($diff->d > 1 ? 's' : '') . ' plus tôt';
         } elseif ($diff->h > 0) {
-            return $diff->h . ' hour(s) ago';
+            return $diff->h . ' heure' . ($diff->h > 1 ? 's' : '') . ' plus tôt';
         } elseif ($diff->i > 0) {
-            return $diff->i . ' minute(s) ago';
+            return $diff->i . ' minute' . ($diff->i > 1 ? 's' : '') . ' plus tôt';
         } else {
-            return 'Just now';
+            return 'À l’instant';
         }
     }
     public function __toString(): string

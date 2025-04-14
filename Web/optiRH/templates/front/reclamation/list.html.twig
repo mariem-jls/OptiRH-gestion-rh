@@ -1,8 +1,6 @@
 {# templates/front/reclamation/list.html.twig #}
 {% extends 'partials/layout-horizontal.html.twig' %}
 
-
-
 {% block title %}Mes Réclamations{% endblock %}
 
 {% block body %}
@@ -28,7 +26,6 @@
                             <table class="table table-centered mb-0">
                                 <thead>
                                 <tr>
-                               
                                     <th>Type</th>
                                     <th>Description</th>
                                     <th>Date</th>
@@ -52,23 +49,31 @@
                                                class="btn btn-sm btn-primary" title="Voir les réponses">
                                                 <i class="mdi mdi-eye"></i>
                                             </a>
-                                            <a href="{{ path('front_edit_reclamation', {'id': reclamation.id}) }}"
-                                               class="btn btn-sm btn-secondary" title="Modifier">
-                                                <i class="mdi mdi-pencil"></i>
-                                            </a>
-                                            <form method="post" action="{{ path('front_delete_reclamation', {'id': reclamation.id}) }}"
-                                                  onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette réclamation ?');"
-                                                  style="display: inline-block;">
-                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reclamation.id) }}">
-                                                <button class="btn btn-sm btn-danger" title="Supprimer">
-                                                    <i class="mdi mdi-delete"></i>
-                                                </button>
-                                            </form>
+                                            
+                                            {# Bouton Modifier - seulement si aucune réponse #}
+                                            {% if reclamation.reponses.count() == 0 %}
+                                                <a href="{{ path('front_edit_reclamation', {'id': reclamation.id}) }}"
+                                                   class="btn btn-sm btn-secondary" title="Modifier">
+                                                    <i class="mdi mdi-pencil"></i>
+                                                </a>
+                                            {% endif %}
+                                            
+                                            {# Bouton Supprimer - seulement si aucune réponse #}
+                                            {% if reclamation.reponses.count() == 0 %}
+                                                <form method="post" action="{{ path('front_delete_reclamation', {'id': reclamation.id}) }}"
+                                                      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette réclamation ?');"
+                                                      style="display: inline-block;">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reclamation.id) }}">
+                                                    <button class="btn btn-sm btn-danger" title="Supprimer">
+                                                        <i class="mdi mdi-delete"></i>
+                                                    </button>
+                                                </form>
+                                            {% endif %}
                                         </td>
                                     </tr>
                                 {% else %}
                                     <tr>
-                                        <td colspan="4" class="text-center">Vous n'avez aucune réclamation</td>
+                                        <td colspan="5" class="text-center">Vous n'avez aucune réclamation</td>
                                     </tr>
                                 {% endfor %}
                                 </tbody>

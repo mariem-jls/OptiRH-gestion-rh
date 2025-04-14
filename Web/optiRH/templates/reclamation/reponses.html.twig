@@ -3,260 +3,99 @@
 
 {% block title %}Réponses - Réclamation #{{ reclamation.id }}{% endblock %}
 
-{% block stylesheets %}
-    {{ parent() }}
-    <style>
-        .response-card {
-            border-left: 4px solid #4e73df;
-            transition: all 0.3s ease;
-            margin-bottom: 1rem;
-            border-radius: 0.35rem;
-        }
-        .response-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        .response-actions .btn {
-            padding: 0.375rem 0.75rem;
-            font-size: 0.875rem;
-            margin-left: 0.5rem;
-            min-width: 100px;
-        }
-        .form-control:focus {
-            border-color: #4e73df;
-            box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
-        }
-        .error-message {
-            color: #dc3545;
-            font-size: 0.875rem;
-            margin-top: 0.25rem;
-            display: none;
-        }
-        .is-invalid {
-            border-color: #dc3545;
-        }
-        .is-invalid ~ .error-message {
-            display: block;
-        }
-        .rating-badge {
-            font-size: 0.9rem;
-            padding: 0.35em 0.65em;
-        }
-        .status-badge {
-            font-size: 0.85rem;
-            padding: 0.35em 0.65em;
-            display: inline-flex;
-            align-items: center;
-        }
-        .status-badge i {
-            margin-right: 5px;
-        }
-        .emoji-picker {
-            position: absolute;
-            z-index: 1000;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 5px;
-            display: none;
-        }
-        .emoji-trigger {
-            cursor: pointer;
-        }
-        .action-btn i {
-            margin-right: 5px;
-        }
-    </style>
-{% endblock %}
-{% block topbar %}
-    {{ include('partials/topbar.html.twig', { page_title: 'Réponse' }) }}
-{% endblock %}
 {% block body %}
     <div class="container-fluid">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h3 text-gray-800">Réponses pour la réclamation #{{ reclamation.id }}</h1>
-            <a href="{{ path('admin_reclamations') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left mr-2"></i>Retour
-            </a>
-        </div>
-
         <div class="row">
             <div class="col-md-8">
                 <div class="card shadow mb-4">
-                    <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
-                        <h6 class="m-0 font-weight-bold">Ajouter une réponse</h6>
-                        <span class="badge bg-{{ reclamation.getStatusColor(reclamation.status) }} status-badge">
-                        {{ reclamation.getStatusIcon(reclamation.status) }} {{ reclamation.status }}
-                    </span>
-                    </div>
-                    <div class="card-body">
-                        {{ form_start(form) }}
-                        <div class="form-group">
-                            {{ form_label(form.description) }}
-                            <div class="input-group">
-                                <span class="input-group-text emoji-trigger" id="emoji-trigger">😊</span>
-                                {{ form_widget(form.description, {
-                                    'attr': {
-                                        'class': 'form-control ' ~ (form.description.vars.errors|length ? 'is-invalid' : ''),
-                                        'rows': 5
-                                    }
-                                }) }}
-                            </div>
-                            <div class="emoji-picker" id="emoji-picker">
-                                <!-- Les emojis seront ajoutés dynamiquement -->
-                            </div>
-                            <div class="error-message">
-                                {{ form_errors(form.description) }}
-                            </div>
-                            <small class="form-text text-muted">Minimum 5 caractères requis</small>
-                        </div>
-                        <div class="text-right mt-3">
-                            {{ form_widget(form.submit, {'attr': {'class': 'btn btn-primary'}}) }}
-                        </div>
-                        {{ form_end(form) }}
-                    </div>
-                </div>
-
-                <div class="card shadow">
-                    <div class="card-header bg-primary text-white py-3">
-                        <h6 class="m-0 font-weight-bold">Historique des réponses ({{ reclamation.reponses|length }})</h6>
+                    <div class="card-header bg-primary text-white">
+                        <h5>Réponses pour la réclamation #{{ reclamation.id }}</h5>
                     </div>
                     <div class="card-body">
                         {% if reclamation.reponses|length > 0 %}
                             {% for reponse in reclamation.reponses %}
-                                <div class="card response-card mb-3">
+                                <div class="card mb-3">
                                     <div class="card-body">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <div>
-                                                <h5 class="card-title">Réponse #{{ loop.index }}</h5>
-                                                <p class="card-text">{{ reponse.description }}</p>
-                                            </div>
+                                        <h6>Réponse #{{ loop.index }}</h6>
+                                        <p>{{ reponse.description }}</p>
+                                        <small class="text-muted">
+                                            Postée le {{ reponse.date|date('d/m/Y à H:i') }}
                                             {% if reponse.rating > 0 %}
-                                                <span class="badge rating-badge bg-{{ reponse.rating >= 3 ? 'success' : 'warning' }}">
-                                        Note: {{ reponse.rating }}/5
-                                    </span>
+                                                - Note: {{ reponse.rating }}/5
                                             {% endif %}
-                                        </div>
-                                        <div class="d-flex justify-content-between align-items-center mt-3">
-                                            <small class="text-muted">
-                                                <i class="far fa-clock mr-1"></i> {{ reponse.date|date('d/m/Y H:i') }}
-                                            </small>
-                                            <div class="response-actions">
-                                                <a href="{{ path('admin_reponse_edit', {'id': reponse.id}) }}"
-                                                   class="btn btn-outline-primary btn-sm action-btn"
-                                                   title="Modifier cette réponse">
-                                                    <i class="fas fa-pencil-alt mr-1"></i> Éditer
-                                                </a>
-                                                <form method="post"
-                                                      action="{{ path('admin_reponse_delete', {'id': reponse.id}) }}"
-                                                      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer définitivement cette réponse ?')"
-                                                      class="d-inline">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reponse.id) }}">
-                                                    <button class="btn btn-outline-danger btn-sm action-btn"
-                                                            title="Supprimer définitivement">
-                                                        <i class="fas fa-trash-can mr-1"></i> Effacer
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        </div>
+                                        </small>
                                     </div>
                                 </div>
                             {% endfor %}
                         {% else %}
-                            <div class="alert alert-info text-center">
-                                <i class="fas fa-info-circle mr-2"></i>Aucune réponse pour cette réclamation
-                            </div>
+                            <div class="alert alert-info">Aucune réponse pour cette réclamation</div>
                         {% endif %}
                     </div>
                 </div>
+                 
+    {% if reclamation.reponses|length > 0 %}
+        {% for reponse in reclamation.reponses %}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h6>Réponse #{{ loop.index }}</h6>
+                    <p>{{ reponse.description }}</p>
+                    <small class="text-muted">
+                        Postée le {{ reponse.date|date('d/m/Y à H:i') }}
+                        {% if reponse.rating > 0 %}
+                            - Note: {{ reponse.rating }}/5
+                        {% endif %}
+                    </small>
+                    
+                    {# Boutons d'actions (masqués si réponse notée) #}
+                    {% if reponse.rating == 0 %}
+                        <div class="mt-2">
+                            <a href="{{ path('admin_reponse_edit', {'id': reponse.id}) }}" 
+                               class="btn btn-sm btn-outline-primary">
+                                Modifier
+                            </a>
+                            <form method="post" action="{{ path('admin_reponse_delete', {'id': reponse.id}) }}" 
+                                  style="display:inline">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reponse.id) }}">
+                                <button class="btn btn-sm btn-outline-danger" 
+                                        onclick="return confirm('Confirmer la suppression ?')">
+                                    Supprimer
+                                </button>
+                            </form>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
-
+        {% endfor %}
+    {% endif %}
+            </div>
             <div class="col-md-4">
                 <div class="card shadow">
-                    <div class="card-header bg-primary text-white py-3">
-                        <h6 class="m-0 font-weight-bold">Détails de la réclamation</h6>
+                    <div class="card-header bg-primary text-white">
+                        <h5>Ajouter une réponse</h5>
                     </div>
                     <div class="card-body">
-                        <div class="mb-3">
-                            <h6 class="font-weight-bold">Description :</h6>
-                            <p class="text-justify">{{ reclamation.description }}</p>
-                        </div>
-                        <div class="row">
-                            <div class="col-12">
-                                <h6 class="font-weight-bold">Date :</h6>
-                                <p>{{ reclamation.date|date('d/m/Y H:i') }}</p>
-                            </div>
-                        </div>
+                        {{ form_start(form) }}
+                            {{ form_widget(form) }}
+                        {{ form_end(form) }}
+                    </div>
+                </div>
+                
+                <div class="card shadow mt-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5>Détails de la réclamation</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Type:</strong> {{ reclamation.type }}</p>
+                        <p><strong>Description:</strong> {{ reclamation.description }}</p>
+                        <p><strong>Statut:</strong> 
+                            <span class="badge bg-{{ reclamation.getStatusColor(reclamation.status) }}">
+                                {{ reclamation.status }}
+                            </span>
+                        </p>
+                        <p><strong>Date:</strong> {{ reclamation.date|date('d/m/Y H:i') }}</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-{% endblock %}
-
-{% block javascripts %}
-    {{ parent() }}
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Gestion des emojis
-            const emojiTrigger = document.getElementById('emoji-trigger');
-            const emojiPicker = document.getElementById('emoji-picker');
-            const descriptionField = document.getElementById('{{ form.description.vars.id }}');
-
-            // Liste d'emojis courants
-            const commonEmojis = ['😀', '😂', '😊', '😍', '👍', '👎', '❤️', '🔥', '🎉', '🙏'];
-
-            // Remplir le picker d'emojis
-            commonEmojis.forEach(emoji => {
-                const span = document.createElement('span');
-                span.textContent = emoji;
-                span.style.cursor = 'pointer';
-                span.style.margin = '0 3px';
-                span.style.fontSize = '1.2em';
-                span.addEventListener('click', () => {
-                    const currentPos = descriptionField.selectionStart;
-                    const currentValue = descriptionField.value;
-                    descriptionField.value = currentValue.substring(0, currentPos) + emoji + currentValue.substring(currentPos);
-                    descriptionField.focus();
-                    descriptionField.selectionStart = currentPos + emoji.length;
-                    descriptionField.selectionEnd = currentPos + emoji.length;
-                    emojiPicker.style.display = 'none';
-                });
-                emojiPicker.appendChild(span);
-            });
-
-            // Afficher/masquer le picker
-            emojiTrigger.addEventListener('click', (e) => {
-                e.preventDefault();
-                emojiPicker.style.display = emojiPicker.style.display === 'none' ? 'block' : 'none';
-
-                // Positionner le picker
-                const rect = emojiTrigger.getBoundingClientRect();
-                emojiPicker.style.position = 'fixed';
-                emojiPicker.style.left = `${rect.left}px`;
-                emojiPicker.style.top = `${rect.bottom}px`;
-            });
-
-            // Fermer le picker quand on clique ailleurs
-            document.addEventListener('click', (e) => {
-                if (!emojiTrigger.contains(e.target) && !emojiPicker.contains(e.target)) {
-                    emojiPicker.style.display = 'none';
-                }
-            });
-
-            // Gestion des couleurs dans le select de statut
-            document.querySelectorAll('select[name="status"]').forEach(select => {
-                select.addEventListener('change', function() {
-                    const selectedOption = this.options[this.selectedIndex];
-                    const color = selectedOption.getAttribute('data-color');
-                    this.className = `form-select bg-${color}-subtle text-${color}`;
-                });
-
-                // Initialiser la couleur au chargement
-                const selectedOption = select.options[select.selectedIndex];
-                const color = selectedOption.getAttribute('data-color');
-                select.className = `form-select bg-${color}-subtle text-${color}`;
-            });
-        });
-    </script>
 {% endblock %}

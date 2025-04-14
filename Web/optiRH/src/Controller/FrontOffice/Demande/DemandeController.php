@@ -60,7 +60,7 @@ class DemandeController extends AbstractController
             $file = $form->get('fichierPieceJointe')->getData();
             if ($file) {
                 // Utiliser le nom original du fichier avec timestamp pour éviter les écrasements
-                $originalFileName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                $originalFileName = pathinfo($file->getClientOriginalName(), \PATHINFO_FILENAME);
                 $extension = $file->getClientOriginalExtension();
                 $fileName = $originalFileName . '_' . time() . '.' . $extension;
 

@@ -1,60 +1,133 @@
 {% extends 'partials/layout-vertical.html.twig' %}
 
-{% block title %}Détails de l'Événement{% endblock %}
+{% block title %}Détails de l'Événement • Réservations{% endblock %}
 
 {% block topbar %}
-    {{ include('partials/topbar.html.twig', { page_title: ' Liste des Réservations' }) }}
+    {{ include('partials/topbar.html.twig', { 
+        page_title: 'Réservations pour ' ~ evenement.titre,
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+    }) }}
 {% endblock %}
 
 {% block body %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center">
+        <span class="badge rounded-pill bg-primary p-2 me-2">
+            <i class="mdi mdi-ticket-confirmation-outline me-1"></i>
+            {{ reservations|length }} réservation(s)
+        </span>
+        <span class="badge rounded-pill bg-soft-primary p-2">
+            <i class="mdi mdi-calendar-check me-1"></i>
+            {{ evenement.dateDebut|date('d/m/Y') }}
+        </span>
+    </div>
+    
+    <a href="{{ path('app_evenement_index') }}" class="btn btn-outline-primary rounded-pill">
+        <i class="mdi mdi-arrow-left me-1"></i> Retour aux événements
+    </a>
+</div>
 
-
-<div class="row mb-3">
+<div class="row mb-4">
     <div class="col-md-6">
-        <div class="search-box">
-            <div class="position-relative">
-                <input type="text" class="form-control" placeholder="Rechercher .">
-                    <i class="mdi mdi-magnify search-icon"></i>
+        <div class="search-box shadow-sm">
+            <div class="position-relative has-icon-right">
+                <input type="text" class="form-control rounded-pill ps-4" placeholder="Rechercher une réservation...">
+                
             </div>
         </div>
+    </div>
+    <div class="col-md-6 text-md-end mt-2 mt-md-0">
+        <button class="btn btn-soft-primary rounded-pill me-2">
+            <i class="mdi mdi-printer-outline me-1"></i> Imprimer
+        </button>
+        <button class="btn btn-soft-success rounded-pill">
+            <i class="mdi mdi-file-excel-outline me-1"></i> Exporter
+        </button>
     </div>
 </div>
 
 {% if reservations is empty %}
-    <div class="alert alert-info">Aucune réservation pour cet événement.</div>
-{% else %}
-<div class="col-12">
-        <div class="card">
-            <div class="card-body">
-                <!-- Barre de recherche -->
-                <div class="table-responsive">
-                                <table class="table table-hover table-centered table-nowrap mb-0">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Nom</th>
-                                            <th>prenom</th>
-                                            <th>Email</th>
-                                            <th>Téléphone</th>
-                                            <th>Date de réservation</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                    {% for reservation in reservations %}
-                                        <tr>
-                                            <td>{{ reservation.User.nom }}</td>
-                                            <td>{{ reservation.getLastName() }}</td>
-                                            <td>{{ reservation.email }}</td>
-                                            <td>{{ reservation.telephone }}</td>
-                                            <td>{{ reservation.dateReservation|date('Y-m-d H:i') }}</td>
-                                        </tr>
-                                    {% endfor %}
-                                    </tbody>
-                                </table>
+    <div class="card shadow-sm border-0">
+        <div class="card-body text-center py-5">
+            <div class="avatar-md mx-auto mb-4">
+                <div class="avatar-title bg-soft-primary text-primary rounded-circle">
+                    <i class="mdi mdi-ticket-account h1"></i>
                 </div>
             </div>
+            <h4 class="text-muted">Aucune réservation pour cet événement</h4>
+            <p class="text-muted mb-4">Les réservations apparaîtront ici lorsqu'elles seront effectuées.</p>
+            <a href="#" class="btn btn-primary rounded-pill">
+                <i class="mdi mdi-share-variant me-1"></i> Partager l'événement
+            </a>
         </div>
     </div>
+{% else %}
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive rounded">
+            <table class="table table-hover table-borderless mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4 rounded-start">Nom et Prenom</th>
+                        <th>Contact</th>
+                        <th>Date Réservation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for reservation in reservations %}
+                    <tr class="border-top">
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-xs me-3">
+                                    <span class="avatar-title bg-soft-primary rounded-circle">
+                                        {{ reservation.firstName|first|upper }}{{ reservation.lastName|first|upper }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">{{ reservation.firstName }} {{ reservation.lastName }}</h6>
+                                </div>
+                            </div>
+                        </td>
+                        <td
+                        <td>
+                            <div>
+                                <span class="d-block">{{ reservation.email }}</span>
+                                <small class="text-muted">{{ reservation.telephone }}</small>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <i class="mdi mdi-calendar-blank-outline text-muted me-2"></i>
+                                {{ reservation.dateReservation|date('d/m/Y H:i') }}
+                            </div>
+                        </td>
+                        
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer bg-light border-top">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="text-muted">
+                Affichage de <span class="fw-semibold">1</span> à <span class="fw-semibold">{{ reservations|length }}</span> 
+                sur <span class="fw-semibold">{{ reservations|length }}</span> réservations
+            </div>
+            <ul class="pagination pagination-separated pagination-sm mb-0">
+                <li class="page-item disabled">
+                    <a href="#" class="page-link">←</a>
+                </li>
+                <li class="page-item active">
+                    <a href="#" class="page-link">1</a>
+                </li>
+                <li class="page-item">
+                    <a href="#" class="page-link">→</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
 {% endif %}
 
-<a href="{{ path('app_evenement_index') }}" class="btn btn-secondary mt-3">Retour</a>
 {% endblock %}

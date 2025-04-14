@@ -7,7 +7,9 @@
                 <i class="fas fa-heading input-icon"></i>
                 {{ form_label(form.titre, null, {'label_attr': {'class': 'form-label'}}) }}
                 {{ form_widget(form.titre, {'attr': {'class': 'form-control form-control-sm'}}) }}
-                {{ form_errors(form.titre) }}
+                <div class="text-danger">
+                    {{ form_errors(form.titre) }}
+                </div>
             </div>
 
             <!-- Lieu -->
@@ -15,7 +17,9 @@
                 <i class="fas fa-map-marker-alt input-icon"></i>
                 {{ form_label(form.lieu, null, {'label_attr': {'class': 'form-label'}}) }}
                 {{ form_widget(form.lieu, {'attr': {'class': 'form-control form-control-sm', 'id': 'event_lieu'}}) }}
-                {{ form_errors(form.lieu) }}
+                <div class="text-danger">
+                    {{ form_errors(form.lieu) }}
+                </div>
             </div>
 
             <!-- Dates -->
@@ -24,13 +28,17 @@
                     <i class="far fa-calendar-alt input-icon"></i>
                     {{ form_label(form.date_debut, null, {'label_attr': {'class': 'form-label'}}) }}
                     {{ form_widget(form.date_debut, {'attr': {'class': 'form-control form-control-sm flatpickr-date'}}) }}
-                    {{ form_errors(form.date_debut) }}
+                    <div class="text-danger">
+                        {{ form_errors(form.date_debut) }}
+                    </div>
                 </div>
                 <div class="col-md-6 mb-3 input-with-icon">
                     <i class="far fa-calendar-alt input-icon"></i>
                     {{ form_label(form.date_fin, null, {'label_attr': {'class': 'form-label'}}) }}
                     {{ form_widget(form.date_fin, {'attr': {'class': 'form-control form-control-sm flatpickr-date'}}) }}
-                    {{ form_errors(form.date_fin) }}
+                    <div class="text-danger">
+                        {{ form_errors(form.date_fin) }}
+                    </div>
                 </div>
             </div>
 
@@ -39,7 +47,9 @@
                 <i class="far fa-clock input-icon"></i>
                 {{ form_label(form.heure, null, {'label_attr': {'class': 'form-label'}}) }}
                 {{ form_widget(form.heure, {'attr': {'class': 'form-control form-control-sm flatpickr-time'}}) }}
-                {{ form_errors(form.heure) }}
+                <div class="text-danger">
+                    {{ form_errors(form.heure) }}
+                </div>
             </div>
         </div>
 
@@ -51,16 +61,21 @@
                     <i class="fas fa-laptop-house input-icon"></i>
                     {{ form_label(form.modalite, null, {'label_attr': {'class': 'form-label'}}) }}
                     {{ form_widget(form.modalite, {'attr': {'class': 'form-select form-select-sm select2', 'id': 'event_modalite'}}) }}
-                    {{ form_errors(form.modalite) }}
+                    <div class="text-danger">
+                        {{ form_errors(form.modalite) }}
+                    </div>
                 </div>
                 <div class="col-md-6 mb-3 input-with-icon">
                     <i class="fas fa-tags input-icon"></i>
                     {{ form_label(form.type, null, {'label_attr': {'class': 'form-label'}}) }}
                     {{ form_widget(form.type, {'attr': {'class': 'form-select form-select-sm select2'}}) }}
-                    {{ form_errors(form.type) }}
+                    <div class="text-danger">
+                        {{ form_errors(form.type) }}
+                    </div>
                 </div>
             </div>
 
+            <!-- Image -->
             <!-- Image -->
             <div class="mb-3">
                 <label class="form-label">Image</label>
@@ -68,11 +83,21 @@
                     <button type="button" class="btn btn-sm btn-outline-primary file-select-btn">
                         <i class="fas fa-image me-2"></i>Choisir une image
                     </button>
-                    <span class="file-name ms-2">Aucun fichier sélectionné</span>
-                    {{ form_widget(form.image) }}
+                    <span class="file-name ms-2">
+                        {% if form.vars.value.image %}
+                            {{ form.vars.value.image }}
+                        {% else %}
+                            Aucun fichier sélectionné
+                        {% endif %}
+                    </span>
+                    {{ form_widget(form.image, {'attr': {'class': 'file-input', 'style': 'display:none;'}}) }}
                 </div>
-                {{ form_errors(form.image) }}
+
+                <div class="text-danger">
+                    {{ form_errors(form.image) }}
+                </div>
             </div>
+
 
             <!-- Prix -->
             <div class="mb-3 input-with-icon">
@@ -82,7 +107,9 @@
                     {{ form_widget(form.prix, {'attr': {'class': 'form-control'}}) }}
                     <span class="input-group-text bg-transparent">€</span>
                 </div>
-                {{ form_errors(form.prix) }}
+                <div class="text-danger">
+                    {{ form_errors(form.prix) }}
+                </div>
             </div>
 
             <!-- Coordonnées -->
@@ -91,13 +118,17 @@
                     <i class="fas fa-globe-americas input-icon"></i>
                     {{ form_label(form.latitude, null, {'label_attr': {'class': 'form-label'}}) }}
                     {{ form_widget(form.latitude, {'attr': {'class': 'form-control form-control-sm'}}) }}
-                    {{ form_errors(form.latitude) }}
+                    <div class="text-danger">
+                        {{ form_errors(form.latitude) }}
+                    </div>
                 </div>
                 <div class="col-md-6 mb-3 geo-input-group input-with-icon">
                     <i class="fas fa-globe-americas input-icon"></i>
                     {{ form_label(form.longitude, null, {'label_attr': {'class': 'form-label'}}) }}
                     {{ form_widget(form.longitude, {'attr': {'class': 'form-control form-control-sm'}}) }}
-                    {{ form_errors(form.longitude) }}
+                    <div class="text-danger">
+                        {{ form_errors(form.longitude) }}
+                    </div>
                 </div>
             </div>
         </div>
@@ -107,7 +138,9 @@
             <i class="fas fa-align-left input-icon textarea-icon"></i>
             {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
             {{ form_widget(form.description, {'attr': {'class': 'form-control form-control-sm', 'rows': '3'}}) }}
-            {{ form_errors(form.description) }}
+            <div class="text-danger">
+                {{ form_errors(form.description) }}
+            </div>
         </div>
 
         <!-- Boutons -->
@@ -134,6 +167,44 @@
             const fileInput = document.querySelector('.file-input');
             const fileSelectBtn = document.querySelector('.file-select-btn');
             const fileNameSpan = document.querySelector('.file-name');
+            const modaliteSelect = document.getElementById('{{ form.modalite.vars.id }}'); // Meilleure façon de cibler
+            const lieuInput = document.getElementById('{{ form.lieu.vars.id }}');
+
+             // Fonction de gestion du changement
+            function updateLieuField() {
+                if (modaliteSelect.value === 'En ligne') {
+                    lieuInput.value = 'En ligne';
+                    lieuInput.readOnly = true;
+                    lieuInput.classList.add('bg-light');
+                } else {
+                    lieuInput.readOnly = false;
+                    lieuInput.classList.remove('bg-light');
+                    if (lieuInput.value === 'En ligne') {
+                        lieuInput.value = '';
+                    }
+                }
+            }
+
+fileSelectBtn.addEventListener('click', function () {
+    fileInput.click();
+});
+
+fileInput.addEventListener('change', function () {
+    if (this.files && this.files[0]) {
+        fileNameSpan.textContent = this.files[0].name;
+        fileNameSpan.style.color = '#28a745';
+    } else {
+        fileNameSpan.textContent = 'Aucun fichier sélectionné';
+        fileNameSpan.style.color = '#6c757d';
+    }
+});
+    // Écouteur d'événement
+    modaliteSelect.addEventListener('change', updateLieuField);
+    
+    // Appliquer au chargement si nécessaire
+    updateLieuField();
+        
+
 
             fileSelectBtn.addEventListener('click', function() {
                 fileInput.click();
