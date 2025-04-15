@@ -106,87 +106,62 @@
     <!-- SweetAlert2 JS -->
     <script src="{{ asset('/libs/sweetalert2/sweetalert2.all.min.js') }}"></script>
     
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('projectForm');
-            const submitBtn = document.getElementById('submitBtn');
+<script>
+document.getElementById('projectForm').addEventListener('submit', function (e) {
+    e.preventDefault();
 
-            // Configuration Parsley
-            window.Parsley.setLocale('fr');
-            
-            // Configuration globale Parsley
-            window.Parsley.options = {
-                errorClass: 'is-invalid',
-                successClass: 'is-valid',
-                errorsWrapper: '<div class="invalid-feedback"></div>',
-                errorTemplate: '<span></span>',
-                trigger: 'change'
-            };
+    const form = e.target;
+    const url = form.action;
+    const formData = new FormData(form);
 
-            // Gestion de la soumission
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-
-                // Validation Parsley
-                const parsley = $(form).parsley();
-                
-                if (!parsley.validate()) {
-                    return;
-                }
-
-                // Afficher le loader
-                Swal.fire({
-                    title: 'Enregistrement en cours...',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
-
-                // Création FormData
-                const formData = new FormData(form);
-
-                // Soumission AJAX
-                fetch(form.action, {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => {
-                    if (response.ok) {
-                        return response.text();
-                    }
-                    throw new Error('Erreur réseau');
-                })
-                .then(() => {
-                    // Succès
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Succès !',
-                        text: 'Projet enregistré avec succès',
-                        showConfirmButton: false,
-                        timer: 1500
-                    }).then(() => {
-                        window.location.href = "{{ path('gs-projet_project_index') }}";
-                    });
-                })
-                .catch(error => {
-                    // Erreur
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Erreur',
-                        text: error.message || 'Échec de l\'enregistrement'
-                    });
-                });
+    fetch(url, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json().then(data => ({status: response.status, body: data})))
+    .then(({status, body}) => {
+        if (status === 200) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Succès',
+                text: body.message
+            }).then(() => {
+                window.location.href = "{{ path('gs-projet_project_index') }}";
             });
-
-            // Gestion de la fermeture de page avec formulaire modifié
-            window.addEventListener('beforeunload', function(e) {
-                if (form.checkValidity()) {
-                    return undefined;
+        } else if (status === 400) {
+            // Affichage des erreurs
+            for (const [field, messages] of Object.entries(body.errors)) {
+                const input = document.querySelector(`[name$="[${field}]"]`);
+                if (input) {
+                    input.classList.add('is-invalid');
+                    let feedback = input.closest('.mb-3').querySelector('.invalid-feedback');
+                    if (feedback) {
+                        feedback.textContent = messages.join(', ');
+                    }
                 }
-                e.preventDefault();
-                e.returnValue = '';
+            }
+
+            document.querySelector('.alert.alert-warning').classList.remove('d-none');
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Erreur',
+                text: body.message || 'Une erreur est survenue.'
             });
+        }
+    })
+    .catch(error => {
+        console.error('Erreur :', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Erreur',
+            text: 'Une erreur inattendue est survenue.'
         });
-    </script>
+    });
+});
+</script>
+
 {% endblock %}

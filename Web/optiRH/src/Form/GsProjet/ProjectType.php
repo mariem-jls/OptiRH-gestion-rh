@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Form\GsProjet;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+
 
 use App\Entity\GsProjet\Project;
 use Symfony\Component\Form\AbstractType;
@@ -14,24 +16,30 @@ class ProjectType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('nom', null, [
-                'label' => 'Nom du projet',
-                'attr' => ['placeholder' => 'Entrez le nom du projet']
-            ])
-            ->add('description', null, [
-                'label' => 'Description',
-                'attr' => ['rows' => 5]
-            ])
-            ->add('status', ChoiceType::class, [
-                'label' => 'Statut',
-                'choices' => [
-                    'En cours' => 'En cours',
-                    'Terminé' => 'Terminé',
-                    'Annulé' => 'Annulé',
-                ],
-                'placeholder' => 'Sélectionnez un statut',
-                'required' => false,
-            ])
+        ->add('nom', null, [
+            'attr' => [
+                'pattern' => '[a-zA-Z0-9À-ÿ\s\-_.,]{3,100}',
+                'title' => '3-100 caractères, alphanumériques et -_,.'
+            ]
+        ])
+        ->add('description', TextareaType::class, [
+            'attr' => [
+                'minlength' => 20,
+                'maxlength' => 1000,
+                'data-parsley-pattern' => '/^[a-zA-Z0-9À-ÿ\s\-_.,!\?\'"]+$/'
+            ]
+        ])
+        ->add('status', ChoiceType::class, [
+            'label' => 'Statut',
+            'choices' => [
+                'Actif' => Project::STATUS_ACTIVE,
+                'En Cour' => Project::STATUS_INACTIVE,
+                'Terminé' => Project::STATUS_COMPLETED,
+                'En retard' => Project::STATUS_DELAYED
+            ],
+            'placeholder' => 'Sélectionnez un statut',
+            'required' => true, // Rendre obligatoire si besoin
+        ])
             ->add('submit', SubmitType::class, [
                 'label' => 'Enregistrer',
                 'attr' => ['class' => 'btn btn-primary']

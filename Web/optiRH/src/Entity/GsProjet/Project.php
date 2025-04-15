@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Entity\GsProjet;
+use Symfony\Component\Validator\Constraints as Assert;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -17,11 +18,50 @@ class Project
     #[ORM\Column]
     private ?int $id = null;
 
+    
     #[ORM\Column(length: 100)]
+    #[Assert\NotBlank(message: "Le nom du projet est obligatoire")]
+    #[Assert\Length(
+        min: 3,
+        max: 100,
+        minMessage: "Le nom doit contenir au moins {{ limit }} caractères",
+        maxMessage: "Le nom ne peut pas dépasser {{ limit }} caractères"
+    )]
+    #[Assert\Regex(
+        pattern: "/^[a-zA-Z0-9À-ÿ\s\-\_\.\,]+$/",
+        message: "Caractères autorisés : lettres, chiffres, espaces, -_,."
+    )]
     private ?string $nom = null;
 
     #[ORM\Column(type: 'text', nullable: true)]
+    #[Assert\NotBlank(message: "La description est obligatoire")]
+    #[Assert\Length(
+        min: 20,
+        max: 1000,
+        minMessage: "La description doit contenir au moins {{ limit }} caractères",
+        maxMessage: "La description ne peut pas dépasser {{ limit }} caractères"
+    )]
+    #[Assert\Regex(
+        pattern: "/^[a-zA-Z0-9À-ÿ\s\-\_\.\,\!\?\'\"]+$/",
+        message: "Caractères spéciaux non autorisés"
+    )]
     private ?string $description = null;
+    public const STATUS_ACTIVE = 'Actif';
+    public const STATUS_INACTIVE = 'En Cour';
+    public const STATUS_COMPLETED = 'Terminé';
+    public const STATUS_DELAYED = 'En retard';
+    #[ORM\Column(type: 'string', length: 20, nullable: true)]
+    #[Assert\NotBlank(message: "Le statut est obligatoire")]
+    #[Assert\Choice(
+        choices: [
+            self::STATUS_ACTIVE,
+            self::STATUS_INACTIVE,
+            self::STATUS_COMPLETED,
+            self::STATUS_DELAYED
+        ],
+        message: "Statut invalide"
+    )]
+    private ?string $status = null;
 
     #[ORM\Column(type: 'datetime')]
     private ?\DateTimeInterface $createdAt = null;
@@ -32,15 +72,9 @@ class Project
 
     #[ORM\OneToMany(mappedBy: 'project', targetEntity: Mission::class)]
     private Collection $missions;
-    public const STATUS_ACTIVE = 'Actif';
-public const STATUS_INACTIVE = 'Inactif';
-public const STATUS_COMPLETED = 'Terminé';
-public const STATUS_DELAYED = 'En retard';
+   
 
 
-
-    #[ORM\Column(type: 'string', length: 20, nullable: true)]
-    private ?string $status = null;
 
     public function __construct()
     {

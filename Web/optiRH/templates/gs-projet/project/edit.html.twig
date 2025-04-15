@@ -15,7 +15,7 @@
                 <p class="sub-header">Tous les champs marqués d'une astérisque (*) sont obligatoires</p>
 
                 <div id="form-container">
-                    {{ include('gs-projet/project/_form.html.twig') }}
+                    {{ include('gs-projet/project/_form.html.twig', { form: form }) }}
                 </div>
             </div>
         </div>
@@ -31,92 +31,92 @@
     <!-- SweetAlert2 JS -->
     <script src="{{ asset('/libs/sweetalert2/sweetalert2.all.min.js') }}"></script>
     
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const formContainer = document.getElementById('form-container');
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const formContainer = document.getElementById('form-container');
+
+        const initForm = () => {
+            const form = document.getElementById('editProjectForm');
+            if (!form) return;
+
+            window.Parsley.setLocale('fr');
             
-            const initForm = () => {
-                const form = document.getElementById('editProjectForm');
-                if (!form) return;
+            // Réinitialiser Parsley
+            const parsleyInstance = $(form).parsley().destroy();
+            $(form).parsley().reset();
 
-                // Configuration Parsley
-                window.Parsley.setLocale('fr');
-                
-                window.Parsley.options = {
-                    errorClass: 'is-invalid',
-                    successClass: 'is-valid',
-                    errorsWrapper: '<div class="invalid-feedback"></div>',
-                    errorTemplate: '<span></span>',
-                    trigger: 'change'
-                };
-
-                form.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    const parsley = $(form).parsley();
-                    
-                    if (!parsley.validate()) {
-                        return;
-                    }
-
-                    Swal.fire({
-                        title: 'Mise à jour en cours...',
-                        allowOutsideClick: false,
-                        didOpen: () => Swal.showLoading()
-                    });
-
-                    const formData = new FormData(form);
-
-                    fetch(form.action, {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
-                    })
-                    .then(async response => {
-                        const contentType = response.headers.get('content-type');
-                        
-                        if (contentType && contentType.includes('application/json')) {
-                            return response.json();
-                        }
-                        
-                        const text = await response.text();
-                        throw new Error(`Réponse inattendue : ${text.substring(0, 100)}...`);
-                    })
-                    .then(data => {
-                        if (data.status === 'success') {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Succès !',
-                                text: data.message,
-                                showConfirmButton: false,
-                                timer: 1500
-                            }).then(() => {
-                                window.location.href = "{{ path('gs-projet_project_index') }}";
-                            });
-                        } 
-                        else if (data.status === 'form_error') {
-                            Swal.close();
-                            formContainer.innerHTML = data.formHtml;
-                            initForm();
-                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                        }
-                        else {
-                            throw new Error(data.message || 'Erreur inconnue');
-                        }
-                    })
-                    .catch(error => {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Erreur',
-                            html: `<small>${error.message}</small>`,
-                            scrollbarPadding: false
-                        });
-                    });
-                });
+            window.Parsley.options = {
+                errorClass: 'is-invalid',
+                successClass: 'is-valid',
+                errorsWrapper: '<div class="invalid-feedback"></div>',
+                errorTemplate: '<span></span>',
+                trigger: 'change'
             };
 
-            initForm();
-        });
-    </script>
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const parsley = $(form).parsley();
+
+                if (!parsley.validate()) {
+                    document.getElementById('form-error-alert').classList.remove('d-none');
+                    return;
+                }
+
+                document.getElementById('form-error-alert').classList.add('d-none');
+
+                Swal.fire({
+                    title: 'Mise à jour en cours...',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+
+                const formData = new FormData(form);
+
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(async response => {
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.message || 'Erreur serveur');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.status === 'success') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Succès !',
+                            text: data.message,
+                            showConfirmButton: false,
+                            timer: 1500
+                        }).then(() => {
+                            window.location.href = "{{ path('gs-projet_project_index') }}";
+                        });
+                    } 
+                    else if (data.status === 'form_error') {
+                        Swal.close();
+                        formContainer.innerHTML = data.formHtml;
+                        initForm();
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erreur',
+                        html: `<small>${error.message}</small>`,
+                        scrollbarPadding: false
+                    });
+                });
+            });
+        };
+
+        initForm();
+    });
+</script>
 {% endblock %}

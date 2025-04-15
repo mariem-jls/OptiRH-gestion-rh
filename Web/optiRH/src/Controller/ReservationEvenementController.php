@@ -37,17 +37,25 @@ class ReservationEvenementController extends AbstractController
     {
         $reservation = new ReservationEvenement();
         $reservation->setEvenement($evenement); 
-    
-        // Récupérer l'utilisateur connecté
-        $user = $this->getUser(); 
+        $user = $this->getUser();
+        $reservation->setFirstName($user->getNom()); 
+        $reservation->setEmail($user->getEmail()); 
         if ($user) {
-            $reservation->setUser($user); // Lier la réservation à l'utilisateur connecté
+            $reservation->setUser($user); 
         } else {
             
             return $this->redirectToRoute('app_login');
         }
+        $existingReservation = $entityManager->getRepository(ReservationEvenement::class)
+        ->findOneBy(['user' => $user, 'Evenement' => $evenement]);
+
+        if ($existingReservation) {
+            $this->addFlash('warning', 'Vous avez déjà réservé pour cet événement.');
+            return $this->redirectToRoute('app_evenement_indexfront');
+        }
     
         $form = $this->createForm(ReservationEvenementType::class, $reservation);
+        
         $form->handleRequest($request);
     
         if ($form->isSubmitted() && $form->isValid()) {
@@ -73,9 +81,17 @@ class ReservationEvenementController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $reservationEvenementRepository->save($reservationEvenement, true);
+            try{
+                $reservationEvenementRepository->save($reservationEvenement, true);
+                $this->addFlash('success', 'La réservation a été modifiée avec succès !');
+                return $this->redirectToRoute('app_user_reservations', [], Response::HTTP_SEE_OTHER);
 
-            return $this->redirectToRoute('app_user_reservations', [], Response::HTTP_SEE_OTHER);
+            }catch(\Exception $e){
+                $this->addFlash('danger', 'Une erreur est survenue lors de la modification de la réservation.');
+
+            }
+            
+
         }
 
         return $this->renderForm( 'reservation_evenement/edit.html.twig', [

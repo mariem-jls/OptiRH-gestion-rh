@@ -1,10 +1,9 @@
 {% extends 'front-base.html.twig' %}
 
-{% block title %}About us{% endblock %}
+{% block title %}À propos de nous{% endblock %}
 
 {% block stylesheets %}
-    {{ parent() }} {# Conserve les styles de la base #}
-
+    {{ parent() }}
 {% endblock %}
 
 {% block body %}
@@ -22,8 +21,8 @@
                     <div class="row">
                         <div class="col-xl-12">
                             <div class="hero-cap text-center">
-                                <h2>Transforming HR Management</h2>
-                                <p class="lead text-light">Where Technology Meets Human Potential</p>
+                                <h2>Transformer la gestion RH</h2>
+                                <p class="lead text-light">Quand la technologie rencontre le potentiel humain</p>
                             </div>
                         </div>
                     </div>
@@ -31,6 +30,7 @@
             </div>
         </div>
         <!-- Hero Area End -->
+
         <!-- Support Company Start-->
         <div class="support-company-area fix section-padding2">
             <div class="container">
@@ -39,61 +39,65 @@
                         <div class="right-caption">
                             <!-- Section Tittle -->
                             <div class="section-tittle section-tittle2">
-                                <span>About Us</span>
+                                <span>À propos de nous</span>
                             </div>
                             <div class="support-caption">
-                                <p class="pera-top lead">OptiRH revolutionizes HR management through intelligent solutions that combine desktop power with web flexibility. Our mission is to empower organizations with tools that transform HR operations into strategic assets.</p>
+                                <p class="pera-top lead">
+                                    OptiRH révolutionne la gestion des ressources humaines grâce à des solutions intelligentes combinant la puissance du bureau à la flexibilité du web. Notre mission est de fournir aux organisations des outils qui transforment les RH en atouts stratégiques.
+                                </p>
 
                                 <!-- What We Do Section -->
                                 <div class="vision-box">
                                     <div class="section-tittle section-tittle2">
-                                        <span>What We Do</span>
+                                        <span>Nos services</span>
                                     </div>
                                     <ul class="feature-list">
-                                        <li> <strong>User Management:</strong> Manage user accounts, roles, and access rights securely.</li>
-                                        <li> <strong>Opportunities:</strong> Publish and track job and internship offers with ease.</li>
-                                        <li> <strong>Event Management:</strong> Organize and monitor internal company events.</li>
-                                        <li> <strong>Claims Handling:</strong> Streamlined processing with AI-powered insights.</li>
-                                        <li> <strong>Transport System:</strong> Simplified planning and reservation of employee transportation.</li>
-                                        <li> <strong>Mission Control:</strong> Assign tasks and follow project progress in real time.</li>
+                                        <li><strong>Gestion des utilisateurs :</strong> Gérer les comptes, rôles et accès de manière sécurisée.</li>
+                                        <li><strong>Opportunités :</strong> Publier et suivre les offres d’emploi et de stage facilement.</li>
+                                        <li><strong>Gestion des événements :</strong> Organiser et suivre les événements internes de l’entreprise.</li>
+                                        <li><strong>Traitement des réclamations :</strong> Traitement simplifié avec des analyses propulsées par l’IA.</li>
+                                        <li><strong>Système de transport :</strong> Planification et réservation des transports pour les employés.</li>
+                                        <li><strong>Contrôle des missions :</strong> Affecter les tâches et suivre l’avancement des projets en temps réel.</li>
                                     </ul>
                                 </div>
-
 
                                 <!-- Our Vision Section -->
                                 <div class="vision-box mt-4">
                                     <div class="section-tittle section-tittle2">
-                                        <span>Our Vision</span>
+                                        <span>Notre vision</span>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
                                             <div class="card h-100">
                                                 <div class="card-body">
-                                                    <i class="fas fa-brain fa-3x mb-3" style="color: #1b3583;"></i>                                                    <h5>Automation First</h5>
-                                                    <p>Reduce manual work through smart workflows</p>
+                                                    <i class="fas fa-brain fa-3x mb-3" style="color: #1b3583;"></i>
+                                                    <h5>Automatisation d'abord</h5>
+                                                    <p>Réduction des tâches manuelles grâce à des workflows intelligents</p>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="col-md-6 mb-3">
                                             <div class="card h-100">
                                                 <div class="card-body">
-                                                    <i class="fas fa-shield-alt fa-3x mb-3" style="color: #1b3583;"></i>                                                    <h5>Secure & Scalable</h5>
-                                                    <p>Enterprise-grade security with cloud flexibility</p>
+                                                    <i class="fas fa-shield-alt fa-3x mb-3" style="color: #1b3583;"></i>
+                                                    <h5>Sécurisé et évolutif</h5>
+                                                    <p>Sécurité de niveau entreprise avec la flexibilité du cloud</p>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <a href="{{ path('app_front_active') }}" class="btn btn-primary mt-3 px-5 py-3">Post a Job <i class="fas fa-arrow-right ms-2"></i></a>
+                                <a href="{{ path('app_front_active') }}" class="btn btn-primary mt-3 px-5 py-3">Postuler <i class="fas fa-arrow-right ms-2"></i></a>
                             </div>
                         </div>
                     </div>
+
                     <div class="col-xl-6 col-lg-6">
                         <div class="support-location-img">
                             <img src="{{ asset('img-front/service/support-img.jpg') }}" alt="">
                             <div class="support-img-cap text-center">
-                                <p>Since</p>
+                                <p>Depuis</p>
                                 <span>2025</span>
                             </div>
                         </div>
@@ -102,18 +106,20 @@
             </div>
         </div>
         <!-- Support Company End-->
-        <!-- How  Apply Process Start-->
+
+        <!-- How Apply Process Start-->
         <div class="apply-process-area apply-bg pt-150 pb-150 mb-5" data-background="{{ asset('img-front/gallery/how-applybg.png') }}">
             <div class="container">
                 <!-- Section Tittle -->
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="section-tittle white-text text-center">
-                            <span>Apply process</span>
-                            <h2> How it works</h2>
+                            <span>Processus de candidature</span>
+                            <h2>Comment ça marche</h2>
                         </div>
                     </div>
                 </div>
+
                 <!-- Apply Process Caption -->
                 <div class="row">
                     <div class="col-lg-4 col-md-6">
@@ -122,39 +128,40 @@
                                 <span class="flaticon-search"></span>
                             </div>
                             <div class="process-cap">
-                                <h5>1. Secure Login</h5>
-                                <p> Users sign in with personalized roles and access levels.</p>
+                                <h5>1. Connexion sécurisée</h5>
+                                <p>Les utilisateurs se connectent avec des rôles et niveaux d'accès personnalisés.</p>
                             </div>
                         </div>
                     </div>
+
                     <div class="col-lg-4 col-md-6">
                         <div class="single-process text-center mb-30">
                             <div class="process-ion">
                                 <span class="flaticon-curriculum-vitae"></span>
                             </div>
                             <div class="process-cap">
-                                <h5>2. Simple Management</h5>
-                                <p>Manage all your HR needs through a fast, responsive interface.</p>
+                                <h5>2. Gestion simplifiée</h5>
+                                <p>Gérez tous vos besoins RH via une interface rapide et réactive.</p>
                             </div>
                         </div>
                     </div>
+
                     <div class="col-lg-4 col-md-6">
                         <div class="single-process text-center mb-30">
                             <div class="process-ion">
                                 <span class="flaticon-tour"></span>
                             </div>
                             <div class="process-cap">
-                                <h5>3. Continuous Optimization</h5>
-                                <p>Leverage automated reports, key performance indicators, and intelligent alerts.</p>
+                                <h5>3. Optimisation continue</h5>
+                                <p>Profitez de rapports automatisés, d’indicateurs clés et d’alertes intelligentes.</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <!-- How  Apply Process End-->
+        <!-- How Apply Process End-->
     </main>
-
 
     </body>
 {% endblock %}

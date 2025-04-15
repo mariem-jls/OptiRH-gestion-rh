@@ -2,10 +2,10 @@
 <div class="single-job-items mb-30">
     <div class="job-items">
         <div class="company-img">
-            <a href="#"><img src="{{ asset('img-front/icon/job-list2.png') }}" alt=""></a>
+            <a href="{{ path('app_front_show', {'id': offre.id}) }}"><img src="{{ asset('img-front/icon/job-list1.png') }}" alt=""></a>
         </div>
         <div class="job-tittle job-tittle2">
-            <a href="{{ path('app_offre_edit', {'id': offre.id}) }}">
+            <a href="{{ path('app_front_show', {'id': offre.id}) }}">
                 <h4>{{ offre.poste }}</h4>
             </a>
             <ul>
@@ -16,7 +16,7 @@
         </div>
     </div>
     <div class="items-link items-link2 f-right">
-        <a href="{{ path('app_front_show', {'id': offre.id}) }}">Show more</a>
+        <a href="{{ path('app_front_show', {'id': offre.id}) }}">Voir plus</a>
         <span>{{ offre.getTimeAgo() }}</span>
     </div>
 </div>

@@ -7,7 +7,7 @@
     }
 }) }}
 
-<div class="alert alert-warning d-none fade show">
+<div class="alert alert-warning d-none fade show" id="form-error-alert">
     <h4 class="mt-0 text-warning">Erreur !</h4>
     <p class="mb-0">Veuillez corriger les erreurs dans le formulaire</p>
 </div>
@@ -16,7 +16,7 @@
     {{ form_label(form.nom, null, {'label_attr': {'class': 'form-label'}}) }}
     {{ form_widget(form.nom, {
         'attr': {
-            'class': 'form-control',
+            'class': 'form-control' ~ (form.nom.vars.errors|length ? ' is-invalid' : ''),
             'placeholder': 'Nom du projet*',
             'required': 'required',
             'data-parsley-trigger': 'change'
@@ -31,7 +31,7 @@
     {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
     {{ form_widget(form.description, {
         'attr': {
-            'class': 'form-control',
+            'class': 'form-control' ~ (form.description.vars.errors|length ? ' is-invalid' : ''),
             'rows': 5,
             'placeholder': 'Description détaillée du projet*',
             'required': 'required',
@@ -48,7 +48,7 @@
     {{ form_label(form.status, null, {'label_attr': {'class': 'form-label'}}) }}
     {{ form_widget(form.status, {
         'attr': {
-            'class': 'form-select',
+            'class': 'form-select' ~ (form.status.vars.errors|length ? ' is-invalid' : ''),
             'required': 'required',
             'data-parsley-errors-container': '#status-errors'
         }

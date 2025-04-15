@@ -3,7 +3,8 @@
 {% block title %}Mes Réservations{% endblock %}
 
 {% block topbar %}
-    {{ include('partials/topbar.html.twig', { page_title: 'Mes Réservations' }) }}
+        {{ include('partials/topbar.html.twig', { page_title: 'Mes Réservation' }) }}
+
 {% endblock %}
 {% block css %}
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
@@ -89,10 +90,9 @@
                                                 </a>
 
                                                 
-                                                <form method="post" action="{{ path('app_reservation_evenement_delete', {'id': reservation.id}) }}"
-                                                    style="display:inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler cette réservation ?');">
+                                                <form method="post" action="{{ path('app_reservation_evenement_delete', {'id': reservation.id}) }}" id="delete-form-{{ reservation.id }}" style="display:inline;">
                                                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reservation.id) }}">
-                                                    <button class="btn btn-sm btn-outline-danger action-btn" title="Supprimer">
+                                                    <button class="btn btn-sm btn-outline-danger action-btn" title="Supprimer"onclick="confirmDelete(event, {{ reservation.id }})">
                                                         <i class="fas fa-trash-alt"></i>
                                                     </button>
                                                 </form>
@@ -119,4 +119,34 @@
         </div>
     </div>
 </div>
+
+{% block javascripts %}
+    <!-- Inclure SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+     <script>
+        // Fonction pour la confirmation de suppression
+        function confirmDelete(event, reservationId) {
+            event.preventDefault();
+            const form = document.getElementById('delete-form-' + reservationId);
+            
+            Swal.fire({
+                title: 'Confirmation d\'annulation',
+                text: "Êtes-vous sûr de vouloir annuler cette réservation ?",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Oui, annuler',
+                cancelButtonText: 'Non, garder',
+                buttonsStyling: true,
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        }
+    </script>
+{% endblock %}
 {% endblock %}
