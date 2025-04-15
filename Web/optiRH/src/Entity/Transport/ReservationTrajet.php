@@ -19,12 +19,12 @@ class ReservationTrajet
     #[ORM\Column(type: 'string', length: 255)]
     private ?string $disponibilite = null;
 
-    #[ORM\ManyToOne(targetEntity: Vehicule::class)]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Vehicule::class, inversedBy: 'reservations')]
+    #[ORM\JoinColumn(nullable: false,  onDelete: 'CASCADE')]
     private ?Vehicule $vehicule = null;
 
     #[ORM\ManyToOne(targetEntity: Trajet::class)]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Trajet $trajet = null;
 
     // Corrected the targetEntity and type declaration here

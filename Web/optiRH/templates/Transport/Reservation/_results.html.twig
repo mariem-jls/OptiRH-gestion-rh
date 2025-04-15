@@ -30,11 +30,12 @@
                     </td>
                     <td class="places">{{ vehicule.nbrplace }}</td>
                     <td>
-                        <button class="btn btn-sm btn-primary reserve-btn" 
-                                data-vehicule-id="{{ vehicule.id }}"
-                                {{ vehicule.nbrplace <= 0 ? 'disabled' : '' }}>
-                            <i class="mdi mdi-calendar-check"></i> Réserver
-                        </button>
+                        <form action="{{ path('app_transport_reservation_reserve', {id: vehicule.id}) }}" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-primary reserve-btn" 
+                                    {{ vehicule.nbrplace <= 0 ? 'disabled' : '' }}>
+                                <i class="mdi mdi-calendar-check"></i> Réserver
+                            </button>
+                        </form>
                     </td>
                 </tr>
                 {% endfor %}
