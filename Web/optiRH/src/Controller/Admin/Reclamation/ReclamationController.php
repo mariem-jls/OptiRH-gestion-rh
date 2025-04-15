@@ -36,16 +36,7 @@ class ReclamationController extends AbstractController
                 'attr' => [
                     'rows' => 5,
                     'class' => 'form-control',
-                    'placeholder' => 'Écrivez votre réponse ici...',
-                    'minlength' => 5
-                ],
-                'constraints' => [
-                    new NotBlank(['message' => 'La réponse ne peut pas être vide']),
-                    new Length([
-                        'min' => 5,
-                        'minMessage' => 'La réponse doit contenir au moins {{ limit }} caractères',
-                        'max' => 5000,
-                    ]),
+                    'placeholder' => 'Écrivez votre réponse ici...'
                 ],
             ])
             ->add('submit', SubmitType::class, [
@@ -109,10 +100,7 @@ class ReclamationController extends AbstractController
         $form = $this->createFormBuilder($reponse)
             ->add('description', TextareaType::class, [
                 'attr' => ['rows' => 5, 'minlength' => 5],
-                'constraints' => [
-                    new NotBlank(),
-                    new Length(['min' => 5, 'max' => 5000])
-                ]
+        
             ])
             ->add('submit', SubmitType::class, ['label' => 'Enregistrer'])
             ->getForm();

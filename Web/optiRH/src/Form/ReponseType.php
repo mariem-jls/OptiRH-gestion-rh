@@ -1,4 +1,6 @@
 <?php
+// src/Form/ReponseType.php
+
 
 namespace App\Form;
 
@@ -14,11 +16,13 @@ class ReponseType extends AbstractType
     {
         $builder
             ->add('description', TextareaType::class, [
-                'label' => 'Votre réponse',
+                'label' => 'Description de votre réclamation',
                 'attr' => [
                     'rows' => 5,
-                    'placeholder' => 'Saisissez votre réponse ici...'
-                ]
+                    'placeholder' => 'Décrivez votre problème en détail (10 caractères minimum)...',
+                    'class' => 'form-control',
+                ],
+                'required' => true,
             ]);
     }
 
@@ -26,6 +30,7 @@ class ReponseType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Reponse::class,
+            'is_admin' => false,
         ]);
     }
 }

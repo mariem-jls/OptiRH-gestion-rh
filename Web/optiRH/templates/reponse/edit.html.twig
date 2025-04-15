@@ -20,29 +20,48 @@
             border-color: #4e73df;
             box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
         }
-        .error-message {
-            color: #dc3545;
-            font-size: 0.875rem;
-            margin-top: 0.25rem;
-            display: none;
-        }
         .is-invalid {
             border-color: #dc3545;
         }
-        .is-invalid ~ .error-message {
+        .invalid-feedback {
             display: block;
+            color: #dc3545;
+            font-size: 0.875em;
+        }
+        .input-with-icon {
+            position: relative;
+        }
+        .input-icon {
+            position: absolute;
+            left: 10px;
+            top: 35px;
+            color: #6c757d;
+        }
+        .textarea-icon {
+            top: 15px;
+        }
+        .form-control {
+            padding-left: 35px;
         }
     </style>
 {% endblock %}
+
 {% block topbar %}
     {{ include('partials/topbar.html.twig', { page_title: 'Réponse' }) }}
 {% endblock %}
+
 {% block body %}
     <div class="container edit-container py-5">
-        <div class="card">
-            <div class="card-header py-3">
+        <div class="card shadow {% if not form.vars.valid %}border-danger{% endif %}">
+            <div class="card-header {% if not form.vars.valid %}bg-danger text-white{% else %}bg-primary text-white{% endif %} py-3">
                 <div class="d-flex justify-content-between align-items-center">
-                    <h4 class="m-0">Modifier la réponse #{{ reponse.id }}</h4>
+                    <h4 class="m-0">
+                        {% if not form.vars.valid %}
+                            <i class="fas fa-exclamation-triangle me-2"></i>Veuillez corriger les erreurs
+                        {% else %}
+                            Modifier la réponse #{{ reponse.id }}
+                        {% endif %}
+                    </h4>
                     <a href="{{ path('admin_reclamation_reponses', {'id': reponse.reclamation.id}) }}"
                        class="btn btn-light btn-sm">
                         <i class="fas fa-arrow-left mr-1"></i> Retour
@@ -50,23 +69,41 @@
                 </div>
             </div>
             <div class="card-body">
-                {{ form_start(form) }}
-                <div class="form-group">
-                    {{ form_label(form.description) }}
+                {{ form_start(form, {
+                    'attr': {
+                        'id': 'edit-reponse-form',
+                        'class': 'form-horizontal',
+                        'novalidate': 'novalidate'
+                    }
+                }) }}
+                
+                <div class="mb-3 input-with-icon">
+                    <i class="fas fa-align-left input-icon textarea-icon"></i>
+                    {{ form_label(form.description, null, {
+                        'label_attr': {'class': 'form-label'}
+                    }) }}
                     {{ form_widget(form.description, {
                         'attr': {
-                            'class': 'form-control ' ~ (form.description.vars.errors|length ? 'is-invalid' : ''),
-                            'rows': 8
+                            'class': 'form-control' ~ (form.description.vars.errors|length ? ' is-invalid' : ''),
+                            'rows': 8,
+                            'placeholder': 'Modifiez votre réponse ici (5 caractères minimum)...',
+                            'minlength': 5
                         }
                     }) }}
-                    <div class="error-message">
+                    <div class="invalid-feedback">
                         {{ form_errors(form.description) }}
                     </div>
-                    <small class="form-text text-muted">Minimum 5 caractères requis</small>
+                    <small class="form-text text-muted">
+                        <i class="fas fa-info-circle me-1"></i>Minimum 5 caractères requis
+                    </small>
                 </div>
-                <div class="text-right mt-4">
-                    {{ form_widget(form.submit) }}
+                
+                <div class="card-footer text-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i> Enregistrer
+                    </button>
                 </div>
+                
                 {{ form_end(form) }}
             </div>
         </div>
@@ -77,18 +114,28 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Validation en temps réel
-            const textarea = document.querySelector('textarea[minlength]');
-            if (textarea) {
-                textarea.addEventListener('input', function() {
-                    const errorMessage = this.nextElementSibling;
-                    if (this.value.length < 5) {
-                        this.classList.add('is-invalid');
-                        errorMessage.style.display = 'block';
-                    } else {
-                        this.classList.remove('is-invalid');
-                        errorMessage.style.display = 'none';
+            const form = document.getElementById('edit-reponse-form');
+            if (form) {
+                // Validation à la soumission
+                form.addEventListener('submit', function(e) {
+                    if (!form.checkValidity()) {
+                        e.preventDefault();
+                        e.stopPropagation();
                     }
-                });
+                    form.classList.add('was-validated');
+                }, false);
+                
+                // Validation en temps réel pour le textarea
+                const textarea = document.querySelector('#edit-reponse-form textarea');
+                if (textarea) {
+                    textarea.addEventListener('input', function() {
+                        if (this.value.length < 5) {
+                            this.classList.add('is-invalid');
+                        } else {
+                            this.classList.remove('is-invalid');
+                        }
+                    });
+                }
             }
         });
     </script>
