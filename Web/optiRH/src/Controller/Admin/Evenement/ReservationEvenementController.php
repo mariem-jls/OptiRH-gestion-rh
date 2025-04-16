@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller;
+namespace App\Controller\Admin\Evenement;
 
 use App\Entity\Evenement\ReservationEvenement;
 use App\Form\Evenement\ReservationEvenementType;

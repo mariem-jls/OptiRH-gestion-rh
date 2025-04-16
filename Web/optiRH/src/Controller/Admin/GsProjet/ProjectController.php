@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\GsProjet;
+namespace App\Controller\Admin\GsProjet;
 use Knp\Snappy\Pdf;
 use Symfony\Component\Process\Process;
 use Twig\Environment;

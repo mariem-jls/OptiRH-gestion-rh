@@ -1,7 +1,7 @@
 <?php
 // src/Controller/FrontOffice/Reclamation/ReclamationController.php
 
-namespace App\Controller\FrontOffice\Reclamation;
+namespace App\Controller\Admin\ReclamationEMP;
 
 use App\Entity\Reponse;
 use App\Entity\Reclamation;
@@ -13,7 +13,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
-#[Route('/frontReclamation')]
+#[Route('/list')]
 class ReclamationController extends AbstractController
 {
     #[Route('/', name: 'front_home')]
