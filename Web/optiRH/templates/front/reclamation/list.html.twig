@@ -1,23 +1,14 @@
 {# templates/front/reclamation/list.html.twig #}
-{% extends 'partials/layout-horizontal.html.twig' %}
+{% extends 'partials/layout-vertical.html.twig' %}
+
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', { page_title: 'Mes Réclamations' }) }}
+{% endblock %}
 
 {% block title %}Mes Réclamations{% endblock %}
 
 {% block body %}
     <div class="container-fluid">
-        <div class="row">
-            <div class="col-12">
-                <div class="page-title-box">
-                    <div class="page-title-right">
-                        <a href="{{ path('front_add_reclamation') }}" class="btn btn-primary">
-                            <i class="mdi mdi-plus-circle"></i> Ajouter une réclamation
-                        </a>
-                    </div>
-                    <h4 class="page-title">Mes Réclamations</h4>
-                </div>
-            </div>
-        </div>
-
         <div class="row">
             <div class="col-12">
                 <div class="card">

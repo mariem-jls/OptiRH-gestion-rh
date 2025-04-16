@@ -1,6 +1,10 @@
-{% extends 'partials/layout-horizontal.html.twig' %}
+{% extends 'partials/layout-vertical.html.twig' %}
 
 {% block title %}Calendrier des Missions{% endblock %}
+
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', { page_title: 'Gestion des projets' }) }}
+{% endblock %}
 
 {% block css %}
 <link href="{{ asset('libs/fullcalendar/main.min.css') }}" rel="stylesheet">
