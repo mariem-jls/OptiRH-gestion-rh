@@ -141,11 +141,18 @@
                         <span> Réclamation </span>
                     </a>
 <!-- Projets -->
+
+{% if is_granted('ROLE_EMPLOYEE') %}
+<li>
 <a href="{{ path('gs-projet_project_missions_index', { id: app.user.id }) }}" 
    class="{{ app.request.attributes.get('_route') starts with 'gs-projet_project_missions_index' ? 'active' : '' }}">
     <i class="mdi mdi-briefcase-variant-outline"></i>
     <span>Mission</span>
 </a>
+</li>
+{% endif %}
+
+{% if is_granted('ROLE_ADMIN') %}
 
 <li>
     <a href="{{ path('gs-projet_project_index') }}" 
@@ -154,6 +161,7 @@
         <span>Projets</span>
     </a>
 </li>
+{% endif %}
 
  <li>
     <a href="{{ path('app_transport_trajet_index') }}">
