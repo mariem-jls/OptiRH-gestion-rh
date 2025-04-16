@@ -110,26 +110,70 @@
 {% endblock %}
 
 {% block javascript %}
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-function confirmDelete(trajetId) {
+// Afficher l'alerte de succès après modification
+{% if app.request.query.get('modified') == '1' %}
+    Swal.fire({
+        title: 'Succès !',
+        text: 'Le trajet #{{ app.request.query.get('id') }} a été modifié avec succès',
+        icon: 'success',
+        confirmButtonText: 'OK'
+    }).then(() => {
+        // Nettoyer l'URL après affichage de l'alerte
+        window.history.replaceState({}, document.title, "{{ path('app_transport_trajet_index') }}");
+    });
+{% endif %}
+// Confirmation AVANT suppression
+function confirmDelete(vehiculeId, vehiculeType) {
     Swal.fire({
         title: 'Confirmer la suppression',
-        text: "Êtes-vous sûr de vouloir supprimer ce trajet?",
+        html: `Êtes-vous sûr de vouloir supprimer le trajet <b>${vehiculeType}</b> ?`,
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
         confirmButtonText: 'Oui, supprimer',
-        cancelButtonText: 'Annuler',
-        reverseButtons: true
+        cancelButtonText: 'Annuler'
     }).then((result) => {
         if (result.isConfirmed) {
-            document.getElementById('delete-form-' + trajetId).submit();
+            // Soumettre le formulaire
+            const form = document.getElementById('delete-form-' + vehiculeId);
+            
+            // Envoyer la requête via fetch pour mieux gérer la réponse
+            fetch(form.action, {
+                method: 'POST',
+                body: new FormData(form)
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Afficher la confirmation APRÈS suppression
+                    Swal.fire({
+                        title: 'Supprimé !',
+                        text: 'Le trajet a été supprimé avec succès.',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        // Recharger la page pour actualiser la liste
+                        window.location.reload();
+                    });
+                } else {
+                    throw new Error('La suppression a échoué');
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    title: 'Erreur !',
+                    text: error.message,
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            });
         }
     });
 }
+
 
 // Initialisation des tooltips
 document.addEventListener('DOMContentLoaded', function() {

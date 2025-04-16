@@ -14,20 +14,25 @@ class Vehicule
     #[ORM\Column(type: 'integer')]
     private $id;
 
+    
     #[ORM\Column(type: 'string', length: 255)]
+    #[Assert\NotBlank(message: 'La disponibilité est obligatoire')]
     private $disponibilite;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[Assert\NotBlank(message: 'Le type de véhicule est obligatoire')]
     private $type;
 
     #[ORM\Column(type: 'integer')]
+    #[Assert\NotBlank(message: 'Le nombre de places est obligatoire')]
+    #[Assert\Positive(message: 'Le nombre de places doit être positif')]
     private $nbrplace;
 
     #[ORM\ManyToOne(targetEntity: Trajet::class, inversedBy: 'vehicules')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Trajet $trajet;
 
-    #[ORM\OneToMany(mappedBy: 'vehicule', targetEntity: ReservationTrajet::class)]
+    #[ORM\OneToMany(mappedBy: 'vehicule', targetEntity: ReservationTrajet::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $reservations;
 
     #[ORM\Column(type: 'integer')]

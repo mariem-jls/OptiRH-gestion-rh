@@ -82,7 +82,7 @@ class Trajet
     )]
     private $latitudeArrivee;
 
-    #[ORM\OneToMany(mappedBy: 'trajet', targetEntity: Vehicule::class)]
+    #[ORM\OneToMany(mappedBy: 'trajet', targetEntity: Vehicule::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $vehicules;
 
     public function getId(): ?int

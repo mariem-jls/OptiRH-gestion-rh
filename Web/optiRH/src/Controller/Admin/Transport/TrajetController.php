@@ -53,9 +53,11 @@ public function edit(Request $request, Trajet $trajet, EntityManagerInterface $e
     if ($form->isSubmitted() && $form->isValid()) {
         $entityManager->flush();
         
-        $this->addFlash('success', 'Le trajet a été mis à jour avec succès');
-        
-        return $this->redirectToRoute('app_transport_trajet_index', [], Response::HTTP_SEE_OTHER);
+        // Ajout d'un paramètre dans l'URL pour indiquer que la modification a réussi
+        return $this->redirectToRoute('app_transport_trajet_index', [
+            'modified' => '1',
+            'id' => $trajet->getId()
+        ], Response::HTTP_SEE_OTHER);
     }
 
     return $this->render('Transport/editTrajet.html.twig', [
@@ -64,16 +66,25 @@ public function edit(Request $request, Trajet $trajet, EntityManagerInterface $e
     ]);
 }
 
-    #[Route('/{id}', name: 'app_transport_trajet_delete', methods: ['POST'])]
-    public function delete(Request $request, Trajet $trajet, EntityManagerInterface $entityManager): Response
-    {
-        if ($this->isCsrfTokenValid('delete'.$trajet->getId(), $request->request->get('_token'))) {
-            $entityManager->remove($trajet);
-            $entityManager->flush();
-        }
 
-        return $this->redirectToRoute('app_transport_trajet_index', [], Response::HTTP_SEE_OTHER);
+#[Route('/{id}', name: 'app_transport_trajet_delete', methods: ['POST'])]
+public function delete(Request $request, Trajet $trajet, EntityManagerInterface $entityManager): Response
+{
+    if ($this->isCsrfTokenValid('delete'.$trajet->getId(), $request->request->get('_token'))) {
+        $entityManager->remove($trajet);
+        $entityManager->flush();
+        
+        // Ajouter un paramètre dans l'URL pour la confirmation
+        return $this->redirectToRoute('app_transport_trajet_index', [
+            'deleted' => '1',
+            'type' => $trajet->getType()
+        ], Response::HTTP_SEE_OTHER);
     }
+
+    return $this->redirectToRoute('app_transport_trajet_index', [], Response::HTTP_SEE_OTHER);
+}
+
+
     #[Route('/{id}', name: 'app_transport_trajet_show', methods: ['GET'])]
 public function show(Trajet $trajet): Response
 {

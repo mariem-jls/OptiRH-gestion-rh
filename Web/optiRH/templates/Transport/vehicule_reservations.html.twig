@@ -28,7 +28,6 @@
                             <tr>
                                 <th>Nom</th>
                                 <th>Email</th>
-                                <th>Rôle</th>
                                 <th>Adresse</th>
                             </tr>
                         </thead>
@@ -38,7 +37,7 @@
                             <tr>
                                 <td>{{ user.nom }}</td>
                                 <td>{{ user.email }}</td>
-                                <td>{{ user.role }}</td>
+                               
                                 <td>{{ user.address ?? 'N/A' }}</td>
                             </tr>
                         {% else %}

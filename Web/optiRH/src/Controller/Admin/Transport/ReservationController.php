@@ -9,6 +9,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Repository\Transport\VehiculeRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Doctrine\DBAL\LockMode;
+use Psr\Log\LoggerInterface;
 
 #[Route('/transport/reservation')]
 class ReservationController extends AbstractController
@@ -20,63 +22,83 @@ class ReservationController extends AbstractController
     }
 
     #[Route('/search', name: 'app_transport_reservation_search', methods: ['GET'])]
-    public function search(Request $request, VehiculeRepository $vehiculeRepo): Response
-    {
-        $depart = $request->query->get('depart');
-        $arrive = $request->query->get('arrive');
+public function search(Request $request, VehiculeRepository $vehiculeRepo): Response
+{
+    $depart = $request->query->get('depart');
+    $arrive = $request->query->get('arrive');
 
-        // Utilisez la méthode qui accepte les strings (départ/arrivée)
-        $vehicules = $vehiculeRepo->findAvailableByDepartureArrival($depart, $arrive);
-
+    // Si aucun critère n'est fourni, retourner une liste vide
+    if (empty($depart) && empty($arrive)) {
         return $this->render('transport/reservation/_results.html.twig', [
-            'vehicules' => $vehicules
+            'vehicules' => []
         ]);
     }
+
+    // Utilisez la méthode modifiée qui accepte des critères partiels
+    $vehicules = $vehiculeRepo->findByDepartureOrArrival($depart, $arrive);
+
+    return $this->render('transport/reservation/_results.html.twig', [
+        'vehicules' => $vehicules
+    ]);
+}
+
 
     #[Route('/reserve/{id}', name: 'app_transport_reservation_reserve', methods: ['POST'])]
-public function reserve(Vehicule $vehicule, EntityManagerInterface $em, VehiculeRepository $vehiculeRepo): Response
-{
-    try {
-        // Remplacez $this->getUser() par un utilisateur statique (ID = 1)
-        $user = $em->getRepository(User::class)->find(1);
-        
-        if (!$user) {
-            return $this->json(['success' => false, 'message' => 'Utilisateur introuvable'], 404);
+    public function reserve(
+        Vehicule $vehicule,
+        EntityManagerInterface $em,
+        LoggerInterface $logger,
+        Request $request
+    ): Response {
+        try {
+            $logger->debug('Tentative de réservation pour véhicule: '.$vehicule->getId());
+            
+            $user = $this->getUser();
+            if (!$user instanceof User) {
+                $this->addFlash('error', 'Utilisateur non valide');
+                return $this->redirectToRoute('app_login');
+            }
+    
+            $em->beginTransaction();
+            $vehicule = $em->find(Vehicule::class, $vehicule->getId(), LockMode::PESSIMISTIC_WRITE);
+    
+            if (!$vehicule) {
+                $em->rollback();
+                $this->addFlash('error', 'Véhicule non trouvé');
+                return $this->redirectToRoute('app_transport_reservation_index');
+            }
+    
+            if ($vehicule->getNbrplace() <= 0) {
+                $em->rollback();
+                $this->addFlash('error', 'Plus de places disponibles');
+                return $this->redirectToRoute('app_transport_reservation_index');
+            }
+    
+            // Créez la réservation
+            $reservation = new ReservationTrajet();
+            $reservation
+                ->setVehicule($vehicule)
+                ->setUser($user)
+                ->setTrajet($vehicule->getTrajet())
+                ->setDisponibilite('Confirmé');
+    
+            $vehicule->setNbrplace($vehicule->getNbrplace() - 1);
+            
+            $em->persist($reservation);
+            $em->flush();
+            $em->commit();
+    
+            $this->addFlash('success', 'Réservation confirmée');
+            return $this->redirectToRoute('app_transport_reservation_index');
+    
+        } catch (\Exception $e) {
+            if ($em->isOpen() && $em->getConnection()->isTransactionActive()) {
+                $em->rollback();
+            }
+            $logger->error('ERREUR RESERVATION: '.$e->getMessage());
+            
+            // Laissez Symfony gérer l'exception (écran rouge en dev)
+            throw $e;
         }
-
-        if ($vehicule->getNbrplace() <= 0) {
-            return $this->json(['success' => false, 'message' => 'Plus de places disponibles'], 400);
-        }
-
-        // Créez la réservation
-        $reservation = new ReservationTrajet();
-        $reservation
-            ->setVehicule($vehicule)
-            ->setUser($user) // Utilisateur statique (ID = 1)
-            ->setTrajet($vehicule->getTrajet())
-            ->setDisponibilite('Confirmé');
-
-        // Décrémentez le nombre de places
-        $vehicule->setNbrplace($vehicule->getNbrplace() - 1);
-        
-        if ($vehicule->getNbrplace() <= 0) {
-            $vehicule->setDisponibilite('Indisponible');
-        }
-
-        $em->persist($reservation);
-        $em->flush();
-
-        return $this->json([
-            'success' => true,
-            'newPlaces' => $vehicule->getNbrplace(),
-            'newStatus' => $vehicule->getDisponibilite()
-        ]);
-
-    } catch (\Exception $e) {
-        return $this->json([
-            'success' => false,
-            'message' => 'Erreur serveur : ' . $e->getMessage()
-        ], 500);
     }
-}
 }
