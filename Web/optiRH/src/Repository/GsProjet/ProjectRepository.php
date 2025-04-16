@@ -142,6 +142,17 @@ class ProjectRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
-    
+    public function hasActiveMissions(int $projectId): bool
+{
+    return $this->createQueryBuilder('p')
+        ->select('COUNT(m.id)')
+        ->join('p.missions', 'm')
+        ->where('p.id = :projectId')
+        ->andWhere('m.status NOT IN (:completedStatuses)')
+        ->setParameter('projectId', $projectId)
+        ->setParameter('completedStatuses', ['Done', 'Cancelled'])
+        ->getQuery()
+        ->getSingleScalarResult() > 0;
+}
     
 }

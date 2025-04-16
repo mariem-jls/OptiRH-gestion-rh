@@ -27,16 +27,19 @@
                    title="Modifier">
                     <i class="mdi mdi-pencil-outline"></i>
                 </a>
-                <form method="post" 
-                      action="{{ path('gs-projet_project_delete', {'id': project.id}) }}">
-                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ project.id) }}">
-                    <button class="btn btn-sm btn-outline-danger delete-project" 
-                            type="button"
-                            data-id="{{ project.id }}"
-                            data-name="{{ project.nom }}">
-                        <i class="mdi mdi-delete-outline"></i>
-                    </button>
-                </form>
+      {# templates/gs_projet/project/_list.html.twig #}
+
+<form method="post" action="{{ path('gs-projet_project_delete', {'id': project.id}) }}" 
+      class="delete-project-form"
+      data-project-name="{{ project.nom }}"
+      data-confirm="Êtes-vous sûr de vouloir supprimer définitivement le projet '{{ project.nom }}' ?">
+    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ project.id) }}">
+    <button type="submit" class="btn btn-danger btn-sm delete-project" 
+            data-id="{{ project.id }}" 
+            data-name="{{ project.nom }}">
+        <i class="fas fa-trash"></i>
+    </button>
+</form>
             </div>
         </td>
     </tr>

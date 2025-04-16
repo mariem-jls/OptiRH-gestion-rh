@@ -1,6 +1,10 @@
 <?php
 
 namespace App\Controller\GsProjet;
+use Knp\Snappy\Pdf;
+use Symfony\Component\Process\Process;
+use Twig\Environment;
+
 use Symfony\Component\Form\FormInterface; // Correction de l'import
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
@@ -8,6 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use App\Entity\GsProjet\Mission;
 
 use App\Entity\GsProjet\Project;
 use App\Form\GsProjet\ProjectType;
@@ -147,7 +152,35 @@ class ProjectController extends AbstractController {
             'form' => $form->createView(),
         ]);
     }
-    
+
+    #[Route('/{id}/pdf', name: 'project_pdf')]
+public function generatePdf(Project $project, Environment $twig, Pdf $knpSnappyPdf): Response
+{
+    $html = $twig->render('gs-projet/project/pdf_template.html.twig', [
+        'project' => $project,
+        'groupedMissions' => $this->groupMissions($project), // à adapter selon ta logique
+    ]);
+
+    $pdfContent = $knpSnappyPdf->getOutputFromHtml($html);
+
+    return new Response(
+        $pdfContent,
+        200,
+        [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="rapport.pdf"',
+        ]
+    );
+}
+
+private function groupMissionsByStatus(array $missions): array
+{
+    $grouped = [];
+    foreach ($missions as $mission) {
+        $grouped[$mission->getStatus()][] = $mission;
+    }
+    return $grouped;
+}
    
     #[Route('/{id}', name: 'show', methods: ['GET'])]
     public function show(Project $project, MissionRepository $missionRepository): Response
@@ -170,42 +203,104 @@ class ProjectController extends AbstractController {
         ]);
     }
     #[Route('/{id}', name: 'delete', methods: ['POST'])]
-    public function delete(Request $request, Project $project, EntityManagerInterface $entityManager): Response
-    {
+    public function delete(
+        Request $request, 
+        Project $project, 
+        EntityManagerInterface $entityManager,
+        MissionRepository $missionRepository
+    ): Response {
         $user = $this->getUser();
+        
+        // Vérification des autorisations
         if ($project->getCreatedBy() !== $user) {
-            return $this->json([
-                'status' => 'error',
-                'message' => 'Accès non autorisé'
-            ], 403);
+            return $this->handleErrorResponse($request, 'Accès non autorisé', 403);
         }
     
-        if ($this->isCsrfTokenValid('delete'.$project->getId(), $request->request->get('_token'))) {
-            try {
-                $entityManager->remove($project);
-                $entityManager->flush();
+        // Vérification du token CSRF
+        $submittedToken = $request->request->get('_token');
+        if (!$this->isCsrfTokenValid('delete'.$project->getId(), $submittedToken)) {
+            return $this->handleErrorResponse($request, 'Token CSRF invalide', 400);
+        }
     
-                if ($request->isXmlHttpRequest()) {
-                    return $this->json([
-                        'status' => 'success',
-                        'message' => 'Projet supprimé avec succès'
-                    ]);
-                }
-    
-                $this->addFlash('success', 'Projet supprimé avec succès');
-            } catch (\Exception $e) {
-                if ($request->isXmlHttpRequest()) {
-                    return $this->json([
-                        'status' => 'error',
-                        'message' => 'Erreur de suppression : ' . $e->getMessage()
-                    ], 500);
-                }
-                $this->addFlash('error', 'Erreur lors de la suppression');
+        try {
+            // 1. D'abord supprimer toutes les missions (même celles "Done")
+            $missions = $project->getMissions();
+            foreach ($missions as $mission) {
+                $entityManager->remove($mission);
             }
+            
+            // Flush intermédiaire pour s'assurer que les missions sont supprimées
+            $entityManager->flush();
+    
+            // 2. Ensuite supprimer le projet
+            $entityManager->remove($project);
+            $entityManager->flush();
+    
+            return $this->handleSuccessResponse($request, 'Projet et toutes ses missions supprimés avec succès');
+    
+        } catch (\Exception $e) {
+            return $this->handleErrorResponse(
+                $request,
+                'Erreur lors de la suppression : ' . $e->getMessage(),
+                500
+            );
+        }
+    }
+    // Méthodes helper pour simplifier les réponses
+    private function handleSuccessResponse(Request $request, string $message): Response
+    {
+        if ($request->isXmlHttpRequest()) {
+            return $this->json([
+                'status' => 'success',
+                'message' => $message,
+                'redirect' => $this->generateUrl('gs-projet_project_index')
+            ]);
         }
     
+        $this->addFlash('success', $message);
         return $this->redirectToRoute('gs-projet_project_index');
     }
- 
+    
+    private function handleErrorResponse(Request $request, string $message, int $statusCode): Response
+    {
+        if ($request->isXmlHttpRequest()) {
+            return $this->json([
+                'status' => 'error',
+                'message' => $message
+            ], $statusCode);
+        }
+    
+        $this->addFlash('error', $message);
+        return $this->redirectToRoute('gs-projet_project_show', ['id' => $request->attributes->get('id')]);
+    }
+    private function groupMissions(Project $project): array
+    {
+        $groupedMissions = [];
+    
+        foreach ($project->getMissions() as $mission) {
+            $status = $mission->getStatus();
+    
+            if (!isset($groupedMissions[$status])) {
+                $groupedMissions[$status] = [];
+            }
+    
+            $groupedMissions[$status][] = $mission;
+        }
+    
+        return $groupedMissions;
+    }
+    #[Route('/{id}/check-missions', name: 'check_missions', methods: ['GET'])]
+public function checkMissions(Project $project, MissionRepository $missionRepository): JsonResponse
+{
+    $activeMissionsCount = $missionRepository->count([
+        'project' => $project,
+        'status' => ['In Progress', 'To Do' , 'Done'] // Missions actives
+    ]);
+
+    return $this->json([
+        'hasActiveMissions' => $activeMissionsCount > 0,
+        'activeMissionsCount' => $activeMissionsCount
+    ]);
+}
 
 }

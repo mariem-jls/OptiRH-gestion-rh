@@ -70,10 +70,9 @@ class Project
     #[ORM\JoinColumn(name: "created_by_id", referencedColumnName: "id", nullable: false)]
     private User $createdBy;
 
-    #[ORM\OneToMany(mappedBy: 'project', targetEntity: Mission::class)]
+    #[ORM\OneToMany(mappedBy: 'project', targetEntity: Mission::class, cascade: ['persist','remove'], orphanRemoval: true)]
     private Collection $missions;
-   
-
+    
 
 
     public function __construct()
@@ -165,36 +164,7 @@ class Project
         return $this->status;
     }
     
-    public function updateStatus(): void
-    {
-        $now = new \DateTime();
-        $status = 'Actif';
-    
-        if ($this->missions->count() === 0) {
-            $status = 'Inactif';
-        } else {
-            $allDone = true;
-            $hasOverdue = false;
-    
-            foreach ($this->missions as $mission) {
-                if ($mission->getStatus() !== 'Done') {
-                    $allDone = false;
-                }
-                if ($mission->getDateTerminer() < $now && $mission->getStatus() !== 'Done') {
-                    $hasOverdue = true;
-                    break;
-                }
-            }
-    
-            if ($hasOverdue) {
-                $status = 'En retard';
-            } elseif ($allDone) {
-                $status = 'Terminé';
-            }
-        }
-    
-        $this->status = $status;
-    }
+
     public function setStatus(?string $status): static
     {
         $this->status = $status;
@@ -226,5 +196,46 @@ class Project
             'En retard' => self::STATUS_DELAYED,
         ];
     }
+    public function updateStatus(): void
+{
+    $missions = $this->getMissions();
+    $hasToDo = false;
+    $hasInProgress = false;
+    $hasDelayed = false;
+    $allDone = true;
+    $now = new \DateTime();
+
+    foreach ($missions as $mission) {
+        $status = $mission->getStatus();
+        
+        if ($status === 'To Do') {
+            $hasToDo = true;
+            $allDone = false;
+        } elseif ($status === 'In Progress') {
+            $hasInProgress = true;
+            $allDone = false;
+        } elseif ($status !== 'Done') {
+            $allDone = false;
+
+            // Vérifie si la mission est en retard
+            if ($mission->getDateTerminer() < $now) {
+                $hasDelayed = true;
+            }
+        }
+    }
+
+    if ($hasToDo) {
+        $this->status = self::STATUS_ACTIVE;
+    } elseif ($hasInProgress) {
+        $this->status = self::STATUS_INACTIVE;
+    } elseif ($allDone && count($missions) > 0) {
+        $this->status = self::STATUS_COMPLETED;
+    } elseif ($hasDelayed) {
+        $this->status = self::STATUS_DELAYED;
+    } else {
+        $this->status = self::STATUS_ACTIVE; // par défaut
+    }
+}
+
     
 }

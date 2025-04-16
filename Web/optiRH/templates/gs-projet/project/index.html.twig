@@ -76,15 +76,10 @@
             </tbody>
         </table>
 
-        {# Correction de la pagination #}
+        {# Pagination #}
         {% if projects is not empty and projects.getPageCount() > 1 %}
             <div id="project-pagination" class="mt-3">
-            {{ knp_pagination_render(projects, '@KnpPaginator/Pagination/twitter_bootstrap_v4_pagination.html.twig') }}
-
-                    'queryParamName': 'page',
-                    'size': 'medium',
-                    'alignment': 'center'
-                }) }}
+                {{ knp_pagination_render(projects, '@KnpPaginator/Pagination/twitter_bootstrap_v4_pagination.html.twig') }}
             </div>
         {% endif %}
     </div>
@@ -126,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function() {
         `);
     };
 
-    // Gestion des suppressions
+    // Gestion des suppressions avec vérification des missions
     const initDeleteHandlers = () => {
         document.querySelectorAll('.delete-project').forEach(button => {
             button.addEventListener('click', async (e) => {
@@ -135,6 +130,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 const { id: projectId, name: projectName } = button.dataset;
 
                 try {
+                    // Vérifier d'abord s'il y a des missions actives
+                    const checkResponse = await fetch(`/gs-projet/project/${projectId}/check-missions`, {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+                    
+                    if (!checkResponse.ok) throw new Error('Erreur de vérification des missions');
+                    
+                    const checkData = await checkResponse.json();
+                    
+                    if (checkData.hasActiveMissions) {
+                        await Swal.fire({
+                            icon: 'error',
+                            title: 'Impossible de supprimer',
+                            html: `Ce projet contient des missions actives.<br><br>
+                                   <b>${checkData.activeMissionsCount}</b> mission(s) en cours ou à faire.`,
+                            confirmButtonText: 'OK'
+                        });
+                        return;
+                    }
+
+                    // Confirmation de suppression
                     const { isConfirmed } = await Swal.fire({
                         title: 'Confirmer la suppression',
                         html: `Êtes-vous sûr de vouloir supprimer <b>${projectName}</b> ?`,
@@ -148,6 +164,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     if (!isConfirmed) return;
 
+                    // Suppression en cours
                     Swal.fire({
                         title: 'Suppression en cours...',
                         html: `
@@ -160,16 +177,23 @@ document.addEventListener('DOMContentLoaded', function() {
                         showConfirmButton: false
                     });
 
+                    // Envoi de la requête de suppression
                     const response = await fetch(form.action, {
                         method: 'POST',
                         body: new FormData(form),
-                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        headers: { 
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        }
                     });
 
-                    if (!response.ok) throw new Error('Erreur lors de la suppression');
-                    
                     const data = await response.json();
                     
+                    if (!response.ok) {
+                        throw new Error(data.message || 'Erreur lors de la suppression');
+                    }
+                    
+                    // Succès
                     Swal.fire({
                         icon: 'success',
                         title: 'Succès !',
@@ -179,13 +203,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     }).then(() => window.location.reload());
 
                 } catch (error) {
+                    console.error('Erreur:', error);
                     Swal.fire({
                         icon: 'error',
                         title: 'Échec de la suppression',
                         html: `
                             <div class="text-start">
                                 <p class="mb-2">${error.message}</p>
-                                <small class="text-muted">Code: ${error.status || 'N/A'}</small>
+                                ${error.status ? `<small class="text-muted">Code: ${error.status}</small>` : ''}
                             </div>
                         `,
                         confirmButtonText: 'OK'
@@ -219,9 +244,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const doc = parser.parseFromString(html, 'text/html');
             
             // Mise à jour du tableau
-            const newBody = doc.getElementById(TABLE_BODY_ID);
-            if (!newBody) throw new Error('Réponse serveur invalide');
-            safeUpdateElement(TABLE_BODY_ID, newBody.innerHTML);
+            safeUpdateElement(TABLE_BODY_ID, doc.getElementById(TABLE_BODY_ID)?.innerHTML || '');
 
             // Mise à jour de la pagination
             const newPagination = doc.getElementById(PAGINATION_ID);
@@ -230,7 +253,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (newPagination) {
                 currentPagination 
                     ? currentPagination.innerHTML = newPagination.innerHTML
-                    : document.getElementById('project-table-container').insertAdjacentElement('beforeend', newPagination);
+                    : document.getElementById('project-table-container').appendChild(newPagination);
             } else if (currentPagination) {
                 currentPagination.remove();
             }
@@ -266,6 +289,7 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     init();
-});
+})
+
 </script>
 {% endblock %}

@@ -124,7 +124,17 @@ public function findGroupedByStatus(Project $project): array
             ->getQuery()
             ->getResult();
     }
-   
+    public function countActiveMissionsByProject(int $projectId): int
+    {
+        return $this->createQueryBuilder('m')
+            ->select('COUNT(m.id)')
+            ->where('m.project = :projectId')
+            ->andWhere('m.status != :doneStatus')
+            ->setParameter('projectId', $projectId)
+            ->setParameter('doneStatus', 'Done')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 
 
 

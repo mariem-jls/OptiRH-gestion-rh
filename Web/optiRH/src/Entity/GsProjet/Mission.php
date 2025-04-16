@@ -28,8 +28,8 @@ class Mission
     private ?string $status = 'To Do';
 
     #[ORM\ManyToOne(targetEntity: Project::class, inversedBy: 'missions')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Project $project = null;
+#[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
+private ?Project $project = null;
     #[ORM\ManyToOne(inversedBy: 'missions')]
     
 
