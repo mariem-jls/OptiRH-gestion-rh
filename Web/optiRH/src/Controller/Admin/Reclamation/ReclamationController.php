@@ -39,10 +39,7 @@ class ReclamationController extends AbstractController
                     'placeholder' => 'Écrivez votre réponse ici...'
                 ],
             ])
-            ->add('submit', SubmitType::class, [
-                'label' => 'Publier la réponse',
-                'attr' => ['class' => 'btn btn-primary mt-3']
-            ])
+         
             ->getForm();
 
         $form->handleRequest($request);
@@ -102,7 +99,7 @@ class ReclamationController extends AbstractController
                 'attr' => ['rows' => 5, 'minlength' => 5],
         
             ])
-            ->add('submit', SubmitType::class, ['label' => 'Enregistrer'])
+            
             ->getForm();
 
         $form->handleRequest($request);
