@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             {{ form_widget(form.station, {
                                 'attr': {
                                     'class': 'form-control' ~ (form.station.vars.errors|length ? ' is-invalid' : ''),
-                                    'maxlength': 10
+                                    'maxlength': 50
                                 }
                             }) }}
                             <div class="invalid-feedback">
@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             {{ form_widget(form.depart, {
                                 'attr': {
                                     'class': 'form-control' ~ (form.depart.vars.errors|length ? ' is-invalid' : ''),
-                                    'maxlength': 10
+                                    'maxlength': 50
                                 }
                             }) }}
                             <div class="invalid-feedback">
@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             {{ form_widget(form.arrive, {
                                 'attr': {
                                     'class': 'form-control' ~ (form.arrive.vars.errors|length ? ' is-invalid' : ''),
-                                    'maxlength': 10
+                                    'maxlength': 50
                                 }
                             }) }}
                             <div class="invalid-feedback">

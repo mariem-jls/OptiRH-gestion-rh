@@ -5,6 +5,7 @@ namespace App\Entity\Transport;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: "App\Repository\Transport\VehiculeRepository")]
 class Vehicule
@@ -78,7 +79,7 @@ public function getNbrplace(): ?int
     return $this->nbrplace;
 }
 
-public function setNbrplace(int $nbrplace): self
+public function setNbrplace(?int $nbrplace): self
 {
     $this->nbrplace = $nbrplace;
     return $this;

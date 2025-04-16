@@ -21,42 +21,54 @@ class TrajetType extends AbstractType
                     'Urbain' => 'Urbain',
                     'Interurbain' => 'Interurbain'
                 ],
-                'attr' => ['novalidate' => 'novalidate']
             ])
             ->add('station', TextType::class, [
                 'label' => 'Station',
-                'attr' => ['novalidate' => 'novalidate', 'maxlength' => 10]
+                'empty_data' => '', // Force une chaîne vide si null
+                'required' => false
+                        
             ])
             ->add('depart', TextType::class, [
                 'label' => 'Point de départ',
-                'attr' => ['novalidate' => 'novalidate', 'maxlength' => 10]
+                'empty_data' => '', // Force une chaîne vide si null
+                'required' => false // Si le champ peut être vide
+                        
             ])
             ->add('arrive', TextType::class, [
                 'label' => 'Point d\'arrivée',
-                'attr' => ['novalidate' => 'novalidate', 'maxlength' => 10]
+                'empty_data' => '', // Force une chaîne vide si null
+                'required' => false // Si le champ peut être vide
+                        
             ])
             ->add('longitudeDepart', NumberType::class, [
                 'label' => 'Longitude départ',
                 'invalid_message' => 'La longitude doit être un nombre ', // Message personnalisé
-                'attr' => ['novalidate' => 'novalidate', 'step' => '0.000001']
+                'empty_data' => '', // Force une chaîne vide si null
+                'required' => false // Si le champ peut être vide
+                        
             ])
             ->add('latitudeDepart', NumberType::class, [
                 'label' => 'Latitude départ',
                 'invalid_message' => 'La latitude doit être un nombre ', // Message personnalisé
+                'empty_data' => '', // Force une chaîne vide si null
+                'required' => false // Si le champ peut être vide
+                        
 
-                'attr' => ['novalidate' => 'novalidate', 'step' => '0.000001']
             ])
             ->add('longitudeArrivee', NumberType::class, [
                 'label' => 'Longitude arrivée',
                 'invalid_message' => 'La longitude doit être un nombre ', // Message personnalisé
+                'empty_data' => '', // Force une chaîne vide si null
+                'required' => false // Si le champ peut être vide
+                        
 
-                'attr' => ['novalidate' => 'novalidate', 'step' => '0.000001']
             ])
             ->add('latitudeArrivee', NumberType::class, [
                 'label' => 'Latitude arrivée',
                 'invalid_message' => 'La longitude doit être un nombre ', // Message personnalisé
-
-                'attr' => ['novalidate' => 'novalidate', 'step' => '0.000001']
+                'empty_data' => '', // Force une chaîne vide si null
+                'required' => false // Si le champ peut être vide
+                        
             ]);
     }
 
@@ -64,7 +76,6 @@ class TrajetType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Trajet::class,
-            'attr' => ['novalidate' => 'novalidate'] // Désactive HTML5 globalement
         ]);
     }
 }

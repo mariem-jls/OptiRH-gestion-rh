@@ -50,6 +50,10 @@ public function search(Request $request, VehiculeRepository $vehiculeRepo): Resp
         LoggerInterface $logger,
         Request $request
     ): Response {
+
+
+
+
         try {
             $logger->debug('Tentative de réservation pour véhicule: '.$vehicule->getId());
             
@@ -91,6 +95,9 @@ public function search(Request $request, VehiculeRepository $vehiculeRepo): Resp
             $this->addFlash('success', 'Réservation confirmée');
             return $this->redirectToRoute('app_transport_reservation_index');
     
+
+
+
         } catch (\Exception $e) {
             if ($em->isOpen() && $em->getConnection()->isTransactionActive()) {
                 $em->rollback();
@@ -100,5 +107,46 @@ public function search(Request $request, VehiculeRepository $vehiculeRepo): Resp
             // Laissez Symfony gérer l'exception (écran rouge en dev)
             throw $e;
         }
+
+
+
+        
     }
+
+    #[Route('/mes-reservations', name: 'app_transport_reservation_list', methods: ['GET'])]
+public function userReservations(EntityManagerInterface $em): Response
+{
+    $user = $this->getUser();
+    if (!$user) {
+        return $this->redirectToRoute('app_login');
+    }
+
+    // Récupérer les réservations directement depuis le repository
+    $reservations = $em->getRepository(ReservationTrajet::class)
+        ->findBy(['user' => $user->getId()]);
+
+    return $this->render('transport/reservation/_reservations_list.html.twig', [
+        'reservations' => $reservations
+    ]);
+}
+
+#[Route('/{id}/delete', name: 'app_transport_reservation_delete', methods: ['POST'])]
+public function deleteReservation(ReservationTrajet $reservation, EntityManagerInterface $em): JsonResponse
+{
+    try {
+        $em->remove($reservation);
+        $em->flush();
+        
+        // Incrémente le nombre de places du véhicule
+        $vehicule = $reservation->getVehicule();
+        $vehicule->setNbrplace($vehicule->getNbrplace() + 1);
+        $em->flush();
+
+        return $this->json(['success' => true]);
+    } catch (\Exception $e) {
+        return $this->json(['success' => false, 'error' => $e->getMessage()], 500);
+    }
+}
+
+    
 }

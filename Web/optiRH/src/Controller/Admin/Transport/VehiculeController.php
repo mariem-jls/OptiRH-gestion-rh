@@ -37,9 +37,14 @@ public function new(
         $entityManager->persist($vehicule);
         $entityManager->flush();
 
-        $this->addFlash('success', 'Véhicule créé avec succès');
-        return $this->redirectToRoute('app_transport_trajet_vehicules', ['id' => $trajet_id]);
-    }
+        $this->addFlash('success', 'Le véhicule a été créé avec succès!');
+        return $this->redirectToRoute('app_transport_trajet_vehicules', [
+            'id' => $trajet_id,
+            'created' => 1,
+            'vehicule_id' => $vehicule->getId(),
+            'vehicule_type' => $vehicule->getType()
+        ]);
+            }
 
     return $this->render('Transport/newVehicule.html.twig', [
         'vehicule' => $vehicule,

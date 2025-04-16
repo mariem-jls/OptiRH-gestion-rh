@@ -113,6 +113,32 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Détection de la création réussie
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    if (urlParams.get('created') === '1') {
+        const id = urlParams.get('id') || '';
+        const type = urlParams.get('type') || '';
+        
+        Swal.fire({
+            title: 'Succès!',
+            html: `Le trajet <b>${type}</b> (ID: ${id}) a été créé avec succès.`,
+            icon: 'success',
+            confirmButtonColor: '#28a745',
+            timer: 5000,
+            timerProgressBar: true
+        }).then(() => {
+            // Nettoyer l'URL sans recharger la page
+            const cleanUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, cleanUrl);
+        });
+    }
+});
+
+
+
 // Afficher l'alerte de succès après modification
 {% if app.request.query.get('modified') == '1' %}
     Swal.fire({

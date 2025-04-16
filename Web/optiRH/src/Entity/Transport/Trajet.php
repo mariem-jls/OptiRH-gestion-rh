@@ -30,7 +30,10 @@ class Trajet
     #[Assert\NotBlank(message: 'La station est obligatoire')]
     #[Assert\Length(
         max: 10,
-        maxMessage: 'La station ne doit pas dépasser {{ limit }} caractères'
+        min:3,
+        maxMessage: 'La station ne doit pas dépasser {{ limit }} caractères',
+        minMessage: 'Lastation doit contenir au moins {{ limit }} caractères'
+
     )]
     private $station;
 
@@ -38,7 +41,10 @@ class Trajet
     #[Assert\NotBlank(message: 'Le point de départ est obligatoire')]
     #[Assert\Length(
         max: 10,
-        maxMessage: 'Le point de départ ne doit pas dépasser {{ limit }} caractères'
+        min:3,
+        maxMessage: 'Le point de départ ne doit pas dépasser {{ limit }} caractères',
+        minMessage: 'Le point de départ doit contenir au moins {{ limit }} caractères'
+
     )]
     private $depart;
 
@@ -46,7 +52,10 @@ class Trajet
     #[Assert\NotBlank(message: 'Le point d\'arrivée est obligatoire')]
     #[Assert\Length(
         max: 10,
-        maxMessage: 'Le point d\'arrivée ne doit pas dépasser {{ limit }} caractères'
+        min: 3,
+        maxMessage: 'Le point d\'arrivée ne doit pas dépasser {{ limit }} caractères',
+        minMessage: 'Le point d\'arrivée doit contenir au moins {{ limit }} caractères'
+
     )]
     private $arrive;
 

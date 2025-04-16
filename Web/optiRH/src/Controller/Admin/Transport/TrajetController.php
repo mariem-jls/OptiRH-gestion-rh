@@ -34,7 +34,12 @@ class TrajetController extends AbstractController
             $entityManager->persist($trajet);
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_transport_trajet_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_transport_trajet_index', [
+                'created' => '1',
+                'id' => $trajet->getId(),
+                'type' => $trajet->getType()
+            ], Response::HTTP_SEE_OTHER);
+        
         }
 
         return $this->render('Transport/newTrajet.html.twig', [
