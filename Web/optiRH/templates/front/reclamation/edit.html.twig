@@ -1,72 +1,175 @@
-{# templates/front/reclamation/edit.html.twig #}
 {% extends 'partials/layout-horizontal.html.twig' %}
 
-{% block title %}Modifier Réclamation - {{ parent() }}{% endblock %}
+{% block title %}Modifier une Réclamation{% endblock %}
 
 {% block body %}
-    <div class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="card shadow">
-                    <div class="card-header bg-primary text-white">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h4 class="mb-0">
-                                <i class="fas fa-edit me-2"></i>Modifier votre réclamation
-                            </h4>
-                            <a href="{{ path('front_reclamations') }}" class="btn btn-sm btn-light">
-                                <i class="fas fa-arrow-left me-1"></i> Retour
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="card-body">
-                        {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
-
-                        <div class="mb-3">
-                            {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                            {{ form_widget(form.description, {
-                                'attr': {
-                                    'class': 'form-control' ~ (form.description.vars.errors|length ? ' is-invalid' : ''),
-                                    'rows': 5,
-                                    'minlength': 5
-                                }
-                            }) }}
-                            {% if form.description.vars.errors|length %}
-                                <div class="invalid-feedback">
-                                    {{ form_errors(form.description) }}
-                                </div>
-                            {% endif %}
-                            <small class="form-text text-muted">Minimum 5 caractères</small>
-                        </div>
-
-                        <div class="mb-3">
-                            {{ form_label(form.type, 'Type de réclamation', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                            {{ form_widget(form.type, {
-                                'attr': {
-                                    'class': 'form-select' ~ (form.type.vars.errors|length ? ' is-invalid' : ''),
-                                    'required': 'required'
-                                }
-                            }) }}
-                            {% if form.type.vars.errors|length %}
-                                <div class="invalid-feedback">
-                                    {{ form_errors(form.type) }}
-                                </div>
-                            {% endif %}
-                        </div>
-
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                            <button type="submit" class="btn btn-primary me-md-2">
-                                <i class="fas fa-save me-1"></i> Enregistrer
-                            </button>
-                            <a href="{{ path('front_reclamations') }}" class="btn btn-outline-secondary">
-                                <i class="fas fa-times me-1"></i> Annuler
-                            </a>
-                        </div>
-
-                        {{ form_end(form) }}
-                    </div>
-                </div>
-            </div>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h4 class="page-title">Modifier une Réclamation</h4>
         </div>
     </div>
+
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            {{ form_start(form, {
+                'attr': {
+                    'id': 'reclamation-form',
+                    'class': 'form-horizontal',
+                    'novalidate': 'novalidate'
+                }
+            }) }}
+
+            <div class="card {% if not form.vars.valid %}border-danger{% endif %}">
+                <div class="card-header {% if not form.vars.valid %}bg-danger text-white{% endif %}">
+                    <h5 class="card-title">
+                        {% if not form.vars.valid %}
+                            <i class="fas fa-exclamation-triangle me-2"></i>Veuillez corriger les erreurs
+                        {% else %}
+                            <i class="fas fa-edit me-2"></i>Modifier la réclamation
+                        {% endif %}
+                    </h5>
+                </div>
+
+                <div class="card-body">
+                    <!-- Description -->
+                    <div class="mb-3 input-with-icon">
+                        <i class="fas fa-align-left input-icon textarea-icon"></i>
+                        {{ form_label(form.description, null, {
+                            'label_attr': {'class': 'form-label'}
+                        }) }}
+                        {{ form_widget(form.description, {
+                            'attr': {
+                                'class': 'form-control' ~ (form.description.vars.errors|length ? ' is-invalid' : ''),
+                                'rows': 5,
+                                'placeholder': 'Décrivez votre problème en détail (10 caractères minimum)...'
+                            }
+                        }) }}
+                        <div class="invalid-feedback">
+                            {{ form_errors(form.description) }}
+                        </div>
+                        <small class="form-text text-muted">
+                            <i class="fas fa-info-circle me-1"></i>Minimum 10 caractères
+                        </small>
+                    </div>
+
+                    <!-- Type -->
+                    <div class="mb-3 input-with-icon">
+                        <i class="fas fa-tag input-icon"></i>
+                        {{ form_label(form.type, null, {
+                            'label_attr': {'class': 'form-label'}
+                        }) }}
+                        {{ form_widget(form.type, {
+                            'attr': {
+                                'class': 'form-select' ~ (form.type.vars.errors|length ? ' is-invalid' : '')
+                            }
+                        }) }}
+                        <div class="invalid-feedback">
+                            {{ form_errors(form.type) }}
+                        </div>
+                    </div>
+
+                    <!-- Statut (si visible) -->
+                    {% if form.status is defined %}
+                    <div class="mb-3 input-with-icon">
+                        <i class="fas fa-info-circle input-icon"></i>
+                        {{ form_label(form.status) }}
+                        {{ form_widget(form.status, {
+                            'attr': {
+                                'class': 'form-select' ~ (form.status.vars.errors|length ? ' is-invalid' : '')
+                            }
+                        }) }}
+                        <div class="invalid-feedback">
+                            {{ form_errors(form.status) }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Date (si visible) -->
+                    {% if form.date is defined %}
+                    <div class="mb-3 input-with-icon">
+                        <i class="far fa-calendar-alt input-icon"></i>
+                        {{ form_label(form.date) }}
+                        {{ form_widget(form.date, {
+                            'attr': {
+                                'class': 'form-control' ~ (form.date.vars.errors|length ? ' is-invalid' : '')
+                            }
+                        }) }}
+                        <div class="invalid-feedback">
+                            {{ form_errors(form.date) }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="card-footer text-end">
+                    <a href="{{ path('front_reclamations') }}" class="btn btn-secondary me-2">
+                        <i class="fas fa-arrow-left me-1"></i> Annuler
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i> Enregistrer
+                    </button>
+                </div>
+            </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block css %}
+    <style>
+        .input-with-icon {
+            position: relative;
+        }
+        .input-icon {
+            position: absolute;
+            left: 10px;
+            top: 35px;
+            color: #6c757d;
+        }
+        .textarea-icon {
+            top: 15px;
+        }
+        .form-control, .form-select {
+            padding-left: 35px;
+        }
+        .is-invalid {
+            border-color: #dc3545;
+        }
+        .invalid-feedback {
+            display: block;
+            color: #dc3545;
+            font-size: 0.875em;
+        }
+        .card-header.bg-danger {
+            background-color: #dc3545 !important;
+        }
+    </style>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (document.querySelector('#reclamation_date')) {
+                flatpickr('#reclamation_date', {
+                    dateFormat: 'd/m/Y',
+                    locale: 'fr',
+                    allowInput: true
+                });
+            }
+
+            const form = document.getElementById('reclamation-form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    if (!form.checkValidity()) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            }
+        });
+    </script>
 {% endblock %}

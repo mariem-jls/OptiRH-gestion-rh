@@ -1,7 +1,12 @@
-{# templates/reclamation/list.html.twig #}
 {% extends 'partials/layout-vertical.html.twig' %}
 
 {% block title %}Liste des réclamations{% endblock %}
+
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', { page_title: 'Liste des reclamations' }) }}
+{% endblock %}
+
+
 
 {% block stylesheets %}
     <style>

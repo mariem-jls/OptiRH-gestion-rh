@@ -22,24 +22,17 @@ class VehiculeType extends AbstractType
                     'Minibus' => 'Minibus',
                     'Voiture' => 'Voiture'
                 ],
-                'constraints' => [
-                    new NotBlank(['message' => 'Le type est obligatoire'])
-                ]
+                
             ])
             ->add('disponibilite', ChoiceType::class, [
                 'choices' => [
                     'Disponible' => 'disponible',
                     'Indisponible' => 'indisponible'
                 ],
-                'constraints' => [
-                    new NotBlank(['message' => 'La disponibilité est obligatoire'])
-                ]
+                
             ])
             ->add('nbrplace', IntegerType::class, [
-                'constraints' => [
-                    new NotBlank(['message' => 'Le nombre de places est obligatoire']),
-                    new Positive(['message' => 'Le nombre de places doit être positif'])
-                ]
+  
             ]);
     }
 

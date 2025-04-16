@@ -6,6 +6,8 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: "App\Repository\ReclamationRepository")]
 class Reclamation
@@ -30,9 +32,9 @@ class Reclamation
     #[ORM\Column(type: "text")]
     #[Assert\NotBlank(message: "La description ne peut pas être vide")]
     #[Assert\Length(
-        min: 5,
-        minMessage: "La description doit contenir au moins {{ limit }} caractères",
+        min: 10,
         max: 5000,
+        minMessage: "La description doit contenir au moins {{ limit }} caractères",
         maxMessage: "La description ne peut pas dépasser {{ limit }} caractères"
     )]
     private ?string $description = null;
@@ -41,6 +43,7 @@ class Reclamation
     private ?string $status = self::STATUS_PENDING;
 
     #[ORM\Column(type: "datetime")]
+    #[Assert\NotBlank(message: "La date est obligatoire")]
     private ?\DateTimeInterface $date;
 
     #[ORM\Column(length: 50)]
@@ -73,39 +76,51 @@ class Reclamation
 
     // Getters et Setters
     public function getId(): ?int { return $this->id; }
-    public function getDescription(): ?string { return $this->description; }
-    public function setDescription(string $description): self { $this->description = $description; return $this; }
+    
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+    
+    public function setDescription(?string $description): self
+    {
+        $this->description = $description;
+        return $this;
+    }
+    
     public function getStatus(): ?string { return $this->status; }
-    public function setStatus(string $status): self { $this->status = $status; return $this; }
+    public function setStatus(?string $status): self { $this->status = $status; return $this; }
+    
     public function getDate(): ?\DateTimeInterface { return $this->date; }
     public function setDate(\DateTimeInterface $date): self { $this->date = $date; return $this; }
+    
     public function getUtilisateur(): ?User { return $this->utilisateur; }
     public function setUtilisateur(?User $utilisateur): self { $this->utilisateur = $utilisateur; return $this; }
+    
     public function getReponses(): Collection { return $this->reponses; }
 
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
 
-public function getType(): ?string
-{
-    return $this->type;
-}
+    public function setType(?string $type): self
+    {
+        $this->type = $type;
+        return $this;
+    }
 
-public function setType(string $type): self
-{
-    $this->type = $type;
-    return $this;
-}
-
-public static function getTypeChoices(): array
-{
-    return [
-        self::TYPE_SALAIRE => self::TYPE_SALAIRE,
-        self::TYPE_REMUNERATION => self::TYPE_REMUNERATION,
-        self::TYPE_CONGES => self::TYPE_CONGES,
-        self::TYPE_RELATIONS_PRO => self::TYPE_RELATIONS_PRO,
-        self::TYPE_CONDITIONS => self::TYPE_CONDITIONS,
-        self::TYPE_AUTRE => self::TYPE_AUTRE,
-    ];
-}
+    public static function getTypeChoices(): array
+    {
+        return [
+            'Salaire' => self::TYPE_SALAIRE,
+            'Rémunération' => self::TYPE_REMUNERATION,
+            'Congés' => self::TYPE_CONGES,
+            'Relations professionnelles' => self::TYPE_RELATIONS_PRO,
+            'Conditions de travail' => self::TYPE_CONDITIONS,
+            'Autre' => self::TYPE_AUTRE,
+        ];
+    }
 
     public function addReponse(Reponse $reponse): self
     {
@@ -129,9 +144,9 @@ public static function getTypeChoices(): array
     public static function getStatusChoices(): array
     {
         return [
-            self::STATUS_PENDING => self::STATUS_PENDING,
-            self::STATUS_IN_PROGRESS => self::STATUS_IN_PROGRESS,
-            self::STATUS_RESOLVED => self::STATUS_RESOLVED,
+            'En attente' => self::STATUS_PENDING,
+            'En cours' => self::STATUS_IN_PROGRESS,
+            'Résolue' => self::STATUS_RESOLVED,
         ];
     }
 
@@ -154,5 +169,16 @@ public static function getTypeChoices(): array
         ];
 
         return $icons[$status] ?? '';
+    }
+    
+    #[Assert\Callback]
+    public function validate(ExecutionContextInterface $context, $payload)
+    {
+        // Validation supplémentaire si nécessaire
+        if (strpos($this->description, 'spam') !== false) {
+            $context->buildViolation('La description contient des termes non autorisés.')
+                ->atPath('description')
+                ->addViolation();
+        }
     }
 }

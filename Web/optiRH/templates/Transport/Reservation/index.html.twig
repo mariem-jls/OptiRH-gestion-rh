@@ -11,6 +11,13 @@
     <div class="col-12">
         <div class="card">
             <div class="card-body">
+                <!-- Bouton Mes Réservations -->
+                <div class="mb-3">
+                    <button class="btn btn-info" id="showReservationsBtn">
+                        <i class="mdi mdi-calendar-text me-1"></i> Mes Réservations
+                    </button>
+                </div>
+
                 <!-- Barre de recherche -->
                 <div class="row mb-3">
                     <div class="col-md-5">
@@ -29,7 +36,16 @@
                 <!-- Résultats -->
                 <div id="resultsContainer">
                     <div class="alert alert-info">
-                        Veuillez entrer des points de départ et d'arrivée
+                        Veuillez entrer au moins un point de départ ou d'arrivée
+                    </div>
+                </div>
+
+                <!-- Section Mes Réservations (cachée par défaut) -->
+                <div id="myReservationsContainer" style="display: none;">
+                    <h4 class="mb-3">Mes Réservations</h4>
+                    <div id="reservationsList">
+                        <!-- Le contenu sera chargé via AJAX -->
+                        <div class="alert alert-info">Chargement en cours...</div>
                     </div>
                 </div>
             </div>
@@ -46,10 +62,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const depart = document.getElementById('depart').value;
         const arrive = document.getElementById('arrive').value;
 
-        if (!depart || !arrive) {
-            alert('Veuillez entrer un point de départ et d\'arrivée');
+        if (!depart && !arrive) {
+            alert('Veuillez entrer au moins un point de départ ou d\'arrivée');
             return;
         }
+
+        // Masquer les réservations et montrer les résultats
+        document.getElementById('myReservationsContainer').style.display = 'none';
+        document.getElementById('resultsContainer').style.display = 'block';
 
         fetch(`{{ path('app_transport_reservation_search') }}?depart=${encodeURIComponent(depart)}&arrive=${encodeURIComponent(arrive)}`)
             .then(response => response.text())
@@ -58,58 +78,96 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     });
 
-     // Gestion des réservations - version améliorée
-    document.addEventListener('click', function(e) {
-        if (e.target.closest('.reserve-btn')) {
-            e.preventDefault();
-            const btn = e.target.closest('.reserve-btn');
-            const vehiculeId = btn.dataset.vehiculeId;
-            
-            fetch(`/transport/reservation/reserve/${vehiculeId}`, {
-                method: 'POST',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Mise à jour complète de la ligne
-                    const row = btn.closest('tr');
-                    
-                    // Mise à jour des places
-                    row.querySelector('.places').textContent = data.newPlaces;
-                    
-                    // Mise à jour du statut
-                    const statusBadge = row.querySelector('.status');
-                    statusBadge.className = 'badge bg-' + (data.newStatus === 'Disponible' ? 'success' : 'danger');
-                    statusBadge.textContent = data.newStatus;
-                    
-                    // Désactivation du bouton si nécessaire
-                    if (data.isDisabled) {
-                        btn.disabled = true;
-                        btn.innerHTML = '<i class="mdi mdi-calendar-remove"></i> Complet';
-                        btn.classList.remove('btn-primary');
-                        btn.classList.add('btn-secondary');
-                    }
-                    
-                    // Feedback utilisateur
-                    document
-                alert(data.message);
-                } else {
-                    alert(data.message);
-                    if (data.isDisabled) {
-                        btn.disabled = true;
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Une erreur est survenue lors de la réservation');
-            });
+    // Bouton "Mes Réservations"
+    document.getElementById('showReservationsBtn').addEventListener('click', function() {
+        const container = document.getElementById('myReservationsContainer');
+        const isVisible = container.style.display !== 'none';
+        
+        if (!isVisible) {
+            // Charger les réservations via AJAX
+            fetch('{{ path("app_transport_reservation_list") }}')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('reservationsList').innerHTML = html;
+                    container.style.display = 'block';
+                    document.getElementById('resultsContainer').style.display = 'none';
+                });
+        } else {
+            container.style.display = 'none';
+            document.getElementById('resultsContainer').style.display = 'block';
         }
     });
+
+    // Optionnel: permettre la recherche avec la touche Entrée
+    ['depart', 'arrive'].forEach(id => {
+        document.getElementById(id).addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('searchBtn').click();
+            }
+        });
+    });
 });
+
+function deleteReservation(reservationId) {
+    if (confirm('Êtes-vous sûr de vouloir annuler cette réservation ?')) {
+        // Afficher un indicateur de chargement
+        const button = event.target;
+        button.disabled = true;
+        button.innerHTML = '<i class="mdi mdi-loading mdi-spin"></i> Traitement...';
+
+        fetch(`/transport/reservation/${reservationId}/delete`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                '_token': '{{ csrf_token('delete_reservation') }}'
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Erreur HTTP: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Recharger la liste
+                document.getElementById('showReservationsBtn').click();
+                // Afficher notification
+                showAlert('success', 'Réservation annulée avec succès');
+            } else {
+                throw new Error(data.error || 'Erreur inconnue');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            showAlert('danger', `Échec de l'annulation: ${error.message}`);
+        })
+        .finally(() => {
+            button.disabled = false;
+            button.innerHTML = '<i class="mdi mdi-delete"></i> Annuler';
+        });
+    }
+}
+
+function showAlert(type, message) {
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type} alert-dismissible fade show mt-3`;
+    alert.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    const container = document.getElementById('myReservationsContainer');
+    container.prepend(alert);
+    
+    // Fermeture automatique après 5s
+    setTimeout(() => {
+        alert.classList.remove('show');
+        setTimeout(() => alert.remove(), 150);
+    }, 5000);
+}
 </script>
 {% endblock %}

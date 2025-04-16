@@ -84,4 +84,27 @@ class VehiculeRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    
+
+    public function findByDepartureOrArrival(?string $depart, ?string $arrive): array
+{
+    $qb = $this->createQueryBuilder('v')
+        ->join('v.trajet', 't')
+        ->where('v.disponibilite = :disponible')
+        ->setParameter('disponible', 'Disponible');
+
+    if (!empty($depart)) {
+        $qb->andWhere('t.depart LIKE :depart')
+           ->setParameter('depart', '%'.$depart.'%');
+    }
+
+    if (!empty($arrive)) {
+        $qb->andWhere('t.arrive LIKE :arrive')
+           ->setParameter('arrive', '%'.$arrive.'%');
+    }
+
+    return $qb->getQuery()->getResult();
+}
+
 }

@@ -9,6 +9,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
 
 class ReclamationType extends AbstractType
 {
@@ -19,25 +20,38 @@ class ReclamationType extends AbstractType
                 'label' => 'Description de votre réclamation',
                 'attr' => [
                     'rows' => 5,
-                    'placeholder' => 'Décrivez votre problème en détail...',
-                    'minlength' => 5
-                ]
+                    'placeholder' => 'Décrivez votre problème en détail (10 caractères minimum)...',
+                    'class' => 'form-control',
+                ],
+                'required' => true,
             ])
             ->add('type', ChoiceType::class, [
                 'label' => 'Type de réclamation',
-                'choices' => array_flip(Reclamation::getTypeChoices()),
+                'choices' => Reclamation::getTypeChoices(),
                 'placeholder' => 'Sélectionnez un type',
                 'attr' => [
                     'class' => 'form-select',
-                    'required' => true
-                ]
+                ],
+                'required' => true,
             ]);
 
         if ($options['is_admin']) {
             $builder->add('status', ChoiceType::class, [
                 'label' => 'Statut',
-                'choices' => array_flip(Reclamation::getStatusChoices()),
-                'attr' => ['class' => 'form-select']
+                'choices' => Reclamation::getStatusChoices(),
+                'attr' => [
+                    'class' => 'form-select',
+                ],
+                'required' => true,
+            ]);
+            
+            $builder->add('date', DateType::class, [
+                'widget' => 'single_text',
+                'label' => 'Date de la réclamation',
+                'attr' => [
+                    'class' => 'form-control',
+                ],
+                'required' => true,
             ]);
         }
     }

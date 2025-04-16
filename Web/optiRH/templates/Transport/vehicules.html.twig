@@ -13,12 +13,10 @@
             <div class="card-body">
                 <div class="row mb-3">
                     <div class="col-12">
-                        <a href="{{ path('app_transport_vehicule_new', {'trajet_id': trajet.id}) }}" 
-                           class="btn btn-primary">
+                        <a href="{{ path('app_transport_vehicule_new', {trajet_id: trajet.id}) }}" class="btn btn-primary">
                             <i class="mdi mdi-plus-circle-outline me-1"></i> Nouveau Véhicule
                         </a>
-                        <a href="{{ path('app_transport_trajet_index') }}" 
-                           class="btn btn-secondary">
+                        <a href="{{ path('app_transport_trajet_index') }}" class="btn btn-secondary">
                             <i class="mdi mdi-arrow-left me-1"></i> Retour aux Trajets
                         </a>
                     </div>
@@ -35,7 +33,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                        {% for vehicule in vehicules %}
+                            {% for vehicule in vehicules %}
                             <tr>
                                 <td>{{ vehicule.type }}</td>
                                 <td>
@@ -44,34 +42,38 @@
                                     </span>
                                 </td>
                                 <td>{{ vehicule.nbrplace }}</td>
-                                <td>{{ vehicule.nbrReservation }}</td>
+                                
                                 <td>
                                     <div class="btn-group btn-group-sm" role="group">
-                                     <!-- Bouton Réservations -->
-                                        <a href="{{ path('app_transport_vehicule_reservations', {'id': vehicule.id}) }}" 
-                                        class="btn btn-outline-primary" title="Voir les réservations">
+                                        <a href="{{ path('app_transport_vehicule_reservations', {id: vehicule.id}) }}" 
+                                           class="btn btn-outline-primary"
+                                           title="Réservations">
                                             <i class="mdi mdi-calendar-check"></i>
                                         </a>
-                                        <a href="{{ path('app_transport_vehicule_edit', {'id': vehicule.id}) }}" 
-                                           class="btn btn-outline-warning" title="Modifier">
-                                            <i class="mdi mdi-pencil-outline"></i>
+                                        <a href="{{ path('app_transport_vehicule_edit', {id: vehicule.id}) }}" 
+                                           class="btn btn-outline-warning"
+                                           title="Modifier">
+                                            <i class="mdi mdi-pencil"></i>
                                         </a>
-                                        <form method="post" action="{{ path('app_transport_vehicule_delete', {'id': vehicule.id}) }}" 
-                                              style="display:inline;" id="delete-form-{{ vehicule.id }}">
+                                        <form method="post" action="{{ path('app_transport_vehicule_delete', {id: vehicule.id}) }}" 
+                                              style="display:inline;" 
+                                              id="delete-form-{{ vehicule.id }}">
                                             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ vehicule.id) }}">
-                                            <button type="button" class="btn btn-outline-danger" title="Supprimer" 
-                                                    onclick="confirmDelete({{ vehicule.id }})">
-                                                <i class="mdi mdi-delete-outline"></i>
+                                            <button type="button" 
+                                                    class="btn btn-outline-danger" 
+                                                    title="Supprimer"
+                                                    onclick="confirmDelete({{ vehicule.id }}, '{{ vehicule.type }}')">
+                                                <i class="mdi mdi-delete"></i>
                                             </button>
                                         </form>
                                     </div>
                                 </td>
                             </tr>
-                        {% else %}
+                            {% else %}
                             <tr>
                                 <td colspan="5" class="text-center">Aucun véhicule trouvé pour ce trajet</td>
                             </tr>
-                        {% endfor %}
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
@@ -82,11 +84,111 @@
 {% endblock %}
 
 {% block javascript %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-function confirmDelete(vehiculeId) {
-    if (confirm('Êtes-vous sûr de vouloir supprimer ce véhicule ?')) {
-        document.getElementById('delete-form-' + vehiculeId).submit();
-    }
+
+{% if app.request.query.get('created') == '1' %}
+    document.addEventListener('DOMContentLoaded', function () {
+        const vehiculeId = '{{ app.request.query.get("vehicule_id") }}';
+        const vehiculeType = '{{ app.request.query.get("vehicule_type") }}';
+
+        Swal.fire({
+            title: 'Succès !',
+            html: `Le véhicule <b>${vehiculeType}</b> (ID: ${vehiculeId}) a été créé avec succès.`,
+            icon: 'success',
+            confirmButtonColor: '#28a745',
+            timer: 5000,
+            timerProgressBar: true
+        }).then(() => {
+            // Nettoyer l'URL après affichage
+            window.history.replaceState({}, document.title, "{{ path('app_transport_trajet_vehicules', {'id': trajet.id}) }}");
+        });
+    });
+
+{% endif %}
+
+
+{% if app.request.query.get('modified') == '1' %}
+    Swal.fire({
+        title: 'Succès !',
+        text: 'Le véhicule #{{ app.request.query.get('vehicule_id') }} a été modifié avec succès',
+        icon: 'success',
+        confirmButtonText: 'OK'
+    }).then(() => {
+        // Nettoyer l'URL après affichage de l'alerte
+        window.history.replaceState({}, document.title, "{{ path('app_transport_trajet_vehicules', {'id': trajet.id}) }}");
+    });
+{% endif %}
+
+
+// Confirmation AVANT suppression
+function confirmDelete(vehiculeId, vehiculeType) {
+    Swal.fire({
+        title: 'Confirmer la suppression',
+        html: `Êtes-vous sûr de vouloir supprimer le véhicule <b>${vehiculeType}</b> ?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Oui, supprimer',
+        cancelButtonText: 'Annuler'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Soumettre le formulaire
+            const form = document.getElementById('delete-form-' + vehiculeId);
+            
+            // Envoyer la requête via fetch pour mieux gérer la réponse
+            fetch(form.action, {
+                method: 'POST',
+                body: new FormData(form)
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Afficher la confirmation APRÈS suppression
+                    Swal.fire({
+                        title: 'Supprimé !',
+                        text: 'Le véhicule a été supprimé avec succès.',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        // Recharger la page pour actualiser la liste
+                        window.location.reload();
+                    });
+                } else {
+                    throw new Error('La suppression a échoué');
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    title: 'Erreur !',
+                    text: error.message,
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            });
+        }
+    });
 }
+
+// Vérifier si on doit afficher un message de confirmation après suppression
+document.addEventListener('DOMContentLoaded', function() {
+    // Vérifier si l'URL contient un paramètre de suppression réussie
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('deleted') === '1') {
+        Swal.fire({
+            title: 'Supprimé !',
+            text: 'Le véhicule a été supprimé avec succès.',
+            icon: 'success',
+            confirmButtonText: 'OK'
+        }).then(() => {
+            // Nettoyer l'URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+        });
+    }
+    
+    // Initialiser les tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+    tooltipTriggerList.map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+});
 </script>
 {% endblock %}

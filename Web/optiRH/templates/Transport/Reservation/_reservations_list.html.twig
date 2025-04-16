@@ -1,0 +1,43 @@
+{% if reservations is empty %}
+    <div class="alert alert-warning">
+        Vous n'avez aucune réservation
+    </div>
+{% else %}
+    <div class="table-responsive">
+        <table class="table table-hover table-centered table-nowrap mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Véhicule</th>
+                    <th>Type</th>
+                    <th>Trajet</th>
+                    <th>Statut</th>
+                   <!-- <th>Actions</th>-->
+                </tr>
+            </thead>
+            <tbody>
+                {% for reservation in reservations %}
+                <tr>
+                    <td>{{ reservation.vehicule.type }} ({{ reservation.vehicule.id }})</td>
+                    <td>
+                        <span class="badge bg-{{ reservation.vehicule.type == 'Bus' ? 'info' : 'success' }}">
+                            {{ reservation.vehicule.type }}
+                        </span>
+                    </td>
+                    <td>{{ reservation.trajet.depart }} → {{ reservation.trajet.arrive }}</td>
+                    <td>
+                        <span class="badge bg-{{ reservation.disponibilite == 'Confirmé' ? 'success' : 'warning' }}">
+                            {{ reservation.disponibilite }}
+                        </span>
+                    </td>
+                    <!--<td>
+                        <button onclick="deleteReservation({{ reservation.id }})" 
+                                class="btn btn-sm btn-danger">
+                            <i class="mdi mdi-delete"></i> Annuler
+                        </button>
+                    </td>-->
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}

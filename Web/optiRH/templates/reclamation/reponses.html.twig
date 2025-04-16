@@ -1,7 +1,18 @@
-{# templates/reclamation/reponses.html.twig #}
+
 {% extends 'partials/layout-vertical.html.twig' %}
 
 {% block title %}Réponses - Réclamation #{{ reclamation.id }}{% endblock %}
+
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', { page_title: 'Réponses - Réclamation ' }) }}
+{% endblock %}
+
+
+{# templates/reclamation/reponses.html.twig #}
+
+
+
+
 
 {% block body %}
     <div class="container-fluid">
@@ -69,16 +80,94 @@
     {% endif %}
             </div>
             <div class="col-md-4">
-                <div class="card shadow">
-                    <div class="card-header bg-primary text-white">
-                        <h5>Ajouter une réponse</h5>
-                    </div>
-                    <div class="card-body">
-                        {{ form_start(form) }}
-                            {{ form_widget(form) }}
-                        {{ form_end(form) }}
-                    </div>
-                </div>
+        <div class="card shadow {% if not form.vars.valid %}border-danger{% endif %}">
+    <div class="card-header {% if not form.vars.valid %}bg-danger text-white{% else %}bg-primary text-white{% endif %}">
+        <h5 class="card-title">
+            {% if not form.vars.valid %}
+                <i class="fas fa-exclamation-triangle me-2"></i>Veuillez corriger les erreurs
+            {% else %}
+                <i class="fas fa-reply me-2"></i>Ajouter une réponse
+            {% endif %}
+        </h5>
+    </div>
+    
+    <div class="card-body">
+        {{ form_start(form, {
+            'attr': {
+                'id': 'reponse-form',
+                'class': 'form-horizontal',
+                'novalidate': 'novalidate'
+            }
+        }) }}
+        
+        <!-- Champ Description -->
+        <div class="mb-3 input-with-icon">
+            <i class="fas fa-align-left input-icon textarea-icon"></i>
+            {{ form_label(form.description, null, {
+                'label_attr': {'class': 'form-label'}
+            }) }}
+            {{ form_widget(form.description, {
+                'attr': {
+                    'class': 'form-control' ~ (form.description.vars.errors|length ? ' is-invalid' : ''),
+                    'rows': 5,
+                    'placeholder': 'Décrivez votre réponse en détail (5 caractères minimum)...',
+                    'minlength': 10
+                }
+            }) }}
+            <div class="invalid-feedback">
+                {{ form_errors(form.description) }}
+            </div>
+            <small class="form-text text-muted">
+                <i class="fas fa-info-circle me-1"></i>Minimum 5 caractères
+            </small>
+        </div>
+
+        <!-- Champ Fichier (si présent dans le formulaire) -->
+        {% if form.fichier is defined %}
+        <div class="mb-3">
+            {{ form_label(form.fichier, null, {
+                'label_attr': {'class': 'form-label'}
+            }) }}
+            {{ form_widget(form.fichier, {
+                'attr': {
+                    'class': 'form-control' ~ (form.fichier.vars.errors|length ? ' is-invalid' : '')
+                }
+            }) }}
+            <div class="invalid-feedback">
+                {{ form_errors(form.fichier) }}
+            </div>
+            <small class="form-text text-muted">
+                <i class="fas fa-info-circle me-1"></i>Formats acceptés: PDF, JPG, PNG (max 5Mo)
+            </small>
+        </div>
+        {% endif %}
+
+        <!-- Champ Note (si présent dans le formulaire) -->
+        {% if form.rating is defined %}
+        <div class="mb-3">
+            {{ form_label(form.rating, null, {
+                'label_attr': {'class': 'form-label'}
+            }) }}
+            {{ form_widget(form.rating, {
+                'attr': {
+                    'class': 'form-select' ~ (form.rating.vars.errors|length ? ' is-invalid' : '')
+                }
+            }) }}
+            <div class="invalid-feedback">
+                {{ form_errors(form.rating) }}
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="card-footer text-end">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-paper-plane me-1"></i> Envoyer
+            </button>
+        </div>
+        
+        {{ form_end(form) }}
+    </div>
+</div>
                 
                 <div class="card shadow mt-4">
                     <div class="card-header bg-primary text-white">
@@ -98,4 +187,52 @@
             </div>
         </div>
     </div>
+{% endblock %}
+{% block css %}
+    <style>
+        .input-with-icon {
+            position: relative;
+        }
+        .input-icon {
+            position: absolute;
+            left: 10px;
+            top: 35px;
+            color: #6c757d;
+        }
+        .textarea-icon {
+            top: 15px;
+        }
+        .form-control, .form-select {
+            padding-left: 35px;
+        }
+        .is-invalid {
+            border-color: #dc3545;
+        }
+        .invalid-feedback {
+            display: block;
+            color: #dc3545;
+            font-size: 0.875em;
+        }
+        .card-header.bg-danger {
+            background-color: #dc3545 !important;
+        }
+    </style>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Validation en temps réel
+            const form = document.getElementById('reponse-form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    if (!form.checkValidity()) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            }
+        });
+    </script>
 {% endblock %}

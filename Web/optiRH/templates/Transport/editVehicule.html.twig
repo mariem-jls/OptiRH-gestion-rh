@@ -19,28 +19,41 @@
     <div class="col-12">
         <div class="card">
             <div class="card-body">
-                {{ form_start(form) }}
+               {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
                     <div class="row">
-                        <div class="col-md-4">
-                            {{ form_row(form.type, {
-                                'attr': {'class': 'form-select'},
-                                'label_attr': {'class': 'form-label'}
-                            }) }}
-                        </div>
-                        <div class="col-md-4">
-                            {{ form_row(form.disponibilite, {
-                                'attr': {'class': 'form-select'},
-                                'label_attr': {'class': 'form-label'}
-                            }) }}
-                        </div>
-                        <div class="col-md-4">
-                            {{ form_row(form.nbrplace, {
+                        <div class="col-md-4 mb-3">
+                            {{ form_label(form.type, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.type, {
                                 'attr': {
-                                    'class': 'form-control',
-                                    'min': 1
-                                },
-                                'label_attr': {'class': 'form-label'}
+                                    'class': 'form-select' ~ (form.type.vars.errors|length ? ' is-invalid' : '')
+                                }
                             }) }}
+                            <div class="invalid-feedback">
+                                {{ form_errors(form.type) }}
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form_label(form.disponibilite, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.disponibilite, {
+                                'attr': {
+                                    'class': 'form-select' ~ (form.disponibilite.vars.errors|length ? ' is-invalid' : '')
+                                }
+                            }) }}
+                            <div class="invalid-feedback">
+                                {{ form_errors(form.disponibilite) }}
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form_label(form.nbrplace, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.nbrplace, {
+                                'attr': {
+                                    'class': 'form-control' ~ (form.nbrplace.vars.errors|length ? ' is-invalid' : ''),
+                                    'min': 1
+                                }
+                            }) }}
+                            <div class="invalid-feedback">
+                                {{ form_errors(form.nbrplace) }}
+                            </div>
                         </div>
                     </div>
 
@@ -57,4 +70,35 @@
         </div>
     </div>
 </div>
+
+{% block javascript %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Confirmation avant soumission
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            Swal.fire({
+                title: 'Confirmer la modification',
+                text: 'Êtes-vous sûr de vouloir modifier ce véhicule ?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Oui, enregistrer',
+                cancelButtonText: 'Annuler'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
+    }
+});
+</script>
+{% endblock %}
+
 {% endblock %}
