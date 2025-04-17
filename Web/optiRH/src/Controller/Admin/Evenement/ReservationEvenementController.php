@@ -48,7 +48,7 @@ class ReservationEvenementController extends AbstractController
         ->findOneBy(['user' => $user, 'Evenement' => $evenement]);
 
         if ($existingReservation) {
-            $this->addFlash('warning', 'Vous avez déjà réservé pour cet événement.');
+            $this->addFlash('deja_reserve', 'Vous avez déjà réservé pour cet événement.');
             return $this->redirectToRoute('app_evenement_indexfront');
         }
     
@@ -80,11 +80,11 @@ class ReservationEvenementController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             try{
                 $reservationEvenementRepository->save($reservationEvenement, true);
-                $this->addFlash('success', 'La réservation a été modifiée avec succès !');
+                $this->addFlash('modifiee', 'La réservation a été modifiée avec succès !');
                 return $this->redirectToRoute('app_user_reservations', [], Response::HTTP_SEE_OTHER);
 
             }catch(\Exception $e){
-                $this->addFlash('danger', 'Une erreur est survenue lors de la modification de la réservation.');
+                $this->addFlash('erreur', 'Une erreur est survenue lors de la modification de la réservation.');
 
             }
             

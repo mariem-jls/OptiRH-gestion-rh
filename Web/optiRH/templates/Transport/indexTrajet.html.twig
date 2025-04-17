@@ -52,19 +52,19 @@
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm" role="group">
-                                    <a href="{{ path('app_transport_trajet_vehicules', {'id': trajet.id}) }}" 
+                                    <a href="{{ path('app_transport_trajet_vehicules', {'id': trajet.id}) }}"
                                     class="btn btn-outline-info" title="Véhicules">
                                         <i class="mdi mdi-car"></i>
                                     </a>
-                                        <a href="{{ path('app_transport_trajet_edit', {'id': trajet.id}) }}" 
+                                        <a href="{{ path('app_transport_trajet_edit', {'id': trajet.id}) }}"
                                            class="btn btn-outline-warning" title="Modifier">
                                             <i class="mdi mdi-pencil-outline"></i>
                                         </a>
-                                        <form method="post" action="{{ path('app_transport_trajet_delete', {'id': trajet.id}) }}" 
+                                        <form method="post" action="{{ path('app_transport_trajet_delete', {'id': trajet.id}) }}"
                                               style="display:inline;" id="delete-form-{{ trajet.id }}">
                                             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ trajet.id) }}">
-                                            <button type="button" class="btn btn-outline-danger" title="Supprimer" 
-                                                    onclick="confirmDelete({{ trajet.id }})">
+                                            <button type="button" class="btn btn-outline-danger" title="Supprimer"
+                                                    onclick="confirmDelete({{ trajet.id }}, '{{ trajet.type }}')">
                                                 <i class="mdi mdi-delete-outline"></i>
                                             </button>
                                         </form>
@@ -117,11 +117,11 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Détection de la création réussie
     const urlParams = new URLSearchParams(window.location.search);
-    
+
     if (urlParams.get('created') === '1') {
         const id = urlParams.get('id') || '';
         const type = urlParams.get('type') || '';
-        
+
         Swal.fire({
             title: 'Succès!',
             html: `Le trajet <b>${type}</b> (ID: ${id}) a été créé avec succès.`,
@@ -166,7 +166,7 @@ function confirmDelete(vehiculeId, vehiculeType) {
         if (result.isConfirmed) {
             // Soumettre le formulaire
             const form = document.getElementById('delete-form-' + vehiculeId);
-            
+
             // Envoyer la requête via fetch pour mieux gérer la réponse
             fetch(form.action, {
                 method: 'POST',
@@ -270,7 +270,7 @@ function renderCharts(data) {
             default: return item.vehicleType;
         }
     });
-    
+
     const counts = data.map(item => item.reservationCount);
 
     // Créer le graphique

@@ -29,7 +29,7 @@ class Trajet
     #[ORM\Column(type: 'string', length: 255)]
     #[Assert\NotBlank(message: 'La station est obligatoire')]
     #[Assert\Length(
-        max: 10,
+        max: 20,
         min:3,
         maxMessage: 'La station ne doit pas dépasser {{ limit }} caractères',
         minMessage: 'Lastation doit contenir au moins {{ limit }} caractères'
@@ -148,7 +148,7 @@ class Trajet
         return $this->longitudeDepart;
     }
 
-    public function setLongitudeDepart(float $longitudeDepart): self
+    public function setLongitudeDepart(?float $longitudeDepart): self
     {
         $this->longitudeDepart = $longitudeDepart;
         return $this;
@@ -159,7 +159,7 @@ class Trajet
         return $this->latitudeDepart;
     }
 
-    public function setLatitudeDepart(float $latitudeDepart): self
+    public function setLatitudeDepart(?float $latitudeDepart): self
     {
         $this->latitudeDepart = $latitudeDepart;
         return $this;
@@ -170,7 +170,7 @@ class Trajet
         return $this->longitudeArrivee;
     }
 
-    public function setLongitudeArrivee(float $longitudeArrivee): self
+    public function setLongitudeArrivee(?float $longitudeArrivee): self
     {
         $this->longitudeArrivee = $longitudeArrivee;
         return $this;
@@ -181,7 +181,7 @@ class Trajet
         return $this->latitudeArrivee;
     }
 
-    public function setLatitudeArrivee(float $latitudeArrivee): self
+    public function setLatitudeArrivee(?float $latitudeArrivee): self
     {
         $this->latitudeArrivee = $latitudeArrivee;
         return $this;
