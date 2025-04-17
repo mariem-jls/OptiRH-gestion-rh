@@ -31,10 +31,43 @@
 {% block stylesheets %}
     {{ parent() }}
     <link rel="stylesheet" href="/libs/flatpickr/flatpickr.min.css">
-    <!-- Ajout de Select2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        .input-with-icon {
+            position: relative;
+        }
+        .input-icon {
+            position: absolute;
+            left: 10px;
+            top: 36px;
+            color: #6c757d;
+            z-index: 10;
+            pointer-events: none;
+        }
+        .input-with-icon .form-control {
+            padding-left: 2.5rem;
+        }
+        .flatpickr-date {
+            padding-left: 2.5rem !important;
+        }
+        .flatpickr-calendar {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            font-family: inherit;
+        }
+        .flatpickr-day.selected {
+            background: #3b5de7;
+            border-color: #3b5de7;
+        }
+        .flatpickr-day.today {
+            border-color: #3b5de7;
+        }
+    </style>
 {% endblock %}
+
 {% block javascript %}
     {{ parent() }}
     <script src="/libs/parsleyjs/parsley.min.js"></script>
@@ -46,16 +79,51 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        $(document).ready(function() {
-            // 1. Configuration Flatpickr
-            flatpickr('.flatpickr', {
-                dateFormat: 'd/m/Y',
-                locale: 'fr',
-                allowInput: true,
-                minDate: 'today'
-            });
+      $(document).ready(function() {
+    // Configuration Flatpickr
+    flatpickr('.flatpickr-date', {
+        dateFormat: 'd/m/Y',
+        locale: 'fr',
+        minDate: 'today',
+        defaultDate: new Date().fp_incr(1), // Date de demain par défaut
+        allowInput: true,
+        onClose: function(selectedDates, dateStr, instance) {
+            // Validation manuelle après sélection
+            $(instance.element).parsley().validate();
+        }
+    });
 
-            // 2. Configuration Select2
+    // Validateur personnalisé Parsley pour la date
+    window.Parsley.addValidator('dateAfterToday', {
+        validateString: function(value) {
+            if (!value) return false;
+            
+            try {
+                const [day, month, year] = value.split('/');
+                const inputDate = new Date(year, month - 1, day);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                return inputDate > today;
+            } catch (e) {
+                return false;
+            }
+        },
+        messages: {
+            fr: "La date doit être postérieure à aujourd'hui"
+        }
+    });
+
+    // Initialisation Parsley
+    $('form').parsley({
+        errorClass: 'is-invalid',
+        successClass: 'is-valid',
+        errorsWrapper: '<div class="invalid-feedback"></div>',
+        errorTemplate: '<span></span>',
+        trigger: 'change focusout',
+        excluded: 'input[type=hidden]'
+    });
+
+            // Configuration Select2
             $('#mission_assignedTo').select2({
                 theme: 'bootstrap-5',
                 placeholder: 'Sélectionnez un utilisateur',
@@ -64,21 +132,7 @@
                 width: '100%'
             });
 
-            // 3. Validateur personnalisé Parsley
-            window.Parsley.addValidator('dateAfterToday', {
-                validateString: function(value) {
-                    const [day, month, year] = value.split('/');
-                    const inputDate = new Date(year, month - 1, day);
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0);
-                    return inputDate > today;
-                },
-                messages: {
-                    fr: "La date doit être postérieure à aujourd'hui"
-                }
-            });
-
-            // 4. Initialisation Parsley
+            // Validation Parsley
             $('form').parsley({
                 errorClass: 'is-invalid',
                 successClass: 'is-valid',
@@ -90,16 +144,14 @@
 
             window.Parsley.setLocale('fr');
 
-            // 5. Gestion AJAX du formulaire
+            // Gestion AJAX du formulaire
             $('form').on('submit', function(e) {
                 e.preventDefault();
                 
-                // Vérification de la validité du formulaire
                 if (!$(this).parsley().validate()) {
                     return;
                 }
 
-                // Afficher un loader pendant la soumission
                 const submitButton = $(this).find('button[type="submit"]');
                 const originalText = submitButton.html();
                 submitButton.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Enregistrement...');
@@ -117,7 +169,6 @@
                                 icon: 'success',
                                 timer: 2000,
                                 showConfirmButton: false,
-                                timerProgressBar: true,
                                 willClose: () => {
                                     window.location.href = response.redirect;
                                 }
@@ -131,7 +182,6 @@
                             icon: 'error',
                             confirmButtonText: 'OK'
                         });
-                        submitButton.prop('disabled', false).html(originalText);
                     },
                     complete: function() {
                         submitButton.prop('disabled', false).html(originalText);
@@ -139,31 +189,18 @@
                 });
             });
 
-            // 6. Gestion des messages flash (pour les requêtes non-AJAX)
+            // Gestion des messages flash
             {% for message in app.flashes('success') %}
                 Swal.fire({
                     title: 'Succès',
                     text: '{{ message }}',
                     icon: 'success',
                     timer: 2000,
-                    showConfirmButton: false,
-                    timerProgressBar: true
+                    showConfirmButton: false
                 }).then(() => {
-                    {% if app.request.attributes.get('_route') == 'mission_new' %}
-                        window.location.href = "{{ path('gs-projet_project_show', {'id': project.id}) }}";
-                    {% endif %}
+                    window.location.href = "{{ path('gs-projet_project_show', {'id': project.id}) }}";
                 });
             {% endfor %}
-
-            // 7. Gestion des erreurs de formulaire
-            {% if form.vars.errors|length > 0 %}
-                Swal.fire({
-                    title: 'Erreur',
-                    text: 'Veuillez corriger les erreurs dans le formulaire',
-                    icon: 'error',
-                    confirmButtonText: 'OK'
-                });
-            {% endif %}
         });
     </script>
 {% endblock %}

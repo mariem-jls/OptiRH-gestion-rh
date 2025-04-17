@@ -2,7 +2,8 @@
     'attr': {
         'class': 'needs-validation',
         'novalidate': 'novalidate',
-        'data-parsley-validate': ''
+        'data-parsley-validate': '',
+        'data-ajax': 'true'
     }
 }) }}
 
@@ -55,18 +56,20 @@
             <div id="status-errors" class="invalid-feedback">{{ form_errors(form.status)|striptags }}</div>
         </div>
 
-        <div class="mb-3">
+        <div class="mb-3 input-with-icon">
+            <i class="far fa-calendar-alt input-icon"></i>
             {{ form_label(form.dateTerminer, null, {'label_attr': {'class': 'form-label'}}) }}
             {{ form_widget(form.dateTerminer, {
                 'attr': {
-                    'class': 'form-control flatpickr',
-                    'placeholder': 'Date limite*',
+                    'class': 'form-control flatpickr-date',
+                    'placeholder': 'Sélectionnez une date*',
                     'required': 'required',
-                    'data-parsley-date-after': '',
-                    'data-parsley-date-after-message': 'La date doit être postérieure à aujourd\'hui'
+                    'data-parsley-trigger': 'change'
                 }
             }) }}
-            <div class="invalid-feedback">{{ form_errors(form.dateTerminer)|striptags }}</div>
+            <div class="invalid-feedback">
+                {{ form_errors(form.dateTerminer)|striptags }}
+            </div>
         </div>
 
         <div class="mb-3">
