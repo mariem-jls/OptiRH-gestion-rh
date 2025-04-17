@@ -9,19 +9,18 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
-use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\TimeType;
-
-use Symfony\Component\Validator\Constraints\File;
+use Symfony\Component\Validator\Constraints\File as FileConstraint;
 use Symfony\Component\Form\CallbackTransformer;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\File\File;
 
 class EvenementType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('titre',)
+            ->add('titre')
             ->add('lieu')
             ->add('description')
             ->add('prix')
@@ -29,16 +28,16 @@ class EvenementType extends AbstractType
                 'widget' => 'single_text',
                 'format' => 'yyyy-MM-dd',
                 'attr' => ['class' => 'form-control form-control-sm'],
-                'required' => false,  // Permet de laisser vide
-                'empty_data' => null,  // Définit la valeur par défaut à null
+                'required' => false,
+                'empty_data' => null,
                 'invalid_message' => 'Merci de mettre une date valide.',
             ])
             ->add('date_fin', DateType::class, [
                 'widget' => 'single_text',
                 'format' => 'yyyy-MM-dd',
                 'attr' => ['class' => 'form-control form-control-sm'],
-                'required' => false,  // Permet de laisser vide
-                'empty_data' => null,  // Définit la valeur par défaut à null
+                'required' => false,
+                'empty_data' => null,
                 'invalid_message' => 'Merci de mettre une date valide.',
             ])
             ->add('image', FileType::class, [
@@ -48,17 +47,15 @@ class EvenementType extends AbstractType
                 'attr' => [
                     'class' => 'form-control form-control-sm file-input',
                     'accept' => 'image/*',
-                    'hidden' => true
                 ],
                 'constraints' => [
-                    new File([
+                    new FileConstraint([
                         'maxSize' => '2M',
                         'mimeTypes' => ['image/jpeg', 'image/png', 'image/gif'],
                         'mimeTypesMessage' => 'Seules les images (JPEG, PNG, GIF) sont autorisées',
                     ])
                 ],
             ])
-            
             ->add('heure', TimeType::class, [
                 'widget' => 'single_text',
                 'input' => 'datetime',
@@ -69,9 +66,6 @@ class EvenementType extends AbstractType
                     'class' => 'form-control form-control-sm flatpickr-time',
                 ],
             ])
-            
-         
-            
             ->add('longitude')
             ->add('latitude')
             ->add('type', ChoiceType::class, [
@@ -100,24 +94,30 @@ class EvenementType extends AbstractType
                 'required' => true
             ]);
 
-        // Transformer pour gérer le chemin de l'image
+        // Transformer pour l'image
         $builder->get('image')
             ->addModelTransformer(new CallbackTransformer(
-                function ($path) {
-                    // Transforme le chemin en File pour l'affichage
-                    return null; // On ne charge pas le fichier existant dans l'input
+                function ($imagePath) {
+                    if (!$imagePath) {
+                        return null;
+                    }
+
+                    $fullPath = __DIR__ . '/../../../public/uploads/' . $imagePath;
+
+                    if (file_exists($fullPath)) {
+                        return new File($fullPath);
+                    }
+
+                    return null;
                 },
-                function ($file) {
-                    // Laisse passer le fichier uploadé
-                    return $file instanceof UploadedFile ? $file : null;
+                function ($file) use ($builder) {
+                    if (!$file instanceof UploadedFile) {
+                        return $builder->getForm()->getData()->getImage();
+                    }
+
+                    return $file;
                 }
             ));
-
-            
-
-           
-            
-           
     }
 
     public function configureOptions(OptionsResolver $resolver): void

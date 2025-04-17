@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20250416185127 extends AbstractMigration
+final class Version20250417013204 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -54,7 +54,7 @@ final class Version20250416185127 extends AbstractMigration
             CREATE TABLE trajet (id INT AUTO_INCREMENT NOT NULL, type VARCHAR(255) NOT NULL, station VARCHAR(255) NOT NULL, depart VARCHAR(255) NOT NULL, arrive VARCHAR(255) NOT NULL, longitude_depart DOUBLE PRECISION NOT NULL, latitude_depart DOUBLE PRECISION NOT NULL, longitude_arrivee DOUBLE PRECISION NOT NULL, latitude_arrivee DOUBLE PRECISION NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
-            CREATE TABLE user (id INT AUTO_INCREMENT NOT NULL, nom VARCHAR(100) NOT NULL, email VARCHAR(180) NOT NULL, roles JSON NOT NULL, mot_de_passe VARCHAR(255) NOT NULL, address VARCHAR(255) DEFAULT NULL, is_verified TINYINT(1) NOT NULL, UNIQUE INDEX UNIQ_IDENTIFIER_EMAIL (email), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+            CREATE TABLE user (id INT AUTO_INCREMENT NOT NULL, nom VARCHAR(100) NOT NULL, email VARCHAR(180) NOT NULL, roles JSON NOT NULL COMMENT '(DC2Type:json)', mot_de_passe VARCHAR(255) NOT NULL, address VARCHAR(255) DEFAULT NULL, is_verified TINYINT(1) NOT NULL, UNIQUE INDEX UNIQ_IDENTIFIER_EMAIL (email), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
             CREATE TABLE vehicule (id INT AUTO_INCREMENT NOT NULL, trajet_id INT NOT NULL, disponibilite VARCHAR(255) NOT NULL, type VARCHAR(255) NOT NULL, nbrplace INT NOT NULL, nbr_reservation INT NOT NULL, INDEX IDX_292FFF1DD12A823 (trajet_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB

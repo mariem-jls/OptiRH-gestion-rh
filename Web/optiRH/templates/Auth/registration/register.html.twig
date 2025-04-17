@@ -3,6 +3,7 @@
 	<head>
 		{{ include('partials/title-meta.html.twig', {title: 'Inscription'}) }}
 		{{ include('partials/head-css.html.twig') }}
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 	</head>
 
 	<body class="authentication-bg authentication-bg-pattern">
@@ -50,6 +51,11 @@
 										<div class="text-danger">{{ form_errors(registrationForm.plainPassword) }}</div>
 									{% endif %}
 								</div>
+
+                                <div class="cf-turnstile" data-sitekey="{{ sitekey }}" data-theme="light"></div>
+                                {% for message in app.flashes('error') %}
+                                    <div class="alert alert-danger">{{ message }}</div>
+                                {% endfor %}
 
 								<div class="mb-3">
 									<div class="form-check">

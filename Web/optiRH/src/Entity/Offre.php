@@ -28,11 +28,14 @@ class Offre
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Assert\NotBlank(message: "La description ne peut pas être vide.")]
-    #[Assert\Length(min: 10, minMessage: "La description doit contenir au moins {{ limit }} caractères.")]
+    #[Assert\Length(min: 10, minMessage: "La description doit contenir au moins {{ limit }} caractères.", normalizer: 'strip_tags'// Ignore les balises HTM
+        )]
+    #[Groups(['offres'])]
     private ?string $description = null;
 
     #[ORM\Column(type: Types::STRING, length: 50, nullable: true)]
     #[Assert\Choice(choices: ['Active', 'En Attente', 'Brouillon'], message: "Statut invalide.")]
+    #[Groups(['offres'])]
     private ?string $statut = 'Brouillon'; // Par défaut : Brouillon
 
     #[ORM\Column(
@@ -40,6 +43,7 @@ class Offre
         columnDefinition: "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
     )]
     #[Assert\NotBlank(message: "La date de création est requise.")]
+    #[Groups(['offres'])]
     private ?\DateTimeInterface $dateCreation = null;
 
     #[ORM\Column(type: Types::STRING, length: 50, nullable: true)]
@@ -58,6 +62,7 @@ class Offre
     private ?string $localisation = null;
     #[ORM\Column(type: Types::STRING, length: 50, nullable: true)]
     #[Assert\Choice(choices: ['Junior', 'Senior', 'Débutant'], message: "Niveau d'expérience invalide.")]
+    #[Groups(['offres'])]
     private ?string $niveauExperience = null;
 
     #[ORM\Column(type: Types::INTEGER, nullable: true)]
@@ -65,8 +70,9 @@ class Offre
     #[Groups(['offres'])]
     private ?int $nbPostes = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     #[Assert\GreaterThanOrEqual("today", message: "La date d'expiration doit être aujourd'hui ou dans le futur.")]
+    #[Groups(['offres'])]
     private ?\DateTimeInterface $dateExpiration = null;
     #[ORM\OneToMany(mappedBy: "offre", targetEntity: Demande::class, orphanRemoval: true)]
     private Collection $demandes;

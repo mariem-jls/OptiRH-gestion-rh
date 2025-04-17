@@ -6,6 +6,7 @@
 parameters:
     uploads_directory: '%kernel.project_dir%/public/uploads'
     evenements_directory: '%kernel.project_dir%/public/uploads/evenements'
+    turnstile_secret_key: '%env(resolve:TURNSTILE_SECRET_KEY)%'
 
 services:
     # default configuration for services in *this* file
@@ -21,6 +22,14 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+    App\Security\TurnstileValidator:
+      arguments:
+          $secret: '%turnstile_secret_key%'
+
+    App\EventListener\TurnstileLoginListener:
+      tags:
+          - { name: kernel.event_listener, event: kernel.request, priority: 20 }
+
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

@@ -189,10 +189,11 @@
         flatpickr('.flatpickr', {
             enableTime: true,
             time_24hr: true,
-            dateFormat: "d/m/Y H:i", // Doit matcher le data-date-format
-            minDate: "today",
+            dateFormat: "Y-m-d H:i", // Format ISO pour Symfony
+            altInput: true,
             locale: "fr",
-            disableMobile: true // Important pour le bon fonctionnement mobile
+            disableMobile: true,// Important pour le bon fonctionnement mobile
+            defaultDate: "{{ offre.dateExpiration ? offre.dateExpiration|date('Y-m-d H:i') : '' }}" // Pré-remplissage correct
         });
 
         // Configuration Quill

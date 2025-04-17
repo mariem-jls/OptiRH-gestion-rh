@@ -96,7 +96,7 @@
                             <div class="col-12">
                                 {% if demande.fichierPieceJointe %}
                                         <div class="mb-3">
-                                            <a href="{{ asset('uploads/pieces_jointes/' ~ demande.fichierPieceJointe) }}"
+                                            <a href="{{ asset('uploads/' ~ demande.fichierPieceJointe) }}"
                                                target="_blank"
                                                class="btn btn-outline-primary">
                                                 <i class="mdi mdi-file-pdf-box me-2"></i>Télécharger le PDF
@@ -105,8 +105,9 @@
                                         <iframe
                                                 src="{{ asset('uploads/' ~ demande.fichierPieceJointe) }}#toolbar=0&view=fitH"
                                                 class="file-preview w-100"
-                                                onerror="this.style.display='none'"
-                                        ></iframe>
+                                                onerror="this.innerHTML='<div class=\'alert alert-danger\'>Impossible d\'afficher le PDF</div>'; this.style.border='none'">
+
+                                        </iframe>
 
                                 {% else %}
                                     <div class="alert alert-info">
