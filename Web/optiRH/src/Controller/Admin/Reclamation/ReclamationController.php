@@ -18,7 +18,6 @@ use Symfony\Component\Validator\Constraints\Length;
 class ReclamationController extends AbstractController
 {
     #[Route('/reclamations', name: 'admin_reclamations', methods: ['GET'])]
-    #[IsGranted('ROLE_ADMIN')]
     public function list(EntityManagerInterface $em): Response
     {
         $reclamations = $em->getRepository(Reclamation::class)->findAll();
@@ -28,7 +27,6 @@ class ReclamationController extends AbstractController
     }
 
     #[Route('/reclamation/{id}/reponses', name: 'admin_reclamation_reponses', methods: ['GET', 'POST'])]
-    #[IsGranted('ROLE_ADMIN')]
     public function reponses(Reclamation $reclamation, Request $request, EntityManagerInterface $em): Response
     {
         $reponse = new Reponse();
@@ -69,7 +67,7 @@ class ReclamationController extends AbstractController
     }
 
     #[Route('/reclamation/{id}/update-status', name: 'admin_update_status', methods: ['POST'])]
-    #[IsGranted('ROLE_ADMIN')]
+  
     public function updateStatus(Request $request, Reclamation $reclamation, EntityManagerInterface $em): Response
     {
         $status = $request->request->get('status');
@@ -89,7 +87,7 @@ class ReclamationController extends AbstractController
         return $this->redirectToRoute('admin_reclamations');
     }
     #[Route('/reponse/{id}/edit', name: 'admin_reponse_edit', methods: ['GET', 'POST'])]
-    #[IsGranted('ROLE_ADMIN')]
+   
     public function editReponse(Request $request, Reponse $reponse, EntityManagerInterface $em): Response
     {
         // Bloquer si la réponse a une notation
@@ -121,7 +119,7 @@ class ReclamationController extends AbstractController
     }
 
     #[Route('/reponse/{id}/delete', name: 'admin_reponse_delete', methods: ['POST'])]
-    #[IsGranted('ROLE_ADMIN')]
+  
     public function deleteReponse(Request $request, Reponse $reponse, EntityManagerInterface $em): Response
     {
         // Bloquer si la réponse a une notation

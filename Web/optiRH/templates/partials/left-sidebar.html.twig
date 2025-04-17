@@ -123,17 +123,22 @@
                         </a>
                     </li>
                 {% endif %}
-                <li>
-                    <a href="{{ path('admin_reclamations') }}">
-                        <i class="mdi mdi-briefcase-variant-outline"></i>
-                        <span> Gestion Réclamation </span>
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ path('front_reclamations') }}">
-                        <i class="mdi mdi-briefcase-variant-outline"></i>
-                        <span> Réclamation </span>
-                    </a>
+                 {% if is_granted('ROLE_ADMIN') %}
+                    <li>
+                        <a href="{{ path('admin_reclamations') }}">
+                            <i class="mdi mdi-briefcase-variant-outline"></i>
+                            <span> Gestion Réclamation </span>
+                        </a>
+                    </li>
+                {% endif %}
+                {% if is_granted('ROLE_EMPLOYEE') %}
+                    <li>
+                        <a href="{{ path('front_reclamations') }}">
+                            <i class="mdi mdi-briefcase-variant-outline"></i>
+                            <span> Réclamation </span>
+                        </a>
+                    </li>
+                {% endif %}
 <!-- Projets -->
 
 {% if is_granted('ROLE_EMPLOYEE') %}
