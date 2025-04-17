@@ -22,6 +22,7 @@ class ReservationController extends AbstractController
     }
 
     #[Route('/search', name: 'app_transport_reservation_search', methods: ['GET'])]
+    #[IsGranted('ROLE_USER','ROLE_EMPLOYEE','ROLE_MANAGER')]
 public function search(Request $request, VehiculeRepository $vehiculeRepo): Response
 {
     $depart = $request->query->get('depart');
@@ -44,16 +45,13 @@ public function search(Request $request, VehiculeRepository $vehiculeRepo): Resp
 
 
     #[Route('/reserve/{id}', name: 'app_transport_reservation_reserve', methods: ['POST'])]
+    #[IsGranted('ROLE_USER','ROLE_EMPLOYEE','ROLE_MANAGER')]
     public function reserve(
         Vehicule $vehicule,
         EntityManagerInterface $em,
         LoggerInterface $logger,
         Request $request
     ): Response {
-
-
-
-
         try {
             $logger->debug('Tentative de réservation pour véhicule: '.$vehicule->getId());
             
@@ -114,6 +112,7 @@ public function search(Request $request, VehiculeRepository $vehiculeRepo): Resp
     }
 
     #[Route('/mes-reservations', name: 'app_transport_reservation_list', methods: ['GET'])]
+    #[IsGranted('ROLE_USER','ROLE_EMPLOYEE','ROLE_MANAGER')]
 public function userReservations(EntityManagerInterface $em): Response
 {
     $user = $this->getUser();
@@ -131,6 +130,7 @@ public function userReservations(EntityManagerInterface $em): Response
 }
 
 #[Route('/{id}/delete', name: 'app_transport_reservation_delete', methods: ['POST'])]
+#[IsGranted('ROLE_USER','ROLE_EMPLOYEE','ROLE_MANAGER')]
 public function deleteReservation(ReservationTrajet $reservation, EntityManagerInterface $em): JsonResponse
 {
     try {
