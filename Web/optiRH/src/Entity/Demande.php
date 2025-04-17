@@ -30,6 +30,7 @@ class Demande
     private \DateTime $date;
 
     #[ORM\Column(type: "text", nullable: true)]
+    #[Assert\NotBlank(message: "La description est requise.")]
     #[Assert\Length(
         min: 10,
         minMessage: "La description doit contenir au moins {{ limit }} caractères."
@@ -64,14 +65,17 @@ class Demande
     private string $telephone;
 
     #[ORM\Column(type: "string", length: 255, nullable: true)]
+    #[Assert\NotBlank(message: "L'adresse complète est requise.")]
     #[Assert\Length(max: 255, maxMessage: "L'adresse ne peut pas dépasser {{ limit }} caractères.")]
     private ?string $adresse = null;
 
     #[ORM\Column(type: "date", nullable: true)]
+    #[Assert\NotBlank(message: "La date de début disponible doit être requise.")]
     #[Assert\GreaterThanOrEqual("today", message: "La date de début disponible doit être aujourd'hui ou dans le futur.")]
     private ?\DateTimeInterface $dateDebutDisponible = null;
 
     #[ORM\Column(type: "string", length: 100, nullable: true)]
+    #[Assert\NotBlank(message: "La situation actuelle doit être requise.")]
     #[Assert\Choice(
         choices: [self::SITUATION_ETUDIANT, self::SITUATION_EMPLOYE, self::SITUATION_AUTRE],
         message: "La situation actuelle doit être Etudiant, Employé ou Autre."

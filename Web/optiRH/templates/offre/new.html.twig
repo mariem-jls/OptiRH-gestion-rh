@@ -71,19 +71,22 @@
                         </div>
                     </div>
 
-                    <!-- Date Expiration + Nombre de postes -->
                     <div class="row g-2">
-                        <div class="col-md-6">
-                            <div class="mb-3">
+                        <div class="col-md-6"><div class="mb-3">
                                 {{ form_label(form.dateExpiration, 'Date expiration', {'label_attr': {'class': 'form-label'}}) }}
                                 <div class="input-group">
-                                    {{ form_widget(form.dateExpiration, {'attr': {
-                                        'class': 'form-control flatpickr',
-                                        'required': 'required'
-                                    }}) }}
+                                    {{ form_widget(form.dateExpiration, {
+                                    'attr': {
+                                    'class': 'form-control flatpickr',
+                                    'placeholder': 'Sélectionnez une date et heure',
+                                    'data-date-format': 'Y-m-d H:i'
+                                        }
+                                    }) }}
                                     <span class="input-group-text"><i class="mdi mdi-calendar"></i></span>
                                 </div>
+                                {{ form_errors(form.dateExpiration) }}
                             </div>
+
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
@@ -169,6 +172,7 @@
 <script src="{{ asset('/libs/quill/quill.min.js') }}"></script>
 <!-- Flatpickr -->
 <script src="{{ asset('/libs/flatpickr/flatpickr.min.js') }}"></script>
+
 <script src="{{ asset('/libs/flatpickr/l10n/fr.js') }}"></script>
 <!-- Parsley -->
 <script src="{{ asset('/libs/parsleyjs/parsley.min.js') }}"></script>
@@ -176,10 +180,8 @@
 <!-- SweetAlert2 JS -->
 <script src="{{ asset('/libs/sweetalert2/sweetalert2.all.min.js') }}"></script>
 
-<!-- Initialisation -->
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        // Configuration de Quill
         const quill = new Quill('#quill-editor', {
             theme: 'snow',
             modules: {
@@ -196,17 +198,21 @@
             placeholder: 'Rédigez votre description ici...'
         });
 
-        // Synchronisation avec le champ caché
         const descriptionField = document.querySelector('#{{ form.description.vars.id }}');
         quill.root.innerHTML = descriptionField.value || '';
         quill.on('text-change', () => descriptionField.value = quill.root.innerHTML);
 
-        // Configuration Flatpickr
+
+        // Dans la section JavaScript du template
         flatpickr('.flatpickr', {
-            dateFormat: "Y-m-d H:i",
-            minDate: "today",
+            enableTime: true,
+            time_24hr: true,
+            dateFormat: "Y-m-d H:i", // Doit matcher data-date-format
+            altInput: true,
+            altFormat: "d/m/Y H:i", // Format affiché
             locale: "fr",
-            disableMobile: true
+            minDate: "today",
+            allowInput: true // Permet la saisie manuelle
         });
 
         // Configuration Parsley

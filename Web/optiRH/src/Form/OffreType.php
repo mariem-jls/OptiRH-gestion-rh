@@ -66,12 +66,13 @@ class OffreType extends AbstractType
             ->add('dateExpiration', DateTimeType::class, [
                 'widget' => 'single_text',
                 'required' => false,
-                'html5' => false, // Désactive le datetime-local natif
-                'format' => 'dd/MM/yyyy HH:mm', // Format compatible avec Flatpickr
+                'html5' => false,
+                'format' => 'yyyy-MM-dd HH:mm', // ⚠️ Important : doit correspondre à la date envoyée
                 'attr' => [
                     'class' => 'flatpickr',
-                    'data-date-format' => 'd/m/Y H:i', // Format d'affichage
-                    'data-enable-time' => 'true'
+                    'data-date-format' => 'Y-m-d H:i', // ⚠️ Format Flatpickr (JS)
+                    'data-enable-time' => 'true',
+                    'data-time_24hr' => 'true' // facultatif, format 24h
                 ]
             ])
         ;

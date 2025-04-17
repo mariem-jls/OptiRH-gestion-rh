@@ -64,6 +64,7 @@
             <ul id="side-menu">
                 <!-- Apps Section -->
                 <li class="menu-title mt-2">Applications</li>
+                {% if is_granted('ROLE_ADMIN') %}
                 <li>
                     <a href="#email" data-bs-toggle="collapse">
                         <i class="mdi mdi-account-group"></i>
@@ -85,7 +86,8 @@
                         </ul>
                     </div>
                 </li>
-                
+                {% endif %}
+
                 <li>
                     <a href="#sidebarEvents" data-bs-toggle="collapse" aria-expanded="false" aria-controls="sidebarEvents">
                         <i class="mdi mdi-calendar-blank-outline"></i>
