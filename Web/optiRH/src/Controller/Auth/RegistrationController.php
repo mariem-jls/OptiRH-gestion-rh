@@ -56,7 +56,7 @@ class RegistrationController extends AbstractController
 
         return $this->render('Auth/registration/register.html.twig', [
             'registrationForm' => $form,
-            'sitekey' => $_ENV['TURNSTILE_SECRET_KEY'],
+            'sitekey' => $_ENV['TURNSTILE_SITE_KEY'],
         ]);
     }
 

@@ -17,7 +17,33 @@ class TurnstileValidator
 
     public function isValid(string $token, ?string $remoteIp = null): bool
     {
-        return true;
+        if (empty($token)) {
+            return false;
+        }
+        $postData = [
+            'secret' => $this->secret,
+            'response' => $token,
+        ];
+
+        
+        if ($remoteIp) {
+            $postData['remoteip'] = $remoteIp;
+        }
+        
+        try {
+            $response = $this->httpClient->request('POST', 'https://challenges.cloudflare.com/turnstile/v0/siteverify', [
+                'body' => $postData,
+                'headers' => [
+                    'Content-Type' => 'application/x-www-form-urlencoded',
+                ],
+            ]);
+            
+            $data = $response->toArray(false);
+            
+            return $data['success'] ?? false;
+
+        } catch (\Exception $e) {
+            return false;
+        }
     }
-    
 }
