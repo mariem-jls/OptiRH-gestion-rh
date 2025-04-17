@@ -35,21 +35,19 @@
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
 {% endblock %}
-
 {% block javascript %}
     {{ parent() }}
     <script src="/libs/parsleyjs/parsley.min.js"></script>
     <script src="/libs/parsleyjs/i18n/fr.js"></script>
     <script src="/libs/flatpickr/flatpickr.min.js"></script>
     <script src="/libs/flatpickr/l10n/fr.js"></script>
-    <!-- Ajout de Select2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/i18n/fr.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        $(document).ready(function () {
-            // Configuration Flatpickr
+        $(document).ready(function() {
+            // 1. Configuration Flatpickr
             flatpickr('.flatpickr', {
                 dateFormat: 'd/m/Y',
                 locale: 'fr',
@@ -57,59 +55,113 @@
                 minDate: 'today'
             });
 
-            // Configuration Select2 pour le champ assignedTo
-            $('#assigned-to-select').select2({
+            // 2. Configuration Select2
+            $('#mission_assignedTo').select2({
                 theme: 'bootstrap-5',
                 placeholder: 'Sélectionnez un utilisateur',
                 allowClear: true,
                 language: 'fr',
-                matcher: function(params, data) {
-                    // Affiche tous les résultats si la recherche est vide
-                    if ($.trim(params.term) === '') {
-                        return data;
-                    }
-                    
-                    // Vérifie si le texte commence par la recherche (case insensitive)
-                    if (data.text.toUpperCase().indexOf(params.term.toUpperCase()) === 0) {
-                        return data;
-                    }
-                    
-                    return null;
-                }
+                width: '100%'
             });
 
-            // Configuration Parsley
-            window.Parsley.addValidator('dateAfter', {
-                validateString: function (value) {
-                    const parts = value.split('/');
-                    const selectedDate = new Date(parts[2], parts[1] - 1, parts[0]);
+            // 3. Validateur personnalisé Parsley
+            window.Parsley.addValidator('dateAfterToday', {
+                validateString: function(value) {
+                    const [day, month, year] = value.split('/');
+                    const inputDate = new Date(year, month - 1, day);
                     const today = new Date();
                     today.setHours(0, 0, 0, 0);
-                    return selectedDate > today;
+                    return inputDate > today;
                 },
                 messages: {
                     fr: "La date doit être postérieure à aujourd'hui"
                 }
             });
 
+            // 4. Initialisation Parsley
             $('form').parsley({
                 errorClass: 'is-invalid',
                 successClass: 'is-valid',
                 errorsWrapper: '<div class="invalid-feedback"></div>',
-                errorTemplate: '<span></span>'
+                errorTemplate: '<span></span>',
+                trigger: 'change',
+                excluded: 'input[type=hidden]'
             });
 
             window.Parsley.setLocale('fr');
 
-            // Gestion des alertes SweetAlert
-            {% if showSuccessAlert %}
+            // 5. Gestion AJAX du formulaire
+            $('form').on('submit', function(e) {
+                e.preventDefault();
+                
+                // Vérification de la validité du formulaire
+                if (!$(this).parsley().validate()) {
+                    return;
+                }
+
+                // Afficher un loader pendant la soumission
+                const submitButton = $(this).find('button[type="submit"]');
+                const originalText = submitButton.html();
+                submitButton.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Enregistrement...');
+
+                $.ajax({
+                    url: $(this).attr('action'),
+                    method: 'POST',
+                    data: $(this).serialize(),
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            Swal.fire({
+                                title: 'Mission créée',
+                                text: response.message,
+                                icon: 'success',
+                                timer: 2000,
+                                showConfirmButton: false,
+                                timerProgressBar: true,
+                                willClose: () => {
+                                    window.location.href = response.redirect;
+                                }
+                            });
+                        }
+                    },
+                    error: function(xhr) {
+                        Swal.fire({
+                            title: 'Erreur',
+                            text: xhr.responseJSON?.error || 'Une erreur est survenue',
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                        submitButton.prop('disabled', false).html(originalText);
+                    },
+                    complete: function() {
+                        submitButton.prop('disabled', false).html(originalText);
+                    }
+                });
+            });
+
+            // 6. Gestion des messages flash (pour les requêtes non-AJAX)
+            {% for message in app.flashes('success') %}
                 Swal.fire({
-                    title: 'Mission créée avec succès',
-                    text: 'La mission a été ajoutée au projet.',
+                    title: 'Succès',
+                    text: '{{ message }}',
                     icon: 'success',
-                    confirmButtonText: 'OK'
+                    timer: 2000,
+                    showConfirmButton: false,
+                    timerProgressBar: true
                 }).then(() => {
-                    window.location.href = "{{ path('gs-projet_project_show', {'id': project.id}) }}";
+                    {% if app.request.attributes.get('_route') == 'mission_new' %}
+                        window.location.href = "{{ path('gs-projet_project_show', {'id': project.id}) }}";
+                    {% endif %}
+                });
+            {% endfor %}
+
+            // 7. Gestion des erreurs de formulaire
+            {% if form.vars.errors|length > 0 %}
+                Swal.fire({
+                    title: 'Erreur',
+                    text: 'Veuillez corriger les erreurs dans le formulaire',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
                 });
             {% endif %}
         });

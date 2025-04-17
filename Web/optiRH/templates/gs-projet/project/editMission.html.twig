@@ -149,46 +149,98 @@
     <!-- Flatpickr CSS -->
     <link rel="stylesheet" href="/libs/flatpickr/flatpickr.min.css">
 {% endblock %}
-
 {% block javascript %}
     {{ parent() }}
-    <!-- Libs JS -->
     <script src="/libs/parsleyjs/parsley.min.js"></script>
     <script src="/libs/parsleyjs/i18n/fr.js"></script>
     <script src="/libs/flatpickr/flatpickr.min.js"></script>
     <script src="/libs/flatpickr/l10n/fr.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/i18n/fr.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-
-    <!-- Configuration personnalisée -->
     <script>
-        $(document).ready(function() {
-      flatpickr('.flatpickr', {
-    dateFormat: 'd/m/Y',
-    locale: 'fr',
-    allowInput: true,
-    minDate: 'today'
-});
+        $(document).ready(function () {
+            // Configuration Flatpickr
+            flatpickr('.flatpickr', {
+                dateFormat: 'd/m/Y',
+                locale: 'fr',
+                allowInput: true,
+                minDate: 'today'
+            });
+
+            // Configuration Select2
+            $('#assigned-to-select').select2({
+                theme: 'bootstrap-5',
+                placeholder: 'Sélectionnez un utilisateur',
+                allowClear: true,
+                language: 'fr',
+                matcher: function(params, data) {
+                    if ($.trim(params.term) === '') {
+                        return data;
+                    }
+                    if (data.text.toUpperCase().indexOf(params.term.toUpperCase()) === 0) {
+                        return data;
+                    }
+                    return null;
+                }
+            });
+
             // Configuration Parsley
+            window.Parsley.addValidator('dateAfter', {
+                validateString: function (value) {
+                    const parts = value.split('/');
+                    const selectedDate = new Date(parts[2], parts[1] - 1, parts[0]);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    return selectedDate > today;
+                },
+                messages: {
+                    fr: "La date doit être postérieure à aujourd'hui"
+                }
+            });
+
             $('form').parsley({
                 errorClass: 'is-invalid',
                 successClass: 'is-valid',
                 errorsWrapper: '<div class="invalid-feedback"></div>',
                 errorTemplate: '<span></span>'
             });
-            
+
             window.Parsley.setLocale('fr');
-        })
-         {% if showEditSuccess %}
-        Swal.fire({
-            title: 'Mission mise à jour',
-            text: 'Les modifications ont été enregistrées avec succès.',
-            icon: 'success',
-            confirmButtonText: 'OK'
-        }).then(() => {
-            window.location.href = "{{ path('gs-projet_project_show', {id: mission.project.id}) }}";
+
+            // Gestion du formulaire avec AJAX
+            $('form').on('submit', function(e) {
+                e.preventDefault();
+                
+                $.ajax({
+                    url: $(this).attr('action'),
+                    method: 'POST',
+                    data: $(this).serialize(),
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            Swal.fire({
+                                title: 'Succès',
+                                text: response.message,
+                                icon: 'success',
+                                timer: 2000, // Fermer automatiquement après 2 secondes
+                                showConfirmButton: false,
+                                willClose: () => {
+                                    window.location.href = response.redirect;
+                                }
+                            });
+                        }
+                    },
+                    error: function(xhr) {
+                        Swal.fire({
+                            title: 'Erreur',
+                            text: xhr.responseJSON?.message || 'Une erreur est survenue',
+                            icon: 'error'
+                        });
+                    }
+                });
+            });
         });
-    {% endif %}
     </script>
 {% endblock %}
