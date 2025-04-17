@@ -24,6 +24,7 @@ class TrajetController extends AbstractController
     }
 
     #[Route('/new', name: 'app_transport_trajet_new', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $trajet = new Trajet();
@@ -50,6 +51,7 @@ class TrajetController extends AbstractController
 
 
     #[Route('/{id}/edit', name: 'app_transport_trajet_edit', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_ADMIN')]
 public function edit(Request $request, Trajet $trajet, EntityManagerInterface $entityManager): Response
 {
     $form = $this->createForm(TrajetType::class, $trajet);
@@ -73,6 +75,7 @@ public function edit(Request $request, Trajet $trajet, EntityManagerInterface $e
 
 
 #[Route('/{id}', name: 'app_transport_trajet_delete', methods: ['POST'])]
+#[IsGranted('ROLE_ADMIN')]
 public function delete(Request $request, Trajet $trajet, EntityManagerInterface $entityManager): Response
 {
     if ($this->isCsrfTokenValid('delete'.$trajet->getId(), $request->request->get('_token'))) {
@@ -91,6 +94,7 @@ public function delete(Request $request, Trajet $trajet, EntityManagerInterface 
 
 
     #[Route('/{id}', name: 'app_transport_trajet_show', methods: ['GET'])]
+    #[IsGranted('ROLE_ADMIN')]
 public function show(Trajet $trajet): Response
 {
     return $this->render('transport/trajet/show.html.twig', [
@@ -100,6 +104,7 @@ public function show(Trajet $trajet): Response
 
 
 #[Route('/{id}/vehicules', name: 'app_transport_trajet_vehicules', methods: ['GET'])]
+#[IsGranted('ROLE_ADMIN')]
 public function vehicules(Trajet $trajet, VehiculeRepository $vehiculeRepository): Response
 {
     return $this->render('Transport/vehicules.html.twig', [
@@ -110,6 +115,7 @@ public function vehicules(Trajet $trajet, VehiculeRepository $vehiculeRepository
 
 
 #[Route('/stats/reservations', name: 'app_transport_trajet_stats', methods: ['GET'])]
+#[IsGranted('ROLE_ADMIN')]
 public function stats(TrajetRepository $trajetRepository): JsonResponse
 {
     $stats = $trajetRepository->getReservationStatsByVehicleType();

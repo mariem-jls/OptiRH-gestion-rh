@@ -64,6 +64,7 @@
             <ul id="side-menu">
                 <!-- Apps Section -->
                 <li class="menu-title mt-2">Applications</li>
+                {% if is_granted('ROLE_ADMIN') %}
                 <li>
                     <a href="#email" data-bs-toggle="collapse">
                         <i class="mdi mdi-account-group"></i>
@@ -85,50 +86,43 @@
                         </ul>
                     </div>
                 </li>
-                
-                <li>
-                    <a href="#sidebarEvents" data-bs-toggle="collapse" aria-expanded="false" aria-controls="sidebarEvents">
-                        <i class="mdi mdi-calendar-blank-outline"></i>
-                        <span>Événements</span>
-                        <span class="menu-arrow"></span>
-                    </a>
-                    <div class="collapse" id="sidebarEvents">
-                        <ul class="nav-second-level">
-                            <li>
-                                <a href="{{ path('app_evenement_new') }}">
-                                    <i class="mdi mdi-plus-circle-outline me-2"></i>
-                                    Ajouter Événement
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ path('app_evenement_index') }}">
-                                    <i class="mdi mdi-eye-outline me-2"></i>
-                                    Voir Événements
-                                </a>
-                            </li>
-                            <li>
-                                <a href="apps-calendar">
-                                    <i class="mdi mdi-calendar-month me-2"></i>
-                                    Calendrier
-                                </a>
-                            </li>
-                            <li>
-                                <a href="Geolocalisation">
-                                    <i class="mdi mdi-map-marker-outline me-2"></i>
-                                    Géolocalisation
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ path('app_evenement_indexfront') }}">
-                                    <i class="mdi mdi-map-marker-outline me-2"></i>
-                                    Front
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </li>
+                {% endif %}
+                {% if is_granted('ROLE_ADMIN') %}
+                    <li>
+                        <a href="#sidebarEvents" data-bs-toggle="collapse" aria-expanded="false" aria-controls="sidebarEvents">
+                            <i class="mdi mdi-calendar-blank-outline"></i>
+                            <span>Événements</span>
+                            <span class="menu-arrow"></span>
+                        </a>
+                        <div class="collapse" id="sidebarEvents">
+                            <ul class="nav-second-level">
+                                <li>
+                                    <a href="{{ path('app_evenement_new') }}">
+                                        <i class="mdi mdi-plus-circle-outline me-2"></i>
+                                        Ajouter Événement
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ path('app_evenement_index') }}">
+                                        <i class="mdi mdi-eye-outline me-2"></i>
+                                        Voir Événements
+                                    </a>
+                                </li>
+                                
+                                
+                            </ul>
+                        </div>
+                    </li>
+                {% endif %}
 
-
+                {% if is_granted('ROLE_EMPLOYEE') %}
+                    <li>
+                        <a href="{{ path('app_evenement_indexfront') }}">
+                            <i class="mdi mdi-calendar-blank-outline"></i>
+                            <span> Les Événements</span>
+                        </a>
+                    </li>
+                {% endif %}
                 <li>
                     <a href="{{ path('admin_reclamations') }}">
                         <i class="mdi mdi-briefcase-variant-outline"></i>
@@ -141,11 +135,18 @@
                         <span> Réclamation </span>
                     </a>
 <!-- Projets -->
+
+{% if is_granted('ROLE_EMPLOYEE') %}
+<li>
 <a href="{{ path('gs-projet_project_missions_index', { id: app.user.id }) }}" 
    class="{{ app.request.attributes.get('_route') starts with 'gs-projet_project_missions_index' ? 'active' : '' }}">
     <i class="mdi mdi-briefcase-variant-outline"></i>
     <span>Mission</span>
 </a>
+</li>
+{% endif %}
+
+{% if is_granted('ROLE_ADMIN') %}
 
 <li>
     <a href="{{ path('gs-projet_project_index') }}" 
@@ -154,6 +155,7 @@
         <span>Projets</span>
     </a>
 </li>
+{% endif %}
 
  <li>
     <a href="{{ path('app_transport_trajet_index') }}">

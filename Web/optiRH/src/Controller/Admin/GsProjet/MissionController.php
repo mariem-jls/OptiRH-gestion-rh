@@ -6,7 +6,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\GsProjet\Mission;
 use App\Entity\GsProjet\Project;
 use App\Entity\User;
-
 use App\Form\GsProjet\MissionType;
 use App\Repository\UserRepository;
 use App\Repository\GsProjet\MissionRepository;
@@ -15,11 +14,14 @@ use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/gs-projet/project', name: 'gs-projet_project_')]
+#[IsGranted('ROLE_USER')]
 class MissionController extends AbstractController
 {
     #[Route('/{id}/missions', name: 'missions_index', methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
     public function index(User $user, MissionRepository $missionRepository): Response
     {
         // Vérification de l'existence de l'utilisateur
@@ -59,6 +61,7 @@ class MissionController extends AbstractController
     }
     
     #[Route('/missions/{id}/update-status', name: 'missions_update_status', methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
     public function updateStatus(Request $request, Mission $mission, EntityManagerInterface $em): Response
     {
         // Récupération des données JSON
@@ -99,6 +102,7 @@ class MissionController extends AbstractController
         };
     }
     #[Route('/{id}/missions/new', name: 'mission_new', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_USER')]
     public function new(Request $request, Project $project, EntityManagerInterface $em): Response
     {
         $mission = new Mission();
@@ -111,27 +115,30 @@ class MissionController extends AbstractController
                 $em->persist($mission);
                 $em->flush();
     
-                // Ajouter une variable de session pour le succès
-                $request->getSession()->set('showSuccessAlert', true);
+                if ($request->isXmlHttpRequest()) {
+                    return $this->json([
+                        'success' => true,
+                        'message' => 'Mission créée avec succès!',
+                        'redirect' => $this->generateUrl('gs-projet_project_show', ['id' => $project->getId()])
+                    ]);
+                }
     
-                // Rediriger vers la page du projet, mais on le fera après l'alerte avec JavaScript
-                return $this->render('gs-projet/project/newMiss.html.twig', [
-                    'form' => $form->createView(),
-                    'project' => $project,
-                    'showSuccessAlert' => true, // Passage de la variable dans le template
-                ]);
+                $this->addFlash('success', 'Mission créée avec succès!');
+                return $this->redirectToRoute('gs-projet_project_show', ['id' => $project->getId()]);
+                
             } catch (\Exception $e) {
-                $this->addFlash('error', 'Erreur technique : ' . $e->getMessage());
+                if ($request->isXmlHttpRequest()) {
+                    return $this->json(['error' => $e->getMessage()], 500);
+                }
+                $this->addFlash('error', 'Erreur: ' . $e->getMessage());
             }
         }
     
         return $this->render('gs-projet/project/newMiss.html.twig', [
             'form' => $form->createView(),
-            'project' => $project,
-            'showSuccessAlert' => false, // Si le formulaire n'est pas encore soumis
+            'project' => $project
         ]);
     }
-    
     
     private function getFormErrors(FormInterface $form): array
     {
@@ -142,8 +149,8 @@ class MissionController extends AbstractController
         return $errors;
     }
     
-
     #[Route('/mission/{id}/edit', name: 'mission_edit', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_USER')]
     public function edit(Request $request, Mission $mission, EntityManagerInterface $em): Response
     {
         $form = $this->createForm(MissionType::class, $mission);
@@ -152,26 +159,22 @@ class MissionController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $em->flush();
     
-            // Mettre un flag pour afficher l'alerte
-            $request->getSession()->set('showEditSuccess', true);
-    
-            // On rend la même page, l'alerte déclenchera la redirection
-            return $this->render('gs-projet/project/editMission.html.twig', [
-                'form' => $form->createView(),
-                'mission' => $mission,
-                'showEditSuccess' => true,
+            // Retourner une réponse JSON pour SweetAlert
+            return $this->json([
+                'success' => true,
+                'redirect' => $this->generateUrl('gs-projet_project_show', ['id' => $mission->getProject()->getId()]),
+                'message' => 'Les modifications ont été enregistrées avec succès.'
             ]);
         }
     
         return $this->render('gs-projet/project/editMission.html.twig', [
             'form' => $form->createView(),
             'mission' => $mission,
-            'showEditSuccess' => false,
         ]);
     }
     
-
     #[Route('/mission/{id}', name: 'mission_show', methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
     public function show(Mission $mission): Response
     {
         return $this->render('gs-projet/project/showMission.html.twig', [
@@ -179,9 +182,9 @@ class MissionController extends AbstractController
             'project' => $mission->getProject()
         ]);
     }
-
    
     #[Route('/mission/{id}/delete', name: 'mission_delete', methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
     public function delete(Request $request, Mission $mission, EntityManagerInterface $em): Response
     {
         $projectId = $mission->getProject()?->getId();
@@ -190,7 +193,6 @@ class MissionController extends AbstractController
             throw $this->createNotFoundException('Projet introuvable');
         }
     
-        // Vérification du token CSRF
         if ($this->isCsrfTokenValid('delete' . $mission->getId(), $request->request->get('_token'))) {
             try {
                 $em->remove($mission);
@@ -201,11 +203,8 @@ class MissionController extends AbstractController
             }
         }
     
-        // Redirection vers la page du projet après suppression
         return $this->redirectToRoute('gs-projet_project_show', [
             'id' => $projectId
         ]);
     }
-    
-    
 }

@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Repository\Evenement\ReservationEvenementRepository;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 
 #[Route('/evenement')]
@@ -19,16 +20,13 @@ class EvenementController extends AbstractController
     #[Route('/', name: 'app_evenement_index', methods: ['GET'])]
     public function index(EvenementRepository $evenementRepository): Response
     {
-         // Récupérer tous les événements
-    $evenements = $evenementRepository->findAll();
-    
-    // Mettre à jour le statut pour chaque événement
-    foreach ($evenements as $evenement) {
-        $evenement->updateStatus();
-    }
-    return $this->render('evenement/index.html.twig', [
-        'evenements' => $evenements,
-    ]);
+        $evenements = $evenementRepository->findAll();
+            foreach ($evenements as $evenement) {
+            $evenement->updateStatus();
+        }
+        return $this->render('evenement/index.html.twig', [
+            'evenements' => $evenements,
+        ]);
     }
 
   
@@ -64,7 +62,6 @@ class EvenementController extends AbstractController
                 }
             }
         
-            // Sauvegarder l'événement dans la base de données
             $evenementRepository->save($evenement, true);
         
             return $this->redirectToRoute('app_evenement_index', [], Response::HTTP_SEE_OTHER);
@@ -77,14 +74,9 @@ class EvenementController extends AbstractController
         ]);
     }
 
-
-    /***********Modifier evenment************* */
-
     #[Route('/{id}/edit', name: 'app_evenement_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Evenement $evenement, EvenementRepository $evenementRepository): Response
     {
-        $ancienneImage = $evenement->getImage();
-    
         $form = $this->createForm(EvenementType::class, $evenement);
         $form->handleRequest($request);
     
@@ -92,32 +84,23 @@ class EvenementController extends AbstractController
             $imageFile = $form->get('image')->getData();
             $evenement->updateStatus();
     
-            if ($imageFile) {
-                // Supprimer l'ancienne image si elle existe
-                $cheminComplet = $this->getParameter('kernel.project_dir') . '/public/' . $ancienneImage;
-                if ($ancienneImage && file_exists($cheminComplet)) {
-                    unlink($cheminComplet);
-                }
-    
-                // Générer un nom unique et déplacer le fichier
+            if ($imageFile instanceof UploadedFile) {
                 $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
                 $newFilename = $originalFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
     
                 try {
                     $imageFile->move(
-                        $this->getParameter('evenements_directory'),
+                        $this->getParameter('evenements_directory'), 
                         $newFilename
                     );
-    
                     $evenement->setImage('uploads/evenements/' . $newFilename);
                 } catch (\Exception $e) {
-                    $this->addFlash('error', 'Échec de l\'upload de l\'image.');
+                    $this->addFlash('error', 'Échec de l\'upload de l\'image : ' . $e->getMessage());
                     return $this->redirectToRoute('app_evenement_edit', ['id' => $evenement->getId()]);
                 }
-            } else {
-                // Aucun nouveau fichier => conserver l'ancienne image
-                $evenement->setImage($ancienneImage);
             }
+    
+            // Pas besoin de setImage() si aucun fichier n'a été uploadé, l'ancien est gardé
     
             $evenementRepository->save($evenement, true);
     
@@ -127,9 +110,10 @@ class EvenementController extends AbstractController
         return $this->renderForm('evenement/edit.html.twig', [
             'evenement' => $evenement,
             'form' => $form,
-            'current_image' => $ancienneImage,
+            'current_image' => $evenement->getImage(),
         ]);
     }
+    
     
 
     /************Supprimer evenement************** */
@@ -160,7 +144,6 @@ class EvenementController extends AbstractController
     #[Route('/evenements/indexfront', name: 'app_evenement_indexfront', methods: ['GET'])]
     public function showall(EvenementRepository $evenementRepository): Response
     {
-        $user = $this->getUser();
         
         return $this->render('evenement/indexfront.html.twig', [
             'evenements' => $evenementRepository->findAll(),
@@ -171,14 +154,12 @@ class EvenementController extends AbstractController
     #[Route('/event/{id}', name: 'event_details', methods: ['GET'])]
     public function eventDetails($id, EvenementRepository $EvenementRepository): Response
     {
-        // Utilisez find() pour rechercher un événement par son identifiant
         $evenement = $EvenementRepository->find($id);
         
         if (!$evenement) {
             throw $this->createNotFoundException('L\'événement n\'a pas été trouvé');
         }
 
-        // Rendu du template avec l'événement
         return $this->render('reservation_evenement/show.html.twig', [
             'evenement' => $evenement,
         ]);

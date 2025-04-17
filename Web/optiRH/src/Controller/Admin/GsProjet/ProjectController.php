@@ -4,13 +4,14 @@ namespace App\Controller\Admin\GsProjet;
 use Knp\Snappy\Pdf;
 use Symfony\Component\Process\Process;
 use Twig\Environment;
-
 use Symfony\Component\Form\FormInterface; // Correction de l'import
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+
 use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Entity\GsProjet\Mission;
 
@@ -21,8 +22,12 @@ use App\Repository\GsProjet\ProjectRepository;
 use App\Repository\GsProjet\MissionRepository;
 
 #[Route('/gs-projet/project', name: 'gs-projet_project_')]
+#[IsGranted('ROLE_ADMIN')]
+
 class ProjectController extends AbstractController {
     #[Route('/', name: 'index', methods: ['GET'])]
+    #[IsGranted('ROLE_ADMIN')]
+
     public function index(Request $request, ProjectRepository $projectRepository): Response
     {
         $filterForm = $this->createForm(ProjectFilterType::class);
@@ -51,6 +56,8 @@ class ProjectController extends AbstractController {
         ]);
     }
     #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_ADMIN')]
+
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $project = new Project();
@@ -107,6 +114,8 @@ class ProjectController extends AbstractController {
     
     
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_ADMIN')]
+
     public function edit(Request $request, Project $project, EntityManagerInterface $entityManager): Response
     {
         $user = $this->getUser();
@@ -154,6 +163,8 @@ class ProjectController extends AbstractController {
     }
 
     #[Route('/{id}/pdf', name: 'project_pdf')]
+    #[IsGranted('ROLE_ADMIN')]
+
 public function generatePdf(Project $project, Environment $twig, Pdf $knpSnappyPdf): Response
 {
     $html = $twig->render('gs-projet/project/pdf_template.html.twig', [
@@ -183,6 +194,8 @@ private function groupMissionsByStatus(array $missions): array
 }
    
     #[Route('/{id}', name: 'show', methods: ['GET'])]
+    #[IsGranted('ROLE_ADMIN')]
+
     public function show(Project $project, MissionRepository $missionRepository): Response
     {
         $user = $this->getUser();
@@ -203,6 +216,8 @@ private function groupMissionsByStatus(array $missions): array
         ]);
     }
     #[Route('/{id}', name: 'delete', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
+
     public function delete(
         Request $request, 
         Project $project, 
@@ -290,6 +305,8 @@ private function groupMissionsByStatus(array $missions): array
         return $groupedMissions;
     }
     #[Route('/{id}/check-missions', name: 'check_missions', methods: ['GET'])]
+    #[IsGranted('ROLE_ADMIN')]
+
 public function checkMissions(Project $project, MissionRepository $missionRepository): JsonResponse
 {
     $activeMissionsCount = $missionRepository->count([

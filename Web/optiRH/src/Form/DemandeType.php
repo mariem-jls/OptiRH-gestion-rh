@@ -27,10 +27,6 @@ class DemandeType extends AbstractType
                 'placeholder' => 'Choisir un statut',
                 'required' => true,
             ])
-            ->add('date', DateTimeType::class, [
-                'widget' => 'single_text',
-                'disabled' => true, // Non modifiable
-            ])
             ->add('description')
             ->add('fichierPieceJointe', FileType::class, [
                 'label' => 'Pièce jointe (PDF)',
