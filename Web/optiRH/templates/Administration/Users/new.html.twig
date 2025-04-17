@@ -1,0 +1,54 @@
+{% extends 'partials/layout-vertical.html.twig' %}
+
+{% block title %}Nouvel Utilisateur
+{% endblock %}
+
+{% block topbar %}
+	{{ include('partials/topbar.html.twig', { page_title: 'Ajouter un Utilisateur' }) }}
+{% endblock %}
+
+{% block body %}
+	<div class="container mt-4">
+		<div class="card">
+			<div class="card-header">
+				<h2 class="card-title">Créer un nouvel utilisateur</h2>
+			</div>
+			<div class="card-body">
+				{{ form_start(form) }}
+				{% if not form.vars.valid %}
+					<div class="alert alert-danger">
+						{{ form_errors(form) }}
+						{% for child in form.children %}
+							{{ form_errors(child) }}
+						{% endfor %}
+					</div>
+				{% endif %}
+
+				<div class="row g-3">
+					<div class="col-md-6">
+						{{ form_label(form.nom) }}
+						{{ form_widget(form.nom, {'attr': {'class': 'form-control'}}) }}
+					</div>
+					<div class="col-md-6">
+						{{ form_label(form.email) }}
+						{{ form_widget(form.email, {'attr': {'class': 'form-control'}}) }}
+					</div>
+				</div>
+				<div class="row g-3 mt-3">
+					<div class="col-md-6">
+						{{ form_label(form.address) }}
+						{{ form_widget(form.address, {'attr': {'class': 'form-control'}}) }}
+					</div>
+					<div class="col-md-6">
+						{{ form_label(form.plainPassword) }}
+						{{ form_widget(form.plainPassword, {'attr': {'class': 'form-control'}}) }}
+					</div>
+				</div>
+				<div class="d-grid gap-2 mt-3">
+					<button class="btn btn-success">Enregistrer</button>
+				</div>
+				{{ form_end(form) }}
+			</div>
+		</div>
+	</div>
+{% endblock %}

@@ -63,6 +63,16 @@
         <div id="sidebar-menu">
             <ul id="side-menu">
                 <!-- Apps Section -->
+                <li class="menu-title mt-2">Administration</li>
+                {% if is_granted('ROLE_ADMIN') %}
+                    <li>
+                        <a href="{{ path('admin_users') }}">
+                            <i class="mdi mdi-account-multiple-outline"></i>
+                            <span>Utilisateurs</span>
+                        </a>
+                    </li>
+                {% endif %}
+
                 <li class="menu-title mt-2">Applications</li>
                 {% if is_granted('ROLE_ADMIN') %}
                 <li>
