@@ -3,6 +3,7 @@
 	<head>
 		{{ include('partials/title-meta.html.twig', {title: 'Connexion'}) }}
 		{{ include('partials/head-css.html.twig') }}
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 	</head>
 
 	<body class="authentication-bg authentication-bg-pattern">
@@ -43,6 +44,11 @@
 										<label for="password" class="form-label">Mot de passe</label>
 										<input type="password" name="_password" id="password" class="form-control" autocomplete="current-password" placeholder="Entrez votre mot de passe">
 									</div>
+
+                                    <div class="cf-turnstile" data-sitekey="{{ sitekey }}" data-theme="light"></div>
+                                    {% for message in app.flashes('error') %}
+                                        <div class="alert alert-danger">{{ message }}</div>
+                                    {% endfor %}
 
 									<div class="mb-3">
 										<div class="form-check">

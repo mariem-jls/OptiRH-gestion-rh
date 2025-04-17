@@ -21,6 +21,7 @@ class LoginController extends AbstractController
         return $this->render('Auth/login/login.html.twig', [
             'last_username' => $lastUsername,
             'error' => $error,
+            'sitekey' => $_ENV['TURNSTILE_SECRET_KEY'],
         ]);
     }
 
