@@ -1,12 +1,20 @@
 {% extends 'partials/layout-vertical.html.twig' %}
-
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', { page_title: 'Modifier une Reclamation ' }) }}
+{% endblock %}
 {% block title %}Modifier une Réclamation{% endblock %}
 
 {% block body %}
 <div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <h4 class="page-title">Modifier une Réclamation</h4>
+    <div class="page-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h1 class="page-header-title">
+                    <i class="fas fa-edit text-primary me-2"></i>
+                    Modifier une Réclamation
+                </h1>
+                <p class="lead text-muted mb-0">Modifiez les champs ci-dessous pour mettre à jour la réclamation</p>
+            </div>
         </div>
     </div>
 
@@ -34,10 +42,12 @@
                 <div class="card-body">
                     <!-- Description -->
                     <div class="mb-3 input-with-icon">
-                        <i class="fas fa-align-left input-icon textarea-icon"></i>
-                        {{ form_label(form.description, null, {
-                            'label_attr': {'class': 'form-label'}
-                        }) }}
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-align-left input-icon text-primary me-2"></i>
+                            {{ form_label(form.description, null, {
+                                'label_attr': {'class': 'form-label fw-bold text-primary m-0'}
+                            }) }}
+                        </div>
                         {{ form_widget(form.description, {
                             'attr': {
                                 'class': 'form-control' ~ (form.description.vars.errors|length ? ' is-invalid' : ''),
@@ -48,17 +58,19 @@
                         <div class="invalid-feedback">
                             {{ form_errors(form.description) }}
                         </div>
-                        <small class="form-text text-muted">
+                        <small class="form-text text-muted mt-1">
                             <i class="fas fa-info-circle me-1"></i>Minimum 10 caractères
                         </small>
                     </div>
 
                     <!-- Type -->
                     <div class="mb-3 input-with-icon">
-                        <i class="fas fa-tag input-icon"></i>
-                        {{ form_label(form.type, null, {
-                            'label_attr': {'class': 'form-label'}
-                        }) }}
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-tag input-icon text-primary me-2"></i>
+                            {{ form_label(form.type, null, {
+                                'label_attr': {'class': 'form-label fw-bold text-primary m-0'}
+                            }) }}
+                        </div>
                         {{ form_widget(form.type, {
                             'attr': {
                                 'class': 'form-select' ~ (form.type.vars.errors|length ? ' is-invalid' : '')
@@ -72,8 +84,12 @@
                     <!-- Statut (si visible) -->
                     {% if form.status is defined %}
                     <div class="mb-3 input-with-icon">
-                        <i class="fas fa-info-circle input-icon"></i>
-                        {{ form_label(form.status) }}
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-info-circle input-icon text-primary me-2"></i>
+                            {{ form_label(form.status, null, {
+                                'label_attr': {'class': 'form-label fw-bold text-primary m-0'}
+                            }) }}
+                        </div>
                         {{ form_widget(form.status, {
                             'attr': {
                                 'class': 'form-select' ~ (form.status.vars.errors|length ? ' is-invalid' : '')
@@ -88,8 +104,12 @@
                     <!-- Date (si visible) -->
                     {% if form.date is defined %}
                     <div class="mb-3 input-with-icon">
-                        <i class="far fa-calendar-alt input-icon"></i>
-                        {{ form_label(form.date) }}
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="far fa-calendar-alt input-icon text-primary me-2"></i>
+                            {{ form_label(form.date, null, {
+                                'label_attr': {'class': 'form-label fw-bold text-primary m-0'}
+                            }) }}
+                        </div>
                         {{ form_widget(form.date, {
                             'attr': {
                                 'class': 'form-control' ~ (form.date.vars.errors|length ? ' is-invalid' : '')
@@ -120,20 +140,30 @@
 
 {% block css %}
     <style>
+        .page-header {
+            margin-bottom: 2rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .page-header-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
         .input-with-icon {
             position: relative;
         }
         .input-icon {
-            position: absolute;
-            left: 10px;
-            top: 35px;
-            color: #6c757d;
-        }
-        .textarea-icon {
-            top: 15px;
+            font-size: 0.9rem;
         }
         .form-control, .form-select {
-            padding-left: 35px;
+            border-radius: 0.375rem;
+            border: 1px solid #ced4da;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
         }
         .is-invalid {
             border-color: #dc3545;
@@ -145,6 +175,17 @@
         }
         .card-header.bg-danger {
             background-color: #dc3545 !important;
+        }
+        .form-label {
+            margin-bottom: 0;
+            display: inline-block;
+        }
+        .btn-primary {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+        .form-text {
+            font-size: 0.85rem;
         }
     </style>
 {% endblock %}
