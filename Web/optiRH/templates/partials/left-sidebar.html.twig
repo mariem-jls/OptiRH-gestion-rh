@@ -123,17 +123,22 @@
                         </a>
                     </li>
                 {% endif %}
-                <li>
-                    <a href="{{ path('admin_reclamations') }}">
-                        <i class="mdi mdi-briefcase-variant-outline"></i>
-                        <span> Gestion Réclamation </span>
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ path('front_reclamations') }}">
-                        <i class="mdi mdi-briefcase-variant-outline"></i>
-                        <span> Réclamation </span>
-                    </a>
+                 {% if is_granted('ROLE_ADMIN') %}
+                    <li>
+                        <a href="{{ path('admin_reclamations') }}">
+                            <i class="mdi mdi-briefcase-variant-outline"></i>
+                            <span> Gestion Réclamation </span>
+                        </a>
+                    </li>
+                {% endif %}
+                {% if is_granted('ROLE_EMPLOYEE') %}
+                    <li>
+                        <a href="{{ path('front_reclamations') }}">
+                            <i class="mdi mdi-briefcase-variant-outline"></i>
+                            <span> Réclamation </span>
+                        </a>
+                    </li>
+                {% endif %}
 <!-- Projets -->
 
 {% if is_granted('ROLE_EMPLOYEE') %}
@@ -157,21 +162,27 @@
 </li>
 {% endif %}
 
- <li>
-    <a href="{{ path('app_transport_trajet_index') }}">
-    <i class="mdi mdi-bus-multiple"></i>
-    <span> Transport </span>
-</a>
-</li>
+ {% if is_granted('ROLE_ADMIN') %}
+    <li>
+        <a href="{{ path('app_transport_trajet_index') }}">
+        <i class="mdi mdi-bus-multiple"></i>
+        <span> Transport </span>
+    </a>
+    </li>
+{% endif %}
 
+
+{% if is_granted('ROLE_EMPLOYEE') %}
          <li>
                 <a href="{{ path('app_transport_reservation_index') }}">
                     <i class="mdi mdi-calendar-check"></i>
                     <span>Réservations</span>
                 </a>
             </li>    
-            </ul>
-        </div>
+            
+ {% endif %}
+</ul>
+ </div>
         <!-- End Sidebar -->
 
         <div class="clearfix"></div>

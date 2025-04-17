@@ -23,7 +23,7 @@ class ReclamationController extends AbstractController
     }
 
     #[Route('/reclamations', name: 'front_reclamations')]
-    #[IsGranted('ROLE_USER','ROLE_EMPLOYEE','ROLE_MANAGER')]
+  
     public function list(EntityManagerInterface $em): Response
     {
         $user = $this->getUser();
@@ -35,7 +35,7 @@ class ReclamationController extends AbstractController
     }
 
     #[Route('/reclamation/add', name: 'front_add_reclamation')]
-    #[IsGranted('ROLE_USER','ROLE_EMPLOYEE','ROLE_MANAGER')]
+
     public function add(Request $request, EntityManagerInterface $em): Response
     {
         $reclamation = new Reclamation();
@@ -61,7 +61,7 @@ class ReclamationController extends AbstractController
     }
 
     #[Route('/reclamation/{id}/edit', name: 'front_edit_reclamation')]
-    #[IsGranted('ROLE_USER','ROLE_EMPLOYEE','ROLE_MANAGER')]
+ 
     public function edit(Request $request, Reclamation $reclamation, EntityManagerInterface $em): Response
     {
         if ($reclamation->getUtilisateur() !== $this->getUser()) {
@@ -89,7 +89,7 @@ class ReclamationController extends AbstractController
     }
 
     #[Route('/reclamation/{id}/delete', name: 'front_delete_reclamation', methods: ['POST'])]
-    #[IsGranted('ROLE_USER','ROLE_EMPLOYEE','ROLE_MANAGER')]
+ 
     public function delete(Request $request, Reclamation $reclamation, EntityManagerInterface $em): Response
     {
         // Vérifier que la réclamation appartient à l'utilisateur
@@ -113,7 +113,7 @@ class ReclamationController extends AbstractController
     }
 
     #[Route('/reclamation/{id}/reponses', name: 'front_reclamation_reponses')]
-    #[IsGranted('ROLE_USER','ROLE_EMPLOYEE','ROLE_MANAGER')]
+   
     public function reponses(Reclamation $reclamation): Response
     {
         if ($reclamation->getUtilisateur() !== $this->getUser()) {
@@ -126,7 +126,7 @@ class ReclamationController extends AbstractController
     }
 
     #[Route('/reponse/{id}/rate', name: 'front_rate_reponse', methods: ['POST'])]
-    #[IsGranted('ROLE_USER','ROLE_EMPLOYEE','ROLE_MANAGER')]
+
     public function rateReponse(Request $request, Reponse $reponse, EntityManagerInterface $em): Response
     {
         $reclamation = $reponse->getReclamation();
