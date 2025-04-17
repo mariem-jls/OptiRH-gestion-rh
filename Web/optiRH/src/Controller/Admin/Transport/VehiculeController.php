@@ -17,7 +17,6 @@ use Symfony\Component\Routing\Annotation\Route;
 class VehiculeController extends AbstractController
 {
     #[Route('/new/{trajet_id}', name: 'app_transport_vehicule_new', methods: ['GET', 'POST'])]
-    #[IsGranted('ROLE_ADMIN')]
 public function new(
     Request $request, 
     EntityManagerInterface $entityManager, 
@@ -55,7 +54,6 @@ public function new(
 }
 
 #[Route('/{id}/edit', name: 'app_transport_vehicule_edit', methods: ['GET', 'POST'])]
-#[IsGranted('ROLE_ADMIN')]
 public function edit(Request $request, Vehicule $vehicule, EntityManagerInterface $entityManager): Response
 {
     $form = $this->createForm(VehiculeType::class, $vehicule);
@@ -79,7 +77,6 @@ public function edit(Request $request, Vehicule $vehicule, EntityManagerInterfac
 }
 
     #[Route('/{id}', name: 'app_transport_vehicule_delete', methods: ['POST'])]
-    #[IsGranted('ROLE_ADMIN')]
 public function delete(Request $request, Vehicule $vehicule, EntityManagerInterface $entityManager): Response
 {
     if ($this->isCsrfTokenValid('delete'.$vehicule->getId(), $request->request->get('_token'))) {
@@ -101,7 +98,6 @@ public function delete(Request $request, Vehicule $vehicule, EntityManagerInterf
 
 
     #[Route('/vehicule/{id}/reservations', name: 'app_transport_vehicule_reservations', methods: ['GET'])]
-    #[IsGranted('ROLE_ADMIN')]
 public function reservations(Vehicule $vehicule): Response
 {
     return $this->render('Transport/vehicule_reservations.html.twig', [
