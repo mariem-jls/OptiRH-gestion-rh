@@ -10,8 +10,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Entity\Evenement\Evenement;
-use App\Form\Users\Users;
-use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface; 
 
 
@@ -65,7 +63,6 @@ class ReservationEvenementController extends AbstractController
             return $this->redirectToRoute('app_evenement_indexfront', [], Response::HTTP_SEE_OTHER);
         }
     
-        // Si le formulaire est soumis mais non valide, on affiche les erreurs dans le formulaire
         return $this->render('reservation_evenement/new.html.twig', [
             'form' => $form->createView(),
             'evenement' => $evenement,
@@ -141,16 +138,11 @@ class ReservationEvenementController extends AbstractController
      
          $reservations = $reservationEvenementRepository->findBy(['user' => $user]);
      
-         $formReservations = [];
-     
-         foreach ($reservations as $reservation) {
-             $form = $this->createForm(ReservationEvenementType::class, $reservation);
-             $formReservations[$reservation->getId()] = $form->createView();
-         }
+         
      
          return $this->render('reservation_evenement/Mes_Reservations.html.twig', [
              'reservations' => $reservations,
-             'formReservations' => $formReservations,
+             
          ]);
      }
      

@@ -10,33 +10,14 @@
     --pink: #ec4899;
     --indigo-light: #e0e7ff;
     --indigo: #6366f1;
+    --rh-primary: #1a4b8c;    /* Bleu professionnel principal */
+    --rh-secondary: #3a7bc8;  /* Bleu secondaire */
+    --rh-accent: #e74c3c;     /* Rouge pour les accents */
+    --rh-light: #f8f9fa;      /* Fond très clair */
+    --rh-dark: #2c3e50;       /* Texte foncé */
 }
 
 
-
-
-/* Header moderne avec animation */
-.event-header {
-    background: linear-gradient(45deg, #6a11cb 0%, #2575fc 100%);
-    position: relative;
-    overflow: hidden;
-}
-
-.event-header:before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
-    animation: pulse 15s infinite linear;
-}
-
-@keyframes pulse {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
 
 
 /* Cartes modernes */
@@ -153,3 +134,95 @@
 
 
 
+
+/* Header sobre et professionnel */
+.event-header {
+    background: #02285a;
+    padding: 3rem 0;
+    color: white;
+    text-align: center;
+    font-family: 'Arial', sans-serif;
+    position: relative;
+    overflow: hidden;
+}
+/* Header sobre et professionnel avec animation moderne */
+.event-header {
+    background: #02285a;
+    padding: 3rem 0;
+    color: white;
+    text-align: center;
+    font-family: 'Arial', sans-serif;
+    position: relative;
+    overflow: hidden;
+}
+
+.event-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.1) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    transform: rotate(30deg);
+    animation: rotateLight 15s infinite linear;
+    z-index: 0;
+}
+
+@keyframes rotateLight {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.event-header > * {
+    position: relative;
+    z-index: 1;
+}
+
+
+
+/* Titre principal */
+.header-title {
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    letter-spacing: 1px;
+    position: relative;
+    display: inline-block;
+}
+
+/* Ligne d'accent sous le titre */
+.header-title::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: var(--rh-accent);
+}
+
+/* Sous-titres */
+.header-subtitle {
+    font-size: 1.3rem;
+    font-weight: 300;
+    margin: 0.5rem 0;
+    opacity: 0.9;
+    line-height: 1.5;
+}
+
+/* Version responsive */
+@media (max-width: 768px) {
+    .header-title {
+        font-size: 2.2rem;
+    }
+    .header-subtitle {
+        font-size: 1.1rem;
+    }
+}
