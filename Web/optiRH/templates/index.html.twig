@@ -90,10 +90,11 @@ navigator.geolocation.getCurrentPosition(function(position) {
 
 weatherContainer.innerHTML = `
     ${createCard(`<i class="fas fa-map-marker-alt"></i> Localisation`, `
-        <h3 style="margin: 0;">${data.name}, ${data.sys.country}</h3>
-        <p style="margin: 0;">${data.weather[0].description} 
-            <img src="https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png" alt="weather icon">
-        </p>
+        <h3 style="margin: 0; display: flex; align-items: center;">
+            ${data.name}, ${data.sys.country}
+            <img src="https://openweathermap.org/img/wn/${data.weather[0].icon}@4x.png" alt="weather icon" style="width: 80px; height: 80px; margin-left: 15px;">
+        </h3>
+        <p style="margin: 0;">${data.weather[0].description}</p>
     `)}
 
     ${createCard(`<i class="fas fa-thermometer-half"></i> Température`, `
