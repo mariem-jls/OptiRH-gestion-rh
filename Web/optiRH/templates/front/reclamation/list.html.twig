@@ -58,13 +58,14 @@
                                             {# Bouton Supprimer - seulement si aucune réponse #}
                                             {% if reclamation.reponses.count() == 0 %}
                                                 <form method="post" action="{{ path('front_delete_reclamation', {'id': reclamation.id}) }}"
-                                                      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette réclamation ?');"
-                                                      style="display: inline-block;">
+                                                    data-swal-confirm
+                                                    style="display: inline-block;">
                                                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reclamation.id) }}">
                                                     <button class="btn btn-sm btn-danger" title="Supprimer">
                                                         <i class="mdi mdi-delete"></i>
                                                     </button>
                                                 </form>
+
                                             {% endif %}
                                         </td>
                                     </tr>
@@ -83,14 +84,7 @@
     </div>
 {% endblock %}
 
-{% block javascripts %}
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Ajout de tooltips pour les boutons d'action
-            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
-            tooltipTriggerList.map(function (tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl);
-            });
-        });
-    </script>
+{% block javascript %}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('js recc/reclamation.js') }}"></script>  {# Inclusion du fichier JS externe #}
 {% endblock %}

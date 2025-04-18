@@ -18,6 +18,7 @@ use Symfony\Component\Validator\Constraints\Length;
 class ReclamationController extends AbstractController
 {
     #[Route('/reclamations', name: 'admin_reclamations', methods: ['GET'])]
+
     public function list(EntityManagerInterface $em): Response
     {
         $reclamations = $em->getRepository(Reclamation::class)->findAll();
@@ -27,6 +28,7 @@ class ReclamationController extends AbstractController
     }
 
     #[Route('/reclamation/{id}/reponses', name: 'admin_reclamation_reponses', methods: ['GET', 'POST'])]
+   
     public function reponses(Reclamation $reclamation, Request $request, EntityManagerInterface $em): Response
     {
         $reponse = new Reponse();
@@ -67,7 +69,7 @@ class ReclamationController extends AbstractController
     }
 
     #[Route('/reclamation/{id}/update-status', name: 'admin_update_status', methods: ['POST'])]
-  
+
     public function updateStatus(Request $request, Reclamation $reclamation, EntityManagerInterface $em): Response
     {
         $status = $request->request->get('status');
@@ -119,11 +121,13 @@ class ReclamationController extends AbstractController
     }
 
     #[Route('/reponse/{id}/delete', name: 'admin_reponse_delete', methods: ['POST'])]
-  
     public function deleteReponse(Request $request, Reponse $reponse, EntityManagerInterface $em): Response
     {
         // Bloquer si la réponse a une notation
         if ($reponse->getRating() > 0) {
+            if ($request->isXmlHttpRequest()) {
+                return new JsonResponse(['success' => false, 'message' => 'Impossible de supprimer une réponse notée']);
+            }
             $this->addflash('error', 'Impossible de supprimer une réponse notée');
             return $this->redirectToRoute('admin_reclamation_reponses', ['id' => $reponse->getReclamation()->getId()]);
         }
@@ -131,6 +135,11 @@ class ReclamationController extends AbstractController
         if ($this->isCsrfTokenValid('delete'.$reponse->getId(), $request->request->get('_token'))) {
             $em->remove($reponse);
             $em->flush();
+            
+            if ($request->isXmlHttpRequest()) {
+                return new JsonResponse(['success' => true, 'message' => 'Réponse supprimée avec succès']);
+            }
+            
             $this->addFlash('success', 'Réponse supprimée');
         }
 

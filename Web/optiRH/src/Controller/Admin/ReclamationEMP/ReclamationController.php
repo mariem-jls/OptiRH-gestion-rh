@@ -35,7 +35,7 @@ class ReclamationController extends AbstractController
     }
 
     #[Route('/reclamation/add', name: 'front_add_reclamation')]
-
+  
     public function add(Request $request, EntityManagerInterface $em): Response
     {
         $reclamation = new Reclamation();
@@ -61,7 +61,7 @@ class ReclamationController extends AbstractController
     }
 
     #[Route('/reclamation/{id}/edit', name: 'front_edit_reclamation')]
- 
+
     public function edit(Request $request, Reclamation $reclamation, EntityManagerInterface $em): Response
     {
         if ($reclamation->getUtilisateur() !== $this->getUser()) {
@@ -89,7 +89,7 @@ class ReclamationController extends AbstractController
     }
 
     #[Route('/reclamation/{id}/delete', name: 'front_delete_reclamation', methods: ['POST'])]
- 
+   
     public function delete(Request $request, Reclamation $reclamation, EntityManagerInterface $em): Response
     {
         // Vérifier que la réclamation appartient à l'utilisateur
@@ -113,7 +113,7 @@ class ReclamationController extends AbstractController
     }
 
     #[Route('/reclamation/{id}/reponses', name: 'front_reclamation_reponses')]
-   
+ 
     public function reponses(Reclamation $reclamation): Response
     {
         if ($reclamation->getUtilisateur() !== $this->getUser()) {
