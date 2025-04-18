@@ -57,10 +57,12 @@
 									<a href="{{ path('admin_users_show', { id: user.id }) }}" class="dropdown-item">Voir</a>
 									<a href="{{ path('admin_users_edit', { id: user.id }) }}" class="dropdown-item">Modifier</a>
 									<div class="dropdown-divider"></div>
-									<form method="post" action="{{ path('admin_users_delete', { id: user.id }) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?');">
-										<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
-										<button class="dropdown-item text-danger" type="submit">Supprimer</button>
-									</form>
+                                    <form method="post" action="{{ path('admin_users_delete', { id: user.id }) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
+                                        <input type="hidden" name="_method" value="DELETE"> {# <- ajoute cette ligne #}
+                                        <button class="dropdown-item text-danger" type="submit">Supprimer</button>
+                                    </form>
+
 								</div>
 							</div>
 						</td>
