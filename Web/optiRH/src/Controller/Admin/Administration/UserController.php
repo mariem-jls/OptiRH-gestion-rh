@@ -5,6 +5,7 @@ namespace App\Controller\Admin\Administration;
 use App\Entity\User;
 use App\Form\Admin\User\UserType;
 use App\Repository\UserRepository;
+use App\Form\Admin\User\EditUserType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,7 +24,7 @@ class UserController extends AbstractController
     }
 
     #[Route('/users/new', name: 'admin_users_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, UserRepository $userRepository, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager): Response
     {
         $user = new User();
         $form = $this->createForm(UserType::class, $user);
@@ -55,13 +56,20 @@ class UserController extends AbstractController
     }
 
     #[Route('/users/{id}/edit', name: 'admin_users_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, User $user, UserRepository $userRepository): Response
+    public function edit(Request $request, User $user, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager): Response
     {
-        $form = $this->createForm(UserType::class, $user);
+        $form = $this->createForm(EditUserType::class, $user);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $userRepository->add($user);
+            /** @var string $plainPassword */
+            $plainPassword = $form->get('plainPassword')->getData();
+            if ($plainPassword) {
+                $user->setPassword($userPasswordHasher->hashPassword($user, $plainPassword));
+            }
+            $entityManager->persist($user);
+            $entityManager->flush();
+
             return $this->redirectToRoute('admin_users');
         }
 
