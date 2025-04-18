@@ -1,4 +1,4 @@
-{# templates/front/reclamation/list.html.twig #}
+{# templates/front/reclamation/list.html.twig #} 
 {% extends 'partials/layout-vertical.html.twig' %}
 
 {% block topbar %}
@@ -7,13 +7,36 @@
 
 {% block title %}Mes Réclamations{% endblock %}
 
+{% block stylesheets %}
+    <style>
+        .sentiment-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .sentiment-positive {
+            background-color: #28a745;
+        }
+        .sentiment-neutral {
+            background-color: #ffc107;
+        }
+        .sentiment-negative {
+            background-color: #dc3545;
+        }
+        .sentiment-unknown {
+            background-color: #6c757d;
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
     <div class="container-fluid">
         <div class="row">
             <div class="col-12">
                 <div class="card">
                      <div class="card-body">
-                        {# Ajout du bouton ici #}
                         <div class="mb-3">
                             <a href="{{ path('front_add_reclamation') }}" class="btn btn-primary">
                                 <i class="mdi mdi-plus"></i> Ajouter une réclamation
@@ -28,6 +51,7 @@
                                     <th>Date</th>
                                     <th>Statut</th>
                                     <th>Actions</th>
+                                    <th>Sentiment</th> {# Attention, ici Sentiment doit bien être la dernière colonne #}
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -37,9 +61,9 @@
                                         <td>{{ reclamation.description|slice(0, 50) }}{% if reclamation.description|length > 50 %}...{% endif %}</td>
                                         <td>{{ reclamation.date|date('d/m/Y H:i') }}</td>
                                         <td>
-                                        <span class="badge bg-{{ reclamation.status == 'Résolue' ? 'success' : (reclamation.status == 'En cours' ? 'info' : 'warning') }}">
-                                            {{ reclamation.status }}
-                                        </span>
+                                            <span class="badge bg-{{ reclamation.status == 'Résolue' ? 'success' : (reclamation.status == 'En cours' ? 'info' : 'warning') }}">
+                                                {{ reclamation.status }}
+                                            </span>
                                         </td>
                                         <td>
                                             <a href="{{ path('front_reclamation_reponses', {'id': reclamation.id}) }}"
@@ -47,16 +71,11 @@
                                                 <i class="mdi mdi-eye"></i>
                                             </a>
                                             
-                                            {# Bouton Modifier - seulement si aucune réponse #}
                                             {% if reclamation.reponses.count() == 0 %}
                                                 <a href="{{ path('front_edit_reclamation', {'id': reclamation.id}) }}"
                                                    class="btn btn-sm btn-secondary" title="Modifier">
                                                     <i class="mdi mdi-pencil"></i>
                                                 </a>
-                                            {% endif %}
-                                            
-                                            {# Bouton Supprimer - seulement si aucune réponse #}
-                                            {% if reclamation.reponses.count() == 0 %}
                                                 <form method="post" action="{{ path('front_delete_reclamation', {'id': reclamation.id}) }}"
                                                     data-swal-confirm
                                                     style="display: inline-block;">
@@ -65,13 +84,28 @@
                                                         <i class="mdi mdi-delete"></i>
                                                     </button>
                                                 </form>
-
                                             {% endif %}
                                         </td>
+<td>
+    {% if reclamation.sentimentLabel == 'error' %}
+        <span class="badge bg-danger">
+            <i class="fas fa-exclamation-triangle"></i> Erreur
+        </span>
+    {% else %}
+        <span class="badge bg-{{ reclamation.sentimentLabel == 'positive' ? 'success' : 
+                              (reclamation.sentimentLabel == 'negative' ? 'danger' : 'warning') }}"
+              title="Score: {{ reclamation.sentimentScore|number_format(2) }}">
+            {{ reclamation.sentimentLabel|trans|capitalize }}
+            {% if reclamation.sentimentScore is not null %}
+                ({{ reclamation.sentimentScore|number_format(2) }})
+            {% endif %}
+        </span>
+    {% endif %}
+</td>
                                     </tr>
                                 {% else %}
                                     <tr>
-                                        <td colspan="5" class="text-center">Vous n'avez aucune réclamation</td>
+                                        <td colspan="6" class="text-center">Vous n'avez aucune réclamation</td>
                                     </tr>
                                 {% endfor %}
                                 </tbody>
@@ -86,5 +120,5 @@
 
 {% block javascript %}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="{{ asset('js recc/reclamation.js') }}"></script>  {# Inclusion du fichier JS externe #}
+    <script src="{{ asset('js recc/reclamation.js') }}"></script>
 {% endblock %}

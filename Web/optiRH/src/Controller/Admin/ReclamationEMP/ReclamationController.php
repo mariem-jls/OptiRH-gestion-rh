@@ -12,7 +12,11 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Service\SentimentAnalysisService;
 
+
+// Ajoutez ce use statement en haut
+use Psr\Log\LoggerInterface;
 #[Route('/list')]
 class ReclamationController extends AbstractController
 {
@@ -33,32 +37,43 @@ class ReclamationController extends AbstractController
             'reclamations' => $reclamations,
         ]);
     }
+// src/Controller/Admin/ReclamationEMP/ReclamationController.php
 
-    #[Route('/reclamation/add', name: 'front_add_reclamation')]
-  
-    public function add(Request $request, EntityManagerInterface $em): Response
-    {
-        $reclamation = new Reclamation();
-        $form = $this->createForm(ReclamationType::class, $reclamation, ['is_admin' => false]);
+
+
+// Modifiez la méthode add() comme suit :
+#[Route('/reclamation/add', name: 'front_add_reclamation')]
+public function add(Request $request, EntityManagerInterface $em, SentimentAnalysisService $sentimentAnalyzer): Response
+{
+    $reclamation = new Reclamation();
+    $form = $this->createForm(ReclamationType::class, $reclamation, ['is_admin' => false]);
+    
+    $form->handleRequest($request);
+
+    if ($form->isSubmitted() && $form->isValid()) {
+        $sentiment = $sentimentAnalyzer->analyze($reclamation->getDescription());
         
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $reclamation->setStatus(Reclamation::STATUS_PENDING);
-            $reclamation->setUtilisateur($this->getUser());
-            $reclamation->setDate(new \DateTime());
-
-            $em->persist($reclamation);
-            $em->flush();
-
-            $this->addFlash('success', 'Votre réclamation a été enregistrée avec succès.');
-            return $this->redirectToRoute('front_reclamations');
+        if (isset($sentiment['fallback'])) {
+            $this->addFlash('warning', 'Analyse de secours utilisée (service principal indisponible)');
         }
 
-        return $this->render('front/reclamation/add.html.twig', [
-            'form' => $form->createView(),
-        ]);
+        $reclamation->setSentimentScore($sentiment['score']);
+        $reclamation->setSentimentLabel($sentiment['label']);
+        $reclamation->setStatus(Reclamation::STATUS_PENDING);
+        $reclamation->setUtilisateur($this->getUser());
+        $reclamation->setDate(new \DateTime());
+
+        $em->persist($reclamation);
+        $em->flush();
+
+        $this->addFlash('success', 'Votre réclamation a été enregistrée avec succès.');
+        return $this->redirectToRoute('front_reclamations');
     }
+
+    return $this->render('front/reclamation/add.html.twig', [
+        'form' => $form->createView(),
+    ]);
+}
 
     #[Route('/reclamation/{id}/edit', name: 'front_edit_reclamation')]
 

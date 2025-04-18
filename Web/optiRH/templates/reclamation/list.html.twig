@@ -3,10 +3,8 @@
 {% block title %}Liste des réclamations{% endblock %}
 
 {% block topbar %}
-    {{ include('partials/topbar.html.twig', { page_title: 'Liste des reclamations' }) }}
+    {{ include('partials/topbar.html.twig', { page_title: 'Liste des réclamations' }) }}
 {% endblock %}
-
-
 
 {% block stylesheets %}
     <style>
@@ -18,6 +16,27 @@
         .status-pending { background-color: #fff3cd; }
         .status-in-progress { background-color: #d1ecf1; }
         .status-resolved { background-color: #d4edda; }
+
+        /* Nouveau CSS pour les indicateurs de sentiment */
+        .sentiment-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .sentiment-positive {
+            background-color: #28a745;
+        }
+        .sentiment-neutral {
+            background-color: #ffc107;
+        }
+        .sentiment-negative {
+            background-color: #dc3545;
+        }
+        .sentiment-unknown {
+            background-color: #6c757d;
+        }
     </style>
 {% endblock %}
 
@@ -34,6 +53,7 @@
                                 <th>Utilisateur</th>
                                 <th>Date</th>
                                 <th>Statut</th>
+                                <th>Sentiment</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -59,6 +79,21 @@
                                                 </option>
                                             </select>
                                         </form>
+                                    </td>
+                                    <td>
+                                        {% if reclamation.sentimentLabel %}
+                                            {% set sentiment_class = reclamation.sentimentLabel == 'positive' 
+                                                ? 'sentiment-positive' 
+                                                : (reclamation.sentimentLabel == 'negative' 
+                                                    ? 'sentiment-negative' 
+                                                    : 'sentiment-neutral') 
+                                            %}
+                                            <span class="sentiment-indicator {{ sentiment_class }}"></span>
+                                            {{ reclamation.sentimentLabel|trans }} ({{ reclamation.sentimentScore|number_format(2) }})
+                                        {% else %}
+                                            <span class="sentiment-indicator sentiment-unknown"></span>
+                                            Non analysé
+                                        {% endif %}
                                     </td>
                                     <td>
                                         <a href="{{ path('admin_reclamation_reponses', {'id': reclamation.id}) }}" 
