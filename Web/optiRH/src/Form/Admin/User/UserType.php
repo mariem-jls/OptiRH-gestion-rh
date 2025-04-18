@@ -1,22 +1,20 @@
 <?php
 
-namespace App\Form;
+namespace App\Form\Admin\User;
 
-use App\Entity\User;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Validator\Constraints\IsTrue;
-use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Regex;
 use Symfony\Component\Validator\Constraints\NotCompromisedPassword;
-use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
-use Symfony\Component\Form\Extension\Core\Type\PasswordType;
+use Symfony\Component\Validator\Constraints\Length;
+use App\Entity\User;
 
-class RegistrationFormType extends AbstractType
+class UserType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options): void
+    public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
             ->add('nom', null, [
@@ -32,13 +30,10 @@ class RegistrationFormType extends AbstractType
                     'autocomplete' => 'email',
                 ],
             ])
-            ->add('agreeTerms', CheckboxType::class, [
-                'label' => 'J’accepte les conditions générales',
-                'mapped' => false,
-                'constraints' => [
-                    new IsTrue([
-                        'message' => 'Vous devez accepter les conditions générales pour continuer.',
-                    ]),
+            ->add('address', null, [
+                'label' => 'Adresse',
+                'attr' => [
+                    'placeholder' => 'Entrez votre adresse',
                 ],
             ])
             ->add('plainPassword', PasswordType::class, [
@@ -69,7 +64,7 @@ class RegistrationFormType extends AbstractType
             ]);
     }
 
-    public function configureOptions(OptionsResolver $resolver): void
+    public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
             'data_class' => User::class,

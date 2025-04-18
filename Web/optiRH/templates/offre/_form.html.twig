@@ -1,6 +1,6 @@
 {{ form_start(form, {'attr': {'class': 'parsley-examples', 'novalidate': 'novalidate'}}) }}
 
-<!-- Vos champs de formulaire ici... -->
+{{ form_rest(form) }} <!-- Ajout important pour les champs non rendus -->
 
 <div class="mt-4 d-flex justify-content-end gap-2">
     <button type="submit" class="btn btn-primary">

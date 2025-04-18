@@ -14,13 +14,12 @@
   
 {% endblock %}
 {% block body %}
-{% for label, messages in app.flashes %}
-    {% for message in messages %}
-        <div class="alert alert-{{ label }}">
+    {% for message in app.flashes('deja_reserve') %}
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
             {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     {% endfor %}
-{% endfor %}
 
 <div class="container-fluid px-4">
     <!-- Section des événements (visible par défaut) -->
@@ -168,7 +167,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <!-- Bouton pour ouvrir le modal -->
                             <button type="button" class="btn btn-sm btn-outline-primary rounded-pill flex-grow-1 me-1" data-toggle="modal" data-target="#eventModal{{ evenement.id }}">
-                                <i class="mdi mdi-information-outline me-1"></i> Détails
+                                <i class="mdi mdi-information-outline me-1"></i> Détailles
                             </button>
                             <a href="{{ path('app_reservation_evenement_new', {id: evenement.id}) }}" class="btn btn-sm btn-outline-primary rounded-pill flex-grow-1 me-1">
                                 <i class="mdi mdi-ticket-confirmation me-1"></i> Réserver

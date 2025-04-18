@@ -1,0 +1,59 @@
+{% extends 'partials/layout-vertical.html.twig' %}
+
+{% block title %}Gestion des Utilisateurs{% endblock %}
+
+{% block topbar %}
+	{{ include('partials/topbar.html.twig', { page_title: 'Gestion des Utilisateurs' }) }}
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Liste des utilisateurs</h2>
+        <a href="{{ path('admin_users_new') }}" class="btn btn-primary">➕ Ajouter un utilisateur</a>
+    </div>
+
+    <table class="table table-bordered table-hover shadow-sm">
+        <thead class="table-light">
+            <tr>
+                <th>Nom</th>
+                <th>Email</th>
+                <th>Adresse</th>
+                <th>Rôles</th>
+                <th>Vérifié</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+                <tr>
+                    <td>{{ user.nom }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.address ?? '—' }}</td>
+                    <td>{{ user.roles|join(', ') }}</td>
+                    <td>
+                        {% if user.isVerified %}
+                            ✅
+                        {% else %}
+                            ❌
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ path('admin_users_show', { id: user.id }) }}" class="btn btn-sm btn-info">Voir</a>
+                        <a href="{{ path('admin_users_edit', { id: user.id }) }}" class="btn btn-sm btn-warning">Modifier</a>
+
+                        <form method="post" action="{{ path('admin_users_delete', { id: user.id }) }}" style="display:inline-block" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
+                            <button class="btn btn-sm btn-danger">Supprimer</button>
+                        </form>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="6" class="text-center">Aucun utilisateur trouvé.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
