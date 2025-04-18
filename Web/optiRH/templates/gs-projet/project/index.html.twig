@@ -8,55 +8,11 @@
 
 {% block body %}
     <div class="row align-items-center mb-4">
-        <div class="col-md-6">
+        <div class="col-md-12">
             <a href="{{ path('gs-projet_project_new') }}" class="btn btn-purple rounded-pill w-md waves-effect waves-light">
                 <i class="mdi mdi-plus me-2"></i>
                 Créer un projet
             </a>
-        </div>
-        <div class="col-md-6 mt-3 mt-md-0">
-            {{ form_start(filterForm, {
-                attr: {
-                    'id': 'filter-form',
-                    'data-search-url': path('gs-projet_project_index'),
-                    'class': 'filter-form'
-                }
-            }) }}
-            <div class="d-flex flex-wrap gap-2 justify-content-md-end">
-                <div class="flex-grow-1" style="min-width: 200px;">
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text bg-transparent"><i class="mdi mdi-magnify"></i></span>
-                        {{ form_widget(filterForm.search, {
-                            'attr': {
-                                'class': 'form-control form-control-sm border-start-0',
-                                'placeholder': 'Rechercher un projet...',
-                                'aria-label': 'Rechercher'
-                            }
-                        }) }}
-                    </div>
-                </div>
-
-                <div class="d-flex gap-2">
-                    <div class="input-group input-group-sm" style="width: 150px;">
-                        {{ form_widget(filterForm.status, {
-                            'attr': {
-                                'class': 'form-select form-select-sm',
-                                'aria-label': 'Statut'
-                            }
-                        }) }}
-                    </div>
-
-                    <div class="input-group input-group-sm" style="width: 150px;">
-                        {{ form_widget(filterForm.sort, {
-                            'attr': {
-                                'class': 'form-select form-select-sm',
-                                'aria-label': 'Trier par'
-                            }
-                        }) }}
-                    </div>
-                </div>
-            </div>
-            {{ form_end(filterForm, {'render_rest': false}) }}
         </div>
     </div>
 
@@ -90,34 +46,6 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const DEBOUNCE_DELAY = 300;
-    const TABLE_BODY_ID = 'project-list-body';
-    const PAGINATION_ID = 'project-pagination';
-
-    const debounce = (fn, delay) => {
-        let timer;
-        return (...args) => {
-            clearTimeout(timer);
-            timer = setTimeout(() => fn(...args), delay);
-        };
-    };
-
-    const safeUpdateElement = (elementId, content) => {
-        const element = document.getElementById(elementId);
-        if (element) element.innerHTML = content;
-    };
-
-    const showLoader = () => {
-        safeUpdateElement(TABLE_BODY_ID, `
-            <tr>
-                <td colspan="5" class="text-center py-4">
-                    <div class="spinner-border text-primary"></div>
-                    <p class="mt-2 text-muted">Chargement des résultats...</p>
-                </td>
-            </tr>
-        `);
-    };
-
     const initDeleteHandlers = () => {
         document.querySelectorAll('.delete-project-form').forEach(form => {
             form.addEventListener('submit', async (e) => {
@@ -187,70 +115,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     };
 
-    const handleFilterUpdate = debounce(async () => {
-        try {
-            showLoader();
-
-            const form = document.getElementById('filter-form');
-            const formData = new FormData(form);
-            const params = new URLSearchParams(formData);
-            params.append('ajax', 1);
-
-            const response = await fetch(`${form.dataset.searchUrl}?${params}`, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'text/html'
-                }
-            });
-
-            if (!response.ok) throw new Error(`Erreur ${response.status}: ${response.statusText}`);
-
-            const html = await response.text();
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-
-            safeUpdateElement(TABLE_BODY_ID, doc.getElementById(TABLE_BODY_ID)?.innerHTML || '');
-
-            const newPagination = doc.getElementById(PAGINATION_ID);
-            const currentPagination = document.getElementById(PAGINATION_ID);
-
-            if (newPagination) {
-                currentPagination
-                    ? currentPagination.innerHTML = newPagination.innerHTML
-                    : document.getElementById('project-table-container').appendChild(newPagination);
-            } else if (currentPagination) {
-                currentPagination.remove();
-            }
-
-            initDeleteHandlers();
-
-        } catch (error) {
-            safeUpdateElement(TABLE_BODY_ID, `
-                <tr>
-                    <td colspan="5" class="text-center text-danger py-4">
-                        ${error.message}
-                    </td>
-                </tr>
-            `);
-        }
-    }, DEBOUNCE_DELAY);
-
-    const initFilterHandler = () => {
-        const form = document.getElementById('filter-form');
-        if (!form) return;
-
-        form.querySelectorAll('input, select').forEach(element => {
-            element.addEventListener('input', handleFilterUpdate);
-            element.addEventListener('change', handleFilterUpdate);
-        });
-    };
-
-    const init = () => {
-        initDeleteHandlers();
-        initFilterHandler();
-    };
-
-    init();
+    initDeleteHandlers();
 });
 </script>
 {% endblock %}
