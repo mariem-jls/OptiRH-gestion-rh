@@ -112,12 +112,12 @@ class ReservationEvenementController extends AbstractController
             
             if ($dateEvenement > $now && $hoursLeft > 24) {
                 $reservationEvenementRepository->remove($reservationEvenement, true);
-                $this->addFlash('success', 'La réservation a été supprimée avec succès.');
+                $this->addFlash('réservation', 'La réservation a été supprimée avec succès.');
             } else {
-                $this->addFlash('error', 'Impossible de supprimer la réservation : l\'événement commence dans moins de 24 heures.');
+                $this->addFlash('Impossibleréservation', 'Impossible de supprimer la réservation : l\'événement commence dans moins de 24 heures.');
             }
         } else {
-            $this->addFlash('error', 'Token CSRF invalide.');
+            $this->addFlash('Impossibleréservation', 'Token CSRF invalide.');
         }
 
         return $this->redirectToRoute('app_user_reservations');
