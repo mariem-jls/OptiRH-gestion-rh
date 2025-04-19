@@ -1,124 +1,163 @@
-{# templates/front/reclamation/list.html.twig #} 
 {% extends 'partials/layout-vertical.html.twig' %}
 
+{% block title %}Liste des réclamations{% endblock %}
+
 {% block topbar %}
-    {{ include('partials/topbar.html.twig', { page_title: 'Mes Réclamations' }) }}
+    {{ include('partials/topbar.html.twig', { page_title: 'Liste des réclamations' }) }}
 {% endblock %}
 
-{% block title %}Mes Réclamations{% endblock %}
-
 {% block stylesheets %}
+    {{ parent() }}
     <style>
-        .sentiment-indicator {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin-right: 5px;
+        .flash-messages {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 1000;
+            width: 350px;
         }
-        .sentiment-positive {
-            background-color: #28a745;
+
+        .alert {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: none;
+            border-left: 4px solid;
         }
-        .sentiment-neutral {
-            background-color: #ffc107;
+
+        .alert-success {
+            border-left-color: #28a745;
         }
-        .sentiment-negative {
-            background-color: #dc3545;
+
+        .alert-danger {
+            border-left-color: #dc3545;
         }
-        .sentiment-unknown {
-            background-color: #6c757d;
+
+        .btn-ajouter {
+            margin-bottom: 20px;
         }
     </style>
 {% endblock %}
 
 {% block body %}
     <div class="container-fluid">
-        <div class="row">
-            <div class="col-12">
-                <div class="card">
-                     <div class="card-body">
-                        <div class="mb-3">
-                            <a href="{{ path('front_add_reclamation') }}" class="btn btn-primary">
-                                <i class="mdi mdi-plus"></i> Ajouter une réclamation
-                            </a>
-                        </div>
-                        <div class="table-responsive">
-                            <table class="table table-centered mb-0">
-                                <thead>
-                                <tr>
-                                    <th>Type</th>
-                                    <th>Description</th>
-                                    <th>Date</th>
-                                    <th>Statut</th>
-                                    <th>Actions</th>
-                                    <th>Sentiment</th> {# Attention, ici Sentiment doit bien être la dernière colonne #}
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {% for reclamation in reclamations %}
-                                    <tr>
-                                        <td>{{ reclamation.type }}</td>
-                                        <td>{{ reclamation.description|slice(0, 50) }}{% if reclamation.description|length > 50 %}...{% endif %}</td>
-                                        <td>{{ reclamation.date|date('d/m/Y H:i') }}</td>
-                                        <td>
-                                            <span class="badge bg-{{ reclamation.status == 'Résolue' ? 'success' : (reclamation.status == 'En cours' ? 'info' : 'warning') }}">
-                                                {{ reclamation.status }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <a href="{{ path('front_reclamation_reponses', {'id': reclamation.id}) }}"
-                                               class="btn btn-sm btn-primary" title="Voir les réponses">
-                                                <i class="mdi mdi-eye"></i>
-                                            </a>
-                                            
-                                            {% if reclamation.reponses.count() == 0 %}
-                                                <a href="{{ path('front_edit_reclamation', {'id': reclamation.id}) }}"
-                                                   class="btn btn-sm btn-secondary" title="Modifier">
-                                                    <i class="mdi mdi-pencil"></i>
-                                                </a>
-                                                <form method="post" action="{{ path('front_delete_reclamation', {'id': reclamation.id}) }}"
-                                                    data-swal-confirm
-                                                    style="display: inline-block;">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reclamation.id) }}">
-                                                    <button class="btn btn-sm btn-danger" title="Supprimer">
-                                                        <i class="mdi mdi-delete"></i>
-                                                    </button>
-                                                </form>
-                                            {% endif %}
-                                        </td>
-<td>
-    {% if reclamation.sentimentLabel == 'error' %}
-        <span class="badge bg-danger">
-            <i class="fas fa-exclamation-triangle"></i> Erreur
-        </span>
-    {% else %}
-        <span class="badge bg-{{ reclamation.sentimentLabel == 'positive' ? 'success' : 
-                              (reclamation.sentimentLabel == 'negative' ? 'danger' : 'warning') }}"
-              title="Score: {{ reclamation.sentimentScore|number_format(2) }}">
-            {{ reclamation.sentimentLabel|trans|capitalize }}
-            {% if reclamation.sentimentScore is not null %}
-                ({{ reclamation.sentimentScore|number_format(2) }})
-            {% endif %}
-        </span>
-    {% endif %}
-</td>
-                                    </tr>
-                                {% else %}
-                                    <tr>
-                                        <td colspan="6" class="text-center">Vous n'avez aucune réclamation</td>
-                                    </tr>
-                                {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+        <div class="flash-messages">
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
+            {% endfor %}
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center">
+            <form class="d-flex mb-3" role="search" onsubmit="event.preventDefault(); performSearch();">
+                <input id="searchInput" class="form-control me-2" type="search" placeholder="Rechercher par description..." aria-label="Search" value="{{ searchTerm }}" onkeyup="debounceSearch()">
+                <button class="btn btn-outline-primary" type="submit">Rechercher</button>
+            </form>
+            <a href="{{ path('front_add_reclamation') }}" class="btn btn-primary btn-ajouter">
+                <i class="fas fa-plus"></i> Ajouter une réclamation
+            </a>
+        </div>
+
+        <div class="mb-3">
+            <h5>Filtrer par type :</h5>
+            <div class="d-flex flex-wrap">
+                <a href="{{ path('front_reclamations', {search: searchTerm}) }}" class="btn btn-outline-secondary type-filter-btn {{ selectedType == '' ? 'active' : '' }}">Tous types</a>
+                {% for key, type in typeChoices %}
+                    <a href="{{ path('front_reclamations', {search: searchTerm, type: key}) }}" class="btn btn-outline-secondary type-filter-btn {{ selectedType == key ? 'active' : '' }}">{{ type }}</a>
+                {% endfor %}
             </div>
         </div>
-    </div>
-{% endblock %}
 
-{% block javascript %}
+        {% if reclamations is empty %}
+            <div class="alert alert-info">Aucune réclamation trouvée.</div>
+        {% else %}
+            <div class="row">
+                {% for reclamation in reclamations %}
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                {{ reclamation.type }}
+                            </div>
+                            <div class="card-body">
+                                <p>{{ reclamation.description|slice(0, 100) }}{% if reclamation.description|length > 100 %}...{% endif %}</p>
+                                <p><small><i class="fas fa-user"></i> {{ reclamation.utilisateur.nom ?? 'Anonyme' }}</small></p>
+                                <p><small><i class="far fa-clock"></i> {{ reclamation.date|date('d/m/Y H:i') }}</small></p>
+
+                                <a href="{{ path('front_reclamation_reponses', {'id': reclamation.id}) }}" class="btn btn-primary btn-sm"><i class="fas fa-eye"></i></a>
+                                <a href="{{ path('front_edit_reclamation', {'id': reclamation.id}) }}" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i></a>
+                                <button class="btn btn-danger btn-sm" onclick="confirmDelete('{{ path('front_delete_reclamation', {'id': reclamation.id}) }}', '{{ csrf_token('delete' ~ reclamation.id) }}')"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    {# SweetAlert2 #}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="{{ asset('js recc/reclamation.js') }}"></script>
+
+    <script>
+        function confirmDelete(actionUrl, csrfToken) {
+            Swal.fire({
+                title: 'Êtes-vous sûr ?',
+                text: "Cette action est irréversible !",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Oui, supprimer',
+                cancelButtonText: 'Annuler'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = actionUrl;
+
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = '_token';
+                    input.value = csrfToken;
+
+                    form.appendChild(input);
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        }
+
+        let searchTimer;
+        function debounceSearch() {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(performSearch, 500);
+        }
+
+        function performSearch() {
+            const searchTerm = document.getElementById('searchInput').value;
+            const url = new URL(window.location.href);
+            url.searchParams.set('search', searchTerm);
+            if ('{{ selectedType }}') {
+                url.searchParams.set('type', '{{ selectedType }}');
+            }
+            window.location.href = url.toString();
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }, 5000);
+            });
+        });
+    </script>
 {% endblock %}

@@ -89,7 +89,12 @@
                                                     : 'sentiment-neutral') 
                                             %}
                                             <span class="sentiment-indicator {{ sentiment_class }}"></span>
-                                            {{ reclamation.sentimentLabel|trans }} ({{ reclamation.sentimentScore|number_format(2) }})
+                                            <span class="{{ reclamation.sentimentScore < 0.3 ? 'text-danger fw-bold' : '' }}">
+                                                {{ reclamation.sentimentLabel|trans }} ({{ reclamation.sentimentScore|number_format(2) }})
+                                            </span>
+                                            {% if reclamation.sentimentScore < 0.3 %}
+                                                <span class="badge bg-danger">À traiter en priorité</span>
+                                            {% endif %}
                                         {% else %}
                                             <span class="sentiment-indicator sentiment-unknown"></span>
                                             Non analysé

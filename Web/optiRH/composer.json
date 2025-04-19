@@ -25,6 +25,7 @@
         "symfony/flex": "^2",
         "symfony/form": "6.4.*",
         "symfony/framework-bundle": "6.4.*",
+        "symfony/google-mailer": "6.4.*",
         "symfony/http-client": "6.4.*",
         "symfony/intl": "6.4.*",
         "symfony/mailer": "6.4.*",
@@ -36,6 +37,7 @@
         "symfony/property-info": "6.4.*",
         "symfony/runtime": "6.4.*",
         "symfony/security-bundle": "6.4.*",
+        "symfony/security-core": "6.4.*",
         "symfony/security-csrf": "6.4.*",
         "symfony/serializer": "6.4.*",
         "symfony/string": "6.4.*",
@@ -49,6 +51,7 @@
         "twig/extra-bundle": "^3.8",
         "twig/string-extra": "*",
         "twig/twig": "^2.12|^3.0",
+        "twilio/sdk": "^8.5",
         "wemersonjanuario/wkhtmltopdf-windows": "^0.12.2"
     },
     "config": {

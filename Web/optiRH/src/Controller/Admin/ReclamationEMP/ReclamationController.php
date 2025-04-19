@@ -13,10 +13,10 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use App\Service\SentimentAnalysisService;
-
-
-// Ajoutez ce use statement en haut
+use App\Service\EmailNotificationService;
 use Psr\Log\LoggerInterface;
+
+
 #[Route('/list')]
 class ReclamationController extends AbstractController
 {
@@ -27,30 +27,110 @@ class ReclamationController extends AbstractController
     }
 
     #[Route('/reclamations', name: 'front_reclamations')]
-  
-    public function list(EntityManagerInterface $em): Response
+    public function list(Request $request, EntityManagerInterface $em): Response
     {
         $user = $this->getUser();
-        $reclamations = $em->getRepository(Reclamation::class)->findBy(['utilisateur' => $user]);
-
+        $searchTerm = $request->query->get('search', '');
+        $typeFilter = $request->query->get('type', '');
+    
+        $queryBuilder = $em->getRepository(Reclamation::class)
+            ->createQueryBuilder('r')
+            ->where('r.utilisateur = :user')
+            ->setParameter('user', $user)
+            ->orderBy('r.date', 'DESC');
+    
+        if (!empty($searchTerm)) {
+            $queryBuilder->andWhere('r.description LIKE :searchTerm')
+                ->setParameter('searchTerm', '%'.$searchTerm.'%');
+        }
+    
+        if (!empty($typeFilter)) {
+            $queryBuilder->andWhere('r.type = :type')
+                ->setParameter('type', $typeFilter);
+        }
+    
+        $reclamations = $queryBuilder->getQuery()->getResult();
+    
         return $this->render('front/reclamation/list.html.twig', [
             'reclamations' => $reclamations,
+            'searchTerm' => $searchTerm,
+            'selectedType' => $typeFilter,
+            'typeChoices' => Reclamation::getTypeChoices(),
         ]);
     }
-// src/Controller/Admin/ReclamationEMP/ReclamationController.php
 
 
 
 // Modifiez la méthode add() comme suit :
-#[Route('/reclamation/add', name: 'front_add_reclamation')]
-public function add(Request $request, EntityManagerInterface $em, SentimentAnalysisService $sentimentAnalyzer): Response
+    #[Route('/reclamation/add', name: 'front_add_reclamation')]
+    public function add(
+        Request $request, 
+        EntityManagerInterface $em, 
+        SentimentAnalysisService $sentimentAnalyzer,
+        EmailNotificationService $emailNotificationService
+    ): Response
+    {
+        $reclamation = new Reclamation();
+        $form = $this->createForm(ReclamationType::class, $reclamation, ['is_admin' => false]);
+        
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $sentiment = $sentimentAnalyzer->analyze($reclamation->getDescription());
+            
+            if (isset($sentiment['fallback'])) {
+                $this->addFlash('warning', 'Analyse de secours utilisée (service principal indisponible)');
+            }
+
+            $reclamation->setSentimentScore($sentiment['score']);
+            $reclamation->setSentimentLabel($sentiment['label']);
+            $reclamation->setStatus(Reclamation::STATUS_PENDING);
+            $reclamation->setUtilisateur($this->getUser());
+            $reclamation->setDate(new \DateTime());
+
+            $em->persist($reclamation);
+            $em->flush();
+
+            // Envoyer une notification si la réclamation est négative
+            if ($sentiment['label'] === 'negative' || $sentiment['score'] < 0.4) {
+                try {
+                    $emailNotificationService->sendNegativeReclamationNotification($reclamation);
+                } catch (\Exception $e) {
+                    $this->logger->error('Failed to send notification email: '.$e->getMessage());
+                }
+            }
+
+            $this->addFlash('success', 'Votre réclamation a été enregistrée avec succès.');
+            return $this->redirectToRoute('front_reclamations');
+        }
+
+        return $this->render('front/reclamation/add.html.twig', [
+            'form' => $form->createView(),
+        ]);
+    }
+
+#[Route('/reclamation/{id}/edit', name: 'front_edit_reclamation')]
+public function edit(
+    Request $request, 
+    Reclamation $reclamation, 
+    EntityManagerInterface $em,
+    SentimentAnalysisService $sentimentAnalyzer // Ajoutez ce paramètre
+): Response
 {
-    $reclamation = new Reclamation();
+    if ($reclamation->getUtilisateur() !== $this->getUser()) {
+        throw $this->createAccessDeniedException();
+    }
+
+    if ($reclamation->getReponses()->count() > 0) {
+        $this->addFlash('error', 'Vous ne pouvez pas modifier une réclamation qui a déjà une réponse.');
+        return $this->redirectToRoute('front_reclamations');
+    }
+
     $form = $this->createForm(ReclamationType::class, $reclamation, ['is_admin' => false]);
-    
     $form->handleRequest($request);
 
     if ($form->isSubmitted() && $form->isValid()) {
+        // Analyse du sentiment lors de la modification
         $sentiment = $sentimentAnalyzer->analyze($reclamation->getDescription());
         
         if (isset($sentiment['fallback'])) {
@@ -59,49 +139,17 @@ public function add(Request $request, EntityManagerInterface $em, SentimentAnaly
 
         $reclamation->setSentimentScore($sentiment['score']);
         $reclamation->setSentimentLabel($sentiment['label']);
-        $reclamation->setStatus(Reclamation::STATUS_PENDING);
-        $reclamation->setUtilisateur($this->getUser());
-        $reclamation->setDate(new \DateTime());
-
-        $em->persist($reclamation);
+        
         $em->flush();
-
-        $this->addFlash('success', 'Votre réclamation a été enregistrée avec succès.');
+        $this->addFlash('success', 'Réclamation modifiée avec succès.');
         return $this->redirectToRoute('front_reclamations');
     }
 
-    return $this->render('front/reclamation/add.html.twig', [
+    return $this->render('front/reclamation/edit.html.twig', [
         'form' => $form->createView(),
+        'reclamation' => $reclamation,
     ]);
 }
-
-    #[Route('/reclamation/{id}/edit', name: 'front_edit_reclamation')]
-
-    public function edit(Request $request, Reclamation $reclamation, EntityManagerInterface $em): Response
-    {
-        if ($reclamation->getUtilisateur() !== $this->getUser()) {
-            throw $this->createAccessDeniedException();
-        }
-
-        if ($reclamation->getReponses()->count() > 0) {
-            $this->addFlash('error', 'Vous ne pouvez pas modifier une réclamation qui a déjà une réponse.');
-            return $this->redirectToRoute('front_reclamations');
-        }
-
-        $form = $this->createForm(ReclamationType::class, $reclamation, ['is_admin' => false]);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $em->flush();
-            $this->addFlash('success', 'Réclamation modifiée avec succès.');
-            return $this->redirectToRoute('front_reclamations');
-        }
-
-        return $this->render('front/reclamation/edit.html.twig', [
-            'form' => $form->createView(),
-            'reclamation' => $reclamation,
-        ]);
-    }
 
     #[Route('/reclamation/{id}/delete', name: 'front_delete_reclamation', methods: ['POST'])]
    
