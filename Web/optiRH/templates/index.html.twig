@@ -5,15 +5,142 @@
 {% endblock %}
 
 {% block css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+#weather {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
 
+.weather-card {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+    flex: 1 1 240px;
+    padding: 1.25rem 1.5rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.weather-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+}
+
+.weather-card-header {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.weather-card-body {
+    font-size: 0.95rem;
+    color: #555;
+}
+
+.weather-card img {
+    vertical-align: middle;
+    width: 36px;
+    height: 36px;
+}
+
+
+</style>
 {% endblock %}
 
 {% block topbar %}
     {{ include('partials/topbar.html.twig', { page_title: 'Dashboard' }) }}
 {% endblock %}
 
+{% block body %}
+<div id="weather">
+    <div class="weather-card">Chargement météo…</div>
+</div>
+
+
+<div id="weather" style="display: flex; flex-wrap: wrap; gap: 1rem;"></div>
+
+
+{% endblock %}
+
 
 {% block javascript %}
+<script>
+
+function formatTime(unix) {
+    return new Date(unix * 1000).toLocaleTimeString('fr-FR', {
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+navigator.geolocation.getCurrentPosition(function(position) {
+    const lat = position.coords.latitude;
+    const lon = position.coords.longitude;
+
+    fetch(`/admin/weather?lat=${lat}&lon=${lon}`)
+        .then(response => response.json())
+        .then(data => {
+            const weatherContainer = document.getElementById('weather');
+
+weatherContainer.innerHTML = `
+    ${createCard(`<i class="fas fa-map-marker-alt"></i> Localisation`, `
+        <h3 style="margin: 0; display: flex; align-items: center;">
+            ${data.name}, ${data.sys.country}
+            <img src="https://openweathermap.org/img/wn/${data.weather[0].icon}@4x.png" alt="weather icon" style="width: 80px; height: 80px; margin-left: 15px;">
+        </h3>
+        <p style="margin: 0;">${data.weather[0].description}</p>
+    `)}
+
+    ${createCard(`<i class="fas fa-thermometer-half"></i> Température`, `
+        Température : ${data.main.temp}°C<br>
+        Ressentie : ${data.main.feels_like}°C<br>
+        Min : ${data.main.temp_min}°C<br>
+        Max : ${data.main.temp_max}°C
+    `)}
+
+    ${createCard(`<i class="fas fa-wind"></i> Vent & Nuages`, `
+        Vent : ${data.wind.speed} m/s (${data.wind.deg}°)<br>
+        Nuages : ${data.clouds.all}%<br>
+        Humidité : ${data.main.humidity}%<br>
+        Pression : ${data.main.pressure} hPa
+    `)}
+
+    ${createCard(`<i class="fas fa-sun"></i> Soleil`, `
+        Lever : ${formatTime(data.sys.sunrise)}<br>
+        Coucher : ${formatTime(data.sys.sunset)}
+    `)}
+`;
+
+        })
+        .catch(() => {
+            document.getElementById('weather').innerHTML = `<div class="card">Erreur : Impossible de récupérer la météo.</div>`;
+        });
+}, function(error) {
+    document.getElementById('weather').innerHTML = `<div class="card">⚠️ Autorisez la géolocalisation pour voir la météo.</div>`;
+});
+
+function createCard(title, content) {
+    return `
+        <div class="weather-card">
+            <div class="weather-card-header">
+                ${title}
+            </div>
+            <div class="weather-card-body">
+                ${content}
+            </div>
+        </div>
+    `;
+}
+
+
+</script>
+
 <!-- knob plugin -->
 <script src="/libs/jquery-knob/jquery.knob.min.js"></script>
 

@@ -1,0 +1,78 @@
+{% extends 'partials/layout-vertical.html.twig' %}
+
+{% block title %}Gestion des Utilisateurs
+{% endblock %}
+
+{% block topbar %}
+	{{ include('partials/topbar.html.twig', { page_title: 'Gestion des Utilisateurs' }) }}
+{% endblock %}
+
+{% block body %}
+	<div class="container mt-4">
+		<div class="d-flex justify-content-between align-items-center mb-3">
+			<h2>Liste des utilisateurs</h2>
+			<a href="{{ path('admin_users_new') }}" class="btn btn-primary">➕ Ajouter un utilisateur</a>
+		</div>
+
+		<table class="table table-bordered table-hover shadow-sm">
+			<thead class="table-light">
+				<tr>
+					<th>Avatar</th>
+					<th>Nom</th>
+					<th>Email</th>
+					<th>Adresse</th>
+					<th>Rôles</th>
+					<th>Vérifié</th>
+					<th>Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for user in users %}
+					<tr>
+						<td style="text-align: center;">
+							<div class="avatar-md">
+								<img class="rounded-circle avatar-md" src="https://ui-avatars.com/api/?name={{ app.user.nom|default(app.user.email)|url_encode }}" alt="Avatar de {{ app.user.nom|default(app.user.email) }}" style="width: 40px; height: 40px;">
+							</div>
+						</td>
+
+						<td>{{ user.nom }}</td>
+						<td>{{ user.email }}</td>
+						<td>{{ user.address ?? '—' }}</td>
+						<td>
+							{% for role in user.roles %}
+								<span class="badge bg-secondary text-white me-1">{{ role }}</span>
+							{% endfor %}
+						</td>
+						<td>
+							{% if user.isVerified %}
+								<i class="fas fa-check-circle text-success"></i>
+							{% else %}
+								<i class="fas fa-times-circle text-danger"></i>
+							{% endif %}
+						</td>
+						<td>
+							<div class="dropdown">
+								<button class="btn btn-sm btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">...</button>
+								<div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+									<a href="{{ path('admin_users_show', { id: user.id }) }}" class="dropdown-item">Voir</a>
+									<a href="{{ path('admin_users_edit', { id: user.id }) }}" class="dropdown-item">Modifier</a>
+									<div class="dropdown-divider"></div>
+                                    <form method="post" action="{{ path('admin_users_delete', { id: user.id }) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
+                                        <input type="hidden" name="_method" value="DELETE"> {# <- ajoute cette ligne #}
+                                        <button class="dropdown-item text-danger" type="submit">Supprimer</button>
+                                    </form>
+
+								</div>
+							</div>
+						</td>
+					</tr>
+				{% else %}
+					<tr>
+						<td colspan="6" class="text-center">Aucun utilisateur trouvé.</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+{% endblock %}

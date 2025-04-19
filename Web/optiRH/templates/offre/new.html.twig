@@ -13,7 +13,6 @@
     <!-- SweetAlert2 CSS -->
     <link href="{{ asset('/libs/sweetalert2/sweetalert2.min.css') }}" rel="stylesheet">
     <style>
-        /* Ajout nécessaire pour le conteneur de l'éditeur */
         .ql-container {
             border: 1px solid #dee2e6 !important;
             border-radius: 0 0 0.25rem 0.25rem;
@@ -21,6 +20,12 @@
         .ql-toolbar {
             border: 1px solid #dee2e6 !important;
             border-radius: 0.25rem 0.25rem 0 0;
+        }
+        .invalid-feedback {
+            display: none;
+        }
+        .is-invalid ~ .invalid-feedback {
+            display: block;
         }
     </style>
 {% endblock %}
@@ -38,15 +43,25 @@
 
                     {{ form_start(form, {'attr': {'class': 'parsley-examples', 'novalidate': 'novalidate', 'id': 'offreForm'}}) }}
 
+                    <!-- Erreurs globales du formulaire -->
+                    {% if form.vars.errors|length > 0 %}
+                        <div class="alert alert-danger">
+                            <ul>
+                                {% for error in form.vars.errors %}
+                                    <li>{{ error.message }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
                     <!-- Poste -->
                     <div class="mb-3">
                         {{ form_label(form.poste, 'Poste à pourvoir', {'label_attr': {'class': 'form-label'}}) }}
                         {{ form_widget(form.poste, {'attr': {
-                            'class': 'form-control',
-                            'required': 'required',
+                            'class': 'form-control' ~ (form.poste.vars.errors|length > 0 ? ' is-invalid' : ''),
                             'placeholder': 'Ex: Développeur Symfony Senior'
                         }}) }}
-                        <div class="invalid-feedback">Ce champ est obligatoire</div>
+                        {{ form_errors(form.poste, {'attr': {'class': 'invalid-feedback'}}) }}
                     </div>
 
                     <!-- Type Contrat + Localisation -->
@@ -55,47 +70,49 @@
                             <div class="mb-3">
                                 {{ form_label(form.typeContrat, 'Type de contrat', {'label_attr': {'class': 'form-label'}}) }}
                                 {{ form_widget(form.typeContrat, {'attr': {
-                                    'class': 'form-select',
-                                    'required': 'required'
+                                    'class': 'form-select' ~ (form.typeContrat.vars.errors|length > 0 ? ' is-invalid' : '')
                                 }}) }}
+                                {{ form_errors(form.typeContrat, {'attr': {'class': 'invalid-feedback'}}) }}
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
                                 {{ form_label(form.localisation, 'Localisation', {'label_attr': {'class': 'form-label'}}) }}
                                 {{ form_widget(form.localisation, {'attr': {
-                                    'class': 'form-control',
-                                    'required': 'required'
+                                    'class': 'form-control' ~ (form.localisation.vars.errors|length > 0 ? ' is-invalid' : '')
                                 }}) }}
+                                {{ form_errors(form.localisation, {'attr': {'class': 'invalid-feedback'}}) }}
                             </div>
                         </div>
                     </div>
 
+                    <!-- Date Expiration + Nombre de postes -->
                     <div class="row g-2">
-                        <div class="col-md-6"><div class="mb-3">
+                        <div class="col-md-6">
+                            <div class="mb-3">
                                 {{ form_label(form.dateExpiration, 'Date expiration', {'label_attr': {'class': 'form-label'}}) }}
                                 <div class="input-group">
                                     {{ form_widget(form.dateExpiration, {
-                                    'attr': {
-                                    'class': 'form-control flatpickr',
-                                    'placeholder': 'Sélectionnez une date et heure',
-                                    'data-date-format': 'Y-m-d H:i'
+                                        'attr': {
+                                            'class': 'form-control flatpickr' ~ (form.dateExpiration.vars.errors|length > 0 ? ' is-invalid' : ''),
+                                            'placeholder': 'Sélectionnez une date et heure',
+                                            'data-date-format': 'Y-m-d H:i'
                                         }
                                     }) }}
                                     <span class="input-group-text"><i class="mdi mdi-calendar"></i></span>
                                 </div>
-                                {{ form_errors(form.dateExpiration) }}
+                                {{ form_errors(form.dateExpiration, {'attr': {'class': 'invalid-feedback'}}) }}
                             </div>
-
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
                                 {{ form_label(form.nbPostes, 'Nombre de postes', {'label_attr': {'class': 'form-label'}}) }}
                                 {{ form_widget(form.nbPostes, {'attr': {
-                                    'class': 'form-control',
-                                    'required': 'required',
-                                    'data-parsley-type': 'digits'
+                                    'class': 'form-control' ~ (form.nbPostes.vars.errors|length > 0 ? ' is-invalid' : ''),
+                                    'data-parsley-type': 'digits',
+                                    'data-parsley-type-message': 'Veuillez entrer un nombre entier'
                                 }}) }}
+                                {{ form_errors(form.nbPostes, {'attr': {'class': 'invalid-feedback'}}) }}
                             </div>
                         </div>
                     </div>
@@ -104,35 +121,38 @@
                     <div class="mb-3">
                         {{ form_label(form.modeTravail, 'Mode de travail', {'label_attr': {'class': 'form-label'}}) }}
                         {{ form_widget(form.modeTravail, {'attr': {
-                            'class': 'form-select',
-                            'required': 'required'
+                            'class': 'form-select' ~ (form.modeTravail.vars.errors|length > 0 ? ' is-invalid' : '')
                         }}) }}
+                        {{ form_errors(form.modeTravail, {'attr': {'class': 'invalid-feedback'}}) }}
                     </div>
 
-                    <!-- Date de création cachée si auto-générée -->
+                    <!-- Date de création cachée -->
                     {% if form.dateCreation is defined %}
                         <div class="mb-3 d-none">
                             {{ form_label(form.dateCreation) }}
                             {{ form_widget(form.dateCreation) }}
+                            {{ form_errors(form.dateCreation, {'attr': {'class': 'invalid-feedback'}}) }}
                         </div>
                     {% endif %}
 
-                    <!-- Statut (avec valeur par défaut) -->
+                    <!-- Statut -->
                     <div class="mb-3">
                         {{ form_label(form.statut, 'Statut', {'label_attr': {'class': 'form-label'}}) }}
                         {{ form_widget(form.statut, {
-                            'attr': {'class': 'form-select'},
-                            'value': 'en_attente'
+                            'attr': {
+                                'class': 'form-select' ~ (form.statut.vars.errors|length > 0 ? ' is-invalid' : '')
+                            }
                         }) }}
+                        {{ form_errors(form.statut, {'attr': {'class': 'invalid-feedback'}}) }}
                     </div>
 
                     <!-- Niveau d'expérience -->
                     <div class="mb-3">
                         {{ form_label(form.niveauExperience, 'Expérience requise', {'label_attr': {'class': 'form-label'}}) }}
                         {{ form_widget(form.niveauExperience, {'attr': {
-                            'class': 'form-select',
-                            'required': 'required'
+                            'class': 'form-select' ~ (form.niveauExperience.vars.errors|length > 0 ? ' is-invalid' : '')
                         }}) }}
+                        {{ form_errors(form.niveauExperience, {'attr': {'class': 'invalid-feedback'}}) }}
                     </div>
 
                     <!-- Description -->
@@ -141,11 +161,12 @@
                         <div id="quill-editor" style="height: 300px;"></div>
                         {{ form_widget(form.description, {
                             'attr': {
-                                'class': 'd-none',
-                                'required': 'required',
-                                'data-parsley-minlength': '10'
+                                'class': 'd-none' ~ (form.description.vars.errors|length > 0 ? ' is-invalid' : ''),
+                                'data-parsley-minlength': '10',
+                                'data-parsley-minlength-message': 'La description doit contenir au moins 10 caractères'
                             }
                         }) }}
+                        {{ form_errors(form.description, {'attr': {'class': 'invalid-feedback'}}) }}
                     </div>
 
                     <!-- Boutons de soumission -->
@@ -172,7 +193,6 @@
 <script src="{{ asset('/libs/quill/quill.min.js') }}"></script>
 <!-- Flatpickr -->
 <script src="{{ asset('/libs/flatpickr/flatpickr.min.js') }}"></script>
-
 <script src="{{ asset('/libs/flatpickr/l10n/fr.js') }}"></script>
 <!-- Parsley -->
 <script src="{{ asset('/libs/parsleyjs/parsley.min.js') }}"></script>
@@ -182,6 +202,7 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
+        // Initialisation de Quill
         const quill = new Quill('#quill-editor', {
             theme: 'snow',
             modules: {
@@ -202,24 +223,38 @@
         quill.root.innerHTML = descriptionField.value || '';
         quill.on('text-change', () => descriptionField.value = quill.root.innerHTML);
 
-
-        // Dans la section JavaScript du template
+        // Initialisation de Flatpickr
         flatpickr('.flatpickr', {
             enableTime: true,
             time_24hr: true,
-            dateFormat: "Y-m-d H:i", // Doit matcher data-date-format
+            dateFormat: "Y-m-d H:i",
             altInput: true,
-            altFormat: "d/m/Y H:i", // Format affiché
+            altFormat: "d/m/Y H:i",
             locale: "fr",
             minDate: "today",
-            allowInput: true // Permet la saisie manuelle
+            allowInput: true
         });
 
         // Configuration Parsley
         window.Parsley.setLocale('fr');
+        window.Parsley.options.requiredMessage = ''; // Désactiver le message générique "Ce champ est requis"
         window.Parsley.addValidator('experience', {
             validateString: value => /^[0-9]+\s*ans?$/.test(value),
             messages: { fr: 'Format attendu : "X ans"' }
+        });
+
+        // Gestion des erreurs Parsley
+        window.Parsley.on('field:error', function() {
+            this.$element.addClass('is-invalid');
+            // Ne pas définir de message ici, laisser Symfony gérer via form_errors
+        });
+
+        window.Parsley.on('field:success', function() {
+            this.$element.removeClass('is-invalid');
+            const errorContainer = this.$element.next('.invalid-feedback');
+            if (errorContainer.length) {
+                errorContainer.text('');
+            }
         });
 
         // Gestion de la soumission du formulaire avec SweetAlert
@@ -249,8 +284,7 @@
                 cancelButtonText: 'Annuler'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Simulation de soumission réussie (remplacez par votre logique AJAX si nécessaire)
-                    form.submit(); // Soumet réellement le formulaire
+                    form.submit();
                     Swal.fire({
                         icon: 'success',
                         title: 'Succès',

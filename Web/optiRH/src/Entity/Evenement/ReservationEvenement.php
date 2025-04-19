@@ -39,7 +39,7 @@ class ReservationEvenement
     #[Assert\NotBlank(message: "L'email ne peut pas être vide.")]
     #[Assert\Email(message: "L'email '{{ value }}' n'est pas valide.")]
     #[Assert\Regex(
-        pattern: "/^[a-zA-Z0-9._%+-]+@esprit\.tn$/",
+        pattern: "/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/",
         message: "L'email doit être au format exemple@esprit.tn"
     )]
     #[Assert\Length(
@@ -47,8 +47,6 @@ class ReservationEvenement
         maxMessage: "L'email ne doit pas dépasser 13 caractères."
     )]
     private ?string $email = null;
-
-
 
 
     #[ORM\Column(length: 255)]

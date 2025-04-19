@@ -216,43 +216,36 @@ private function groupMissionsByStatus(array $missions): array
         ]);
     }
     #[Route('/{id}', name: 'delete', methods: ['POST'])]
-    #[IsGranted('ROLE_ADMIN')]
-
     public function delete(
-        Request $request, 
-        Project $project, 
-        EntityManagerInterface $entityManager,
-        MissionRepository $missionRepository
+        Request $request,
+        Project $project,
+        EntityManagerInterface $entityManager
     ): Response {
         $user = $this->getUser();
-        
-        // Vérification des autorisations
+
         if ($project->getCreatedBy() !== $user) {
             return $this->handleErrorResponse($request, 'Accès non autorisé', 403);
         }
-    
-        // Vérification du token CSRF
+
         $submittedToken = $request->request->get('_token');
         if (!$this->isCsrfTokenValid('delete'.$project->getId(), $submittedToken)) {
             return $this->handleErrorResponse($request, 'Token CSRF invalide', 400);
         }
-    
+
         try {
-            // 1. D'abord supprimer toutes les missions (même celles "Done")
+            // 1. Supprimer toutes les missions associées
             $missions = $project->getMissions();
             foreach ($missions as $mission) {
                 $entityManager->remove($mission);
             }
-            
-            // Flush intermédiaire pour s'assurer que les missions sont supprimées
             $entityManager->flush();
-    
-            // 2. Ensuite supprimer le projet
+
+            // 2. Supprimer le projet
             $entityManager->remove($project);
             $entityManager->flush();
-    
+
             return $this->handleSuccessResponse($request, 'Projet et toutes ses missions supprimés avec succès');
-    
+
         } catch (\Exception $e) {
             return $this->handleErrorResponse(
                 $request,
@@ -261,7 +254,7 @@ private function groupMissionsByStatus(array $missions): array
             );
         }
     }
-    // Méthodes helper pour simplifier les réponses
+
     private function handleSuccessResponse(Request $request, string $message): Response
     {
         if ($request->isXmlHttpRequest()) {
@@ -271,11 +264,11 @@ private function groupMissionsByStatus(array $missions): array
                 'redirect' => $this->generateUrl('gs-projet_project_index')
             ]);
         }
-    
+
         $this->addFlash('success', $message);
         return $this->redirectToRoute('gs-projet_project_index');
     }
-    
+
     private function handleErrorResponse(Request $request, string $message, int $statusCode): Response
     {
         if ($request->isXmlHttpRequest()) {
@@ -284,40 +277,38 @@ private function groupMissionsByStatus(array $missions): array
                 'message' => $message
             ], $statusCode);
         }
-    
+
         $this->addFlash('error', $message);
         return $this->redirectToRoute('gs-projet_project_show', ['id' => $request->attributes->get('id')]);
     }
+
     private function groupMissions(Project $project): array
     {
         $groupedMissions = [];
-    
         foreach ($project->getMissions() as $mission) {
             $status = $mission->getStatus();
-    
+
             if (!isset($groupedMissions[$status])) {
                 $groupedMissions[$status] = [];
             }
-    
+
             $groupedMissions[$status][] = $mission;
         }
-    
         return $groupedMissions;
     }
+
     #[Route('/{id}/check-missions', name: 'check_missions', methods: ['GET'])]
-    #[IsGranted('ROLE_ADMIN')]
+    public function checkMissions(Project $project, MissionRepository $missionRepository): JsonResponse
+    {
+        $activeMissionsCount = $missionRepository->count([
+            'project' => $project,
+            'status' => ['In Progress', 'To Do']
+        ]);
 
-public function checkMissions(Project $project, MissionRepository $missionRepository): JsonResponse
-{
-    $activeMissionsCount = $missionRepository->count([
-        'project' => $project,
-        'status' => ['In Progress', 'To Do' , 'Done'] // Missions actives
-    ]);
-
-    return $this->json([
-        'hasActiveMissions' => $activeMissionsCount > 0,
-        'activeMissionsCount' => $activeMissionsCount
-    ]);
-}
+        return $this->json([
+            'hasActiveMissions' => $activeMissionsCount > 0,
+            'activeMissionsCount' => $activeMissionsCount
+        ]);
+    }
 
 }

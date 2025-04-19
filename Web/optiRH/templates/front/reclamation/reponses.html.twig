@@ -1,6 +1,9 @@
 {# templates/front/reclamation/reponses.html.twig #}
 {% extends 'partials/layout-vertical.html.twig' %}
 
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', { page_title: 'details de la réclamations' }) }}
+{% endblock %}
 
 {% block title %}Réponses à la Réclamation #{{ reclamation.id }}{% endblock %}
 

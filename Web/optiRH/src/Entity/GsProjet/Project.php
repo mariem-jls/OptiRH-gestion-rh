@@ -74,7 +74,12 @@ class Project
     private Collection $missions;
     
 
-
+    #[ORM\PrePersist]
+    #[ORM\PreUpdate]
+    public function onMissionChange(): void
+    {
+        $this->updateStatus();
+    }
     public function __construct()
     {
         $this->createdAt = new \DateTime();
@@ -199,43 +204,65 @@ class Project
     public function updateStatus(): void
 {
     $missions = $this->getMissions();
+    
+    // Si pas de missions, statut par défaut
+    if ($missions->isEmpty()) {
+        $this->status = self::STATUS_ACTIVE;
+        return;
+    }
+
+    $now = new \DateTime();
     $hasToDo = false;
     $hasInProgress = false;
-    $hasDelayed = false;
     $allDone = true;
-    $now = new \DateTime();
+    $hasDelayed = false;
 
     foreach ($missions as $mission) {
         $status = $mission->getStatus();
-        
+        $dueDate = $mission->getDateTerminer();
+
         if ($status === 'To Do') {
             $hasToDo = true;
             $allDone = false;
+            
+            // Vérifier si la mission To Do est en retard
+            if ($dueDate && $dueDate < $now) {
+                $hasDelayed = true;
+            }
         } elseif ($status === 'In Progress') {
             $hasInProgress = true;
             $allDone = false;
-        } elseif ($status !== 'Done') {
-            $allDone = false;
-
-            // Vérifie si la mission est en retard
-            if ($mission->getDateTerminer() < $now) {
+            
+            // Vérifier si la mission In Progress est en retard
+            if ($dueDate && $dueDate < $now) {
                 $hasDelayed = true;
             }
+        } elseif ($status !== 'Done') {
+            $allDone = false;
         }
     }
 
-    if ($hasToDo) {
-        $this->status = self::STATUS_ACTIVE;
-    } elseif ($hasInProgress) {
-        $this->status = self::STATUS_INACTIVE;
-    } elseif ($allDone && count($missions) > 0) {
-        $this->status = self::STATUS_COMPLETED;
-    } elseif ($hasDelayed) {
+    // Priorité 1: S'il y a des missions en retard
+    if ($hasDelayed) {
         $this->status = self::STATUS_DELAYED;
-    } else {
-        $this->status = self::STATUS_ACTIVE; // par défaut
+    } 
+    // Priorité 2: S'il y a des missions To Do
+    elseif ($hasToDo) {
+        $this->status = self::STATUS_ACTIVE;
+    } 
+    // Priorité 3: S'il y a des missions In Progress
+    elseif ($hasInProgress) {
+        $this->status = self::STATUS_INACTIVE; // "En Cour"
+    } 
+    // Priorité 4: Si toutes les missions sont Done
+    elseif ($allDone) {
+        $this->status = self::STATUS_COMPLETED;
+    } 
+    // Cas par défaut
+    else {
+        $this->status = self::STATUS_ACTIVE;
     }
 }
-
+   
     
 }

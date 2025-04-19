@@ -8,75 +8,30 @@
 
 {% block body %}
     <div class="row align-items-center mb-4">
-        <div class="col-md-6">
+        <div class="col-md-12">
             <a href="{{ path('gs-projet_project_new') }}" class="btn btn-purple rounded-pill w-md waves-effect waves-light">
                 <i class="mdi mdi-plus me-2"></i>
                 Créer un projet
             </a>
-        </div>
-        <div class="col-md-6 mt-3 mt-md-0">
-            {{ form_start(filterForm, { 
-                attr: {
-                    'id': 'filter-form', 
-                    'data-search-url': path('gs-projet_project_index'), 
-                    'class': 'filter-form'
-                } 
-            }) }}
-                <div class="d-flex flex-wrap gap-2 justify-content-md-end">
-                    <div class="flex-grow-1" style="min-width: 200px;">
-                        <div class="input-group input-group-sm">
-                            <span class="input-group-text bg-transparent"><i class="mdi mdi-magnify"></i></span>
-                            {{ form_widget(filterForm.search, {
-                                'attr': { 
-                                    'class': 'form-control form-control-sm border-start-0',
-                                    'placeholder': 'Rechercher un projet...',
-                                    'aria-label': 'Rechercher'
-                                }
-                            }) }}
-                        </div>
-                    </div>
-                    
-                    <div class="d-flex gap-2">
-                        <div class="input-group input-group-sm" style="width: 150px;">
-                            {{ form_widget(filterForm.status, {
-                                'attr': { 
-                                    'class': 'form-select form-select-sm',
-                                    'aria-label': 'Statut'
-                                }
-                            }) }}
-                        </div>
-                        
-                        <div class="input-group input-group-sm" style="width: 150px;">
-                            {{ form_widget(filterForm.sort, {
-                                'attr': { 
-                                    'class': 'form-select form-select-sm',
-                                    'aria-label': 'Trier par'
-                                }
-                            }) }}
-                        </div>
-                    </div>
-                </div>
-            {{ form_end(filterForm, {'render_rest': false}) }}
         </div>
     </div>
 
     <div class="table-responsive" id="project-table-container">
         <table class="table table-hover align-middle">
             <thead class="table-light">
-                <tr>
-                    <th>Nom du projet</th>
-                    <th>Description</th>
-                    <th>Statut</th>
-                    <th>Date de création</th>
-                    <th>Actions</th>
-                </tr>
+            <tr>
+                <th>Nom du projet</th>
+                <th>Description</th>
+                <th>Statut</th>
+                <th>Date de création</th>
+                <th>Actions</th>
+            </tr>
             </thead>
             <tbody id="project-list-body">
-                {% include 'gs-projet/project/_list.html.twig' with { projects: projects } %}
+            {% include 'gs-projet/project/_list.html.twig' with { projects: projects } %}
             </tbody>
         </table>
 
-        {# Pagination #}
         {% if projects is not empty and projects.getPageCount() > 1 %}
             <div id="project-pagination" class="mt-3">
                 {{ knp_pagination_render(projects, '@KnpPaginator/Pagination/twitter_bootstrap_v4_pagination.html.twig') }}
@@ -87,209 +42,80 @@
 
 {% block javascript %}
 {{ parent() }}
-<!-- SweetAlert2 JS -->
 <script src="{{ asset('/libs/sweetalert2/sweetalert2.all.min.js') }}"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const DEBOUNCE_DELAY = 300;
-    const TABLE_BODY_ID = 'project-list-body';
-    const PAGINATION_ID = 'project-pagination';
-
-    // Fonctions utilitaires
-    const debounce = (fn, delay) => {
-        let timer;
-        return (...args) => {
-            clearTimeout(timer);
-            timer = setTimeout(() => fn(...args), delay);
-        };
-    };
-
-    const safeUpdateElement = (elementId, content) => {
-        const element = document.getElementById(elementId);
-        if (element) element.innerHTML = content;
-    };
-
-    const showLoader = () => {
-        safeUpdateElement(TABLE_BODY_ID, `
-            <tr>
-                <td colspan="5" class="text-center py-4">
-                    <div class="spinner-border text-primary"></div>
-                    <p class="mt-2 text-muted">Chargement des résultats...</p>
-                </td>
-            </tr>
-        `);
-    };
-
-    // Gestion des suppressions avec vérification des missions
     const initDeleteHandlers = () => {
-        document.querySelectorAll('.delete-project').forEach(button => {
-            button.addEventListener('click', async (e) => {
+        document.querySelectorAll('.delete-project-form').forEach(form => {
+            form.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const form = button.closest('form');
-                const { id: projectId, name: projectName } = button.dataset;
+
+                const projectName = form.dataset.projectName;
+                const confirmMessage = form.dataset.confirm;
+
+                const { isConfirmed } = await Swal.fire({
+                    title: 'Confirmer la suppression',
+                    html: confirmMessage,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Oui, supprimer',
+                    cancelButtonText: 'Annuler'
+                });
+
+                if (!isConfirmed) return;
+
+                const button = form.querySelector('button[type="submit"]');
+                const originalHtml = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Suppression...';
+                button.disabled = true;
 
                 try {
-                    // Vérifier d'abord s'il y a des missions actives
-                    const checkResponse = await fetch(`/gs-projet/project/${projectId}/check-missions`, {
-                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                    });
-                    
-                    if (!checkResponse.ok) throw new Error('Erreur de vérification des missions');
-                    
-                    const checkData = await checkResponse.json();
-                    
-                    if (checkData.hasActiveMissions) {
-                        await Swal.fire({
-                            icon: 'error',
-                            title: 'Impossible de supprimer',
-                            html: `Ce projet contient des missions actives.<br><br>
-                                   <b>${checkData.activeMissionsCount}</b> mission(s) en cours ou à faire.`,
-                            confirmButtonText: 'OK'
-                        });
-                        return;
-                    }
-
-                    // Confirmation de suppression
-                    const { isConfirmed } = await Swal.fire({
-                        title: 'Confirmer la suppression',
-                        html: `Êtes-vous sûr de vouloir supprimer <b>${projectName}</b> ?`,
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#dc3545',
-                        cancelButtonColor: '#6c757d',
-                        confirmButtonText: 'Oui, supprimer',
-                        cancelButtonText: 'Annuler'
-                    });
-
-                    if (!isConfirmed) return;
-
-                    // Suppression en cours
-                    Swal.fire({
-                        title: 'Suppression en cours...',
-                        html: `
-                            <div class="text-center">
-                                <div class="spinner-border text-danger"></div>
-                                <p class="mt-2 text-muted">Suppression de "${projectName}"</p>
-                            </div>
-                        `,
-                        allowOutsideClick: false,
-                        showConfirmButton: false
-                    });
-
-                    // Envoi de la requête de suppression
                     const response = await fetch(form.action, {
                         method: 'POST',
                         body: new FormData(form),
-                        headers: { 
+                        headers: {
                             'X-Requested-With': 'XMLHttpRequest',
                             'Accept': 'application/json'
                         }
                     });
 
                     const data = await response.json();
-                    
+
                     if (!response.ok) {
                         throw new Error(data.message || 'Erreur lors de la suppression');
                     }
-                    
-                    // Succès
+
                     Swal.fire({
                         icon: 'success',
                         title: 'Succès !',
                         text: data.message,
                         showConfirmButton: false,
                         timer: 1500
-                    }).then(() => window.location.reload());
+                    }).then(() => {
+                        const row = form.closest('tr');
+                        row.style.transition = 'opacity 0.5s ease';
+                        row.style.opacity = '0';
+                        setTimeout(() => row.remove(), 500);
+                    });
 
                 } catch (error) {
-                    console.error('Erreur:', error);
                     Swal.fire({
                         icon: 'error',
                         title: 'Échec de la suppression',
-                        html: `
-                            <div class="text-start">
-                                <p class="mb-2">${error.message}</p>
-                                ${error.status ? `<small class="text-muted">Code: ${error.status}</small>` : ''}
-                            </div>
-                        `,
+                        text: error.message,
                         confirmButtonText: 'OK'
                     });
+                    button.innerHTML = originalHtml;
+                    button.disabled = false;
                 }
             });
         });
     };
 
-    // Gestion du filtrage
-    const handleFilterUpdate = debounce(async () => {
-        try {
-            showLoader();
-            
-            const form = document.getElementById('filter-form');
-            const formData = new FormData(form);
-            const params = new URLSearchParams(formData);
-            params.append('ajax', 1);
-
-            const response = await fetch(`${form.dataset.searchUrl}?${params}`, {
-                headers: { 
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'text/html'
-                }
-            });
-
-            if (!response.ok) throw new Error(`Erreur ${response.status}: ${response.statusText}`);
-            
-            const html = await response.text();
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            
-            // Mise à jour du tableau
-            safeUpdateElement(TABLE_BODY_ID, doc.getElementById(TABLE_BODY_ID)?.innerHTML || '');
-
-            // Mise à jour de la pagination
-            const newPagination = doc.getElementById(PAGINATION_ID);
-            const currentPagination = document.getElementById(PAGINATION_ID);
-            
-            if (newPagination) {
-                currentPagination 
-                    ? currentPagination.innerHTML = newPagination.innerHTML
-                    : document.getElementById('project-table-container').appendChild(newPagination);
-            } else if (currentPagination) {
-                currentPagination.remove();
-            }
-
-            initDeleteHandlers();
-
-        } catch (error) {
-            console.error('Erreur:', error);
-            safeUpdateElement(TABLE_BODY_ID, `
-                <tr>
-                    <td colspan="5" class="text-center text-danger py-4">
-                        ${error.message}
-                    </td>
-                </tr>
-            `);
-        }
-    }, DEBOUNCE_DELAY);
-
-    const initFilterHandler = () => {
-        const form = document.getElementById('filter-form');
-        if (!form) return;
-
-        form.querySelectorAll('input, select').forEach(element => {
-            element.addEventListener('input', handleFilterUpdate);
-            element.addEventListener('change', handleFilterUpdate);
-        });
-    };
-
-    // Initialisation
-    const init = () => {
-        initDeleteHandlers();
-        initFilterHandler();
-    };
-
-    init();
-})
-
+    initDeleteHandlers();
+});
 </script>
 {% endblock %}

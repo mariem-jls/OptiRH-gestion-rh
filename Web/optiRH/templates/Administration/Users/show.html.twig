@@ -1,0 +1,68 @@
+{% extends 'partials/layout-vertical.html.twig' %}
+
+{% block title %}Détails Utilisateur
+{% endblock %}
+
+{% block topbar %}
+{{ include('partials/topbar.html.twig', { page_title: 'Détails de l\'Utilisateur' }) }}
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+	<a href="{{ path('admin_users') }}" class="btn btn-light mb-3">
+		<i class="fas fa-arrow-left me-1"></i> Retour à la liste
+	</a>
+
+	<div class="card shadow-sm border-0">
+		<div class="card-body">
+			<div class="d-flex align-items-center mb-4">
+				<img src="https://ui-avatars.com/api/?name={{ user.nom|default(user.email)|url_encode }}" alt="Avatar" class="rounded-circle me-3" width="70" height="70">
+				<div>
+					<h4 class="mb-0">{{ user.nom }}</h4>
+					<small class="text-muted">{{ user.email }}</small>
+				</div>
+			</div>
+
+			<hr>
+
+			<div class="row mb-3">
+				<div class="col-md-6">
+					<strong>Adresse :</strong> {{ user.address ?? 'Non fournie' }}
+				</div>
+				<div class="col-md-6">
+					<strong>Vérifié :</strong>
+					{% if user.isVerified %}
+						<span class="text-success"><i class="fas fa-check-circle me-1"></i>Oui</span>
+					{% else %}
+						<span class="text-danger"><i class="fas fa-times-circle me-1"></i>Non</span>
+					{% endif %}
+				</div>
+			</div>
+
+
+<div class="mb-3">
+	<strong>Rôles :</strong>
+	{% if user.roles is not empty %}
+		{% for role in user.roles %}
+			<span class="badge bg-primary me-1">{{ role|role_label }}</span>
+		{% endfor %}
+	{% else %}
+		<em>Aucun rôle assigné</em>
+	{% endif %}
+</div>
+
+			<div class="mt-4">
+				<a href="{{ path('admin_users_edit', { id: user.id }) }}" class="btn btn-outline-primary">
+					<i class="fas fa-edit me-1"></i> Modifier
+				</a>
+				<form method="post" action="{{ path('admin_users_delete', { id: user.id }) }}" class="d-inline-block" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?');">
+					<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
+					<button class="btn btn-outline-danger" type="submit">
+						<i class="fas fa-trash-alt me-1"></i> Supprimer
+					</button>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
