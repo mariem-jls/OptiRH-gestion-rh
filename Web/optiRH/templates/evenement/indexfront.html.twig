@@ -14,13 +14,26 @@
   
 {% endblock %}
 {% block body %}
-{% for label, messages in app.flashes %}
-    {% for message in messages %}
-        <div class="alert alert-{{ label }}">
-            {{ message }}
-        </div>
-    {% endfor %}
+{% for message in app.flashes('deja_reserve') %}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
 {% endfor %}
+{% for message in app.flashes('complet') %}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+{% endfor %}
+{% for message in app.flashes('date_passee') %}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+{% endfor %}
+
+
 
 <div class="container-fluid px-4">
     <!-- Section des événements (visible par défaut) -->
@@ -139,6 +152,15 @@
                                     Non spécifié
                                 {% endif %}
                             </span>
+                            <span class="d-block text-muted">
+                                <i class="mdi mdi-account-multiple me-1"></i>
+                                {% if evenement.nbrPersonnes > 0 %}
+                                    {{ evenement.nbrPersonnes }} place(s) disponible(s)
+                                {% else %}
+                                    <span class="text-danger fw-bold">COMPLET</span>
+                                {% endif %}
+                            </span>
+                            
                         </div>
                         
                         <!-- type -->
@@ -195,6 +217,7 @@
     <div class="modal fade" id="eventModal{{ evenement.id }}" tabindex="-1" role="dialog" aria-labelledby="eventModalLabel{{ evenement.id }}" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
             <div class="modal-content border-0 overflow-hidden">
+                
                 <!-- En-tête avec image de fond -->
                 <div class="modal-header position-relative p-0" style="height: 250px;">
                     {% if evenement.image %}
@@ -202,6 +225,8 @@
                     {% else %}
                     <div class="w-100 h-100" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
                     {% endif %}
+                  
+
                     
                     <div class="position-absolute w-100 h-100 d-flex flex-column justify-content-between p-4 overlay-dark">
                         <div class="d-flex justify-content-between align-items-start">
@@ -262,6 +287,15 @@
                                     <div>
                                         <h6 class="mb-0">Lieu</h6>
                                         <p class="mb-0 text-muted">{{ evenement.lieu }}</p>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center mb-4">
+                                    <div class="icon-circle bg-light-info mr-3">
+                                        <i class="mdi mdi-account-multiple text-info"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">Places disponibles</h6>
+                                        <p class="mb-0 text-muted">{{ evenement.nbrPersonnes }} place(s)</p>
                                     </div>
                                 </div>
                             </div>
