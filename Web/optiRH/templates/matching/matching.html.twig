@@ -1,0 +1,33 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Résultats de Matching pour {{ offre.poste }}{% endblock %}
+
+{% block body %}
+    <h1>Résultats de Matching pour {{ offre.poste }}</h1>
+
+    {% if matchingResults is empty %}
+        <div class="alert alert-warning">
+            Aucun résultat de matching trouvé. Vérifiez que des demandes avec des CV valides sont associées à cette offre.
+        </div>
+    {% else %}
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Candidat</th>
+                <th>Email</th>
+                <th>Score de Matching</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for result in matchingResults %}
+                <tr>
+                    <td>{{ result.demande.nomComplet|default('Non spécifié') }}</td>
+                    <td>{{ result.demande.email|default('Non spécifié') }}</td>
+                    <td>{{ result.matchingScore ? (result.matchingScore|round(2) ~ '%') : 'Non calculé' }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+{% endblock %}

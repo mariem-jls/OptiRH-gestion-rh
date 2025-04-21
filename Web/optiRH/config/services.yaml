@@ -36,3 +36,25 @@ services:
     App\Service\SentimentAnalysisService:
         arguments:
             $apiKey: '%huggingface_api_key%'
+
+    App\Service\EmbeddingService:
+        arguments:
+            $huggingFaceApiKey: '%huggingface_api_key%'
+            $httpClient: '@http_client'
+            $logger: '@monolog.logger'
+
+    App\Controller\MatchingController:
+        arguments:
+            $logger: '@monolog.logger'
+
+    App\Service\MatchingService:
+        arguments:
+            $pdfParserService: '@App\Service\PdfParserService'
+            $embeddingService: '@App\Service\EmbeddingService'
+            $entityManager: '@doctrine.orm.entity_manager'
+            $logger: '@monolog.logger'
+
+    App\Controller\AnalyseCvController:
+        arguments:
+            $logger: '@monolog.logger'
+            $entityManager: '@doctrine.orm.entity_manager'
