@@ -23,6 +23,7 @@ class EvenementType extends AbstractType
             ->add('titre')
             ->add('lieu')
             ->add('description')
+            ->add('nbr_personnes')
             ->add('prix')
             ->add('date_debut', DateType::class, [
                 'widget' => 'single_text',

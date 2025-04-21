@@ -2,10 +2,6 @@
 
 // src/Service/SentimentAnalysisService.php
 
-// src/Service/SentimentAnalysisService.php
-
-namespace App\Service;
-// src/Service/SentimentAnalysisService.php
 
 namespace App\Service;
 

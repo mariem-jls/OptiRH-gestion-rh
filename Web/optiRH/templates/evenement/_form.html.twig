@@ -51,6 +51,15 @@
                     {{ form_errors(form.heure) }}
                 </div>
             </div>
+             <!-- Nombre de personnes -->
+            <div class="mb-3 input-with-icon">
+                <i class="fas fa-users input-icon"></i>
+                {{ form_label(form.nbr_personnes, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.nbr_personnes, {'attr': {'class': 'form-control form-control-sm'}}) }}
+                <div class="text-danger">
+                    {{ form_errors(form.nbr_personnes) }}
+                </div>
+            </div>
         </div>
 
         <!-- Colonne droite -->
@@ -111,10 +120,11 @@
                     {{ form_errors(form.prix) }}
                 </div>
             </div>
+           
+
 
             <!-- Coordonnées -->
-            <div class="row g-2">
-                <div class="col-md-6 mb-3 geo-input-group input-with-icon">
+                <div class=" mb-3 geo-input-group input-with-icon">
                     <i class="fas fa-globe-americas input-icon"></i>
                     {{ form_label(form.latitude, null, {'label_attr': {'class': 'form-label'}}) }}
                     {{ form_widget(form.latitude, {'attr': {'class': 'form-control form-control-sm'}}) }}
@@ -122,7 +132,8 @@
                         {{ form_errors(form.latitude) }}
                     </div>
                 </div>
-                <div class="col-md-6 mb-3 geo-input-group input-with-icon">
+                
+                <div class="mb-3 geo-input-group input-with-icon">
                     <i class="fas fa-globe-americas input-icon"></i>
                     {{ form_label(form.longitude, null, {'label_attr': {'class': 'form-label'}}) }}
                     {{ form_widget(form.longitude, {'attr': {'class': 'form-control form-control-sm'}}) }}
@@ -130,7 +141,6 @@
                         {{ form_errors(form.longitude) }}
                     </div>
                 </div>
-            </div>
         </div>
 
         <!-- Description -->
