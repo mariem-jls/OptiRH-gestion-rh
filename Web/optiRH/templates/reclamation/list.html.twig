@@ -8,35 +8,16 @@
 
 {% block stylesheets %}
     <style>
-        .status-select {
-            width: 150px;
-            border-radius: 4px;
-            padding: 5px;
-        }
+        .status-select { width: 150px; border-radius: 4px; padding: 5px; }
         .status-pending { background-color: #fff3cd; }
         .status-in-progress { background-color: #d1ecf1; }
         .status-resolved { background-color: #d4edda; }
 
-        /* Nouveau CSS pour les indicateurs de sentiment */
-        .sentiment-indicator {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin-right: 5px;
-        }
-        .sentiment-positive {
-            background-color: #28a745;
-        }
-        .sentiment-neutral {
-            background-color: #ffc107;
-        }
-        .sentiment-negative {
-            background-color: #dc3545;
-        }
-        .sentiment-unknown {
-            background-color: #6c757d;
-        }
+        .sentiment-indicator { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
+        .sentiment-positive { background-color: #28a745; }
+        .sentiment-neutral { background-color: #ffc107; }
+        .sentiment-negative { background-color: #dc3545; }
+        .sentiment-unknown { background-color: #6c757d; }
     </style>
 {% endblock %}
 
@@ -48,6 +29,7 @@
                     <table class="table table-bordered">
                         <thead>
                             <tr>
+                                <th>QR Code</th>
                                 <th>Type</th>
                                 <th>Description</th>
                                 <th>Utilisateur</th>
@@ -60,6 +42,11 @@
                         <tbody>
                             {% for reclamation in reclamations %}
                                 <tr>
+                                    <td>
+                                        <img src="{{ path('admin_reclamation_qr_code_mini', { id: reclamation.id }) }}"
+                                             alt="QR Code"
+                                             style="width: 50px; height: 50px;">
+                                    </td>
                                     <td>{{ reclamation.type }}</td>
                                     <td>{{ reclamation.description|slice(0, 50) }}{% if reclamation.description|length > 50 %}...{% endif %}</td>
                                     <td>{{ reclamation.utilisateur.nom }}</td>
@@ -68,26 +55,15 @@
                                         <form method="post" action="{{ path('admin_update_status', {'id': reclamation.id}) }}">
                                             <select name="status" class="status-select status-{{ reclamation.status|lower|replace({' ': '-'}) }}"
                                                     onchange="this.form.submit()">
-                                                <option value="En attente" {% if reclamation.status == 'En attente' %}selected{% endif %}>
-                                                    En attente
-                                                </option>
-                                                <option value="En cours" {% if reclamation.status == 'En cours' %}selected{% endif %}>
-                                                    En cours
-                                                </option>
-                                                <option value="Résolue" {% if reclamation.status == 'Résolue' %}selected{% endif %}>
-                                                    Résolue
-                                                </option>
+                                                <option value="En attente" {% if reclamation.status == 'En attente' %}selected{% endif %}>En attente</option>
+                                                <option value="En cours" {% if reclamation.status == 'En cours' %}selected{% endif %}>En cours</option>
+                                                <option value="Résolue" {% if reclamation.status == 'Résolue' %}selected{% endif %}>Résolue</option>
                                             </select>
                                         </form>
                                     </td>
                                     <td>
                                         {% if reclamation.sentimentLabel %}
-                                            {% set sentiment_class = reclamation.sentimentLabel == 'positive' 
-                                                ? 'sentiment-positive' 
-                                                : (reclamation.sentimentLabel == 'negative' 
-                                                    ? 'sentiment-negative' 
-                                                    : 'sentiment-neutral') 
-                                            %}
+                                            {% set sentiment_class = reclamation.sentimentLabel == 'positive' ? 'sentiment-positive' : (reclamation.sentimentLabel == 'negative' ? 'sentiment-negative' : 'sentiment-neutral') %}
                                             <span class="sentiment-indicator {{ sentiment_class }}"></span>
                                             <span class="{{ reclamation.sentimentScore < 0.3 ? 'text-danger fw-bold' : '' }}">
                                                 {{ reclamation.sentimentLabel|trans }} ({{ reclamation.sentimentScore|number_format(2) }})
