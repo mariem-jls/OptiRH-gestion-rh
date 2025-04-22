@@ -111,6 +111,11 @@ class Evenement
 
     private Collection $ReservationEvenement;
 
+    #[ORM\Column(nullable: true)]
+    #[Assert\NotBlank(message: 'Le nombre de personnes est requis.')]
+    #[Assert\Positive(message: 'Le nombre de personnes doit être un entier positif.')]
+    private ?int $nbr_personnes = null;
+
     public function __construct()
     {
         $this->ReservationEvenement = new ArrayCollection();
@@ -225,7 +230,7 @@ class Evenement
         return $this->longitude;
     }
 
-    public function setLongitude(float $longitude): static
+    public function setLongitude(?float $longitude): static
     {
         $this->longitude = $longitude;
 
@@ -237,7 +242,7 @@ class Evenement
         return $this->latitude;
     }
 
-    public function setLatitude(float $latitude): static
+    public function setLatitude(?float $latitude): static
     {
         $this->latitude = $latitude;
 
@@ -261,7 +266,7 @@ class Evenement
         return $this->type;
     }
 
-    public function setType(string $type): static
+    public function setType(?string $type): static
     {
         $this->type = $type;
 
@@ -273,7 +278,7 @@ class Evenement
         return $this->modalite;
     }
 
-    public function setModalite(string $modalite): static
+    public function setModalite(?string $modalite): static
     {
         $this->modalite = $modalite;
 
@@ -324,4 +329,31 @@ public function updateStatus(): void
 
         return $this;
     }
+
+    public function getNbrPersonnes(): ?int
+    {
+        return $this->nbr_personnes;
+    }
+
+    public function setNbrPersonnes(?int $nbr_personnes): static
+    {
+        $this->nbr_personnes = $nbr_personnes;
+
+        return $this;
+    }
+
+    public function decrementNbrPersonnes(): self
+    {
+        if ($this->nbr_personnes > 0) {
+            $this->nbr_personnes--;
+        }
+        return $this;
+    } 
+    public function incrementNbrPersonnes(): self
+    {
+        
+            $this->nbr_personnes++;
+        
+        return $this;
+    } 
 }

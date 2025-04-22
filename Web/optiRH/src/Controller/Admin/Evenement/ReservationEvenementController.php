@@ -50,13 +50,28 @@ class ReservationEvenementController extends AbstractController
         if ($existingReservation) {
             $this->addFlash('deja_reserve', 'Vous avez déjà réservé pour cet événement.');
             return $this->redirectToRoute('app_evenement_indexfront');
+            
         }
-    
+        
+        
+        if ($evenement->getNbrPersonnes() == 0) {
+            $this->addFlash('complet', 'Désolé, cet événement est complet.');
+            return $this->redirectToRoute('app_evenement_indexfront');
+        }
+            // Vérifier si la date de début est déjà passée
+        $now = new \DateTime();
+        if ($evenement->getDateDebut() <= $now) {
+            $this->addFlash('date_passee', 'Désolé, l\'événement a déjà commencé.');
+            return $this->redirectToRoute('app_evenement_indexfront');
+        }
+
+
         $form = $this->createForm(ReservationEvenementType::class, $reservation);
         
         $form->handleRequest($request);
     
         if ($form->isSubmitted() && $form->isValid()) {
+            $evenement->decrementNbrPersonnes();
             $entityManager->persist($reservation); 
             $entityManager->flush(); 
     
@@ -111,6 +126,9 @@ class ReservationEvenementController extends AbstractController
             $hoursLeft = ($diff->days * 24) + $diff->h;
             
             if ($dateEvenement > $now && $hoursLeft > 24) {
+                $evenement = $reservationEvenement->getEvenement();
+                $evenement->incrementNbrPersonnes(); // Appel de la méthode pour augmenter le nombre de places disponibles
+
                 $reservationEvenementRepository->remove($reservationEvenement, true);
                 $this->addFlash('réservation', 'La réservation a été supprimée avec succès.');
             } else {

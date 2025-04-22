@@ -181,4 +181,33 @@ class Reclamation
                 ->addViolation();
         }
     }
+    #[ORM\Column(type: "float", nullable: true)]
+    private ?float $sentimentScore = null;
+
+    #[ORM\Column(type: "string", length: 20, nullable: true)]
+    private ?string $sentimentLabel = null;
+
+    // ... getters et setters ...
+
+    public function getSentimentScore(): ?float
+    {
+        return $this->sentimentScore;
+    }
+
+    public function setSentimentScore(?float $sentimentScore): self
+    {
+        $this->sentimentScore = $sentimentScore;
+        return $this;
+    }
+
+    public function getSentimentLabel(): ?string
+    {
+        return $this->sentimentLabel;
+    }
+
+    public function setSentimentLabel(?string $sentimentLabel): self
+    {
+        $this->sentimentLabel = $sentimentLabel;
+        return $this;
+    }
 }
