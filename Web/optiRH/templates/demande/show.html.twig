@@ -14,7 +14,11 @@
             border: 1px solid #dee2e6;
             border-radius: 0.25rem;
             background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=') center/contain no-repeat;
-        }    </style>
+        }
+        .hover-underline:hover {
+            text-decoration: underline !important;
+        }
+    </style>
 {% endblock %}
 
 {% block topbar %}
@@ -35,6 +39,14 @@
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h4 class="header-title">
                             <i class="mdi mdi-file-document-outline me-2"></i>
+                            {% if demande.offre %}
+                                Poste :
+                                <a href="{{ path('app_offre_show', {'id': demande.offre.id}) }}"
+                                   class="text-primary text-decoration-none hover-underline"
+                                   title="Voir les détails de l'offre">
+                                    {{ demande.offre.poste }}
+                                </a> -
+                            {% endif %}
                             Dossier de {{ demande.nomComplet }}
                         </h4>
                         <div class="d-flex gap-2">

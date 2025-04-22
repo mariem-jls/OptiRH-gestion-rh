@@ -34,15 +34,16 @@
                     <table class="table table-hover table-centered table-nowrap mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th>Titre</th>
-                                <th>Image</th>
-                                <th>Lieu</th>
-                                <th>Dates</th>
-                                <th>Heure</th>
-                                <th>Type</th>
-                                <th>Modalité</th>
-                                <th>Status</th>
-                                <th>Actions</th>
+                                <th><i class="fas fa-heading me-2"></i>Titre</th>
+                                <th><i class="fas fa-image me-2"></i>Image</th>
+                                <th><i class="fas fa-map-marker-alt me-2"></i>Lieu</th>
+                                <th><i class="far fa-calendar-alt me-2"></i>Dates</th>
+                                <th><i class="far fa-clock me-2"></i>Heure</th>
+                                <th><i class="fas fa-users me-2"></i>nbr personnes</th>
+                                <th><i class="fas fa-tags me-2"></i>Type</th>
+                                <th><i class="fas fa-laptop-house me-2"></i>Modalité</th>
+                                <th><i class="fas fa-info-circle me-2"></i>Status</th>
+                                <th><i class="fas fa-cogs me-2"></i>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -58,6 +59,7 @@
                                     <small class="text-muted">au{{ evenement.dateFin ? evenement.dateFin|date('Y-m-d') : '' }}  </small>
                                 </td>
                                 <td>{{ evenement.heure ? evenement.heure|date('H:i') : '' }}</td>
+                                <td>{{ evenement.nbrpersonnes}}</td>
                                 <td>{{ evenement.type }}</td>
                                 <td>
                                     {% if evenement.modalite == 'Présentiel' %}

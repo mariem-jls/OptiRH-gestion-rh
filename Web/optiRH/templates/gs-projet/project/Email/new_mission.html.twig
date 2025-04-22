@@ -1,0 +1,126 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta name="viewport" content="width=device-width"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>Nouvelle mission assignée - Optirh</title>
+    <style type="text/css">
+        /* Styles de base */
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #f6f6f6;
+            margin: 0;
+            padding: 0;
+            color: #333333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .content {
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        .header {
+            background-color: #4fc6e1;
+            padding: 25px;
+            text-align: center;
+            color: white;
+        }
+        .header img {
+            height: 40px;
+            margin-bottom: 10px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 600;
+        }
+        .body-content {
+            padding: 30px;
+        }
+        .mission-card {
+            background-color: #f8f9fa;
+            border-left: 4px solid #4fc6e1;
+            border-radius: 4px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .mission-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0 0 15px 0;
+            color: #2c3e50;
+        }
+        .mission-detail {
+            margin: 10px 0;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #6658dd;
+            color: white;
+            text-decoration: none;
+            padding: 12px 25px;
+            border-radius: 4px;
+            font-weight: 600;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #95a5a6;
+            font-size: 12px;
+        }
+        .highlight {
+            color: #4fc6e1;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="content">
+            <!-- En-tête -->
+            <div class="header">
+                <img src="public/images/logoGris_enhanced.png" alt="Logo Optirh"/>
+                <h1>Nouvelle mission assignée</h1>
+            </div>
+            
+            <!-- Corps du message -->
+            <div class="body-content">
+                <p>Bonjour <strong>{{ user.nom }}</strong>,</p>
+                
+                <p>Une nouvelle mission vous a été assignée :</p>
+                
+                <!-- Carte de mission -->
+                <div class="mission-card">
+                    <h2 class="mission-title">{{ mission.titre }}</h2>
+                    <p class="mission-detail"><strong>Projet :</strong> {{ mission.getProjectTitle() }}</p>
+                    <p class="mission-detail"><strong>Description :</strong> {{ mission.description|default('Aucune description') }}</p>
+                    <p class="mission-detail"><strong>Date d'échéance :</strong> {{ mission.dateTerminer ? mission.dateTerminer|date('d/m/Y') : 'Non définie' }}</p>
+                </div>
+                
+                <div style="text-align: center;">
+                    <a href="{{ url('app_login') }}" class="btn">
+                        Accéder à la mission
+                    </a>
+                </div>
+                
+                <p style="margin-top: 30px; border-top: 1px solid #eeeeee; padding-top: 20px;">
+                    Cordialement,<br>
+                    <strong>L'équipe Optirh</strong>
+                </p>
+            </div>
+        </div>
+        
+        <!-- Pied de page -->
+        <div class="footer">
+            © {{ "now"|date("Y") }} Optirh. Tous droits réservés.
+        </div>
+    </div>
+</body>
+</html>

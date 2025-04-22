@@ -16,80 +16,46 @@ class ProjectRepository extends ServiceEntityRepository
     ) {
         parent::__construct($registry, Project::class);
     }
-    public function findByIndependentFilters(
-        ?string $search,
-        ?string $status,
-        ?string $sort,
-        int $page = 1,
-        int $limit = 10
-    ) {
-        $qb = $this->createQueryBuilder('p');
-    
-        // Filtre de recherche indépendant
-        if ($search) {
-            $qb->andWhere('p.nom LIKE :search OR p.description LIKE :search')
-               ->setParameter('search', '%' . $search . '%');
+    public function findByFilters(array $filters, int $page = 1)
+    {
+        $queryBuilder = $this->createQueryBuilder('p');
+        
+        // Filtre par recherche
+        if (!empty($filters['search'])) {
+            $queryBuilder
+                ->andWhere('p.nom LIKE :search OR p.description LIKE :search')
+                ->setParameter('search', '%'.$filters['search'].'%');
         }
-    
-        // Filtre de statut indépendant
-        if ($status) {
-            $qb->andWhere('p.status = :status')
-               ->setParameter('status', $status);
+        
+        // Filtre par statut
+        if (!empty($filters['status'])) {
+            $queryBuilder
+                ->andWhere('p.status = :status')
+                ->setParameter('status', $filters['status']);
         }
-    
-        // Tri indépendant
-        $sortField = match($sort) {
-            'nom' => 'p.nom',
-            'status' => 'p.status',
-            default => 'p.createdAt'
-        };
-        $qb->orderBy($sortField, 'DESC');
-    
+        
+        // Tri
+        switch ($filters['sort'] ?? 'date_desc') {
+            case 'name_asc':
+                $queryBuilder->orderBy('p.nom', 'ASC');
+                break;
+            case 'name_desc':
+                $queryBuilder->orderBy('p.nom', 'DESC');
+                break;
+            case 'date_asc':
+                $queryBuilder->orderBy('p.createdAt', 'ASC');
+                break;
+            case 'date_desc':
+            default:
+                $queryBuilder->orderBy('p.createdAt', 'DESC');
+        }
+        
         return $this->paginator->paginate(
-            $qb->getQuery(),
+            $queryBuilder->getQuery(),
             $page,
-            $limit
+            10
         );
     }
-   // Dans ProjectRepository.php
-   public function findByFilters(array $filters, int $page = 1, int $limit = 10)
-   {
-       $qb = $this->createQueryBuilder('p');
-       
-       // Filtre de recherche
-       if (!empty($filters['search'])) {
-           $qb->andWhere('p.nom LIKE :search OR p.description LIKE :search')
-              ->setParameter('search', '%'.$filters['search'].'%');
-       }
-   
-       // Filtre de statut
-       if (!empty($filters['status'])) {
-           $qb->andWhere('p.status = :status')
-              ->setParameter('status', $filters['status']);
-       }
-   
-       // Gestion du tri avec mapping sécurisé
-       $sortMapping = [
-           'nom' => 'p.nom',
-           'status' => 'p.status',
-           'createdAt' => 'p.createdAt'
-       ];
-       
-       $sortKey = $filters['sort'] ?? 'createdAt'; // Clé par défaut
-       $sortField = $sortMapping[$sortKey] ?? 'p.createdAt';
-       
-       $qb->orderBy($sortField, 'DESC');
-   
-       return $this->paginator->paginate(
-           $qb->getQuery(),
-           $page,
-           $limit,
-           [
-               'defaultSortFieldName' => $sortField,
-               'defaultSortDirection' => 'DESC'
-           ]
-       );
-   }
     public function findByName(string $name): array
     {
         return $this->createQueryBuilder('p')
@@ -98,8 +64,67 @@ class ProjectRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
-   
+    public function findWithFilters(?string $search, ?string $status, int $page = 1)
+    {
+        $queryBuilder = $this->createQueryBuilder('p');
+    
+        // Filtre par recherche
+        if (!empty(trim($search))) {
+            $queryBuilder
+                ->andWhere('p.nom LIKE :search OR p.description LIKE :search')
+                ->setParameter('search', '%' . trim($search) . '%');
+        }
+    
+        // Filtre par statut avec vérification des constantes
+        if ($status && in_array($status, [
+            Project::STATUS_ACTIVE,
+            Project::STATUS_INACTIVE,
+            Project::STATUS_COMPLETED,
+            Project::STATUS_DELAYED
+        ])) {
+            $queryBuilder
+                ->andWhere('p.status = :status')
+                ->setParameter('status', $status);
+        }
+    
+        // Tri et pagination
+        return $this->paginator->paginate(
+            $queryBuilder
+                ->orderBy('p.createdAt', 'DESC')
+                ->getQuery(),
+            $page,
+            10
+        );
+    }
+    public function filterProjects(?string $search, ?string $status, int $page = 1)
+{
+    $query = $this->createQueryBuilder('p');
 
+    // Filtre recherche
+    if (!empty($search)) {
+        $query->andWhere('p.nom LIKE :search OR p.description LIKE :search')
+             ->setParameter('search', '%'.$search.'%');
+    }
+
+    // Filtre statut avec les constantes
+    if (!empty($status) && in_array($status, [
+        Project::STATUS_ACTIVE,
+        Project::STATUS_INACTIVE, 
+        Project::STATUS_COMPLETED,
+        Project::STATUS_DELAYED
+    ])) {
+        $query->andWhere('p.status = :status')
+             ->setParameter('status', $status);
+    }
+
+    $query->orderBy('p.createdAt', 'DESC');
+
+    return $this->paginator->paginate(
+        $query->getQuery(),
+        $page,
+        10
+    );
+}
     public function findByCreator(User $user): array
     {
         return $this->createQueryBuilder('p')

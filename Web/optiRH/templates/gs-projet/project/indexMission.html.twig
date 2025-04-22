@@ -8,24 +8,101 @@
 
 {% block css %}
 <link href="{{ asset('libs/fullcalendar/main.min.css') }}" rel="stylesheet">
+<link href="{{ asset('libs/bootstrap-icons/font/bootstrap-icons.min.css') }}" rel="stylesheet">
 <style>
     #calendar {
         min-height: 600px;
         background: white;
         border-radius: 0.5rem;
-        box-shadow: 0 0.5rem 1rem rgba(67, 110, 238, 0.84);
+        box-shadow: 0 0.5rem 1rem rgba(67, 110, 238, 0.15);
     }
     .fc-event {
         cursor: pointer;
         transition: all 0.2s;
         border: none !important;
+        padding: 2px 5px;
+        margin: 1px;
     }
     .fc-daygrid-event-dot {
         display: none !important;
     }
     .mission-info-item label {
         font-weight: 500;
-        color:rgb(69, 123, 178);
+        color: rgb(69, 123, 178);
+    }
+    .filter-section {
+        margin-bottom: 20px;
+        background: white;
+        padding: 15px;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    .filter-group {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+    }
+    .filter-group-title {
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #495057;
+    }
+    .filter-btn {
+        border-radius: 20px;
+        padding: 5px 15px;
+        font-size: 0.85rem;
+        border: 1px solid #dee2e6;
+        transition: all 0.3s;
+    }
+    .filter-btn.active {
+        font-weight: bold;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .btn-status-all {
+        background-color: #3b7ddd;
+        color: white;
+    }
+    .btn-status-todo {
+        background-color: #dc3545;
+        color: white;
+    }
+    .btn-status-progress {
+        background-color: #ffc107;
+        color: #212529;
+    }
+    .btn-status-done {
+        background-color: #28a745;
+        color: white;
+    }
+    .btn-status-late {
+        background-color: #6f42c1;
+        color: white;
+    }
+    .late-indicator {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background-color: #dc3545;
+        color: white;
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+    }
+    .event-status-badge {
+        position: absolute;
+        bottom: 2px;
+        right: 2px;
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+        border-radius: 3px;
+        padding: 0 4px;
+        font-size: 0.65rem;
     }
 </style>
 {% endblock %}
@@ -34,7 +111,36 @@
 <div class="container-fluid py-4">
     <div class="row">
         <div class="col-12">
-            <div id="calendar"></div>
+            <div class="filter-section">
+                <div class="filter-group">
+                    <div class="filter-group-title">Statut :</div>
+                    <button class="btn btn-status-all filter-btn active" data-filter="status" data-value="all">
+                        <i class="bi bi-list-check me-1"></i> Tous
+                    </button>
+                    <button class="btn btn-status-todo filter-btn" data-filter="status" data-value="To Do">
+                        <i class="bi bi-x-circle me-1"></i> À faire
+                    </button>
+                    <button class="btn btn-status-progress filter-btn" data-filter="status" data-value="In Progress">
+                        <i class="bi bi-arrow-repeat me-1"></i> En cours
+                    </button>
+                    <button class="btn btn-status-done filter-btn" data-filter="status" data-value="Done">
+                        <i class="bi bi-check-circle me-1"></i> Terminé
+                    </button>
+                </div>
+                
+                <div class="filter-group">
+                    <div class="filter-group-title">Filtres spéciaux :</div>
+                    <button class="btn btn-status-late filter-btn" data-filter="late" data-value="true">
+                        <i class="bi bi-exclamation-triangle me-1"></i> En retard
+                    </button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-body p-0">
+                    <div id="calendar"></div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -52,7 +158,12 @@
                     <input type="hidden" id="missionId" name="id">
                     
                     <div class="mb-3">
-                        <label class="form-label">Titre</label>
+                        <label class="form-label">Projet</label>
+                        <div class="form-control-plaintext fw-bold" id="missionProject"></div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Titre de la mission</label>
                         <div class="form-control-plaintext fw-bold" id="missionTitle"></div>
                     </div>
 
@@ -61,13 +172,23 @@
                         <div class="border rounded p-2" id="missionDescription" style="min-height: 100px;"></div>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Échéance</label>
-                        <div class="form-control-plaintext" id="missionDeadline"></div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Date d'échéance</label>
+                                <div class="form-control-plaintext" id="missionDeadline"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Statut</label>
+                                <div class="form-control-plaintext" id="missionStatus"></div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Statut</label>
+                        <label class="form-label">Modifier le statut</label>
                         <select class="form-select" id="statusSelect" name="status">
                             <option value="To Do">À faire</option>
                             <option value="In Progress">En cours</option>
@@ -80,7 +201,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
                     <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-save me-2"></i>Enregistrer
+                        <i class="bi bi-save me-2"></i> Enregistrer
                     </button>
                 </div>
             </form>
@@ -100,61 +221,152 @@ document.addEventListener('DOMContentLoaded', function() {
     const calendarEl = document.getElementById('calendar');
     const modal = new bootstrap.Modal('#missionModal');
     let currentEvent = null;
+    let allEvents = {{ missions|json_encode|raw }};
+    let calendar;
 
-    const calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        locale: 'fr',
-        themeSystem: 'bootstrap5',
-        headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay'
-        },
-        events: {{ missions|json_encode|raw }},
-        eventColor: '#3b7ddd',
-        eventTimeFormat: {
-            hour: '2-digit',
-            minute: '2-digit',
-            meridiem: false
-        },
-        eventDidMount: function(info) {
-            const status = info.event.extendedProps.statut;
-            let color = '#6c757d';
+    // Fonction pour déterminer si une mission est en retard
+    function isMissionLate(event) {
+        if (event.statut === 'Done') return false;
+        const today = new Date();
+        const deadline = new Date(event.start);
+        return deadline < today;
+    }
+
+    // Initialisation du calendrier
+    function initCalendar(events) {
+        if (calendar) {
+            calendar.destroy();
+        }
+        
+        calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'fr',
+            themeSystem: 'bootstrap5',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            events: events,
+            eventTimeFormat: {
+                hour: '2-digit',
+                minute: '2-digit',
+                meridiem: false
+            },
+            eventDidMount: function(info) {
+                // Couleur selon le statut
+                const status = info.event.extendedProps.statut;
+                let color = '#6c757d';
+                
+                switch(status) {
+                    case 'Done': color = '#28a745'; break;
+                    case 'In Progress': color = '#ffc107'; break;
+                    case 'To Do': color = '#dc3545'; break;
+                }
+                
+                info.el.style.backgroundColor = color;
+                info.el.style.borderColor = color;
+                
+                // Badge de statut
+                const statusBadge = document.createElement('div');
+                statusBadge.className = 'event-status-badge';
+                statusBadge.textContent = status;
+                info.el.appendChild(statusBadge);
+
+                // Indicateur de retard
+                if (info.event.extendedProps.isLate) {
+                    const lateBadge = document.createElement('div');
+                    lateBadge.className = 'late-indicator';
+                    lateBadge.innerHTML = '<i class="bi bi-exclamation"></i>';
+                    info.el.appendChild(lateBadge);
+                }
+            },
+            eventClick: function(info) {
+                currentEvent = info.event;
+                const startDate = info.event.start;
+                const daysRemaining = Math.ceil((startDate - new Date()) / (1000 * 3600 * 24));
+
+                // Remplissage de la modal
+                document.getElementById('missionId').value = info.event.id;
+                document.getElementById('missionProject').textContent = info.event.extendedProps.projectTitle || 'Aucun projet associé';
+                document.getElementById('missionTitle').textContent = info.event.title;
+                document.getElementById('missionDescription').textContent = info.event.extendedProps.description || 'Aucune description';
+                document.getElementById('missionStatus').textContent = info.event.extendedProps.statut || 'Non spécifié';
+                document.getElementById('statusSelect').value = info.event.extendedProps.statut;
+                
+                // Formatage de la date d'échéance
+                const deadlineElement = document.getElementById('missionDeadline');
+                deadlineElement.innerHTML = `
+                    ${moment(startDate).format('dddd D MMMM YYYY')}<br>
+                    <span class="fw-bold ${daysRemaining < 0 ? 'text-danger' : 'text-success'}">
+                        ${Math.abs(daysRemaining)} jour${Math.abs(daysRemaining) > 1 ? 's' : ''} 
+                        ${daysRemaining >= 0 ? 'restant' : 'de retard'}
+                    </span>
+                `;
+
+                modal.show();
+            }
+        });
+
+        calendar.render();
+    }
+
+    // Filtrage des événements
+    function applyFilters() {
+        const activeStatusFilter = document.querySelector('[data-filter="status"].active')?.dataset.value || 'all';
+        const showLateOnly = document.querySelector('[data-filter="late"].active') !== null;
+
+        let filteredEvents = allEvents;
+
+        // Filtre par statut
+        if (activeStatusFilter !== 'all') {
+            filteredEvents = filteredEvents.filter(event => event.statut === activeStatusFilter);
+        }
+
+        // Filtre "En retard"
+        if (showLateOnly) {
+            filteredEvents = filteredEvents.filter(event => event.isLate);
+        }
+
+        // Réinitialisation du calendrier
+        initCalendar(filteredEvents);
+    }
+
+    // Gestion des clics sur les boutons de filtre
+    document.querySelectorAll('[data-filter]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const filterType = this.dataset.filter;
             
-            switch(status) {
-                case 'Done': color = '#28a745'; break;
-                case 'In Progress': color = '#ffc107'; break;
-                case 'To Do': color = '#dc3545'; break;
+            if (filterType === 'status') {
+                document.querySelectorAll('[data-filter="status"]').forEach(b => b.classList.remove('active'));
             }
             
-            info.el.style.backgroundColor = color;
-            info.el.style.borderColor = color;
-        },
-        eventClick: function(info) {
-            currentEvent = info.event;
-            const startDate = info.event.start;
-            const daysRemaining = Math.ceil((startDate - new Date()) / (1000 * 3600 * 24));
-
-            document.getElementById('missionId').value = info.event.id;
-            document.getElementById('missionTitle').textContent = info.event.title;
-            document.getElementById('missionDescription').textContent = info.event.extendedProps.description;
-            document.getElementById('statusSelect').value = info.event.extendedProps.statut;
+            this.classList.toggle('active');
+            applyFilters();
             
-            const deadlineElement = document.getElementById('missionDeadline');
-            deadlineElement.innerHTML = `
-                ${moment(startDate).format('dddd D MMMM YYYY')}<br>
-                <span class="fw-bold ${daysRemaining < 0 ? 'text-danger' : 'text-success'}">
-                    ${Math.abs(daysRemaining)} jour${Math.abs(daysRemaining) > 1 ? 's' : ''} 
-                    ${daysRemaining >= 0 ? 'restant' : 'de retard'}
-                </span>
-            `;
-
-            modal.show();
-        }
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 1500,
+                timerProgressBar: true,
+            });
+            
+            let message = 'Filtres appliqués';
+            if (filterType === 'status' && this.dataset.value === 'all') {
+                message = 'Toutes les missions affichées';
+            } else if (filterType === 'late' && this.classList.contains('active')) {
+                message = 'Missions en retard seulement';
+            }
+            
+            Toast.fire({
+                icon: 'success',
+                title: message
+            });
+        });
     });
 
-    calendar.render();
-
+    // Gestion du formulaire de mise à jour
     document.getElementById('statusForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         
@@ -177,19 +389,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (!response.ok) throw new Error(await response.text());
             
-            const data = await response.json();
-            
             Swal.fire({
                 icon: 'success',
                 title: 'Succès !',
-                text: 'Statut mis à jour. Avec Success...',
-                timer: 500,
+                text: 'Statut mis à jour avec succès',
+                timer: 1000,
                 showConfirmButton: false
             });
 
             setTimeout(() => {
                 window.location.reload();
-            }, 500);
+            }, 1000);
 
         } catch (error) {
             console.error('Error:', error);
@@ -200,6 +410,9 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
+
+    // Initialisation avec tous les événements
+    initCalendar(allEvents);
 });
 </script>
 {% endblock %}

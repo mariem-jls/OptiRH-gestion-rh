@@ -29,44 +29,42 @@
                             <i class="ri-{{ project.status|status_icon }} me-1"></i>
                             {{ project.status ?? 'En cours' }}
                         </span>
-                                        <a href="{{ path('gs-projet_project_project_pdf', {'id': project.id}) }}" 
-   class="btn btn-outline-dark btn-lg rounded-pill"
-   target="_blank"
-   title="Exporter PDF"
-   data-bs-toggle="tooltip">
-    <i class="ri-file-pdf-line"></i>
-</a>
+                        <a href="{{ path('gs-projet_project_project_pdf', {'id': project.id}) }}" 
+                           class="btn btn-outline-dark btn-lg rounded-pill"
+                           target="_blank"
+                           title="Exporter PDF"
+                           data-bs-toggle="tooltip">
+                            <i class="ri-file-pdf-line"></i>
+                        </a>
+                        </div>
                     </div>
-</div>
                     <div class="row g-4 mt-2">
                        <div class="row g-3">
-    <div class="col-6 col-md-3">
-        <div class="border-start border-3 border-primary p-3">
-            <h6 class="text-muted mb-1">Tâches</h6>
-            <h3 class="mb-0">{{ totalTasks }}</h3>
-        </div>
-    </div>
-    <div class="col-6 col-md-3">
-        <div class="border-start border-3 border-success p-3">
-            <h6 class="text-muted mb-1">Terminées</h6>
-            <h3 class="mb-0">{{ completedTasks }}</h3>
-        </div>
-    </div>
-    <div class="col-6 col-md-3">
-        <div class="border-start border-3 border-warning p-3">
-            <h6 class="text-muted mb-1">En retard</h6>
-            <h3 class="mb-0">{{ overdueTasks }}</h3>
-        </div>
-    </div>
-    <div class="col-6 col-md-3">
-        <div class="border-start border-3 border-info p-3">
-            <h6 class="text-muted mb-1">Membres</h6>
-            <h3 class="mb-0">{{ membersCount }}</h3>
-        </div>
-    </div>
-</div>
-
-                      
+                            <div class="col-6 col-md-3">
+                                <div class="border-start border-3 border-primary p-3">
+                                    <h6 class="text-muted mb-1">Tâches</h6>
+                                    <h3 class="mb-0">{{ totalTasks }}</h3>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="border-start border-3 border-success p-3">
+                                    <h6 class="text-muted mb-1">Terminées</h6>
+                                    <h3 class="mb-0">{{ completedTasks }}</h3>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="border-start border-3 border-danger p-3">
+                                    <h6 class="text-muted mb-1">En retard</h6>
+                                    <h3 class="mb-0 text-danger">{{ overdueTasks }}</h3>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="border-start border-3 border-info p-3">
+                                    <h6 class="text-muted mb-1">Membres</h6>
+                                    <h3 class="mb-0">{{ membersCount }}</h3>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -97,72 +95,115 @@
                         <h5 class="card-title mb-0">
                             <i class="ri-task-line me-2"></i>Missions
                         </h5>
-                    <a href="{{ path('gs-projet_project_mission_new', {'id': project.id}) }}" 
-   class="btn btn-primary btn-sm rounded-pill">
-    <i class="ri-add-line me-2"></i>Nouvelle mission
-</a>
+                        <a href="{{ path('gs-projet_project_mission_new', {'id': project.id}) }}" 
+                           class="btn btn-primary btn-sm rounded-pill">
+                            <i class="ri-add-line me-2"></i>Nouvelle mission
+                        </a>
                     </div>
 
-                   
-<div class="row row-cols-1 row-cols-md-3 g-4">
-    {% for status, missions in groupedMissions %}
-    <div class="col">
-        <div class="card border-0 bg-light">
-            <div class="card-body">
-                {# Correction du filtre status_icon et status_color #}
-                <h6 class="card-subtitle mb-3 text-{{ status|status_color }}">
-                    <i class="ri-{{ status|status_icon }} me-2"></i>{{ status }}
-                </h6>
-                <div class="kanban-list">
-                    {% for mission in missions %}
-                    <div class="card mb-3 shadow-sm-hover">
-                        <div class="card-body">
-                            <div class="d-flex align-items-start">
-                                <div class="form-check form-switch me-2">
-                                    <input class="form-check-input status-checkbox" 
-                                           type="checkbox"
-                                           data-mission-id="{{ mission.id }}"
-                                           {{ mission.status == 'Done' ? 'checked' : '' }}>
+                    <!-- Alertes missions en retard -->
+                    {% if overdueTasks > 0 %}
+                    <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <i class="ri-alarm-warning-line fs-3"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="alert-heading mb-1">Missions en retard !</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                                 </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="card-title mb-1">
-                                       <a href="{{ path('gs-projet_project_mission_show', {'id': mission.id}) }}" 
-   class="text-dark stretched-link">
-    {{ mission.titre }}
-</a>
-                                    </h6>
-                                    <div class="d-flex align-items-center mb-2">
-                                        {# Application du filtre status_color #}
-                                        <span class="badge bg-{{ mission.status|status_color }} me-2">
-                                            {{ mission.status }}
-                                        </span>
-                                        <small class="text-muted">
-                                            <i class="ri-calendar-line me-1"></i>
-                                            {{ mission.dateTerminer|date('d/m/Y') }}
-                                        </small>
-                                    </div>
-                                    {% if mission.assignedTo %}
-                                    <div class="d-flex align-items-center">
-                                
-                                        <small>{{ mission.assignedTo.nom }}</small>
-                                    </div>
+                                <p class="mb-0">
+                                    <strong>{{ overdueTasks }} mission(s)</strong> n'ont pas été terminées à temps.
+                                    {% if overdueTasks > 3 %}
+                                    <span class="d-block mt-1 text-danger">
+                                        <i class="ri-error-warning-line align-middle"></i> 
+                                        Attention : Certaines missions ont plus d'une semaine de retard !
+                                    </span>
                                     {% endif %}
-                                </div>
+                                </p>
+                              
                             </div>
                         </div>
                     </div>
-                    {% else %}
-                    <div class="text-center text-muted py-3">
-                        <i class="ri-emotion-sad-line h3"></i>
-                        <p class="mb-0">Aucune mission</p>
+                    {% endif %}
+                   
+                    <div class="row row-cols-1 row-cols-md-3 g-4">
+                        {% for status, missions in groupedMissions %}
+                        <div class="col">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle mb-3 text-{{ status|status_color }}">
+                                        <i class="ri-{{ status|status_icon }} me-2"></i>{{ status }}
+                                        {% if status == 'En retard' and missions|length > 0 %}
+                                            <span class="badge bg-danger">{{ missions|length }}</span>
+                                        {% endif %}
+                                    </h6>
+                                    <div class="kanban-list">
+                                        {% for mission in missions %}
+                                            {% set today = date() %}
+                                            {% set missionEndDate = mission.dateTerminer ? date(mission.dateTerminer) : null %}
+                                            {% set daysLate = (missionEndDate and missionEndDate < today and mission.status != 'Done') 
+                                                ? today.diff(missionEndDate).days 
+                                                : 0 %}
+
+                                            <div class="card mb-3 shadow-sm-hover {% if daysLate > 0 %}border-danger border-start border-3{% endif %}">
+                                                <div class="card-body">
+                                                    <div class="d-flex align-items-start">
+                                                        <div class="form-check form-switch me-2">
+                                                            <input class="form-check-input status-checkbox" 
+                                                                   type="checkbox"
+                                                                   data-mission-id="{{ mission.id }}"
+                                                                   {{ mission.status == 'Done' ? 'checked' : '' }}>
+                                                        </div>
+                                                        <div class="flex-grow-1">
+                                                            <h6 class="card-title mb-1">
+                                                                <a href="{{ path('gs-projet_project_mission_show', {'id': mission.id}) }}" 
+                                                                   class="text-dark stretched-link">
+                                                                    {{ mission.titre }}
+                                                                    {% if daysLate > 0 %}
+                                                                        <i class="ri-alarm-warning-line text-danger ms-1"></i>
+                                                                    {% endif %}
+                                                                </a>
+                                                            </h6>
+                                                            <div class="d-flex align-items-center mb-2">
+                                                                <span class="badge bg-{{ mission.status|status_color }} me-2">
+                                                                    {{ mission.status }}
+                                                                </span>
+                                                            
+                                                            </div>
+                                                            {% if mission.assignedTo %}
+                                                            <div class="d-flex align-items-center">
+                                                                <small>{{ mission.assignedTo.nom }}</small>
+                                                            </div>
+                                                            <div>
+                                                                <small class="{% if daysLate > 0 %}text-danger{% else %}text-muted{% endif %}">
+                                                                    <i class="ri-calendar-line me-1"></i>
+                                                                    {{ mission.dateTerminer|date('d/m/Y') }}
+                                                                    {% if daysLate > 0 %}
+                                                                        (Retard: {{ daysLate }} jour(s))
+                                                                    {% endif %}
+                                                                </small>
+                                                            </div>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% else %}
+                                            <div class="text-center text-muted py-3">
+                                                <i class="ri-emotion-sad-line h3"></i>
+                                                <p class="mb-0">Aucune mission</p>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-    </div>
-    {% endfor %}
-</div>
+
+                  
                 </div>
             </div>
         </div>
