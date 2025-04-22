@@ -74,7 +74,29 @@ public function findGroupedByStatus(Project $project): array
             ->getQuery()
             ->getResult();
     }
-
+    public function findOverdueMissions2(): array
+{
+    return $this->createQueryBuilder('m')
+        ->where('m.status != :done')
+        ->andWhere('m.dateTerminer < :now')
+        ->setParameter('done', 'Done')
+        ->setParameter('now', new \DateTime())
+        ->getQuery()
+        ->getResult();
+}
+    public function findOverdueMissions(Project $project): array
+    {
+        return $this->createQueryBuilder('m')
+            ->where('m.project = :project')
+            ->andWhere('m.status != :completedStatus')
+            ->andWhere('m.dateTerminer < :now')
+            ->setParameter('project', $project)
+            ->setParameter('completedStatus', 'Done')
+            ->setParameter('now', new \DateTime())
+            ->orderBy('m.dateTerminer', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
     public function findMissionsByUser(User $user): array
     {
         return $this->createQueryBuilder('m')
@@ -84,6 +106,21 @@ public function findGroupedByStatus(Project $project): array
             ->getQuery()
             ->getResult();
     }
+// src/Repository/GsProjet/MissionRepository.php
+
+public function findLateMissions(): array
+{
+    $qb = $this->createQueryBuilder('m');
+    
+    return $qb
+        ->where('m.status != :doneStatus')
+        ->andWhere('m.dateTerminer < :today')
+        ->setParameter('doneStatus', 'Done')
+        ->setParameter('today', new \DateTime())
+        ->getQuery()
+        ->getResult();
+}
+
 
     public function findUpcomingMissions(\DateTime $date): array
     {

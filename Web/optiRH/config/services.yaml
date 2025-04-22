@@ -9,6 +9,8 @@ parameters:
     turnstile_site_key: '%env(resolve:TURNSTILE_SITE_KEY)%'
     turnstile_secret_key: '%env(resolve:TURNSTILE_SECRET_KEY)%'
     weather_api_key: '%env(resolve:WEATHER_API_KEY)%'
+    app.mailer.sender_email: 'no-reply@votre-domaine.com'
+    app.mailer.sender_name: 'Gestion des Missions'
 
 services:
     # default configuration for services in *this* file
@@ -36,6 +38,9 @@ services:
       arguments:
           $weatherApiKey: '%weather_api_key%'
 
-
+    App\Service\MissionNotificationService:
+        arguments:
+            $senderEmail: '%app.mailer.sender_email%'
+            $senderName: '%app.mailer.sender_name%'
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
