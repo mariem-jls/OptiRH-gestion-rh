@@ -17,6 +17,7 @@ parameters:
     # Configuration de Dompdf
     pdf.temp_dir: '%kernel.project_dir%/var/temp'
     pdf.font_dir: '%kernel.project_dir%/var/fonts'
+    ai_api_key: '%env(AI_API_KEY)%'
 
 services:
     # Configuration par défaut pour les services

@@ -8,14 +8,77 @@
 
 {% block stylesheets %}
     <style>
-        .status-pending { background-color: #fff3cd; color: #856404; }
-        .status-in-progress { background-color: #d1ecf1; color: #0c5460; }
-        .status-resolved { background-color: #d4edda; color: #155724; }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-align: center;
+            min-width: 100px;
+        }
         
-        .sentiment-indicator { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
-        .sentiment-positive { background-color: #28a745; }
-        .sentiment-neutral { background-color: #ffc107; }
-        .sentiment-negative { background-color: #dc3545; }
+        .status-pending {
+            background-color: #FFF3CD;
+            color: #856404;
+            border: 1px solid #FFEEBA;
+        }
+        
+        .status-in-progress {
+            background-color: #D1ECF1;
+            color: #0C5460;
+            border: 1px solid #BEE5EB;
+        }
+        
+        .status-resolved {
+            background-color: #D4EDDA;
+            color: #155724;
+            border: 1px solid #C3E6CB;
+        }
+        
+        .sentiment-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .sentiment-positive {
+            background-color: #28a745;
+        }
+        
+        .sentiment-neutral {
+            background-color: #ffc107;
+        }
+        
+        .sentiment-negative {
+            background-color: #dc3545;
+        }
+        
+        .sentiment-unknown {
+            background-color: #6c757d;
+        }
+        
+        .priority-badge {
+            margin-left: 5px;
+            font-size: 0.75rem;
+        }
+        
+        .table-responsive {
+            overflow-x: auto;
+        }
+        
+        .action-buttons {
+            white-space: nowrap;
+        }
+        
+        .description-cell {
+            max-width: 250px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
     </style>
 {% endblock %}
 
@@ -40,10 +103,10 @@
         </div>
         
         <div class="card-body">
-            <form method="get" class="mb-3">
-                <div class="row">
+            <form method="get" class="mb-4">
+                <div class="row g-3">
                     <div class="col-md-5">
-                        <input type="text" name="search" class="form-control" placeholder="Rechercher..." value="{{ searchTerm }}">
+                        <input type="text" name="search" class="form-control" placeholder="Rechercher par description..." value="{{ searchTerm }}">
                     </div>
                     <div class="col-md-5">
                         <select name="type" class="form-control">
@@ -54,20 +117,22 @@
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <button type="submit" class="btn btn-primary w-100">Filtrer</button>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-filter"></i> Filtrer
+                        </button>
                     </div>
                 </div>
             </form>
             
             <div class="table-responsive">
-                <table class="table table-striped table-hover">
-                    <thead>
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
                         <tr>
-                         
                             <th>Type</th>
                             <th>Description</th>
                             <th>Date</th>
                             <th>Statut</th>
+                            <th>Analyse sentiment</th>
                             <th>QR Code</th>
                             <th>Actions</th>
                         </tr>
@@ -75,34 +140,71 @@
                     <tbody>
                         {% for reclamation in reclamations %}
                             <tr>
-                             
                                 <td>{{ reclamation.type }}</td>
-                                <td>{{ reclamation.description|slice(0, 50) }}{% if reclamation.description|length > 50 %}...{% endif %}</td>
+                                <td class="description-cell" title="{{ reclamation.description }}">
+                                    {{ reclamation.description|slice(0, 50) }}
+                                    {% if reclamation.description|length > 50 %}...{% endif %}
+                                </td>
                                 <td>{{ reclamation.date|date('d/m/Y H:i') }}</td>
                                 <td>
-                                    <span class="badge status-{{ reclamation.status|lower|replace({' ': '-'}) }}">
+                                    {% set statusClass = '' %}
+                                    {% if reclamation.status == 'En attente' %}
+                                        {% set statusClass = 'status-pending' %}
+                                    {% elseif reclamation.status == 'En cours' %}
+                                        {% set statusClass = 'status-in-progress' %}
+                                    {% elseif reclamation.status == 'Résolue' %}
+                                        {% set statusClass = 'status-resolved' %}
+                                    {% endif %}
+                                    
+                                    <span class="status-badge {{ statusClass }}">
                                         {{ reclamation.status }}
                                     </span>
                                 </td>
                                 <td>
-                                    <a href="{{ path('front_reclamation_qr_code', {'id': reclamation.id}) }}" target="_blank" class="btn btn-sm btn-info">
-                                        <i class="fas fa-qrcode"></i> Voir QR
-                                    </a>
+                                    {% if reclamation.sentimentLabel %}
+                                        {% set sentiment_class = reclamation.sentimentLabel == 'positive' ? 'sentiment-positive' : 
+                                            (reclamation.sentimentLabel == 'negative' ? 'sentiment-negative' : 'sentiment-neutral') %}
+                                        <span class="sentiment-indicator {{ sentiment_class }}"></span>
+                                        <span class="{{ reclamation.sentimentScore < 0.3 ? 'text-danger fw-bold' : '' }}">
+                                            {{ reclamation.sentimentLabel|capitalize }} ({{ reclamation.sentimentScore|number_format(2) }})
+                                        </span>
+                                        {% if reclamation.sentimentScore < 0.3 %}
+                                            <span class="badge bg-danger priority-badge">Priorité</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="sentiment-indicator sentiment-unknown"></span>
+                                        <span class="text-muted">Non analysé</span>
+                                    {% endif %}
                                 </td>
                                 <td>
-                                    <a href="{{ path('front_reclamation_reponses', {'id': reclamation.id}) }}" class="btn btn-sm btn-primary">
-                                        <i class="fas fa-comments"></i> Réponses
+                                    <a href="{{ path('front_reclamation_qr_code', {'id': reclamation.id}) }}" 
+                                       target="_blank" 
+                                       class="btn btn-info btn-sm"
+                                       title="Voir le QR Code">
+                                        <i class="fas fa-qrcode"></i>
+                                    </a>
+                                </td>
+                                <td class="action-buttons">
+                                    <a href="{{ path('front_reclamation_reponses', {'id': reclamation.id}) }}" 
+                                       class="btn btn-primary btn-sm"
+                                       title="Voir les réponses">
+                                        <i class="fas fa-comments"></i>
                                     </a>
                                     
                                     {% if reclamation.reponses.count == 0 %}
-                                        <a href="{{ path('front_edit_reclamation', {'id': reclamation.id}) }}" class="btn btn-sm btn-warning">
-                                            <i class="fas fa-edit"></i> Modifier
+                                        <a href="{{ path('front_edit_reclamation', {'id': reclamation.id}) }}" 
+                                           class="btn btn-warning btn-sm"
+                                           title="Modifier">
+                                            <i class="fas fa-edit"></i>
                                         </a>
                                         
-                                        <form method="post" action="{{ path('front_delete_reclamation', {'id': reclamation.id}) }}" style="display: inline;">
+                                        <form method="post" 
+                                              action="{{ path('front_delete_reclamation', {'id': reclamation.id}) }}" 
+                                              style="display: inline-block;"
+                                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette réclamation?')">
                                             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reclamation.id) }}">
-                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette réclamation?')">
-                                                <i class="fas fa-trash"></i> Supprimer
+                                            <button type="submit" class="btn btn-danger btn-sm" title="Supprimer">
+                                                <i class="fas fa-trash"></i>
                                             </button>
                                         </form>
                                     {% endif %}
@@ -110,7 +212,15 @@
                             </tr>
                         {% else %}
                             <tr>
-                                <td colspan="7" class="text-center">Aucune réclamation trouvée</td>
+                                <td colspan="7" class="text-center py-4">
+                                    <div class="text-muted">
+                                        <i class="fas fa-inbox fa-2x mb-2"></i><br>
+                                        Aucune réclamation trouvée
+                                    </div>
+                                    <a href="{{ path('front_add_reclamation') }}" class="btn btn-primary mt-2">
+                                        <i class="fas fa-plus"></i> Créer une réclamation
+                                    </a>
+                                </td>
                             </tr>
                         {% endfor %}
                     </tbody>

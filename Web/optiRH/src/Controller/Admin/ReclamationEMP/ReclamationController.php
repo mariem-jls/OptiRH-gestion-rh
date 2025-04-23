@@ -136,7 +136,7 @@ class ReclamationController extends AbstractController
             $em->persist($reclamation);
             $em->flush();
             
-            // Envoi du SMS de confirmation - version sans getTelephone()
+           /* // Envoi du SMS de confirmation - version sans getTelephone()
             $user = $this->getUser();
             $smsMessage = "Bonjour " . ", une nouvelle réclamation a été ajoutée.";
             
@@ -151,7 +151,7 @@ class ReclamationController extends AbstractController
                 $this->logger->error('Erreur lors de l\'envoi du SMS: ' . $e->getMessage());
                 $this->addFlash('success', 'Votre réclamation a été enregistrée avec succès.');
                 $this->addFlash('warning', "Le SMS de notification n'a pas pu être envoyé : " . $e->getMessage());
-            }
+            }*/
             
             return $this->redirectToRoute('front_reclamations');
         }
