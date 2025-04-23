@@ -33,6 +33,12 @@
     </div>
 {% endfor %}
 
+{% for message in app.flashes('sms') %}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+{% endfor %}
 
 
 <div class="container-fluid px-4">
@@ -105,6 +111,7 @@
             {% for evenement in evenements %}
             <div class="col-xl-3 col-lg-4 col-md-6" data-category="{{ evenement.modalite|lower }} {{ evenement.type|lower }}">
                 <div class="card event-card h-100 border-0 overflow-hidden ">
+                   
                     <!-- Badge de modalite -->
                     <div class="card-badge {{ evenement.modalite == 'En ligne' ? 'bg-success' : 'bg-info' }}">
                         {{ evenement.modalite }}
@@ -162,6 +169,7 @@
                             </span>
                             
                         </div>
+                         
                         
                         <!-- type -->
                         <div class="mb-3">
@@ -182,6 +190,9 @@
                             {% else %}
                                 <span class="badge bg-secondary text-white">{{ evenement.type }}</span>
                             {% endif %}
+                            <button class="favorite-btn" data-event-id="{{ evenement.id }}">
+                                <i class="mdi mdi-heart-outline"></i>
+                            </button>
                         </div>
                     </div>
 
@@ -226,7 +237,9 @@
                     <div class="w-100 h-100" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
                     {% endif %}
                   
-
+                     <button class="favorite-btn" data-event-id="{{ evenement.id }}">
+                        <i class="mdi mdi-heart-outline"></i>
+                    </button>
                     
                     <div class="position-absolute w-100 h-100 d-flex flex-column justify-content-between p-4 overlay-dark">
                         <div class="d-flex justify-content-between align-items-start">
@@ -387,6 +400,33 @@
             border-radius: 15px;
             overflow: hidden;
         }
+
+        .favorite-btn {
+        position: absolute;
+        top: 140px;
+        right: 15px;
+        background: rgba(255, 255, 255, 0.9);
+        border: none;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        z-index: 2;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .favorite-btn:hover {
+        background: white;
+        transform: scale(1.1);
+    }
+
+    
+
+    
     </style>
 </div>
 
@@ -395,6 +435,9 @@
 
 <script>
     $(document).ready(function() {
+       
+
+        
         // Animation au survol des cartes
         $('.event-card').hover(
             function() {

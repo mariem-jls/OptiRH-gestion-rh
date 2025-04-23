@@ -106,6 +106,10 @@
                                                 <small class="text-muted">Jusqu'a :{{ reservation.evenement.dateFin|date('d/m/Y') }}</small>
                                             </td>
                                             <td class="text-center action-icons">
+                                                <a href="{{ path('app_reservation_pdf', {'id': reservation.id}) }}" class="btn btn-sm btn-outline-danger action-btn me-1" title="Télécharger PDF">
+                                                    <i class="fas fa-file-pdf"></i>
+                                                </a>
+
                                                
                                                 <a href="{{ path('app_reservation_evenement_edit', {'id': reservation.id}) }}" class="btn btn-sm btn-outline-warning action-btn me-1" title="Modifier">
                                                     <i class="fas fa-edit"></i>

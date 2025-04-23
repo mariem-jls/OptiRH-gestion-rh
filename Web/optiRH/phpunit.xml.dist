@@ -20,6 +20,10 @@
         <!-- Gmail SHOULD NOT be used on production, use it in development only. -->
         <!-- MAILER_DSN=gmail://USERNAME:PASSWORD@default -->
         <!-- ###- symfony/google-mailer ### -->
+
+        <!-- ###+ symfony/twilio-notifier ### -->
+        <!-- TWILIO_DSN=twilio://SID:TOKEN@default?from=FROM -->
+        <!-- ###- symfony/twilio-notifier ### -->
     </php>
 
     <testsuites>

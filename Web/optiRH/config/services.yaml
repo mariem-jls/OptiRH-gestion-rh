@@ -67,6 +67,14 @@ services:
             $huggingFaceApiKey: '%huggingface_api_key%'
             $httpClient: '@http_client'
             $logger: '@monolog.logger'
+
+    App\Service\TwilioService:
+        arguments:
+            $accountSid: '%env(TWILIO_ACCOUNT_SID)%'
+            $authToken: '%env(TWILIO_AUTH_TOKEN)%'
+            $phoneNumber: '%env(TWILIO_PHONE_NUMBER)%'
+            $sslCaPath: '%env(SSL_CA_PATH)%'
+            
     
     App\Controller\MatchingController:
         arguments:

@@ -13,6 +13,7 @@
         "doctrine/doctrine-bundle": "2.14",
         "doctrine/doctrine-migrations-bundle": "^3.2",
         "doctrine/orm": "2.20",
+        "endroid/qr-code-bundle": "*",
         "dompdf/dompdf": "^3.1",
         "endroid/qr-code": "^6.0",
         "knplabs/knp-paginator-bundle": "^6.4",
@@ -47,6 +48,7 @@
         "symfony/string": "6.4.*",
         "symfony/translation": "6.4.*",
         "symfony/twig-bundle": "6.4.*",
+        "symfony/twilio-notifier": "6.4.*",
         "symfony/validator": "6.4.*",
         "symfony/web-link": "6.4.*",
         "symfony/yaml": "6.4.*",
@@ -62,7 +64,8 @@
         "allow-plugins": {
             "php-http/discovery": true,
             "symfony/flex": true,
-            "symfony/runtime": true
+            "symfony/runtime": true,
+            "endroid/installer": true
         },
         "sort-packages": true
     },
