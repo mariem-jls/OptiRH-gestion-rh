@@ -39,7 +39,6 @@
                         <i class="fe-log-out me-1"></i>
                         <span>Logout</span>
                     </a>
-
                 </div>
             </div>
 
@@ -85,18 +84,24 @@
                         <ul class="nav-second-level">
                             <li>
                                 <a href="{{ path('app_offre_index') }}">
-                                    <i class="mdi mdi-briefcase-outline me-2"></i>
+                                    <i class="mdi mdi-briefcase-plus me-2"></i>
                                     Offres</a>
                             </li>
                             <li>
                                 <a href="{{ path('app_demande_index') }}">
-                                    <i class="mdi mdi-clipboard-text-outline me-2"></i>
+                                    <i class="mdi mdi-account-details me-2"></i>
                                     Demandes</a>
+                            </li>
+                            <li>
+                                <a href="{{ path('admin_analyse_cv') }}">
+                                    <i class="mdi mdi-chart-line me-2"></i>
+                                    Analyse intelligente</a>
                             </li>
                         </ul>
                     </div>
                 </li>
                 {% endif %}
+
                 {% if is_granted('ROLE_ADMIN') %}
                     <li>
                         <a href="#sidebarEvents" data-bs-toggle="collapse" aria-expanded="false" aria-controls="sidebarEvents">
@@ -118,8 +123,6 @@
                                         Voir Événements
                                     </a>
                                 </li>
-                                
-                                
                             </ul>
                         </div>
                     </li>
@@ -133,6 +136,7 @@
                         </a>
                     </li>
                 {% endif %}
+
                  {% if is_granted('ROLE_ADMIN') %}
                     <li>
                         <a href="{{ path('admin_reclamations') }}">
@@ -141,6 +145,7 @@
                         </a>
                     </li>
                 {% endif %}
+
                 {% if is_granted('ROLE_EMPLOYEE') %}
                     <li>
                         <a href="{{ path('front_reclamations') }}">
@@ -149,57 +154,54 @@
                         </a>
                     </li>
                 {% endif %}
-<!-- Projets -->
 
-{% if is_granted('ROLE_EMPLOYEE') %}
-<li>
-<a href="{{ path('gs-projet_project_missions_index', { id: app.user.id }) }}" 
-   class="{{ app.request.attributes.get('_route') starts with 'gs-projet_project_missions_index' ? 'active' : '' }}">
-    <i class="mdi mdi-briefcase-variant-outline"></i>
-    <span>Mission</span>
-</a>
-</li>
-{% endif %}
-
-{% if is_granted('ROLE_ADMIN') %}
-
-<li>
-    <a href="{{ path('gs-projet_project_index') }}" 
-       class="{{ app.request.attributes.get('_route') starts with 'gs-projet_project_' ? 'active' : '' }}">
-        <i class="mdi mdi-briefcase-variant-outline"></i>
-        <span>Projets</span>
-    </a>
-</li>
-{% endif %}
-
- {% if is_granted('ROLE_ADMIN') %}
-    <li>
-        <a href="{{ path('app_transport_trajet_index') }}">
-        <i class="mdi mdi-bus-multiple"></i>
-        <span> Transport </span>
-    </a>
-    </li>
-{% endif %}
-
-
-{% if is_granted('ROLE_EMPLOYEE') %}
-         <li>
-                <a href="{{ path('app_transport_reservation_index') }}">
-                    <i class="mdi mdi-calendar-check"></i>
-                    <span>Réservations</span>
+                <!-- Projets -->
+                {% if is_granted('ROLE_EMPLOYEE') %}
+                <li>
+                <a href="{{ path('gs-projet_project_missions_index', { id: app.user.id }) }}"
+                   class="{{ app.request.attributes.get('_route') starts with 'gs-projet_project_missions_index' ? 'active' : '' }}">
+                    <i class="mdi mdi-briefcase-variant-outline"></i>
+                    <span>Mission</span>
                 </a>
-            </li>    
-            
- {% endif %}
-</ul>
- </div>
-        <!-- End Sidebar -->
+                </li>
+                {% endif %}
 
-        <div class="clearfix"></div>
-    </div>
-    <!-- Sidebar -left -->
-</div>
-<!-- Left Sidebar End -->
+                {% if is_granted('ROLE_ADMIN') %}
+                <li>
+                    <a href="{{ path('gs-projet_project_index') }}"
+                       class="{{ app.request.attributes.get('_route') starts with 'gs-projet_project_' ? 'active' : '' }}">
+                        <i class="mdi mdi-briefcase-variant-outline"></i>
+                        <span>Projets</span>
+                    </a>
+                </li>
+                {% endif %}
+
+                 {% if is_granted('ROLE_ADMIN') %}
+                    <li>
+                        <a href="{{ path('app_transport_trajet_index') }}">
+                        <i class="mdi mdi-bus-multiple"></i>
+                        <span> Transport </span>
+                        </a>
+                    </li>
+                {% endif %}
+
+
+                {% if is_granted('ROLE_EMPLOYEE') %}
+                         <li>
+                                <a href="{{ path('app_transport_reservation_index') }}">
+                                    <i class="mdi mdi-calendar-check"></i>
+                                    <span>Réservations</span>
+                                </a>
+                         </li>
+                 {% endif %}
+            </ul>
+        </div>
+                        <!-- End Sidebar -->
+                        <div class="clearfix"></div>
+                </div>
+                    <!-- Sidebar -left -->
+                </div>
+                <!-- Left Sidebar End -->
 
 
 <script>

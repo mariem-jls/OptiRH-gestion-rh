@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Controller\Admin\GsProjet;
-
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\GsProjet\Mission;
 use App\Entity\GsProjet\Project;
@@ -15,6 +14,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use App\Service\MissionNotificationService;
+
 
 #[Route('/gs-projet/project', name: 'gs-projet_project_')]
 #[IsGranted('ROLE_USER')]
@@ -22,37 +23,62 @@ class MissionController extends AbstractController
 {
     #[Route('/{id}/missions', name: 'missions_index', methods: ['GET'])]
     #[IsGranted('ROLE_USER')]
-    public function index(User $user, MissionRepository $missionRepository): Response
-    {
+  
+
+    public function index(
+        User $user, 
+        MissionRepository $missionRepository,
+        MissionNotificationService $notificationService
+    ): Response {
         // Vérification de l'existence de l'utilisateur
         if (!$user) {
             throw $this->createNotFoundException('Utilisateur non trouvé');
         }
     
-        // Récupération des missions avec jointure
+        // Récupération des missions avec jointures
         $missions = $missionRepository->createQueryBuilder('m')
             ->leftJoin('m.assignedTo', 'u')
+            ->leftJoin('m.project', 'p')
             ->addSelect('u')
+            ->addSelect('p')
             ->where('u.id = :userId')
             ->setParameter('userId', $user->getId())
+            ->orderBy('m.dateTerminer', 'ASC')
             ->getQuery()
             ->getResult();
     
-        // Formatage des données
-        $formattedMissions = [];
+        // Envoi des notifications
         foreach ($missions as $mission) {
-            $endDate = $mission->getDateTerminer();
-            if (!$endDate) continue;
+            // Vérifier si la mission est en retard
+            if ($this->isMissionLate($mission)) {
+                $notificationService->sendLateMissionNotification($mission);
+            }
+            
+            // Optionnel: Envoyer aussi une notification pour les nouvelles missions
+            // if ($mission->isNew()) { // Vous devriez implémenter cette méthode
+            //     $notificationService->sendNewMissionNotification($mission);
+            // }
+        }
     
-            $formattedMissions[] = [
+        // Formatage des données pour FullCalendar
+        $formattedMissions = array_map(function(Mission $mission) {
+            $endDate = $mission->getDateTerminer();
+            if (!$endDate) return null;
+    
+            return [
                 'id' => $mission->getId(),
                 'title' => $mission->getTitre() ?? 'Sans titre',
                 'start' => $endDate->format('Y-m-d'),
                 'allDay' => true,
                 'statut' => $mission->getStatus() ?? 'To Do',
-                'description' => $mission->getDescription() ?? 'Aucune description'
+                'description' => $mission->getDescription() ?? 'Aucune description',
+                'projectTitle' => $mission->getProject() ? $mission->getProject()->getNom() : 'Aucun projet',
+                'isLate' => $this->isMissionLate($mission),
             ];
-        }
+        }, $missions);
+    
+        // Filtrage des missions sans date
+        $formattedMissions = array_filter($formattedMissions);
     
         return $this->render('gs-projet/project/indexMission.html.twig', [
             'missions' => $formattedMissions,
@@ -60,6 +86,7 @@ class MissionController extends AbstractController
         ]);
     }
     
+  
     #[Route('/missions/{id}/update-status', name: 'missions_update_status', methods: ['POST'])]
     #[IsGranted('ROLE_USER')]
     public function updateStatus(Request $request, Mission $mission, EntityManagerInterface $em): Response
@@ -92,6 +119,20 @@ class MissionController extends AbstractController
             return $this->json(['error' => 'Erreur de base de données : ' . $e->getMessage()], 500);
         }
     }
+    private function isMissionLate(Mission $mission): bool
+    {
+        if ($mission->getStatus() === 'Done') return false;
+        
+        $today = new \DateTime();
+        $deadline = $mission->getDateTerminer();
+        
+        return $deadline && $deadline < $today;
+    }
+
+    /**
+     * Retourne la couleur associée à un statut
+     */
+   
     
     private function getStatusColor(string $status): string
     {
@@ -103,8 +144,12 @@ class MissionController extends AbstractController
     }
     #[Route('/{id}/missions/new', name: 'mission_new', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_USER')]
-    public function new(Request $request, Project $project, EntityManagerInterface $em): Response
-    {
+    public function new(
+        Request $request, 
+        Project $project, 
+        EntityManagerInterface $em,
+        MissionNotificationService $notificationService
+    ): Response {
         $mission = new Mission();
         $form = $this->createForm(MissionType::class, $mission);
         $form->handleRequest($request);
@@ -114,6 +159,9 @@ class MissionController extends AbstractController
                 $mission->setProject($project);
                 $em->persist($mission);
                 $em->flush();
+    
+                // Envoi de la notification
+                $notificationService->sendNewMissionNotification($mission);
     
                 if ($request->isXmlHttpRequest()) {
                     return $this->json([

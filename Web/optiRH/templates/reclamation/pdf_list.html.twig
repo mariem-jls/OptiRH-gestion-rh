@@ -1,0 +1,114 @@
+{# templates/reclamation/pdf_list.html.twig #}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif;
+            font-size: 10px;
+            line-height: 1.2;
+        }
+        .header { 
+            text-align: center; 
+            margin-bottom: 10px; 
+        }
+        .header h1 { 
+            color: #4e73df; 
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-bottom: 10px;
+            page-break-inside: auto; /* Autorise les sauts à l’intérieur de la table */
+        }
+        th, td { 
+            border: 1px solid #ddd; 
+            padding: 4px;
+            text-align: left;
+            font-size: 9px;
+        }
+        th { 
+            background-color: #4e73df; 
+            color: white; 
+            padding: 6px 4px;
+        }
+        tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
+        }
+        tr:nth-child(even) { 
+            background-color: #f2f2f2; 
+        }
+        .footer { 
+            text-align: center; 
+            font-size: 8px; 
+            color: #666; 
+            margin-top: 10px;
+        }
+        .sentiment-positive { color: #28a745; }
+        .sentiment-neutral { color: #ffc107; }
+        .sentiment-negative { color: #dc3545; }
+        .status-en-attente { color: #856404; background-color: #fff3cd; }
+        .status-en-cours { color: #0c5460; background-color: #d1ecf1; }
+        .status-résolue { color: #155724; background-color: #d4edda; }
+        .description-cell {
+            max-width: 150px;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{{ title }}</h1>
+        <p>Date d'extraction: {{ "now"|date("d/m/Y H:i") }}</p>
+        {% if user is defined %}
+            <p>Utilisateur: {{ user.nom }}</p>
+        {% endif %}
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th width="5%">ID</th>
+                <th width="10%">Type</th>
+                <th width="35%">Description</th>
+                <th width="10%">Utilisateur</th>
+                <th width="10%">Date</th>
+                <th width="10%">Statut</th>
+                <th width="20%">Sentiment</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reclamation in reclamations %}
+                <tr>
+                    <td>{{ reclamation.id }}</td>
+                    <td>{{ reclamation.type }}</td>
+                    <td class="description-cell">{{ reclamation.description }}</td>
+                    <td>{{ reclamation.utilisateur.nom }}</td>
+                    <td>{{ reclamation.date|date('d/m/Y H:i') }}</td>
+                    <td class="status-{{ reclamation.status|lower|replace({' ': '-'}) }}">
+                        {{ reclamation.status }}
+                    </td>
+                    <td>
+                        {% if reclamation.sentimentLabel %}
+                            <span class="sentiment-{{ reclamation.sentimentLabel }}">
+                                {{ reclamation.sentimentLabel|trans }} ({{ reclamation.sentimentScore|number_format(2) }})
+                            </span>
+                        {% else %}
+                            Non analysé
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <p>Rapport généré par le système de gestion de réclamations</p>
+    </div>
+</body>
+</html>

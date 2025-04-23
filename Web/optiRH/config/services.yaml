@@ -1,45 +1,71 @@
 # config/services.yaml
-
 parameters:
     uploads_directory: '%kernel.project_dir%/public/uploads'
     evenements_directory: '%kernel.project_dir%/public/uploads/evenements'
     turnstile_site_key: '%env(resolve:TURNSTILE_SITE_KEY)%'
     turnstile_secret_key: '%env(resolve:TURNSTILE_SECRET_KEY)%'
     weather_api_key: '%env(resolve:WEATHER_API_KEY)%'
+    
+    app.mailer.sender_email: 'no-reply@votre-domaine.com'
+    app.mailer.sender_name: 'Gestion des Missions'
+    
     huggingface_api_key: '%env(HUGGINGFACE_API_KEY)%'
-    admin_email: 'maram.rachdi11@gmail.com'
-
+    infobip_api_url: '%env(INFOBIP_API_URL)%'
+    infobip_api_key: '%env(INFOBIP_API_KEY)%'
+    infobip_sender: '%env(INFOBIP_SENDER)%'
+    
+    # Configuration de Dompdf
+    pdf.temp_dir: '%kernel.project_dir%/var/temp'
+    pdf.font_dir: '%kernel.project_dir%/var/fonts'
 
 services:
+    # Configuration par défaut pour les services
     _defaults:
         autowire: true
         autoconfigure: true
-
+    
     App\:
         resource: '../src/'
         exclude:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
-
+    
+    # Ajoutez ce service
+    App\Service\InfobipSmsSender:
+        arguments:
+            $client: '@http_client'
+            $apiUrl: '%env(INFOBIP_API_URL)%'
+            $apiKey: '%env(INFOBIP_API_KEY)%'
+            $sender: '%env(INFOBIP_SENDER)%'
+            $defaultPhoneNumber: '%env(DEFAULT_SMS_RECIPIENT)%'
+    
     App\Security\TurnstileValidator:
         arguments:
             $secret: '%turnstile_secret_key%'
-
+    
     App\EventListener\TurnstileLoginListener:
         tags:
             - { name: kernel.event_listener, event: kernel.request, priority: 20 }
-
+    
     App\Service\WeatherService:
         arguments:
             $weatherApiKey: '%weather_api_key%'
-
+    
+    App\Service\MissionNotificationService:
+        arguments:
+            $senderEmail: '%app.mailer.sender_email%'
+            $senderName: '%app.mailer.sender_name%'
+    
     App\Service\SentimentAnalysisService:
         arguments:
             $apiKey: '%huggingface_api_key%'
-    App\Service\EmailNotificationService:
+    
+    App\Service\EmbeddingService:
         arguments:
-            $adminEmail: '%admin_email%'
+            $huggingFaceApiKey: '%huggingface_api_key%'
+            $httpClient: '@http_client'
+            $logger: '@monolog.logger'
 
     App\Service\TwilioService:
         arguments:
@@ -47,3 +73,20 @@ services:
             $authToken: '%env(TWILIO_AUTH_TOKEN)%'
             $phoneNumber: '%env(TWILIO_PHONE_NUMBER)%'
             $sslCaPath: '%env(SSL_CA_PATH)%'
+            
+    
+    App\Controller\MatchingController:
+        arguments:
+            $logger: '@monolog.logger'
+    
+    App\Service\MatchingService:
+        arguments:
+            $pdfParserService: '@App\Service\PdfParserService'
+            $embeddingService: '@App\Service\EmbeddingService'
+            $entityManager: '@doctrine.orm.entity_manager'
+            $logger: '@monolog.logger'
+    
+    App\Controller\AnalyseCvController:
+        arguments:
+            $logger: '@monolog.logger'
+            $entityManager: '@doctrine.orm.entity_manager'

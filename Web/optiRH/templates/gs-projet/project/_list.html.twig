@@ -1,4 +1,3 @@
-{# templates/gs_projet/project/_list.html.twig #}
 {% for project in projects %}
     <tr data-id="{{ project.id }}">
         <td>
@@ -16,7 +15,6 @@
         <td class="text-muted small">{{ project.createdAt|date('d/m/Y') }}</td>
         <td>
             <div class="d-flex gap-2">
-                {# Actions #}
                 <a href="{{ path('gs-projet_project_show', {id: project.id}) }}" 
                    class="btn btn-sm btn-outline-secondary"
                    title="Voir détails">
@@ -27,19 +25,17 @@
                    title="Modifier">
                     <i class="mdi mdi-pencil-outline"></i>
                 </a>
-      {# templates/gs_projet/project/_list.html.twig #}
-
-<form method="post" action="{{ path('gs-projet_project_delete', {'id': project.id}) }}" 
-      class="delete-project-form"
-      data-project-name="{{ project.nom }}"
-      data-confirm="Êtes-vous sûr de vouloir supprimer définitivement le projet '{{ project.nom }}' ?">
-    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ project.id) }}">
-    <button type="submit" class="btn btn-danger btn-sm delete-project" 
-            data-id="{{ project.id }}" 
-            data-name="{{ project.nom }}">
-        <i class="fas fa-trash"></i>
-    </button>
-</form>
+                <form method="post" action="{{ path('gs-projet_project_delete', {'id': project.id}) }}" 
+                      class="delete-project-form"
+                      data-project-name="{{ project.nom }}"
+                      data-confirm="Êtes-vous sûr de vouloir supprimer définitivement le projet '{{ project.nom }}' ?">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ project.id) }}">
+                    <button type="submit" class="btn btn-danger btn-sm delete-project" 
+                            data-id="{{ project.id }}" 
+                            data-name="{{ project.nom }}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </form>
             </div>
         </td>
     </tr>

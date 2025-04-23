@@ -1,0 +1,129 @@
+{% extends 'partials/layout-vertical.html.twig' %}
+
+{% block title %}Mon Dashboard{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+    /* Styles communs */
+    #weather { 
+        display: flex; 
+        flex-wrap: wrap; 
+        gap: 1.5rem; 
+        margin-top: 2rem;
+    }
+    .weather-card { 
+        background: #fff; 
+        border-radius: 16px; 
+        box-shadow: 0 6px 20px rgba(0,0,0,0.05); 
+        padding: 1.25rem 1.5rem;
+        flex: 1 1 300px;
+    }
+    
+    
+    .weather-icon {
+        width: 60px;
+        height: 60px;
+        margin: 0 auto;
+        display: block;
+    }
+
+</style>
+{{ parent() }}
+{% endblock %}
+
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', { page_title: 'Mon Tableau de Bord' }) }}
+{% endblock %}
+
+{% block body %}
+<div id="weather">
+    <div class="weather-card">
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Chargement...</span>
+            </div>
+            <p>Chargement des données météo...</p>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block javascript %}
+{{ parent() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Chargement de la météo
+        function loadWeather() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        
+                        fetch(`/admin/weather?lat=${lat}&lon=${lon}`)
+                            .then(response => {
+                                if (!response.ok) throw new Error('Erreur réseau');
+                                return response.json();
+                            })
+                            .then(data => {
+                                const weatherHTML = `
+                                    <div class="weather-card">
+                                        <div class="weather-card-header">
+                                            <i class="fas fa-map-marker-alt"></i> ${data.name}, ${data.sys.country}
+                                        </div>
+                                        <div class="weather-card-body text-center">
+                                            <img src="https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png" 
+                                                 alt="Weather icon" class="weather-icon">
+                                            <p class="mb-1">${data.weather[0].description}</p>
+                                            <p class="h4">${Math.round(data.main.temp)}°C</p>
+                                            <small>Vent: ${data.wind.speed} m/s | Humidité: ${data.main.humidity}%</small>
+                                        </div>
+                                    </div>
+                                `;
+                                document.getElementById('weather').innerHTML = weatherHTML;
+                            })
+                            .catch(error => {
+                                document.getElementById('weather').innerHTML = `
+                                    <div class="weather-card">
+                                        <div class="weather-card-body text-center">
+                                            <i class="fas fa-cloud-exclamation fa-2x mb-2"></i>
+                                            <p>Données météo indisponibles</p>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                    },
+                    function(error) {
+                        document.getElementById('weather').innerHTML = `
+                            <div class="weather-card">
+                                <div class="weather-card-body text-center">
+                                    <i class="fas fa-location-crosshairs fa-2x mb-2"></i>
+                                    <p>Activez la géolocalisation pour voir la météo</p>
+                                </div>
+                            </div>
+                        `;
+                    }
+                );
+            } else {
+                document.getElementById('weather').innerHTML = `
+                    <div class="weather-card">
+                        <div class="weather-card-body text-center">
+                            <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                            <p>Géolocalisation non supportée</p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+
+
+        // Initialisation
+        loadWeather();
+   
+      
+</script>
+{% endblock %}

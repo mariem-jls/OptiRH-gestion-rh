@@ -1,5 +1,4 @@
 <?php
-// src/Entity/Reclamation.php
 
 namespace App\Entity;
 
@@ -16,7 +15,6 @@ class Reclamation
     public const STATUS_IN_PROGRESS = 'En cours';
     public const STATUS_RESOLVED = 'Résolue';
 
-    // Types de réclamation
     public const TYPE_SALAIRE = 'Salaire';
     public const TYPE_REMUNERATION = 'Rémunération';
     public const TYPE_CONGES = 'Congés';
@@ -68,59 +66,41 @@ class Reclamation
     #[ORM\OneToMany(mappedBy: "reclamation", targetEntity: Reponse::class, cascade: ["persist", "remove"], orphanRemoval: true)]
     private Collection $reponses;
 
+    #[ORM\Column(type: "float", nullable: true)]
+    private ?float $sentimentScore = null;
+
+    #[ORM\Column(type: "string", length: 20, nullable: true)]
+    private ?string $sentimentLabel = null;
+
+    #[ORM\Column(type: "string", length: 255, nullable: true)]
+    private ?string $qrCodeFilename = null; // ✅ Le nouveau champ pour le QR code
+
     public function __construct()
     {
         $this->date = new \DateTime();
         $this->reponses = new ArrayCollection();
     }
 
-    // Getters et Setters
+    // GETTERS & SETTERS
+
     public function getId(): ?int { return $this->id; }
     
-    public function getDescription(): ?string
-    {
-        return $this->description;
-    }
-    
-    public function setDescription(?string $description): self
-    {
-        $this->description = $description;
-        return $this;
-    }
-    
+    public function getDescription(): ?string { return $this->description; }
+    public function setDescription(?string $description): self { $this->description = $description; return $this; }
+
     public function getStatus(): ?string { return $this->status; }
     public function setStatus(?string $status): self { $this->status = $status; return $this; }
-    
+
     public function getDate(): ?\DateTimeInterface { return $this->date; }
     public function setDate(\DateTimeInterface $date): self { $this->date = $date; return $this; }
-    
+
     public function getUtilisateur(): ?User { return $this->utilisateur; }
     public function setUtilisateur(?User $utilisateur): self { $this->utilisateur = $utilisateur; return $this; }
-    
+
     public function getReponses(): Collection { return $this->reponses; }
 
-    public function getType(): ?string
-    {
-        return $this->type;
-    }
-
-    public function setType(?string $type): self
-    {
-        $this->type = $type;
-        return $this;
-    }
-
-    public static function getTypeChoices(): array
-    {
-        return [
-            'Salaire' => self::TYPE_SALAIRE,
-            'Rémunération' => self::TYPE_REMUNERATION,
-            'Congés' => self::TYPE_CONGES,
-            'Relations professionnelles' => self::TYPE_RELATIONS_PRO,
-            'Conditions de travail' => self::TYPE_CONDITIONS,
-            'Autre' => self::TYPE_AUTRE,
-        ];
-    }
+    public function getType(): ?string { return $this->type; }
+    public function setType(?string $type): self { $this->type = $type; return $this; }
 
     public function addReponse(Reponse $reponse): self
     {
@@ -139,6 +119,37 @@ class Reclamation
             }
         }
         return $this;
+    }
+
+    public function getSentimentScore(): ?float { return $this->sentimentScore; }
+    public function setSentimentScore(?float $sentimentScore): self { $this->sentimentScore = $sentimentScore; return $this; }
+
+    public function getSentimentLabel(): ?string { return $this->sentimentLabel; }
+    public function setSentimentLabel(?string $sentimentLabel): self { $this->sentimentLabel = $sentimentLabel; return $this; }
+
+    public function getQrCodeFilename(): ?string
+    {
+        return $this->qrCodeFilename;
+    }
+
+    public function setQrCodeFilename(?string $qrCodeFilename): self
+    {
+        $this->qrCodeFilename = $qrCodeFilename;
+        return $this;
+    }
+
+    // STATIC HELPERS
+
+    public static function getTypeChoices(): array
+    {
+        return [
+            'Salaire' => self::TYPE_SALAIRE,
+            'Rémunération' => self::TYPE_REMUNERATION,
+            'Congés' => self::TYPE_CONGES,
+            'Relations professionnelles' => self::TYPE_RELATIONS_PRO,
+            'Conditions de travail' => self::TYPE_CONDITIONS,
+            'Autre' => self::TYPE_AUTRE,
+        ];
     }
 
     public static function getStatusChoices(): array
@@ -167,47 +178,16 @@ class Reclamation
             self::STATUS_IN_PROGRESS => '🔄',
             self::STATUS_RESOLVED => '✅'
         ];
-
         return $icons[$status] ?? '';
     }
-    
+
     #[Assert\Callback]
     public function validate(ExecutionContextInterface $context, $payload)
     {
-        // Validation supplémentaire si nécessaire
         if (strpos($this->description, 'spam') !== false) {
             $context->buildViolation('La description contient des termes non autorisés.')
                 ->atPath('description')
                 ->addViolation();
         }
-    }
-    #[ORM\Column(type: "float", nullable: true)]
-    private ?float $sentimentScore = null;
-
-    #[ORM\Column(type: "string", length: 20, nullable: true)]
-    private ?string $sentimentLabel = null;
-
-    // ... getters et setters ...
-
-    public function getSentimentScore(): ?float
-    {
-        return $this->sentimentScore;
-    }
-
-    public function setSentimentScore(?float $sentimentScore): self
-    {
-        $this->sentimentScore = $sentimentScore;
-        return $this;
-    }
-
-    public function getSentimentLabel(): ?string
-    {
-        return $this->sentimentLabel;
-    }
-
-    public function setSentimentLabel(?string $sentimentLabel): self
-    {
-        $this->sentimentLabel = $sentimentLabel;
-        return $this;
     }
 }
