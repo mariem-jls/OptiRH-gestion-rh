@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20250423003124 extends AbstractMigration
+final class Version20250423195309 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -24,13 +24,16 @@ final class Version20250423003124 extends AbstractMigration
             CREATE TABLE demande (id INT AUTO_INCREMENT NOT NULL, offre_id INT NOT NULL, statut VARCHAR(20) NOT NULL, date DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, description LONGTEXT DEFAULT NULL, fichier_piece_jointe VARCHAR(255) DEFAULT NULL, nom_complet VARCHAR(255) NOT NULL, email VARCHAR(255) NOT NULL, telephone VARCHAR(20) NOT NULL, adresse VARCHAR(255) DEFAULT NULL, date_debut_disponible DATE DEFAULT NULL, situation_actuelle VARCHAR(100) DEFAULT NULL, INDEX IDX_2694D7A54CC8505A (offre_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
+            CREATE TABLE demande_matching (id INT AUTO_INCREMENT NOT NULL, demande_id INT NOT NULL, offre_id INT NOT NULL, cv_embedding JSON DEFAULT NULL, offre_embedding JSON DEFAULT NULL, matching_score DOUBLE PRECISION DEFAULT NULL, created_at DATETIME NOT NULL, INDEX IDX_9A49BB4B80E95E18 (demande_id), INDEX IDX_9A49BB4B4CC8505A (offre_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+        SQL);
+        $this->addSql(<<<'SQL'
             CREATE TABLE evenement (id_evenement INT AUTO_INCREMENT NOT NULL, titre VARCHAR(255) NOT NULL, lieu VARCHAR(255) NOT NULL, description LONGTEXT NOT NULL, prix DOUBLE PRECISION NOT NULL, date_debut DATE NOT NULL, date_fin DATE NOT NULL, image VARCHAR(255) NOT NULL, heure TIME NOT NULL, longitude DOUBLE PRECISION NOT NULL, latitude DOUBLE PRECISION NOT NULL, status VARCHAR(20) DEFAULT NULL, type VARCHAR(255) NOT NULL, modalite VARCHAR(255) NOT NULL, nbr_personnes INT DEFAULT NULL, PRIMARY KEY(id_evenement)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
             CREATE TABLE favoris_evenement (id INT AUTO_INCREMENT NOT NULL, id_user_id INT DEFAULT NULL, id_evenement_id INT DEFAULT NULL, INDEX IDX_D95B32FD79F37AE5 (id_user_id), INDEX IDX_D95B32FD2C115A61 (id_evenement_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
-            CREATE TABLE missions (id INT AUTO_INCREMENT NOT NULL, project_id INT NOT NULL, created_by_id INT DEFAULT NULL, assigned_to INT DEFAULT NULL, titre VARCHAR(100) NOT NULL, description LONGTEXT DEFAULT NULL, status VARCHAR(20) NOT NULL, created_at DATETIME NOT NULL, updated_at DATETIME NOT NULL, date_terminer DATETIME DEFAULT NULL, INDEX IDX_34F1D47E166D1F9C (project_id), INDEX IDX_34F1D47EB03A8386 (created_by_id), INDEX IDX_34F1D47E89EEAF91 (assigned_to), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+            CREATE TABLE missions (id INT AUTO_INCREMENT NOT NULL, project_id INT NOT NULL, created_by_id INT DEFAULT NULL, assigned_to INT DEFAULT NULL, titre VARCHAR(100) NOT NULL, description LONGTEXT DEFAULT NULL, status VARCHAR(20) NOT NULL, created_at DATETIME NOT NULL, updated_at DATETIME NOT NULL, date_terminer DATETIME DEFAULT NULL, notified_late TINYINT(1) NOT NULL, INDEX IDX_34F1D47E166D1F9C (project_id), INDEX IDX_34F1D47EB03A8386 (created_by_id), INDEX IDX_34F1D47E89EEAF91 (assigned_to), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
             CREATE TABLE offre (id INT AUTO_INCREMENT NOT NULL, poste VARCHAR(100) DEFAULT NULL, description LONGTEXT DEFAULT NULL, statut VARCHAR(50) DEFAULT NULL, date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP, mode_travail VARCHAR(50) DEFAULT NULL, type_contrat VARCHAR(50) DEFAULT NULL, localisation VARCHAR(100) DEFAULT NULL, niveau_experience VARCHAR(50) DEFAULT NULL, nb_postes INT DEFAULT NULL, date_expiration DATETIME DEFAULT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
@@ -39,7 +42,10 @@ final class Version20250423003124 extends AbstractMigration
             CREATE TABLE projects (id INT AUTO_INCREMENT NOT NULL, created_by_id INT NOT NULL, nom VARCHAR(100) NOT NULL, description LONGTEXT DEFAULT NULL, status VARCHAR(20) DEFAULT NULL, created_at DATETIME NOT NULL, INDEX IDX_5C93B3A4B03A8386 (created_by_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
-            CREATE TABLE reclamation (id INT AUTO_INCREMENT NOT NULL, utilisateur_id INT NOT NULL, description LONGTEXT NOT NULL, status VARCHAR(50) NOT NULL, date DATETIME NOT NULL, type VARCHAR(50) NOT NULL, sentiment_score DOUBLE PRECISION DEFAULT NULL, sentiment_label VARCHAR(20) DEFAULT NULL, INDEX IDX_CE606404FB88E14F (utilisateur_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+            CREATE TABLE reclamation (id INT AUTO_INCREMENT NOT NULL, utilisateur_id INT NOT NULL, description LONGTEXT NOT NULL, status VARCHAR(50) NOT NULL, date DATETIME NOT NULL, type VARCHAR(50) NOT NULL, sentiment_score DOUBLE PRECISION DEFAULT NULL, sentiment_label VARCHAR(20) DEFAULT NULL, qr_code_filename VARCHAR(255) DEFAULT NULL, INDEX IDX_CE606404FB88E14F (utilisateur_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE TABLE reclamation_archive (id INT AUTO_INCREMENT NOT NULL, type VARCHAR(255) NOT NULL, description LONGTEXT NOT NULL, utilisateur_nom VARCHAR(255) NOT NULL, date DATETIME NOT NULL, deleted_at DATETIME NOT NULL, status VARCHAR(50) NOT NULL, sentiment_score DOUBLE PRECISION DEFAULT NULL, sentiment_label VARCHAR(50) DEFAULT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
             CREATE TABLE reponse (id INT AUTO_INCREMENT NOT NULL, reclamation_id INT NOT NULL, description LONGTEXT NOT NULL, date DATETIME NOT NULL, rating INT NOT NULL, INDEX IDX_5FB6DEC72D6BA2D9 (reclamation_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
@@ -67,6 +73,12 @@ final class Version20250423003124 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE demande ADD CONSTRAINT FK_2694D7A54CC8505A FOREIGN KEY (offre_id) REFERENCES offre (id) ON DELETE CASCADE
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE demande_matching ADD CONSTRAINT FK_9A49BB4B80E95E18 FOREIGN KEY (demande_id) REFERENCES demande (id) ON DELETE CASCADE
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE demande_matching ADD CONSTRAINT FK_9A49BB4B4CC8505A FOREIGN KEY (offre_id) REFERENCES offre (id) ON DELETE CASCADE
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE favoris_evenement ADD CONSTRAINT FK_D95B32FD79F37AE5 FOREIGN KEY (id_user_id) REFERENCES user (id)
@@ -122,6 +134,12 @@ final class Version20250423003124 extends AbstractMigration
             ALTER TABLE demande DROP FOREIGN KEY FK_2694D7A54CC8505A
         SQL);
         $this->addSql(<<<'SQL'
+            ALTER TABLE demande_matching DROP FOREIGN KEY FK_9A49BB4B80E95E18
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE demande_matching DROP FOREIGN KEY FK_9A49BB4B4CC8505A
+        SQL);
+        $this->addSql(<<<'SQL'
             ALTER TABLE favoris_evenement DROP FOREIGN KEY FK_D95B32FD79F37AE5
         SQL);
         $this->addSql(<<<'SQL'
@@ -170,6 +188,9 @@ final class Version20250423003124 extends AbstractMigration
             DROP TABLE demande
         SQL);
         $this->addSql(<<<'SQL'
+            DROP TABLE demande_matching
+        SQL);
+        $this->addSql(<<<'SQL'
             DROP TABLE evenement
         SQL);
         $this->addSql(<<<'SQL'
@@ -186,6 +207,9 @@ final class Version20250423003124 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             DROP TABLE reclamation
+        SQL);
+        $this->addSql(<<<'SQL'
+            DROP TABLE reclamation_archive
         SQL);
         $this->addSql(<<<'SQL'
             DROP TABLE reponse
