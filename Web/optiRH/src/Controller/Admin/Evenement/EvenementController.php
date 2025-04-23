@@ -6,11 +6,13 @@ use App\Entity\Evenement\Evenement;
 use App\Form\Evenement\EvenementType;
 use App\Repository\Evenement\EvenementRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Repository\Evenement\ReservationEvenementRepository;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Twig\Environment;
 
 
 #[Route('/evenement')]
@@ -113,6 +115,8 @@ class EvenementController extends AbstractController
             'current_image' => $evenement->getImage(),
         ]);
     }
+
+
     
     
 
@@ -165,9 +169,7 @@ class EvenementController extends AbstractController
         ]);
     }
 
-
-
-
+   
 
 
 }

@@ -40,3 +40,10 @@ services:
     App\Service\EmailNotificationService:
         arguments:
             $adminEmail: '%admin_email%'
+
+    App\Service\TwilioService:
+        arguments:
+            $accountSid: '%env(TWILIO_ACCOUNT_SID)%'
+            $authToken: '%env(TWILIO_AUTH_TOKEN)%'
+            $phoneNumber: '%env(TWILIO_PHONE_NUMBER)%'
+            $sslCaPath: '%env(SSL_CA_PATH)%'
