@@ -5,6 +5,7 @@ namespace App\Controller\Admin\ReclamationEMP;
 
 use App\Entity\Reponse;
 use App\Entity\Reclamation;
+use App\Entity\ReclamationArchive;
 use App\Form\ReclamationType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,11 +15,11 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use App\Service\SentimentAnalysisService;
 use Psr\Log\LoggerInterface;
-use Endroid\QrCode\Builder\Builder;
+use Endroid\QrCode\QrCode;
+use Endroid\QrCode\Writer\PngWriter;
 use Endroid\QrCode\Encoding\Encoding;
 use Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelHigh;
 use Endroid\QrCode\RoundBlockSizeMode\RoundBlockSizeModeMargin;
-use Endroid\QrCode\Writer\PngWriter;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use App\Service\InfobipSmsSender;
 
@@ -71,6 +72,42 @@ class ReclamationController extends AbstractController
         ]);
     }
 
+    #[Route('/reclamations/pdf', name: 'front_reclamations_pdf')]
+    public function generatePdf(EntityManagerInterface $em): Response
+    {
+        $user = $this->getUser();
+        $reclamations = $em->getRepository(Reclamation::class)
+            ->findBy(['utilisateur' => $user], ['date' => 'DESC']);
+        
+        // Configure Dompdf
+        $options = new \Dompdf\Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isRemoteEnabled', true);
+        
+        $dompdf = new \Dompdf\Dompdf($options);
+        
+        // Générer le HTML pour le PDF
+        $html = $this->renderView('front/reclamation/pdf_list.html.twig', [
+            'reclamations' => $reclamations,
+            'user' => $user,
+            'title' => 'Mes réclamations'
+        ]);
+        
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+        
+        // Générer le PDF et le renvoyer comme réponse
+        return new Response(
+            $dompdf->output(),
+            Response::HTTP_OK,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="mes-reclamations.pdf"'
+            ]
+        );
+    }
+
     #[Route('/reclamation/add', name: 'front_add_reclamation')]
     public function add(
         Request $request, 
@@ -101,7 +138,7 @@ class ReclamationController extends AbstractController
             
             // Envoi du SMS de confirmation - version sans getTelephone()
             $user = $this->getUser();
-            $smsMessage = "Bonjour "   . ", une nouvelle réclamation a été ajoutée.";
+            $smsMessage = "Bonjour " . ", une nouvelle réclamation a été ajoutée.";
             
             try {
                 // Utiliser le numéro par défaut configuré dans le service
@@ -123,8 +160,6 @@ class ReclamationController extends AbstractController
             'form' => $form->createView(),
         ]);
     }
-
-
 
     #[Route('/reclamation/{id}/edit', name: 'front_edit_reclamation')]
     public function edit(
@@ -180,6 +215,18 @@ class ReclamationController extends AbstractController
         }
     
         if ($this->isCsrfTokenValid('delete'.$reclamation->getId(), $request->request->get('_token'))) {
+            // Créer une entrée dans l'archive avant la suppression
+            $archive = new ReclamationArchive();
+            $archive->setDescription($reclamation->getDescription());
+            $archive->setType($reclamation->getType());
+            $archive->setStatus($reclamation->getStatus());
+            $archive->setUtilisateurNom($reclamation->getUtilisateur()->getNom());
+            $archive->setDate($reclamation->getDate());
+            $archive->setDeletedAt(new \DateTime());
+            $archive->setSentimentScore($reclamation->getSentimentScore());
+            $archive->setSentimentLabel($reclamation->getSentimentLabel());
+            
+            $em->persist($archive);
             $em->remove($reclamation);
             $em->flush();
             $this->addFlash('success', 'Réclamation supprimée avec succès.');
@@ -203,27 +250,34 @@ class ReclamationController extends AbstractController
     #[Route('/reclamation/{id}/qr-code', name: 'front_reclamation_qr_code')]
     public function generateQrCode(Reclamation $reclamation): Response
     {
-        $url = $this->generateUrl(
-            'front_reclamation_reponses', 
-            ['id' => $reclamation->getId()], 
-            UrlGeneratorInterface::ABSOLUTE_URL
-        );
-    
-        $result = Builder::create()
-            ->writer(new PngWriter())
-            ->data($url)
-            ->encoding(new Encoding('UTF-8'))
-            ->errorCorrectionLevel(new ErrorCorrectionLevelHigh())
-            ->size(300)
-            ->margin(20)
-            ->roundBlockSizeMode(new RoundBlockSizeModeMargin())
-            ->build();
-    
+        // Préparation des données de la réclamation à inclure dans le QR code
+        $reclamationData = [
+            'id' => $reclamation->getId(),
+            'type' => $reclamation->getType(),
+            'status' => $reclamation->getStatus(),
+            'description' => $reclamation->getDescription(),
+            'date' => $reclamation->getDate()->format('Y-m-d H:i:s'),
+            'utilisateur' => $reclamation->getUtilisateur()->getNom()
+        ];
+        
+        // Conversion des données en JSON pour le QR code
+        $dataString = json_encode($reclamationData, JSON_UNESCAPED_UNICODE);
+        
+        // Création du QR code avec les données
+        $qrCode = new QrCode($dataString);
+        
+        // Création du writer et génération de l'image
+        $writer = new PngWriter();
+        $result = $writer->write($qrCode);
+        
+        // Retourne l'image générée
         return new Response($result->getString(), 200, [
-            'Content-Type' => 'image/png',
-            'Content-Disposition' => 'inline; filename="qr-code.png"'
+            'Content-Type' => $result->getMimeType(),
+            'Content-Disposition' => 'inline; filename="reclamation-details.png"'
         ]);
     }
+        
+  
 
     #[Route('/reponse/{id}/rate', name: 'front_rate_reponse', methods: ['POST'])]
     public function rateReponse(Request $request, Reponse $reponse, EntityManagerInterface $em): Response

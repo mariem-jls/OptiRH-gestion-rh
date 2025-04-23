@@ -5,6 +5,7 @@ namespace App\Controller\Admin\Reclamation;
 
 use App\Entity\Reclamation;
 use App\Entity\Reponse;
+use App\Entity\ReclamationArchive; // Ajout pour l'historique
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,6 +18,8 @@ use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Encoding\Encoding;
 use Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelHigh;
 use Endroid\QrCode\Writer\PngWriter;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class ReclamationController extends AbstractController
 {
@@ -28,6 +31,82 @@ class ReclamationController extends AbstractController
         return $this->render('reclamation/list.html.twig', [
             'reclamations' => $reclamations,
         ]);
+    }
+
+    #[Route('/reclamations/pdf', name: 'admin_reclamations_pdf', methods: ['GET'])]
+    public function generatePdf(EntityManagerInterface $em): Response
+    {
+        $reclamations = $em->getRepository(Reclamation::class)->findAll();
+        
+        // Configure Dompdf selon vos besoins
+        $options = new Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isRemoteEnabled', true);
+        
+        $dompdf = new Dompdf($options);
+        
+        // Générer le HTML pour le PDF
+        $html = $this->renderView('reclamation/pdf_list.html.twig', [
+            'reclamations' => $reclamations,
+            'title' => 'Liste des réclamations'
+        ]);
+        
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+        
+        // Générer le PDF et le renvoyer comme réponse
+        return new Response(
+            $dompdf->output(),
+            Response::HTTP_OK,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="reclamations.pdf"'
+            ]
+        );
+    }
+    
+    #[Route('/reclamations/archive', name: 'admin_reclamations_archive', methods: ['GET'])]
+    public function listArchive(EntityManagerInterface $em): Response
+    {
+        $archives = $em->getRepository(ReclamationArchive::class)->findAll();
+
+        return $this->render('reclamation/archive_list.html.twig', [
+            'archives' => $archives,
+        ]);
+    }
+    
+    #[Route('/reclamations/archive/pdf', name: 'admin_reclamations_archive_pdf', methods: ['GET'])]
+    public function generateArchivePdf(EntityManagerInterface $em): Response
+    {
+        $archives = $em->getRepository(ReclamationArchive::class)->findAll();
+        
+        // Configure Dompdf selon vos besoins
+        $options = new Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isRemoteEnabled', true);
+        
+        $dompdf = new Dompdf($options);
+        
+        // Générer le HTML pour le PDF
+        $html = $this->renderView('reclamation/pdf_archive_list.html.twig', [
+            'archives' => $archives,
+            'title' => 'Historique des réclamations supprimées'
+        ]);
+        
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+        
+        // Générer le PDF et le renvoyer comme réponse
+        return new Response(
+            $dompdf->output(),
+            Response::HTTP_OK,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="reclamations-archive.pdf"'
+            ]
+        );
     }
 
     #[Route('/reclamation/{id}/reponses', name: 'admin_reclamation_reponses', methods: ['GET', 'POST'])]
@@ -69,27 +148,33 @@ class ReclamationController extends AbstractController
         ]);
     }
 
-    #[Route('/reclamation/{id}/qr-code-mini', name: 'admin_reclamation_qr_code_mini', methods: ['GET'])]
-    public function generateMiniQrCode(Reclamation $reclamation): Response
+    #[Route('/reclamation/{id}/qr-code', name: 'admin_reclamation_qr_code', methods: ['GET'])]
+    public function generateQrCode(Reclamation $reclamation): Response
     {
-        $url = $this->generateUrl(
-            'admin_reclamation_reponses',
-            ['id' => $reclamation->getId()],
-            UrlGeneratorInterface::ABSOLUTE_URL
-        );
-
-        $qrCode = new QrCode($url);
-        $qrCode->setEncoding(new Encoding('UTF-8'));
-        $qrCode->setErrorCorrectionLevel(new ErrorCorrectionLevelHigh());
-        $qrCode->setSize(100);
-        $qrCode->setMargin(5);
-
+        // Préparation des données de la réclamation à inclure dans le QR code
+        $reclamationData = [
+            'id' => $reclamation->getId(),
+            'type' => $reclamation->getType(),
+            'status' => $reclamation->getStatus(),
+            'description' => $reclamation->getDescription(),
+            'date' => $reclamation->getDate()->format('Y-m-d H:i:s'),
+            'utilisateur' => $reclamation->getUtilisateur()->getNom()
+        ];
+        
+        // Conversion des données en JSON pour le QR code
+        $dataString = json_encode($reclamationData, JSON_UNESCAPED_UNICODE);
+        
+        // Création du QR code avec les données
+        $qrCode = new QrCode($dataString);
+        
+        // Création du writer et génération de l'image
         $writer = new PngWriter();
         $result = $writer->write($qrCode);
-
+        
+        // Retourne l'image générée
         return new Response($result->getString(), 200, [
-            'Content-Type' => 'image/png',
-            'Content-Disposition' => 'inline; filename="qr-code-mini.png"',
+            'Content-Type' => $result->getMimeType(),
+            'Content-Disposition' => 'inline; filename="reclamation-details.png"'
         ]);
     }
 

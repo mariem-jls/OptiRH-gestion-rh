@@ -1,3 +1,4 @@
+{# templates/reclamation/list.html.twig #}
 {% extends 'partials/layout-vertical.html.twig' %}
 
 {% block title %}Liste des réclamations{% endblock %}
@@ -8,45 +9,96 @@
 
 {% block stylesheets %}
     <style>
-        .status-select { width: 150px; border-radius: 4px; padding: 5px; }
-        .status-pending { background-color: #fff3cd; }
-        .status-in-progress { background-color: #d1ecf1; }
-        .status-resolved { background-color: #d4edda; }
-
-        .sentiment-indicator { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
-        .sentiment-positive { background-color: #28a745; }
-        .sentiment-neutral { background-color: #ffc107; }
-        .sentiment-negative { background-color: #dc3545; }
-        .sentiment-unknown { background-color: #6c757d; }
+        .status-select { 
+            width: 150px; 
+            border-radius: 4px; 
+            padding: 5px; 
+        }
+        .status-pending { 
+            background-color: #fff3cd; 
+            color: #856404; 
+        }
+        .status-in-progress { 
+            background-color: #d1ecf1; 
+            color: #0c5460; 
+        }
+        .status-resolved { 
+            background-color: #d4edda; 
+            color: #155724; 
+        }
+        
+        .sentiment-indicator { 
+            display: inline-block; 
+            width: 10px; 
+            height: 10px; 
+            border-radius: 50%; 
+            margin-right: 5px; 
+        }
+        .sentiment-positive { 
+            background-color: #28a745; 
+        }
+        .sentiment-neutral { 
+            background-color: #ffc107; 
+        }
+        .sentiment-negative { 
+            background-color: #dc3545; 
+        }
+        .sentiment-unknown { 
+            background-color: #6c757d; 
+        }
+        
+        .btn-sm { 
+            padding: 0.25rem 0.5rem; 
+            font-size: 0.875rem; 
+            line-height: 1.5; 
+        }
+        
+        .table-responsive {
+            overflow-x: auto;
+        }
+        
+        .badge {
+            font-size: 0.85em;
+            font-weight: 600;
+            padding: 0.35em 0.65em;
+        }
     </style>
 {% endblock %}
 
 {% block body %}
     <div class="container-fluid">
         <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">Liste des réclamations</h6>
+                <div>
+                    <a href="{{ path('admin_reclamations_pdf') }}" class="btn btn-sm btn-success">
+                        <i class="fas fa-file-pdf"></i> Exporter en PDF
+                    </a>
+                    <a href="{{ path('admin_reclamations_archive') }}" class="btn btn-sm btn-secondary ml-2">
+                        <i class="fas fa-archive"></i> Voir l'historique
+                    </a>
+                </div>
+            </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-bordered">
-                        <thead>
+                    <table class="table table-bordered table-striped table-hover">
+                        <thead class="thead-light">
                             <tr>
-                                <th>QR Code</th>
+                                <th>ID</th>
                                 <th>Type</th>
                                 <th>Description</th>
                                 <th>Utilisateur</th>
                                 <th>Date</th>
                                 <th>Statut</th>
                                 <th>Sentiment</th>
+                                <th>QR Code</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for reclamation in reclamations %}
                                 <tr>
-                                    <td>
-                                        <img src="{{ path('admin_reclamation_qr_code_mini', { id: reclamation.id }) }}"
-                                             alt="QR Code"
-                                             style="width: 50px; height: 50px;">
-                                    </td>
+                                    <td>{{ reclamation.id }}</td>
                                     <td>{{ reclamation.type }}</td>
                                     <td>{{ reclamation.description|slice(0, 50) }}{% if reclamation.description|length > 50 %}...{% endif %}</td>
                                     <td>{{ reclamation.utilisateur.nom }}</td>
@@ -63,13 +115,14 @@
                                     </td>
                                     <td>
                                         {% if reclamation.sentimentLabel %}
-                                            {% set sentiment_class = reclamation.sentimentLabel == 'positive' ? 'sentiment-positive' : (reclamation.sentimentLabel == 'negative' ? 'sentiment-negative' : 'sentiment-neutral') %}
+                                            {% set sentiment_class = reclamation.sentimentLabel == 'positive' ? 'sentiment-positive' : 
+                                                (reclamation.sentimentLabel == 'negative' ? 'sentiment-negative' : 'sentiment-neutral') %}
                                             <span class="sentiment-indicator {{ sentiment_class }}"></span>
                                             <span class="{{ reclamation.sentimentScore < 0.3 ? 'text-danger fw-bold' : '' }}">
                                                 {{ reclamation.sentimentLabel|trans }} ({{ reclamation.sentimentScore|number_format(2) }})
                                             </span>
                                             {% if reclamation.sentimentScore < 0.3 %}
-                                                <span class="badge bg-danger">À traiter en priorité</span>
+                                                <span class="badge bg-danger">Priorité</span>
                                             {% endif %}
                                         {% else %}
                                             <span class="sentiment-indicator sentiment-unknown"></span>
@@ -77,11 +130,24 @@
                                         {% endif %}
                                     </td>
                                     <td>
-                                        <a href="{{ path('admin_reclamation_reponses', {'id': reclamation.id}) }}" 
-                                           class="btn btn-primary btn-sm">
-                                            Gérer
+                                        <a href="{{ path('admin_reclamation_qr_code', {'id': reclamation.id}) }}" 
+                                           target="_blank" 
+                                           class="btn btn-info btn-sm"
+                                           title="Voir le QR Code">
+                                            <i class="fas fa-qrcode"></i> QR
                                         </a>
                                     </td>
+                                    <td>
+                                        <a href="{{ path('admin_reclamation_reponses', {'id': reclamation.id}) }}" 
+                                           class="btn btn-primary btn-sm"
+                                           title="Gérer les réponses">
+                                            <i class="fas fa-comments"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="9" class="text-center text-muted">Aucune réclamation trouvée</td>
                                 </tr>
                             {% endfor %}
                         </tbody>

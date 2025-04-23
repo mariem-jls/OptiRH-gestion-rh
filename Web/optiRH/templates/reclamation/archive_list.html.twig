@@ -1,0 +1,83 @@
+{# templates/reclamation/archive_list.html.twig #}
+{% extends 'partials/layout-vertical.html.twig' %}
+
+{% block title %}Historique des réclamations supprimées{% endblock %}
+
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', { page_title: 'Historique des réclamations supprimées' }) }}
+{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        .status-pending { background-color: #fff3cd; }
+        .status-in-progress { background-color: #d1ecf1; }
+        .status-resolved { background-color: #d4edda; }
+
+        .sentiment-indicator { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
+        .sentiment-positive { background-color: #28a745; }
+        .sentiment-neutral { background-color: #ffc107; }
+        .sentiment-negative { background-color: #dc3545; }
+        .sentiment-unknown { background-color: #6c757d; }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="container-fluid">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">Historique des réclamations supprimées</h6>
+                <div>
+                    <a href="{{ path('admin_reclamations_archive_pdf') }}" class="btn btn-sm btn-success">
+                        <i class="fas fa-file-pdf"></i> Exporter en PDF
+                    </a>
+                    <a href="{{ path('admin_reclamations') }}" class="btn btn-sm btn-primary ml-2">
+                        <i class="fas fa-arrow-left"></i> Retour aux réclamations actives
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Description</th>
+                                <th>Utilisateur</th>
+                                <th>Date création</th>
+                                <th>Date suppression</th>
+                                <th>Statut</th>
+                                <th>Sentiment</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for archive in archives %}
+                                <tr>
+                                    <td>{{ archive.type }}</td>
+                                    <td>{{ archive.description|slice(0, 50) }}{% if archive.description|length > 50 %}...{% endif %}</td>
+                                    <td>{{ archive.utilisateurNom }}</td>
+                                    <td>{{ archive.date|date('d/m/Y H:i') }}</td>
+                                    <td>{{ archive.deletedAt|date('d/m/Y H:i') }}</td>
+                                    <td class="status-{{ archive.status|lower|replace({' ': '-'}) }}">
+                                        {{ archive.status }}
+                                    </td>
+                                    <td>
+                                        {% if archive.sentimentLabel %}
+                                            {% set sentiment_class = archive.sentimentLabel == 'positive' ? 'sentiment-positive' : (archive.sentimentLabel == 'negative' ? 'sentiment-negative' : 'sentiment-neutral') %}
+                                            <span class="sentiment-indicator {{ sentiment_class }}"></span>
+                                            <span>
+                                                {{ archive.sentimentLabel|trans }} ({{ archive.sentimentScore|number_format(2) }})
+                                            </span>
+                                        {% else %}
+                                            <span class="sentiment-indicator sentiment-unknown"></span>
+                                            Non analysé
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
