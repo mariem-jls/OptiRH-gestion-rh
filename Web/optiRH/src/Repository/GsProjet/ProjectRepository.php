@@ -96,6 +96,46 @@ class ProjectRepository extends ServiceEntityRepository
             10
         );
     }
+    public function findAllWithMissionStats()
+{
+    return $this->createQueryBuilder('p')
+        ->leftJoin('p.missions', 'm')
+        ->addSelect('COUNT(m.id) as missionCount')
+        ->addSelect('SUM(CASE WHEN m.status = :done THEN 1 ELSE 0 END) as doneMissionCount')
+        ->setParameter('done', 'Done')
+        ->groupBy('p.id')
+        ->getQuery()
+        ->getResult();
+}
+
+public function countDoneMissionsForMonth(Project $project, \DateTime $month)
+{
+    $start = new \DateTime($month->format('Y-m-01'));
+    $end = clone $start;
+    $end->modify('+1 month');
+    
+    return $this->createQueryBuilder('p')
+        ->select('COUNT(m.id)')
+        ->leftJoin('p.missions', 'm')
+        ->where('p = :project')
+        ->andWhere('m.status = :done')
+        ->andWhere('m.updatedAt >= :start')
+        ->andWhere('m.updatedAt < :end')
+        ->setParameter('project', $project)
+        ->setParameter('done', 'Done')
+        ->setParameter('start', $start)
+        ->setParameter('end', $end)
+        ->getQuery()
+        ->getSingleScalarResult();
+}
+public function findAllWithObjectsAndStats()
+{
+    return $this->createQueryBuilder('p')
+        ->leftJoin('p.missions', 'm')
+        ->addSelect('m') // Charge les missions en même temps
+        ->getQuery()
+        ->getResult();
+}
     public function filterProjects(?string $search, ?string $status, int $page = 1)
 {
     $query = $this->createQueryBuilder('p');

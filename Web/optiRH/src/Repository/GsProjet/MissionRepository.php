@@ -84,6 +84,50 @@ public function findGroupedByStatus(Project $project): array
         ->getQuery()
         ->getResult();
 }
+public function countMissionsByProjectAndDateRange(
+    $project, 
+    \DateTimeInterface $startDate, 
+    \DateTimeInterface $endDate,
+    ?string $status = null
+): int {
+    $qb = $this->createQueryBuilder('m')
+        ->select('COUNT(m.id)')
+        ->where('m.project = :project')
+        ->andWhere('m.createdAt >= :startDate')
+        ->andWhere('m.createdAt < :endDate')
+        ->setParameter('project', $project)
+        ->setParameter('startDate', $startDate->format('Y-m-d H:i:s'))
+        ->setParameter('endDate', $endDate->format('Y-m-d H:i:s'));
+
+    if ($status !== null) {
+        $qb->andWhere('m.status = :status')
+           ->setParameter('status', $status);
+    }
+
+    try {
+        return (int) $qb->getQuery()->getSingleScalarResult();
+    } catch (\Exception $e) {
+        $this->logger->error('Erreur dans countMissionsByProjectAndDateRange', [
+            'error' => $e->getMessage(),
+            'query' => $qb->getQuery()->getSQL(),
+            'params' => $qb->getParameters()
+        ]);
+        return 0;
+    }
+}
+public function findOverdueMissionsForUser($user): array
+{
+    return $this->createQueryBuilder('m')
+        ->where('m.assignedTo = :user')
+        ->andWhere('m.dateTerminer < :now')
+        ->andWhere('m.status != :status')
+        ->andWhere('m.notifiedLate = false')
+        ->setParameter('user', $user)
+        ->setParameter('now', new \DateTime())
+        ->setParameter('status', 'Done')
+        ->getQuery()
+        ->getResult();
+}
     public function findOverdueMissions(Project $project): array
     {
         return $this->createQueryBuilder('m')

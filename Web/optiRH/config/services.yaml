@@ -6,14 +6,13 @@ parameters:
     turnstile_site_key: '%env(resolve:TURNSTILE_SITE_KEY)%'
     turnstile_secret_key: '%env(resolve:TURNSTILE_SECRET_KEY)%'
     weather_api_key: '%env(resolve:WEATHER_API_KEY)%'
-<<<<<<< HEAD
+
     app.mailer.sender_email: 'no-reply@votre-domaine.com'
     app.mailer.sender_name: 'Gestion des Missions'
-=======
+
     huggingface_api_key: '%env(HUGGINGFACE_API_KEY)%'
     admin_email: 'maram.rachdi11@gmail.com'
-
->>>>>>> 2b9feec80af1bfe2e00c38916c4b99dfe166b60f
+    env(GEMINI_API_KEY): ''
 
 services:
     _defaults:
@@ -39,14 +38,14 @@ services:
         arguments:
             $weatherApiKey: '%weather_api_key%'
 
-<<<<<<< HEAD
+
     App\Service\MissionNotificationService:
         arguments:
             $senderEmail: '%app.mailer.sender_email%'
             $senderName: '%app.mailer.sender_name%'
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
-=======
+
     App\Service\SentimentAnalysisService:
         arguments:
             $apiKey: '%huggingface_api_key%'
@@ -75,4 +74,11 @@ services:
     App\Service\EmailNotificationService:
         arguments:
             $adminEmail: '%admin_email%'
->>>>>>> 2b9feec80af1bfe2e00c38916c4b99dfe166b60f
+    App\Service\GeminiAnalysisService:
+        arguments:
+            $apiKey: '%env(GEMINI_API_KEY)%'
+
+    
+
+
+   

@@ -2,6 +2,7 @@
 
 namespace App\Controller\Admin\GsProjet;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Service\NotificationManager;
 use App\Entity\GsProjet\Mission;
 use App\Entity\GsProjet\Project;
 use App\Entity\User;
@@ -255,4 +256,28 @@ class MissionController extends AbstractController
             'id' => $projectId
         ]);
     }
+   
+
+#[Route('/mission/{id}/late-notify', name: 'mission_late_notify', methods: ['POST'])]
+public function sendLateNotification(
+    Mission $mission,
+    NotificationManager $notificationManager,
+    Request $request
+): Response {
+    if (!$this->isCsrfTokenValid('late_notify'.$mission->getId(), $request->request->get('_token'))) {
+        throw $this->createAccessDeniedException('Token CSRF invalide');
+    }
+
+    $daysLate = $mission->getDaysLate();
+    $notificationManager->createLateMissionNotification(
+        $mission->getAssignedTo(),
+        $mission->getTitre(),
+        $mission->getId(),
+        $mission->getProject()->getId(),
+        $daysLate
+    );
+
+    $this->addFlash('success', 'Notification envoyée avec succès');
+    return $this->redirectToRoute('mission_show', ['id' => $mission->getId()]);
+}
 }
