@@ -20,6 +20,9 @@ use Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelHigh;
 use Endroid\QrCode\Writer\PngWriter;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use Symfony\Component\Mailer\MailerInterface; // <-- Ajouté ici
+use Symfony\Component\Mime\Email;
+
 
 class ReclamationController extends AbstractController
 {
@@ -110,7 +113,7 @@ class ReclamationController extends AbstractController
     }
 
     #[Route('/reclamation/{id}/reponses', name: 'admin_reclamation_reponses', methods: ['GET', 'POST'])]
-    public function reponses(Reclamation $reclamation, Request $request, EntityManagerInterface $em): Response
+    public function reponses(Reclamation $reclamation, Request $request, EntityManagerInterface $em, MailerInterface $mailer): Response
     {
         $reponse = new Reponse();
         $form = $this->createFormBuilder($reponse)
@@ -137,6 +140,30 @@ class ReclamationController extends AbstractController
             $em->persist($reponse);
             $em->flush();
 
+            // Envoi de l'email à l'employeur
+            $employeur = $reclamation->getUtilisateur();
+            if ($employeur && $employeur->getEmail()) {
+                try {
+                    $email = (new Email())
+                        ->from('no-reply@votre-domaine.com')
+                        ->to($employeur->getEmail())
+                        ->subject('Nouvelle réponse à votre réclamation')
+                        ->html($this->renderView(
+                            'reclamation/nouvelle_reponse.html.twig',
+                            [
+                                'reclamation' => $reclamation,
+                                'reponse' => $reponse,
+                                'employeur' => $employeur
+                            ]
+                        ));
+
+                    $mailer->send($email);
+                } catch (\Exception $e) {
+                    // Vous pouvez logger l'erreur si vous le souhaitez
+                    $this->addFlash('warning', 'La réponse a été enregistrée mais l\'email n\'a pas pu être envoyé.');
+                }
+            }
+
             $this->addFlash('success', 'Réponse publiée avec succès !');
             return $this->redirectToRoute('admin_reclamation_reponses', ['id' => $reclamation->getId()]);
         }
@@ -147,6 +174,8 @@ class ReclamationController extends AbstractController
             'can_edit' => false
         ]);
     }
+
+
 
     #[Route('/reclamation/{id}/qr-code', name: 'admin_reclamation_qr_code', methods: ['GET'])]
     public function generateQrCode(Reclamation $reclamation): Response
