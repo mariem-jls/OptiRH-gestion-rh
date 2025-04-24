@@ -738,7 +738,6 @@
 
 {% endblock %}
 
-
 {% block javascript %}
 {{ parent() }}
 <!-- JS Resources -->
@@ -771,7 +770,9 @@ document.addEventListener('DOMContentLoaded', function() {
         analysisContent: document.getElementById('geminiAnalysisContent'),
         placeholder: document.getElementById('analysisPlaceholder'),
         lateItemsContainer: document.querySelector('.late-items'),
-        flowchartDiagram: document.getElementById('flowchart-diagram')
+        flowchartDiagram: document.getElementById('flowchart-diagram'),
+        dominantSentiment: document.getElementById('dominant-sentiment'),
+        dominantType: document.getElementById('dominant-type')
     };
     
     // UI Helpers
@@ -855,129 +856,207 @@ document.addEventListener('DOMContentLoaded', function() {
         loadCharts: () => {
             // Load Google Charts
             google.charts.load('current', {'packages':['corechart']});
-            google.charts.setOnLoadCallback(drawCharts);
+            google.charts.setOnLoadCallback(function() {
+                features.drawProjectCharts();
+                features.drawReclamationCharts();
+            });
+        },
+        
+        drawProjectCharts: () => {
+            try {
+                // Projects Chart
+                const projectData = new google.visualization.DataTable();
+                projectData.addColumn('string', 'Statut');
+                projectData.addColumn('number', 'Nombre');
+                projectData.addRows([
+                    {% for status, count in project_stats %}
+                        ['{{ status }}', {{ count }}],
+                    {% endfor %}
+                ]);
 
-            function drawCharts() {
-                try {
-                    // Projects Chart
-                    const projectData = new google.visualization.DataTable();
-                    projectData.addColumn('string', 'Statut');
-                    projectData.addColumn('number', 'Nombre');
-                    projectData.addRows([
-                        {% for status, count in project_stats %}
-                            ['{{ status }}', {{ count }}],
-                        {% endfor %}
-                    ]);
+                const projectOptions = {
+                    title: '',
+                    pieHole: 0.4,
+                    colors: ['#4e73df', '#1cc88a', '#f6c23e', '#e74a3b', '#36b9cc'],
+                    chartArea: {
+                        width: '90%', 
+                        height: '80%',
+                        left: 20,
+                        top: 20,
+                        right: 20,
+                        bottom: 20
+                    },
+                    legend: {
+                        position: 'labeled', 
+                        alignment: 'center',
+                        textStyle: {
+                            color: '#5a5c69',
+                            fontSize: 12
+                        }
+                    },
+                    pieSliceText: 'value',
+                    tooltip: {
+                        text: 'percentage'
+                    },
+                    backgroundColor: 'transparent',
+                    height: 350
+                };
 
-                    const projectOptions = {
-                        title: '',
-                        pieHole: 0.4,
-                        colors: ['#4e73df', '#1cc88a', '#f6c23e', '#e74a3b', '#36b9cc'],
-                        chartArea: {
-                            width: '90%', 
-                            height: '80%',
-                            left: 20,
-                            top: 20,
-                            right: 20,
-                            bottom: 20
-                        },
-                        legend: {
-                            position: 'labeled', 
-                            alignment: 'center',
-                            textStyle: {
-                                color: '#5a5c69',
-                                fontSize: 12
-                            }
-                        },
-                        pieSliceText: 'value',
-                        tooltip: {
-                            text: 'percentage'
-                        },
-                        backgroundColor: 'transparent',
-                        height: 350
-                    };
+                const projectChart = new google.visualization.PieChart(
+                    document.getElementById('projectChart')
+                );
+                projectChart.draw(projectData, projectOptions);
 
-                    const projectChart = new google.visualization.PieChart(
-                        document.getElementById('projectChart')
-                    );
-                    projectChart.draw(projectData, projectOptions);
+                // Missions Chart
+                const missionData = new google.visualization.DataTable();
+                missionData.addColumn('string', 'Statut');
+                missionData.addColumn('number', 'Nombre');
+                missionData.addRows([
+                    {% for status, count in mission_stats %}
+                        ['{{ status }}', {{ count }}],
+                    {% endfor %}
+                ]);
 
-                    // Missions Chart
-                    const missionData = new google.visualization.DataTable();
-                    missionData.addColumn('string', 'Statut');
-                    missionData.addColumn('number', 'Nombre');
-                    missionData.addRows([
-                        {% for status, count in mission_stats %}
-                            ['{{ status }}', {{ count }}],
-                        {% endfor %}
-                    ]);
+                const missionOptions = {
+                    title: '',
+                    is3D: true,
+                    colors: ['#4e73df', '#1cc88a', '#f6c23e', '#e74a3b', '#36b9cc'],
+                    chartArea: {
+                        width: '90%',
+                        height: '80%',
+                        left: 20,
+                        top: 20,
+                        right: 20,
+                        bottom: 20
+                    },
+                    legend: {
+                        position: 'labeled',
+                        alignment: 'center',
+                        textStyle: {
+                            color: '#5a5c69',
+                            fontSize: 12
+                        }
+                    },
+                    pieSliceText: 'value',
+                    tooltip: {
+                        text: 'percentage'
+                    },
+                    backgroundColor: 'transparent',
+                    height: 350
+                };
 
-                    const missionOptions = {
-                        title: '',
-                        is3D: true,
-                        colors: ['#4e73df', '#1cc88a', '#f6c23e', '#e74a3b', '#36b9cc'],
-                        chartArea: {
-                            width: '90%',
-                            height: '80%',
-                            left: 20,
-                            top: 20,
-                            right: 20,
-                            bottom: 20
-                        },
-                        legend: {
-                            position: 'labeled',
-                            alignment: 'center',
-                            textStyle: {
-                                color: '#5a5c69',
-                                fontSize: 12
-                            }
-                        },
-                        pieSliceText: 'value',
-                        tooltip: {
-                            text: 'percentage'
-                        },
-                        backgroundColor: 'transparent',
-                        height: 350
-                    };
-
-                    const missionChart = new google.visualization.PieChart(
-                        document.getElementById('missionChart')
-                    );
-                    missionChart.draw(missionData, missionOptions);
-                } catch (error) {
-                    console.error("Erreur dans le rendu des graphiques:", error);
-                    
-                    // Fallback content
-                    document.getElementById('projectChart').innerHTML = `
-                        <div class="alert alert-warning p-3">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            Le graphique des projets n'a pas pu être chargé.
-                            <div class="mt-2">
-                                {% for status, count in project_stats %}
-                                    <div class="d-flex justify-content-between mb-1">
-                                        <span>{{ status }}:</span>
-                                        <strong>{{ count }}</strong>
-                                    </div>
-                                {% endfor %}
-                            </div>
+                const missionChart = new google.visualization.PieChart(
+                    document.getElementById('missionChart')
+                );
+                missionChart.draw(missionData, missionOptions);
+            } catch (error) {
+                console.error("Erreur dans le rendu des graphiques:", error);
+                
+                // Fallback content
+                document.getElementById('projectChart').innerHTML = `
+                    <div class="alert alert-warning p-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Le graphique des projets n'a pas pu être chargé.
+                        <div class="mt-2">
+                            {% for status, count in project_stats %}
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>{{ status }}:</span>
+                                    <strong>{{ count }}</strong>
+                                </div>
+                            {% endfor %}
                         </div>
-                    `;
-                    
-                    document.getElementById('missionChart').innerHTML = `
-                        <div class="alert alert-warning p-3">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            Le graphique des missions n'a pas pu être chargé.
-                            <div class="mt-2">
-                                {% for status, count in mission_stats %}
-                                    <div class="d-flex justify-content-between mb-1">
-                                        <span>{{ status }}:</span>
-                                        <strong>{{ count }}</strong>
-                                    </div>
-                                {% endfor %}
-                            </div>
+                    </div>
+                `;
+                
+                document.getElementById('missionChart').innerHTML = `
+                    <div class="alert alert-warning p-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Le graphique des missions n'a pas pu être chargé.
+                        <div class="mt-2">
+                            {% for status, count in mission_stats %}
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>{{ status }}:</span>
+                                    <strong>{{ count }}</strong>
+                                </div>
+                            {% endfor %}
                         </div>
-                    `;
+                    </div>
+                `;
+            }
+        },
+        
+        drawReclamationCharts: () => {
+            try {
+                // Status Chart
+                const statusData = google.visualization.arrayToDataTable({{ statusData|json_encode|raw }});
+                const statusChart = new google.visualization.PieChart(document.getElementById('status-chart'));
+                statusChart.draw(statusData, {
+                    title: '',
+                    pieHole: 0.4,
+                    chartArea: {width: '90%', height: '80%'},
+                    height: 350,
+                    colors: ['#4e73df', '#1cc88a', '#f6c23e']
+                });
+
+                // Sentiment Chart
+                const sentimentData = google.visualization.arrayToDataTable({{ sentimentData|json_encode|raw }});
+                const sentimentChart = new google.visualization.ColumnChart(document.getElementById('sentiment-chart'));
+                sentimentChart.draw(sentimentData, {
+                    title: '',
+                    chartArea: {width: '85%', height: '75%'},
+                    height: 350,
+                    colors: ['#e74a3b', '#858796', '#1cc88a']
+                });
+
+                // Type Chart
+                const typeData = google.visualization.arrayToDataTable({{ typeData|json_encode|raw }});
+                const typeChart = new google.visualization.BarChart(document.getElementById('type-chart'));
+                typeChart.draw(typeData, {
+                    title: '',
+                    chartArea: {width: '85%', height: '75%'},
+                    height: 350,
+                    colors: ['#36b9cc', '#f6c23e', '#4e73df']
+                });
+
+                // Timeline Chart
+                const timelineData = google.visualization.arrayToDataTable({{ timelineData|json_encode|raw }});
+                const timelineChart = new google.visualization.LineChart(document.getElementById('timeline-chart'));
+                timelineChart.draw(timelineData, {
+                    title: '',
+                    chartArea: {width: '85%', height: '75%'},
+                    height: 350,
+                    colors: ['#4e73df'],
+                    curveType: 'function'
+                });
+
+                // Update dominant values
+                features.updateDominantValues();
+                
+            } catch (error) {
+                console.error("Erreur dans le rendu des graphiques de réclamation:", error);
+            }
+        },
+        
+        updateDominantValues: () => {
+            try {
+                // Get dominant sentiment
+                const sentimentArray = {{ sentimentData|json_encode|raw }};
+                if (sentimentArray.length > 1) {
+                    const dominant = sentimentArray.slice(1).sort((a, b) => b[1] - a[1])[0];
+                    elements.dominantSentiment.textContent = dominant[0];
+                    elements.dominantSentiment.className = 'card-value ' + 
+                        (dominant[0] === 'Positif' ? 'positive' : 
+                         dominant[0] === 'Négatif' ? 'negative' : 'neutral');
                 }
+
+                // Get dominant type
+                const typeArray = {{ typeData|json_encode|raw }};
+                if (typeArray.length > 1) {
+                    const dominant = typeArray.slice(1).sort((a, b) => b[1] - a[1])[0];
+                    elements.dominantType.textContent = dominant[0];
+                }
+            } catch (error) {
+                console.error("Erreur dans la mise à jour des valeurs dominantes:", error);
             }
         },
         
@@ -1009,7 +1088,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         initFlowChart: () => {
             try {
-                // Utiliser Mermaid
                 elements.flowchartDiagram.innerHTML = '';
                 
                 const mermaidDiv = document.createElement('div');
@@ -1082,88 +1160,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <i class="fas fa-exclamation-circle me-2"></i>
                         Erreur: Le diagramme n'a pas pu être chargé (${error.message})
                     </div>
-                    
-                    <div class="mt-3">
-                        <h5>Progression des projets</h5>
-                        <div class="row">
-                            {% for project in projects %}
-                                {% set completion = project.done_missions > 0 ? (project.done_missions / project.total_missions * 100)|round : 0 %}
-                                <div class="col-md-4 mb-2">
-                                    <div class="card card-body p-2">
-                                        <h6 class="mb-1">{{ project.entity.nom }}</h6>
-                                        <div class="progress" style="height: 8px;">
-                                            <div class="progress-bar ${completion < 30 ? 'bg-danger' : (completion < 70 ? 'bg-warning' : 'bg-success')}" 
-                                                 style="width: ${completion}%;" 
-                                                 aria-valuenow="${completion}" 
-                                                 aria-valuemin="0" 
-                                                 aria-valuemax="100">
-                                            </div>
-                                        </div>
-                                        <small class="text-muted">${completion}% terminé (${project.done_missions}/${project.total_missions})</small>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    </div>
                 `;
-            }
-        },
-        
-        initFlowChartStats: () => {
-            try {
-                const ctx = document.getElementById('flowchart-chart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: [
-                            'Terminé',
-                            'En cours',
-                            'Non commencé'
-                        ],
-                        datasets: [{
-                            data: [
-                                {{ mission_stats['Done'] ?? 0 }},
-                                {{ mission_stats['In Progress'] ?? 0 }},
-                                {{ mission_stats['Not Started'] ?? 0 }}
-                            ],
-                            backgroundColor: [
-                                '#1cc88a',
-                                '#f6c23e',
-                                '#e74a3b'
-                            ],
-                            hoverBackgroundColor: [
-                                '#17a673',
-                                '#dda20a',
-                                '#be2617'
-                            ],
-                            hoverBorderColor: "rgba(234, 236, 244, 1)",
-                        }],
-                    },
-                    options: {
-                        maintainAspectRatio: false,
-                        plugins: {
-                            tooltip: {
-                                backgroundColor: "rgb(255,255,255)",
-                                bodyColor: "#858796",
-                                borderColor: '#dddfeb',
-                                borderWidth: 1,
-                                padding: 15,
-                                displayColors: true,
-                                caretPadding: 10,
-                            },
-                            legend: {
-                                position: 'bottom',
-                                labels: {
-                                    padding: 20,
-                                    usePointStyle: true
-                                }
-                            }
-                        },
-                        cutout: '70%',
-                    },
-                });
-            } catch (error) {
-                console.error("Erreur dans le graphique de workflow:", error);
             }
         },
         
@@ -1197,16 +1194,19 @@ document.addEventListener('DOMContentLoaded', function() {
         features.loadCharts();
         features.initSparklines();
         features.initFlowChart();
-        features.initFlowChartStats();
     }, 100);
     
     // Handle window resize
     window.addEventListener('resize', () => {
         if (typeof google !== 'undefined' && google.visualization) {
             google.charts.setOnLoadCallback(() => {
-                ['projectChart', 'missionChart'].forEach(id => {
-                    const chart = google.visualization.chart.getChart(document.getElementById(id));
-                    if (chart) chart.draw();
+                ['projectChart', 'missionChart', 'status-chart', 'sentiment-chart', 'type-chart', 'timeline-chart'].forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element && element.innerHTML === '') {
+                        // Only redraw if chart exists and is empty (to avoid redrawing during loading)
+                        const chart = google.visualization.chart.getChart(element);
+                        if (chart) chart.draw();
+                    }
                 });
             });
         }

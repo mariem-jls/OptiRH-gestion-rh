@@ -5,12 +5,14 @@ namespace App\Controller\Admin\Evenement;
 use App\Entity\Evenement\ReservationEvenement;
 use App\Form\Evenement\ReservationEvenementType;
 use App\Repository\Evenement\ReservationEvenementRepository;
+use App\Service\TwilioService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Entity\Evenement\Evenement;
 use Doctrine\ORM\EntityManagerInterface; 
+use Twilio\Rest\Client;
 
 
 
@@ -31,7 +33,8 @@ class ReservationEvenementController extends AbstractController
 
     /**************resrever un evenement************ */
     #[Route('/new/{id}', name: 'app_reservation_evenement_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, Evenement $evenement, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, Evenement $evenement, EntityManagerInterface $entityManager, TwilioService $twilio): Response
+
     {
         $reservation = new ReservationEvenement();
         $reservation->setEvenement($evenement); 
@@ -74,9 +77,24 @@ class ReservationEvenementController extends AbstractController
             $evenement->decrementNbrPersonnes();
             $entityManager->persist($reservation); 
             $entityManager->flush(); 
-    
+        
+            // ✅ Envoi SMS
+            $numero = $reservation->getTelephone(); 
+            $nomEvenement = $evenement->getTitre(); 
+            $dateEvenement = $evenement->getDateDebut()->format('d/m/Y ');
+            $heureEvenement =$evenement->getHeure()->format('H:i');
+        
+            $message = "Bonjour {$reservation->getFirstName()}, votre réservation pour '$nomEvenement' le $dateEvenement à $heureEvenement est confirmée !";
+            
+            try {
+                $twilio->sendSms($numero, $message);
+            } catch (\Exception $e) {
+                $this->addFlash('sms', "Erreur lors de l'envoi du SMS : " . $e->getMessage());
+            }
+        
             return $this->redirectToRoute('app_evenement_indexfront', [], Response::HTTP_SEE_OTHER);
         }
+        
     
         return $this->render('reservation_evenement/new.html.twig', [
             'form' => $form->createView(),
@@ -163,6 +181,27 @@ class ReservationEvenementController extends AbstractController
              
          ]);
      }
+
+     #[Route('/reservationspdf/{id}', name: 'app_reservation_pdf')]
+
+     public function generatePdf(ReservationEvenement $reservation): Response
+ {
+     $evenement = $reservation->getEvenement();
+     
+     return $this->render('reservation_evenement/ticket.html.twig',[
+         'reservation' => $reservation,
+         'evenement' => $evenement,
+     ]);
+     
+ 
+    
+ 
+     
+ }
+ 
+      
+      
+ 
      
      
 }

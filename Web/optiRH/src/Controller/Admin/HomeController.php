@@ -3,6 +3,8 @@
 namespace App\Controller\Admin;
 use Psr\Log\LoggerInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Entity\Reclamation;
+
 
 use App\Service\GeminiAnalysisService;
 use App\Repository\GsProjet\MissionRepository;
@@ -19,12 +21,14 @@ use Doctrine\ORM\Query;
 
 class HomeController extends AbstractController
 {
+    private $entityManager;
     public function __construct(
         private Security $security,
         private GeminiAnalysisService $geminiAnalysis,
-        private LoggerInterface $logger
+        private LoggerInterface $logger,
+        EntityManagerInterface $entityManager
         
-    ) {}
+    ) {$this->entityManager = $entityManager;}
 
     #[Route('/', name: 'admin_home')]
     public function index(
@@ -34,7 +38,9 @@ class HomeController extends AbstractController
         NotificationRepository $notificationRepository
     ): Response {
         $user = $this->security->getUser();
+
         $this->checkLateMissionsForUser($user, $missionRepository, $entityManager, $notificationRepository);
+
         if ($this->isGranted('ROLE_ADMIN')) {
             return $this->renderAdminDashboard($projectRepository, $missionRepository);
         }
@@ -129,16 +135,14 @@ private function getWorkflowData(
     
     return $workflowData;
 }
-
-// Modifier la méthode renderAdminDashboard pour inclure les données de workflow
 private function renderAdminDashboard(
     ProjectRepository $projectRepository,
     MissionRepository $missionRepository
 ): Response {
-    // Récupérer tous les projets avec leurs statistiques
+    // Get all projects with their statistics
     $projects = $projectRepository->findAllWithObjectsAndStats();
     
-    // Préparer les données pour les sparklines
+    // Prepare data for sparklines
     $projectsWithStats = [];
     foreach ($projects as $project) {
         $projectData = [
@@ -155,17 +159,92 @@ private function renderAdminDashboard(
         $projectsWithStats[] = $projectData;
     }
 
-    // Récupérer les données de workflow
+    // Get workflow data
     $workflowData = $this->getWorkflowData($projectRepository, $missionRepository);
+
+    // Global statistics for admin
+    $projectStats = $projectRepository->createQueryBuilder('p')
+        ->select('p.status, COUNT(p.id) as count')
+        ->groupBy('p.status')
+        ->getQuery()
+        ->getResult();
+
+    $missionStats = $missionRepository->createQueryBuilder('m')
+        ->select('m.status, COUNT(m.id) as count')
+        ->groupBy('m.status')
+        ->getQuery()
+        ->getResult();
+
+    $delayedProjects = $projectRepository->findBy(['status' => 'delayed']);
+    $delayedMissions = $missionRepository->findOverdueMissions2();
+
+    // Calculate reclamation resolution rate
+    $resolutionRate = 0; // Default value
     
+    try {
+        if (class_exists('App\Entity\Reclamation')) {
+            $totalReclamations = $this->entityManager->createQueryBuilder()
+                ->select('COUNT(r.id)')
+                ->from(Reclamation::class, 'r')
+                ->getQuery()
+                ->getSingleScalarResult();
+            
+            $resolvedReclamations = $this->entityManager->createQueryBuilder()
+                ->select('COUNT(r.id)')
+                ->from(Reclamation::class, 'r')
+                ->where('r.status = :status')
+                ->setParameter('status', Reclamation::STATUS_RESOLVED)
+                ->getQuery()
+                ->getSingleScalarResult();
+            
+            if ($totalReclamations > 0) {
+                $resolutionRate = round(($resolvedReclamations / $totalReclamations) * 100, 2);
+            }
+        }
+    } catch (\Exception $e) {
+        $resolutionRate = 0;
+    }
+
+    // Prepare data for statistics charts
+    $statusData = [['Statut', 'Nombre'], ['En attente', 5], ['En cours', 8], ['Résolue', 12]];
+    $sentimentData = [['Sentiment', 'Nombre'], ['Négatif', 7], ['Neutre', 10], ['Positif', 8]];
+    $typeData = [['Type', 'Nombre'], ['Technique', 10], ['Commercial', 8], ['Facturation', 7]];
+    $timelineData = [
+        ['Mois', 'Nombre de réclamations'],
+        ['Jan 2025', 8],
+        ['Fév 2025', 10],
+        ['Mar 2025', 12],
+        ['Avr 2025', 9]
+    ];
+
+    // Format project and mission stats as associative arrays
+    $formattedProjectStats = [];
+    foreach ($projectStats as $stat) {
+        $formattedProjectStats[$stat['status']] = $stat['count'];
+    }
+
+    $formattedMissionStats = [];
+    foreach ($missionStats as $stat) {
+        $formattedMissionStats[$stat['status']] = $stat['count'];
+    }
+
     return $this->render('admin/index.html.twig', [
-        'project_stats' => $this->prepareProjectsData($projectRepository),
-        'mission_stats' => $this->prepareMissionsData($missionRepository),
-        'delayed_projects' => $projectRepository->findBy(['status' => 'delayed']),
-        'delayed_missions' => $missionRepository->findOverdueMissions2(),
+        'project_stats' => $formattedProjectStats,
+        'mission_stats' => $formattedMissionStats,
+        'delayed_projects' => $delayedProjects,
+        'delayed_missions' => $delayedMissions,
         'projects' => $projectsWithStats,
         'workflow_data' => $workflowData,
-        'is_admin' => true
+        'is_admin' => true,
+        'resolutionRate' => $resolutionRate,
+        'statusData' => $statusData,  // Pass array directly for Twig
+        'sentimentData' => $sentimentData,
+        'typeData' => $typeData,
+        'timelineData' => $timelineData,
+        'statusDataJson' => json_encode($statusData),  // JSON version for JS
+        'sentimentDataJson' => json_encode($sentimentData),
+        'typeDataJson' => json_encode($typeData),
+        'timelineDataJson' => json_encode($timelineData)
     ]);
 }
     private function getMissionCompletionTrend(
@@ -302,7 +381,7 @@ private function renderAdminDashboard(
     ): Response {
         // Données spécifiques à l'employé
         $userMissions = $missionRepository->findBy(['assignedTo' => $user]);
-        
+
         $lateMissions = array_filter($userMissions, function($mission) {
             return $mission->getDateTerminer() < new \DateTime() 
                 && $mission->getStatus() !== 'Done';

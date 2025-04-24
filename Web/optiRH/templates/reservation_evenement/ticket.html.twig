@@ -1,0 +1,308 @@
+
+{% block body %}
+
+    <meta charset="UTF-8">
+    <title>Billet - {{ evenement.titre }}</title>
+    <style>
+        /* Inclure les polices directement en base64 pour plus de fiabilité */
+        @font-face {
+            font-family: 'Montserrat';
+            font-style: normal;
+            font-weight: 400;
+            src: url('https://fonts.gstatic.com/s/montserrat/v25/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCtr6Hw5aX8.woff2') format('woff2');
+        }
+        @font-face {
+            font-family: 'Montserrat';
+            font-style: normal;
+            font-weight: 700;
+            src: url('https://fonts.gstatic.com/s/montserrat/v25/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCuM73w5aX8.woff2') format('woff2');
+        }
+        @font-face {
+            font-family: 'Playfair Display';
+            font-style: normal;
+            font-weight: 700;
+            src: url('https://fonts.gstatic.com/s/playfairdisplay/v30/nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKdFvXDXbtY.woff2') format('woff2');
+        }
+        
+        :root {
+            --primary: #1e3a8a;
+            --secondary: #2563eb;
+            --dark: #1e3a8a;
+            --light: #f8fafc;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background: #f3f4f6;
+            font-size: 12pt;
+        }
+        
+        .ticket {
+            width: 800px;
+            height: 350px;
+            display: flex;
+            position: relative;
+            background: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin: 0 auto;
+            /* Pour wkhtmltopdf, éviter les overflow */
+            overflow: hidden;
+        }
+        
+        /* Simplifier les pseudo-éléments pour wkhtmltopdf */
+        .ticket-top-border {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 15px;
+            background: linear-gradient(90deg, 
+                var(--primary) 0%, 
+                var(--primary) 20%, 
+                var(--secondary) 20%, 
+                var(--secondary) 40%, 
+                transparent 40%);
+            clip-path: polygon(0 0, 100% 0, 95% 100%, 5% 100%);
+        }
+        
+        .ticket-bottom-border {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 15px;
+            background: linear-gradient(90deg, 
+                transparent 60%,
+                var(--secondary) 60%, 
+                var(--secondary) 80%, 
+                var(--primary) 80%, 
+                var(--primary) 100%);
+            clip-path: polygon(5% 0, 95% 0, 100% 100%, 0 100%);
+        }
+        
+        .separator {
+            position: absolute;
+            left: 55%;
+            top: 20px;
+            bottom: 20px;
+            width: 2px;
+            background: linear-gradient(to bottom, 
+                var(--primary) 0%, 
+                var(--primary) 100%);
+        }
+        
+        .separator-dot {
+            position: absolute;
+            left: 55%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 18px;
+            height: 18px;
+            background: var(--secondary);
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 0 0 2px var(--primary);
+            z-index: 2;
+        }
+        
+        .left-panel {
+            width: 55%;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+        
+        .right-panel {
+            width: 45%;
+            padding: 40px;
+            background: var(--light);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-sizing: border-box;
+        }
+        
+        .event-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 24pt;
+            color: var(--dark);
+            margin: 0 0 15px;
+            line-height: 1.2;
+        }
+        
+        .event-image {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin: 0 auto 20px;
+            border: 3px solid white;
+        }
+        
+        .event-type {
+            display: inline-block;
+            background: var(--secondary);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 12pt;
+            margin-bottom: 20px;
+        }
+        
+        .event-details {
+            margin-top: 10px;
+        }
+        
+        .detail-row {
+            display: flex;
+            margin-bottom: 12px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 11pt;
+        }
+        
+        .detail-icon {
+            width: 24px;
+            text-align: center;
+            color: var(--primary);
+            margin-right: 10px;
+        }
+        
+        .detail-text {
+            flex: 1;
+        }
+        
+        .personal-info {
+            margin-bottom: 20px;
+        }
+        
+        .personal-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 15px;
+            position: relative;
+            padding-bottom: 8px;
+            font-size: 14pt;
+        }
+        
+        .personal-title::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: var(--secondary);
+        }
+        
+        .user-info {
+            font-family: 'Montserrat', sans-serif;
+            margin-bottom: 10px;
+            font-size: 11pt;
+        }
+        
+        .notice {
+            font-size: 10pt;
+            color: #64748b;
+            text-align: center;
+            font-style: italic;
+            margin-top: auto;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+        }
+        
+        .logo {
+            height: 50px;
+            margin-top: 20px;
+            align-self: center;
+        }
+        
+        .qr-code {
+            width: 100px;
+            height: 100px;
+            background: #eee;
+            align-self: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 15px 0;
+        }
+        
+        .footer {
+            font-size: 9pt;
+            text-align: center;
+            color: #94a3b8;
+            margin-top: 15px;
+        }
+    </style>
+    <div class="ticket">
+        <div class="ticket-top-border"></div>
+        <div class="ticket-bottom-border"></div>
+        <div class="separator"></div>
+        <div class="separator-dot"></div>
+        
+        <div class="left-panel">
+            <span class="event-type">{{ evenement.type }}</span>
+            <h1 class="event-title">{{ evenement.titre }}</h1>
+            
+            <div class="event-details">
+                <div class="detail-row">
+                    <div class="detail-icon">📅</div>
+                    <div class="detail-text">
+                        Du {{ evenement.dateDebut|date('d/m/Y') }} 
+                        au {{ evenement.dateFin|date('d/m/Y') }}
+                    </div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-icon">⏰</div>
+                    <div class="detail-text">{{ evenement.heure | date ('H:i')}}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-icon">📍</div>
+                    <div class="detail-text">{{ evenement.lieu }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="right-panel">
+            <div class="header-with-logo" style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 class="personal-title" style="margin: 0;">VOTRE BILLET</h3>
+                <img src="{{ absolute_url(asset('/images/logo-dark.png')) }}" alt="Logo" class="logo" style="height: 40px;">
+            </div>
+
+                <div class="user-info">
+                    <strong>Nom:</strong> {{ reservation.lastName }}<br>
+                    <strong>Prénom:</strong> {{ reservation.firstName }}<br>
+                </div>
+            <div class="qr-code">
+                {% set qrContent = 
+                    "Billet d'entrée\n" ~
+                    "----------------\n" ~
+                    "Événement: " ~ evenement.titre ~ "\n" ~
+                    "Date: " ~ evenement.dateDebut|date('d/m/Y') ~ "\n" ~
+                    "Heure: " ~ evenement.heure|date('H:i') ~ "\n" ~
+                    "Lieu: " ~ evenement.lieu ~ "\n\n" ~
+                    "Participant:\n" ~
+                    reservation.firstName ~ " " ~ reservation.lastName ~ "\n" ~
+                    "Référence: " ~ reservation.id ~ "\n" ~
+                    "Généré le: " ~ "now"|date('d/m/Y H:i')
+                %}
+                
+                <img src="{{ qr_code_data_uri(qrContent) }}" alt="QR Code" width="100" height="100">
+            </div>
+            
+            <p class="notice">Ce billet est personnel et non transférable</p>
+            
+            
+            <div class="footer">
+                Billet généré le {{ "now"|date('d/m/Y à H:i') }}
+            </div>
+        </div>
+    </div>
+ {% endblock %}
+ 
