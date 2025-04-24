@@ -15,7 +15,11 @@
         "doctrine/orm": "2.20",
         "dompdf/dompdf": "^3.1",
         "endroid/qr-code": "^6.0",
+<<<<<<< HEAD
+        "endroid/qr-code-bundle": "^6.0",
+=======
         "endroid/qr-code-bundle": "*",
+>>>>>>> 95da86d34d18a637648ea248cbe08e1b8b3410ad
         "knplabs/knp-paginator-bundle": "^6.4",
         "knplabs/knp-snappy-bundle": "^1.10",
         "phpdocumentor/reflection-docblock": "^5.3",

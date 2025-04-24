@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Controller\Admin;
 
 use App\Repository\GsProjet\MissionRepository;
@@ -22,7 +21,7 @@ class HomeController extends AbstractController
         MissionRepository $missionRepository
     ): Response {
         $user = $this->security->getUser();
-        
+
         if ($this->isGranted('ROLE_ADMIN')) {
             return $this->renderAdminDashboard($projectRepository, $missionRepository);
         }
@@ -65,7 +64,7 @@ class HomeController extends AbstractController
     ): Response {
         // Données spécifiques à l'employé
         $userMissions = $missionRepository->findBy(['assignedTo' => $user]);
-        
+
         $lateMissions = array_filter($userMissions, function($mission) {
             return $mission->getDateTerminer() < new \DateTime() 
                 && $mission->getStatus() !== 'Done';
