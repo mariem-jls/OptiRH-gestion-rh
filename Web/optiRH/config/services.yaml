@@ -12,6 +12,8 @@ parameters:
     huggingface_api_key: '%env(HUGGINGFACE_API_KEY)%'
     admin_email: 'maram.rachdi11@gmail.com'
     env(GEMINI_API_KEY): ''
+
+    avatars_directory: '%kernel.project_dir%/public/uploads/avatars'
     
     
     infobip_api_url: '%env(INFOBIP_API_URL)%'
