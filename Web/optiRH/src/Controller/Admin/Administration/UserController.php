@@ -46,13 +46,14 @@ class UserController extends AbstractController
         $user = new User();
         $form = $this->createForm(UserType::class, $user);
         $form->handleRequest($request);
-
-
+        
+        
         if ($form->isSubmitted() && $form->isValid()) {
             /** @var string $plainPassword */
             $plainPassword = $form->get('plainPassword')->getData();
             $user->setPassword($userPasswordHasher->hashPassword($user, $plainPassword));
             $user->setIsVerified(true);
+            $user->setCreatedAt(new \DateTimeImmutable('now'));
             $entityManager->persist($user);
             $entityManager->flush();
             return $this->redirectToRoute('admin_users');
