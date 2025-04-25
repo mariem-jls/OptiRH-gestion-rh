@@ -50,6 +50,7 @@
 }
 
 
+
 </style>
 {% endblock %}
 
@@ -58,6 +59,18 @@
 {% endblock %}
 
 {% block body %}
+<div class="weather-card mt-3 d-flex justify-content-between">
+    <div>
+        <h3><span style="font-weight: normal;">Bonjour </span><strong>{{ app.user.nom|default('Utilisateur') }}</strong> !</h3>
+    </div>
+    <div>
+        <a href="{{ path('app_logout') }}" class="btn btn-logout ">
+            <i class="fas fa-sign-out-alt"></i> Déconnexion
+        </a>
+    </div>
+</div>
+
+
 <div id="weather">
     <div class="weather-card">
         <div class="text-center">
