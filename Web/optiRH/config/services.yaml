@@ -109,21 +109,12 @@ services:
         arguments:
             $logger: '@monolog.logger'
             $entityManager: '@doctrine.orm.entity_manager'
-<<<<<<< HEAD
-    
     
     App\Service\GeminiAnalysisService:
         arguments:
             $apiKey: '%env(GEMINI_API_KEY)%'
 
-    
-
-
-   
-
-=======
     Stripe\StripeClient:
         arguments:
             - '%env(STRIPE_SECRET_KEY)%'
             - '%env(STRIPE_PUBLIC_KEY)%'
->>>>>>> ebda8224a4b7eccdc540e42d6af677579489b5d9
