@@ -34,7 +34,7 @@ class UserController extends AbstractController
             5
         );
 
-        return $this->render('administration/users/indexUsers.html.twig', [
+        return $this->render('Administration/Users/indexUsers.html.twig', [
             'pagination' => $pagination,
             'searchTerm' => $searchTerm,
         ]);
@@ -58,7 +58,7 @@ class UserController extends AbstractController
             return $this->redirectToRoute('admin_users');
         }
 
-        return $this->render('administration/users/new.html.twig', [
+        return $this->render('Administration/Users/new.html.twig', [
             'user' => $user,
             'form' => $form->createView(),
         ]);
@@ -67,7 +67,7 @@ class UserController extends AbstractController
     #[Route('/users/{id}', name: 'admin_users_show', methods: ['GET'])]
     public function show(User $user): Response
     {
-        return $this->render('administration/users/show.html.twig', [
+        return $this->render('Administration/Users/show.html.twig', [
             'user' => $user,
         ]);
     }
@@ -90,7 +90,7 @@ class UserController extends AbstractController
             return $this->redirectToRoute('admin_users');
         }
 
-        return $this->render('administration/users/edit.html.twig', [
+        return $this->render('Administration/Users/edit.html.twig', [
             'user' => $user,
             'form' => $form->createView(),
         ]);
@@ -106,11 +106,11 @@ class UserController extends AbstractController
         return $this->redirectToRoute('admin_users');
     }
 
-    
+
     #[Route('/users/{id}/profile', name: 'admin_users_profile', methods: ['GET'])]
     public function profile(User $user): Response
     {
-        return $this->render('administration/users/user-profile.html.twig', [
+        return $this->render('Administration/Users/user-profile.html.twig', [
             'user' => $user,
         ]);
     }
