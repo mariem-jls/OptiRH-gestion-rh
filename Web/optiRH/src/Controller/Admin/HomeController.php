@@ -1,34 +1,39 @@
 <?php
 
 namespace App\Controller\Admin;
-use Psr\Log\LoggerInterface;
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Query;
 use App\Entity\Reclamation;
+use Psr\Log\LoggerInterface;
 
 
-use App\Service\GeminiAnalysisService;
-use App\Repository\GsProjet\MissionRepository;
-use App\Repository\NotificationRepository; 
 use App\Entity\Notification ; 
-use App\Repository\GsProjet\ProjectRepository;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use App\Repository\UserRepository;
+use App\Service\GeminiAnalysisService;
+use Doctrine\ORM\EntityManagerInterface;
+use App\Repository\NotificationRepository; 
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Core\Security;
+use App\Repository\GsProjet\MissionRepository;
+use App\Repository\GsProjet\ProjectRepository;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Security;
-use Doctrine\ORM\Query;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class HomeController extends AbstractController
 {
     private $entityManager;
+    private UserRepository $userRepository;
     public function __construct(
         private Security $security,
         private GeminiAnalysisService $geminiAnalysis,
         private LoggerInterface $logger,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        UserRepository $userRepository
         
-    ) {$this->entityManager = $entityManager;}
+    ) {$this->entityManager = $entityManager;
+    $this->userRepository = $userRepository;
+    }
 
     #[Route('/', name: 'admin_home')]
     public function index(
@@ -228,6 +233,23 @@ private function renderAdminDashboard(
         $formattedMissionStats[$stat['status']] = $stat['count'];
     }
 
+    $adminStats = [
+        'total_users' => $this->userRepository->count([]),
+        'verified_users' => $this->userRepository->count(['isVerified' => true]),
+        'admin_users' => $this->userRepository->createQueryBuilder('u')
+            ->where('u.roles LIKE :role')
+            ->setParameter('role', '%ROLE_ADMIN%')
+            ->select('COUNT(u.id)')
+            ->getQuery()
+            ->getSingleScalarResult(),
+        'recent_users' => $this->userRepository->createQueryBuilder('u')
+            ->where('u.createdAt >= :date')
+            ->setParameter('date', new \DateTime('-30 days'))
+            ->select('COUNT(u.id)')
+            ->getQuery()
+            ->getSingleScalarResult(),
+    ];
+
     return $this->render('admin/index.html.twig', [
         'project_stats' => $formattedProjectStats,
         'mission_stats' => $formattedMissionStats,
@@ -244,7 +266,8 @@ private function renderAdminDashboard(
         'statusDataJson' => json_encode($statusData),  // JSON version for JS
         'sentimentDataJson' => json_encode($sentimentData),
         'typeDataJson' => json_encode($typeData),
-        'timelineDataJson' => json_encode($timelineData)
+        'timelineDataJson' => json_encode($timelineData),
+        'adminStats' => $adminStats,
     ]);
 }
     private function getMissionCompletionTrend(
