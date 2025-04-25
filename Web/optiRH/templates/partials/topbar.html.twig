@@ -118,7 +118,7 @@
                     </div>
     
                     <!-- item-->
-                    <a href="contacts-profile" class="dropdown-item notify-item">
+                    <a href="{{ path('admin_users_profile', { id: app.user.id }) }}" class="dropdown-item notify-item">
                         <i class="fe-user"></i>
                         <span>Mon Compte</span>
                     </a>

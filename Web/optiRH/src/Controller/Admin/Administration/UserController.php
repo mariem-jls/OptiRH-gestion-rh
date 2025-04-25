@@ -88,4 +88,13 @@ class UserController extends AbstractController
 
         return $this->redirectToRoute('admin_users');
     }
+
+    
+    #[Route('/users/{id}/profile', name: 'admin_users_profile', methods: ['GET'])]
+    public function profile(User $user): Response
+    {
+        return $this->render('administration/users/user-profile.html.twig', [
+            'user' => $user,
+        ]);
+    }
 }
