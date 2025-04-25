@@ -5,11 +5,15 @@ parameters:
     turnstile_site_key: '%env(resolve:TURNSTILE_SITE_KEY)%'
     turnstile_secret_key: '%env(resolve:TURNSTILE_SECRET_KEY)%'
     weather_api_key: '%env(resolve:WEATHER_API_KEY)%'
-    
+
     app.mailer.sender_email: 'no-reply@votre-domaine.com'
     app.mailer.sender_name: 'Gestion des Missions'
-    
+
     huggingface_api_key: '%env(HUGGINGFACE_API_KEY)%'
+    admin_email: 'maram.rachdi11@gmail.com'
+    env(GEMINI_API_KEY): ''
+    
+    
     infobip_api_url: '%env(INFOBIP_API_URL)%'
     infobip_api_key: '%env(INFOBIP_API_KEY)%'
     infobip_sender: '%env(INFOBIP_SENDER)%'
@@ -61,12 +65,16 @@ services:
     App\Service\WeatherService:
         arguments:
             $weatherApiKey: '%weather_api_key%'
-    
+
     App\Service\MissionNotificationService:
         arguments:
             $senderEmail: '%app.mailer.sender_email%'
             $senderName: '%app.mailer.sender_name%'
-    
+
+    # add more service definitions when explicit configuration is needed
+    # please note that last definitions always *replace* previous ones
+
+
     App\Service\SentimentAnalysisService:
         arguments:
             $apiKey: '%huggingface_api_key%'
@@ -101,6 +109,11 @@ services:
         arguments:
             $logger: '@monolog.logger'
             $entityManager: '@doctrine.orm.entity_manager'
+    
+    App\Service\GeminiAnalysisService:
+        arguments:
+            $apiKey: '%env(GEMINI_API_KEY)%'
+
     Stripe\StripeClient:
         arguments:
             - '%env(STRIPE_SECRET_KEY)%'

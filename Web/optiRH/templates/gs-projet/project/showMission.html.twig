@@ -4,6 +4,8 @@
 
 {% block css %}
     <!-- Plugins css -->
+        <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+
     <link href="/libs/dropzone/min/dropzone.min.css" rel="stylesheet" type="text/css"/>
     <link href="/libs/bootstrap-tagsinput/bootstrap-tagsinput.css" rel="stylesheet"/>
     <link href="/libs/multiselect/css/multi-select.css" rel="stylesheet" type="text/css"/>
@@ -100,14 +102,25 @@
                             </div>
                             <div>
                                 <h6 class="mb-0">{{ mission.assignedTo.nom }}</h6>
-                                <small class="text-muted">{{ mission.assignedTo.poste|default('Employee') }}</small>
+<small class="text-muted">
+    {% set role = mission.assignedTo.roles[0]|default('ROLE_USER') %}
+    {% if role == 'ROLE_ADMIN' %}
+        Administrateur
+    {% elseif role == 'ROLE_EMPLOYEE' %}
+        Employee
+    {% elseif role == 'ROLE_USER' %}
+        Utilisateur
+    {% else %}
+        {{ role }}
+    {% endif %}
+</small>
                             </div>
                         {% else %}
                             <span class="text-muted">Non assigné</span>
                         {% endif %}
                     </div>
                 </div>
-
+ {% if is_granted('ROLE_ADMIN') %}
                 <div class="row mt-4">
                     <div class="col-sm-12 text-end">
                         <a href="{{ path('gs-projet_project_mission_edit', {'id': mission.id}) }}" class="btn btn-warning me-2">
@@ -121,10 +134,11 @@
                         </form>
                     </div>
                 </div>
-
+ {% endif %}
             </div>
         </div>
     </div>
+               
 
     <div class="col-md-4">
         <div class="card">

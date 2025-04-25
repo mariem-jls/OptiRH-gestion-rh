@@ -1,34 +1,281 @@
 {% extends 'partials/layout-vertical.html.twig' %}
 
-{% block title %}
-    Dashboard
-{% endblock %}
+{% block title %}Dashboard Admin{% endblock %}
 
 {% block css %}
+<!-- CSS Resources -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
 <style>
-#weather {
+    :root {
+        --primary-color: #4e73df;
+        --secondary-color: #1cc88a;
+        --danger-color: #e74a3b;
+        --warning-color: #f6c23e;
+        --info-color: #36b9cc;
+        --light-color: #f8f9fa;
+        --dark-color: #5a5c69;
+        --border-radius: 0.35rem;
+        --box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        --transition: all 0.3s ease-in-out;
+    }
+
+    /* Optimized CSS */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        display: none;
+        backdrop-filter: blur(5px);
+    }
+    
+    .loading-overlay .spinner-border {
+        width: 3.5rem;
+        height: 3.5rem;
+        border-width: 0.25em;
+    }
+    
+    /* Cards General Style */
+    .card-style {
+        background: #fff;
+        border-radius: var(--border-radius);
+        border: none;
+        box-shadow: var(--box-shadow);
+        transition: var(--transition);
+        overflow: hidden;
+    }
+    
+    .card-style:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 2rem 0 rgba(58, 59, 69, 0.2);
+    }
+    
+    .card-header-style {
+        background-color: rgba(255, 255, 255, 0.9);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        padding: 1.25rem 1.5rem;
+        font-weight: 600;
+        color: var(--dark-color);
+    }
+    
+
+  
+  
+    
+    /* Stats Cards */
+    .admin-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        composes: card-style;
+        padding: 1.75rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 5px;
+        background: var(--primary-color);
+    }
+    
+    .stat-card:nth-child(2)::before {
+        background: var(--secondary-color);
+    }
+    
+    .stat-card:nth-child(3)::before {
+        background: var(--danger-color);
+    }
+    
+    .stat-card h3 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--dark-color);
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-value {
+        font-size: 2.25rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        line-height: 1;
+    }
+    
+    .stat-card:nth-child(2) .stat-value {
+        color: var(--secondary-color);
+    }
+    
+    .stat-card:nth-child(3) .stat-value {
+        color: var(--danger-color);
+    }
+    
+    /* Charts Section */
+    .chart-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .chart-wrapper {
+        composes: card-style;
+        padding: 1.5rem;
+    }
+    
+    .chart-wrapper h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--dark-color);
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Late Missions Section */
+    .late-items {
+        composes: card-style;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .late-items h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--dark-color);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .late-item {
+        padding: 1rem;
+        border-left: 4px solid var(--danger-color);
+        margin-bottom: 0.75rem;
+        background: #fff9f9;
+        border-radius: 4px;
+        transition: var(--transition);
+    }
+    
+    .late-item:hover {
+        background: #fff0f0;
+    }
+    
+    .late-item strong {
+        font-weight: 600;
+        color: var(--dark-color);
+    }
+    
+    .late-item small {
+        color: #6c757d;
+        font-size: 0.85rem;
+    }
+    
+    /* Analysis Section */
+    .analysis-card {
+        composes: card-style;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .analysis-card h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--dark-color);
+        margin-bottom: 0;
+    }
+    
+    #analysisPlaceholder {
+        min-height: 200px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: rgba(248, 249, 250, 0.5);
+        border-radius: var(--border-radius);
+        border: 2px dashed #dee2e6;
+    }
+    
+    #analysisPlaceholder i {
+        font-size: 3rem;
+        color: #d1d3e2;
+        margin-bottom: 1rem;
+    }
+    
+    .generated-report {
+        padding: 1.5rem;
+        background: var(--light-color);
+        border-radius: var(--border-radius);
+        max-height: 500px;
+        overflow-y: auto;
+    }
+    
+    /* Sparkline Section */
+    .sparkline-card {
+        composes: card-style;
+        padding: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .sparkline-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--dark-color);
+        font-size: 1rem;
+    }
+    
+    .sparkline-stats {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-bottom: 1rem;
+    }
+    
+    .sparkline-container {
+        height: 50px;
+        margin-top: 1rem;
+        width: 100%;
+    }
+    
+/* Styles pour les statistiques */
+.stats-container {
     display: flex;
     flex-wrap: wrap;
     gap: 1.5rem;
     margin-top: 2rem;
 }
 
-.weather-card {
+.stats-card {
     background: #ffffff;
     border-radius: 16px;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
-    flex: 1 1 240px;
+    flex: 1 1 calc(50% - 1.5rem);
     padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.weather-card:hover {
+.stats-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
 }
 
-.weather-card-header {
+.stats-card-header {
     font-weight: 600;
     font-size: 1.1rem;
     margin-bottom: 0.75rem;
@@ -38,47 +285,567 @@
     gap: 0.5rem;
 }
 
-.weather-card-body {
-    font-size: 0.95rem;
-    color: #555;
+.stats-chart {
+    width: 100%;
+    height: 350px;
 }
 
-.weather-card img {
-    vertical-align: middle;
-    width: 36px;
-    height: 36px;
+.summary-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
 }
 
+.summary-card {
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    flex: 1 1 200px;
+    padding: 1rem;
+    text-align: center;
+}
+
+.card-value {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0.5rem 0;
+}
+
+.positive {
+    color: #28a745;
+}
+
+.negative {
+    color: #dc3545;
+}
+
+.neutral {
+    color: #6c757d;
+}
+
+.pending {
+    color: #ffc107;
+}
+
+.in-progress {
+    color: #17a2b8;
+}
+
+.resolved {
+    color: #28a745;
+}
+
+@media (max-width: 768px) {
+    .stats-card {
+        flex: 1 1 100%;
+    }
+}
+
+    
+    /* Flow Chart Styles */
+    #flowchart-diagram {
+        min-height: 300px;
+        background: #f8f9fa;
+        padding: 1rem;
+        overflow: hidden;
+    }
+
+    #flowchart-diagram svg {
+        width: 100%;
+        height: 100%;
+    }
+
+    .start-node rect {
+        fill: #4e73df !important;
+    }
+
+    .end-node rect {
+        fill: #1cc88a !important;
+    }
+
+    .operation-node rect {
+        fill: #f6c23e !important;
+    }
+    
+    /* Buttons */
+    .btn-primary {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+        padding: 0.5rem 1.25rem;
+        font-weight: 600;
+    }
+    
+    .btn-primary:hover {
+        background-color: #2e59d9;
+        border-color: #2653d4;
+    }
+    
+    .btn-success {
+        background-color: var(--secondary-color);
+        border-color: var(--secondary-color);
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 992px) {
+        .chart-container {
+            grid-template-columns: 1fr;
+        }
+        
+        .admin-stats {
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .stat-value {
+            font-size: 1.75rem;
+        }
+        
+        .chart-wrapper {
+            min-height: 300px;
+        }
+    }
+    
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .fade-in {
+        animation: fadeIn 0.5s ease-out forwards;
+    }
+
+    /* Weather Section Styles */
+    #weather {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .weather-card {
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+        flex: 1 1 240px;
+        padding: 1.25rem 1.5rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .weather-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .weather-card-header {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 0.75rem;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .weather-card-body {
+        font-size: 0.95rem;
+        color: #555;
+    }
+
+    .weather-card img {
+        vertical-align: middle;
+        width: 36px;
+        height: 36px;
+    }
+
+    .stats-card {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+    text-align: center;
+    transition: transform 0.2s ease;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-4px);
+    }
+
+    .stats-card i {
+        font-size: 2rem;
+        color: rgb(113, 182, 249);
+        margin-bottom: 0.5rem;
+    }
+
+    .stats-card h4 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #333;
+        margin: 0.25rem 0;
+    }
+
+    .stats-card p {
+        font-size: 0.9rem;
+        color: #555;
+        margin: 0;
+    }
 
 </style>
+{{ parent() }}
 {% endblock %}
 
 {% block topbar %}
-    {{ include('partials/topbar.html.twig', { page_title: 'Dashboard' }) }}
+{{ include('partials/topbar.html.twig', { page_title: 'Tableau de Bord Admin' }) }}
 {% endblock %}
 
 {% block body %}
-<div id="weather">
-    <div class="weather-card">
-        <div class="text-center">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Chargement...</span>
-            </div>
-            <p>Chargement des données météo...</p>
+<!-- Global Loading Overlay -->
+<div class="loading-overlay" id="globalLoading">
+    <div class="spinner-border" role="status"></div>
+    <span class="mt-3">Traitement en cours...</span>
+</div>
+
+{# Hello widget #}
+    <div class="weather-card mt-3 d-flex justify-content-between">
+        <div>
+            <h3><span style="font-weight: normal;">Bonjour </span><strong>{{ app.user.nom|default('Utilisateur') }}</strong> !</h3>
+        </div>
+        <div>
+            <a href="{{ path('app_logout') }}" class="btn btn-logout ">
+                <i class="fas fa-sign-out-alt"></i> Déconnexion
+            </a>
         </div>
     </div>
-</div> 
+
+{# weather widget #}
+    <div id="weather">
+        <div class="weather-card">
+            <div class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Chargement...</span>
+                </div>
+                <p>Chargement des données météo...</p>
+            </div>
+        </div>
+    </div> 
+
+    <div id="weather" style="display: flex; flex-wrap: wrap; gap: 1rem;"></div>
+
+{# Administration Section #}
+    <h3 class="m-2"><i class="fas fa-cog"></i></i> Administration </h3>
+    <div class="summary-cards">
+        <div class="summary-card stats-card">
+            <i class="fas fa-users"></i>
+            <h4>{{ adminStats.total_users }}</h4>
+            <p>Utilisateurs totaux</p>
+        </div>
+        <div class="summary-card stats-card">
+            <i class="fas fa-user-shield"></i>
+            <h4>{{ adminStats.admin_users }}</h4>
+            <p>Administrateurs</p>
+        </div>
+        <div class="summary-card stats-card">
+            <i class="fas fa-user"></i>
+            <h4>{{ adminStats.standard_users }}</h4>
+            <p>Employés</p>
+        </div>
+        <div class="summary-card stats-card">
+            <i class="fas fa-check-circle"></i>
+            <h4>{{ adminStats.verified_users }}</h4>
+            <p>Utilisateurs vérifiés</p>
+        </div>
+        <div class="summary-card stats-card">
+            <i class="fas fa-user-plus"></i>
+            <h4>{{ adminStats.recent_users }}</h4>
+            <p>Inscriptions récentes (30 jours)</p>
+        </div>
+        <div class="summary-card stats-card">
+            <i class="fas fa-user-times"></i>
+            <h4>{{ adminStats.pending_verification }}</h4>
+            <p>Vérifications en attente</p>
+        </div>
+        <div class="summary-card stats-card">
+            <i class="fas fa-sync-alt"></i>
+            <h4>{{ adminStats.recently_updated }}</h4>
+            <p>Comptes récemment mis à jour (30 jours)</p>
+        </div>
+        <div class="summary-card stats-card">
+            <i class="fas fa-hourglass-half"></i>
+            <h4>{{ adminStats.average_account_age|round(0, 'floor') }} jours</h4>
+            <p>Âge moyen des comptes</p>
+        </div>
+    </div>
+
+    <hr>
 
 
-<div id="weather" style="display: flex; flex-wrap: wrap; gap: 1rem;"></div>
 
+<div><br></div>
+<!-- Stats Cards -->
+<div class="admin-stats">
+    <div class="stat-card">
+        <h3>Projets Totaux</h3>
+        <p class="stat-value">
+            {% set total_projects = 0 %}
+            {% for status, count in project_stats %}
+                {% set total_projects = total_projects + count %}
+            {% endfor %}
+            {{ total_projects }}
+        </p>
+    </div>
+    
+    <div class="stat-card">
+        <h3>Missions Totales</h3>
+        <p class="stat-value">
+            {% set total_missions = 0 %}
+            {% for status, count in mission_stats %}
+                {% set total_missions = total_missions + count %}
+            {% endfor %}
+            {{ total_missions }}
+        </p>
+    </div>
+    
+    <div class="stat-card">
+        <h3>Missions en Retard</h3>
+        <p class="stat-value">{{ delayed_missions|length }}</p>
+    </div>
+</div>
+
+<!-- Section Statistiques des réclamations -->
+
+    <!-- Summary Cards -->
+    <div class="summary-cards">        
+        <div class="summary-card">            
+            <h5><i class="fas fa-chart-pie"></i> Taux de résolution</h5>            
+            <div class="card-value {{ resolutionRate is defined ? (resolutionRate > 75 ? 'positive' : (resolutionRate < 50 ? 'negative' : 'neutral')) : 'neutral' }}">                
+                {{ resolutionRate is defined ? resolutionRate : 0 }}%            
+            </div>            
+            <p>des réclamations sont résolues</p>        
+        </div>
+        
+        <div class="summary-card">
+            <h5><i class="fas fa-thermometer-half"></i> Sentiment dominant</h5>
+            <div class="card-value" id="dominant-sentiment">
+                <i class="fas fa-spinner fa-spin"></i>
+            </div>
+            <p>des réclamations</p>
+        </div>
+        
+        <div class="summary-card">
+            <h5><i class="fas fa-folder-open"></i> Type principal</h5>
+            <div class="card-value" id="dominant-type">
+                <i class="fas fa-spinner fa-spin"></i>
+            </div>
+            <p>des réclamations</p>
+        </div>
+    </div>
+<div>
+<!-- Charts Container -->
+    <h3 class="mt-5"><i class="fas fa-chart-bar"></i> Statistiques des Projets </h3>
+
+<div class="chart-container">
+    <div class="chart-wrapper fade-in">
+        <h3><i class="fas fa-project-diagram me-2"></i>Projets par statut</h3>
+        <div id="projectChart" style="width: 100%; height: 350px;"></div>
+    </div>
+    
+    <div class="chart-wrapper fade-in">
+        <h3><i class="fas fa-tasks me-2"></i>Missions par statut</h3>
+        <div id="missionChart" style="width: 100%; height: 350px;"></div>
+    </div>
+</div>
+
+<!-- Late Missions Section -->
+<div class="late-items fade-in">
+    <h3><i class="fas fa-exclamation-triangle text-danger me-2"></i>Missions en retard ({{ delayed_missions|length }})</h3>
+    {% if delayed_missions is empty %}
+        <div class="alert alert-success d-flex align-items-center">
+            <i class="fas fa-check-circle me-2"></i>
+            <span>Aucune mission en retard</span>
+        </div>
+    {% else %}
+        {% for mission in delayed_missions %}
+            <div class="late-item">
+                <strong>{{ mission.titre }}</strong> - 
+                <span class="badge bg-{{ mission.status == 'Done' ? 'success' : 'danger' }}">
+                    {{ mission.status }}
+                </span>
+                <br>
+                <small>Projet: {{ mission.project.nom }} • Date limite: {{ mission.dateTerminer|date('d/m/Y') }}</small>
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
+
+<!-- Sparkline Section -->
+<div class="card card-style mt-4">
+    <div class="card-header-style">
+        <h4 class="mb-0"><i class="fas fa-chart-line me-2"></i>Progression des missions par projet</h4>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            {% for project in projects %}
+            <div class="col-md-4 mb-4">
+                <div class="sparkline-card fade-in">
+                    <div class="sparkline-title">{{ project.entity.nom }}</div>
+                    <div class="sparkline-stats">
+                        {{ project.done_missions }} terminées / {{ project.total_missions }} total
+                    </div>
+                    <div class="sparkline-container">
+                        <span class="project-sparkline" 
+                              data-sparkline="{{ project.sparkline_data|join(',') }}"></span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+<!-- Flow Chart Section -->
+<div class="card card-style mt-4">
+    <div class="card-header-style">
+        <h4 class="mb-0"><i class="fas fa-project-diagram me-2"></i>Workflow des Projets</h4>
+    </div>
+    <div class="card-body">
+      
+        
+        <!-- Nouvelle section: Progression du workflow par projet -->
+        <div class="mt-4">
+            <h5 class="mb-3"><i class="fas fa-tasks me-2"></i>Progression détaillée par projet</h5>
+            <div class="table-responsive">
+                <table class="table table-hover table-sm">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Projet</th>
+                            <th>Progression</th>
+                            <th class="text-center">Missions Terminées</th>
+                            <th class="text-center">Total Missions</th>
+                            <th class="text-center">Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for project in projects %}
+                        {% set completion = project.done_missions > 0 ? (project.done_missions / project.total_missions * 100)|round : 0 %}
+                        <tr>
+                            <td>{{ project.entity.nom }}</td>
+                            <td style="width: 40%;">
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar {{ completion < 30 ? 'bg-danger' : (completion < 70 ? 'bg-warning' : 'bg-success') }}" 
+                                         role="progressbar" 
+                                         style="width: {{ completion }}%;" 
+                                         aria-valuenow="{{ completion }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100">
+                                    </div>
+                                </div>
+                                <small class="text-muted">{{ completion }}% terminé</small>
+                            </td>
+                            <td class="text-center">{{ project.done_missions }}</td>
+                            <td class="text-center">{{ project.total_missions }}</td>
+                            <td class="text-center">
+                                {% if completion == 100 %}
+                                    <span class="badge bg-success">Terminé</span>
+                                {% elseif completion >= 70 %}
+                                    <span class="badge bg-primary">Avancé</span>
+                                {% elseif completion >= 30 %}
+                                    <span class="badge bg-warning">En cours</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Démarrage</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Analysis Section -->
+<div class="analysis-card fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="mb-0">
+            <i class="fas fa-robot me-2"></i>Analyse Intelligente
+        </h3>
+        <button id="generateAnalysis" class="btn btn-primary">
+            <i class="fas fa-magic me-1"></i> Générer le Rapport
+        </button>
+    </div>
+    
+    <div class="analysis-content" id="geminiAnalysisContent">
+        <div class="text-center py-5" id="analysisPlaceholder">
+            <i class="fas fa-robot"></i>
+            <p class="mt-3 mb-0">Cliquez sur "Générer le Rapport" pour obtenir l'analyse</p>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Modal -->
+<div class="modal fade" id="loadingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center py-5">
+                <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
+                    <span class="visually-hidden">Chargement...</span>
+                </div>
+                <h5>Génération du rapport en cours...</h5>
+                <p class="mb-0 text-muted">Veuillez patienter</p>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+<div class="mt-4">
+    <h3 class="mt-4"><i class="fas fa-chart-bar"></i> Statistiques des réclamations</h3>
+    
+    <!-- Charts -->
+    <div class="stats-container">
+        <div class="stats-card">
+            <div class="stats-card-header">
+                <i class="fas fa-tasks"></i> Répartition par statut
+            </div>
+            <div id="status-chart" class="stats-chart"></div>
+        </div>
+        
+        <div class="stats-card">
+            <div class="stats-card-header">
+                <i class="fas fa-smile"></i> Répartition par sentiment
+            </div>
+            <div id="sentiment-chart" class="stats-chart"></div>
+        </div>
+        
+        <div class="stats-card">
+            <div class="stats-card-header">
+                <i class="fas fa-tags"></i> Répartition par type
+            </div>
+            <div id="type-chart" class="stats-chart"></div>
+        </div>
+        
+        <div class="stats-card">
+            <div class="stats-card-header">
+                <i class="fas fa-chart-line"></i> Évolution dans le temps
+            </div>
+            <div id="timeline-chart" class="stats-chart"></div>
+        </div>
+    </div>
+</div>
 
 {% endblock %}
 
-
 {% block javascript %}
-<script>
+{{ parent() }}
+<!-- JS Resources -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://www.gstatic.com/charts/loader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-sparklines/2.1.2/jquery.sparkline.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.11.3/release/flowchart.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 
+<script>
 function formatTime(unix) {
     return new Date(unix * 1000).toLocaleTimeString('fr-FR', {
         hour: '2-digit',
@@ -144,17 +911,467 @@ function createCard(title, content) {
         </div>
     `;
 }
+// Main Application Script
+document.addEventListener('DOMContentLoaded', function() {
+    // Configuration
+    const config = {
+        analysisEndpoint: '{{ path('admin_generate_analysis') }}',
+    };
+    
+    // State Management
+    const state = {
+        isGeneratingReport: false,
+        currentReport: null
+    };
+    
+    // DOM Elements
+    const elements = {
+        globalLoader: document.getElementById('globalLoading'),
+        generateBtn: document.getElementById('generateAnalysis'),
+        analysisContent: document.getElementById('geminiAnalysisContent'),
+        placeholder: document.getElementById('analysisPlaceholder'),
+        lateItemsContainer: document.querySelector('.late-items'),
+        flowchartDiagram: document.getElementById('flowchart-diagram'),
+        dominantSentiment: document.getElementById('dominant-sentiment'),
+        dominantType: document.getElementById('dominant-type')
+    };
+    
+    // UI Helpers
+    const ui = {
+        showLoader: () => elements.globalLoader.style.display = 'flex',
+        hideLoader: () => elements.globalLoader.style.display = 'none',
+        
+        showError: (message) => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Erreur',
+                text: message,
+                confirmButtonText: 'OK',
+                customClass: {
+                    popup: 'border-radius-08'
+                }
+            });
+        },
+        
+        updateButtonState: (isGenerating, isRefresh = false) => {
+            const btn = elements.generateBtn;
+            btn.disabled = isGenerating;
+            
+            if (isGenerating) {
+                btn.innerHTML = isRefresh 
+                    ? '<i class="fas fa-spinner fa-spin me-1"></i> Rafraîchissement...'
+                    : '<i class="fas fa-spinner fa-spin me-1"></i> Génération...';
+            } else if (state.currentReport) {
+                btn.innerHTML = '<i class="fas fa-sync-alt me-1"></i> Rafraîchir';
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-success');
+            } else {
+                btn.innerHTML = '<i class="fas fa-magic me-1"></i> Générer le Rapport';
+                btn.classList.remove('btn-success');
+                btn.classList.add('btn-primary');
+            }
+        },
+        
+        updateReportContent: (content) => {
+            if (elements.placeholder) {
+                elements.placeholder.remove();
+            }
+            
+            let reportDiv = elements.analysisContent.querySelector('.generated-report');
+            if (!reportDiv) {
+                reportDiv = document.createElement('div');
+                reportDiv.className = 'generated-report fade-in';
+                elements.analysisContent.prepend(reportDiv);
+            }
+            
+            reportDiv.innerHTML = content;
+        }
+    };
+    
+    // API Functions
+    const api = {
+        generateAnalysis: async () => {
+            try {
+                const response = await fetch(config.analysisEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Erreur serveur');
+                }
+                
+                return await response.json();
+            } catch (error) {
+                throw error;
+            }
+        }
+    };
+    
+    // Features
+    const features = {
+        loadCharts: () => {
+            // Load Google Charts
+            google.charts.load('current', {'packages':['corechart']});
+            google.charts.setOnLoadCallback(function() {
+                features.drawProjectCharts();
+                features.drawReclamationCharts();
+            });
+        },
+        
+        drawProjectCharts: () => {
+            try {
+                // Projects Chart
+                const projectData = new google.visualization.DataTable();
+                projectData.addColumn('string', 'Statut');
+                projectData.addColumn('number', 'Nombre');
+                projectData.addRows([
+                    {% for status, count in project_stats %}
+                        ['{{ status }}', {{ count }}],
+                    {% endfor %}
+                ]);
 
+                const projectOptions = {
+                    title: '',
+                    pieHole: 0.4,
+                    colors: ['#4e73df', '#1cc88a', '#f6c23e', '#e74a3b', '#36b9cc'],
+                    chartArea: {
+                        width: '90%', 
+                        height: '80%',
+                        left: 20,
+                        top: 20,
+                        right: 20,
+                        bottom: 20
+                    },
+                    legend: {
+                        position: 'labeled', 
+                        alignment: 'center',
+                        textStyle: {
+                            color: '#5a5c69',
+                            fontSize: 12
+                        }
+                    },
+                    pieSliceText: 'value',
+                    tooltip: {
+                        text: 'percentage'
+                    },
+                    backgroundColor: 'transparent',
+                    height: 350
+                };
 
+                const projectChart = new google.visualization.PieChart(
+                    document.getElementById('projectChart')
+                );
+                projectChart.draw(projectData, projectOptions);
+
+                // Missions Chart
+                const missionData = new google.visualization.DataTable();
+                missionData.addColumn('string', 'Statut');
+                missionData.addColumn('number', 'Nombre');
+                missionData.addRows([
+                    {% for status, count in mission_stats %}
+                        ['{{ status }}', {{ count }}],
+                    {% endfor %}
+                ]);
+
+                const missionOptions = {
+                    title: '',
+                    is3D: true,
+                    colors: ['#4e73df', '#1cc88a', '#f6c23e', '#e74a3b', '#36b9cc'],
+                    chartArea: {
+                        width: '90%',
+                        height: '80%',
+                        left: 20,
+                        top: 20,
+                        right: 20,
+                        bottom: 20
+                    },
+                    legend: {
+                        position: 'labeled',
+                        alignment: 'center',
+                        textStyle: {
+                            color: '#5a5c69',
+                            fontSize: 12
+                        }
+                    },
+                    pieSliceText: 'value',
+                    tooltip: {
+                        text: 'percentage'
+                    },
+                    backgroundColor: 'transparent',
+                    height: 350
+                };
+
+                const missionChart = new google.visualization.PieChart(
+                    document.getElementById('missionChart')
+                );
+                missionChart.draw(missionData, missionOptions);
+            } catch (error) {
+                console.error("Erreur dans le rendu des graphiques:", error);
+                
+                // Fallback content
+                document.getElementById('projectChart').innerHTML = `
+                    <div class="alert alert-warning p-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Le graphique des projets n'a pas pu être chargé.
+                        <div class="mt-2">
+                            {% for status, count in project_stats %}
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>{{ status }}:</span>
+                                    <strong>{{ count }}</strong>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('missionChart').innerHTML = `
+                    <div class="alert alert-warning p-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Le graphique des missions n'a pas pu être chargé.
+                        <div class="mt-2">
+                            {% for status, count in mission_stats %}
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>{{ status }}:</span>
+                                    <strong>{{ count }}</strong>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                `;
+            }
+        },
+        
+        drawReclamationCharts: () => {
+            try {
+                // Status Chart
+                const statusData = google.visualization.arrayToDataTable({{ statusData|json_encode|raw }});
+                const statusChart = new google.visualization.PieChart(document.getElementById('status-chart'));
+                statusChart.draw(statusData, {
+                    title: '',
+                    pieHole: 0.4,
+                    chartArea: {width: '90%', height: '80%'},
+                    height: 350,
+                    colors: ['#4e73df', '#1cc88a', '#f6c23e']
+                });
+
+                // Sentiment Chart
+                const sentimentData = google.visualization.arrayToDataTable({{ sentimentData|json_encode|raw }});
+                const sentimentChart = new google.visualization.ColumnChart(document.getElementById('sentiment-chart'));
+                sentimentChart.draw(sentimentData, {
+                    title: '',
+                    chartArea: {width: '85%', height: '75%'},
+                    height: 350,
+                    colors: ['#e74a3b', '#858796', '#1cc88a']
+                });
+
+                // Type Chart
+                const typeData = google.visualization.arrayToDataTable({{ typeData|json_encode|raw }});
+                const typeChart = new google.visualization.BarChart(document.getElementById('type-chart'));
+                typeChart.draw(typeData, {
+                    title: '',
+                    chartArea: {width: '85%', height: '75%'},
+                    height: 350,
+                    colors: ['#36b9cc', '#f6c23e', '#4e73df']
+                });
+
+                // Timeline Chart
+                const timelineData = google.visualization.arrayToDataTable({{ timelineData|json_encode|raw }});
+                const timelineChart = new google.visualization.LineChart(document.getElementById('timeline-chart'));
+                timelineChart.draw(timelineData, {
+                    title: '',
+                    chartArea: {width: '85%', height: '75%'},
+                    height: 350,
+                    colors: ['#4e73df'],
+                    curveType: 'function'
+                });
+
+                // Update dominant values
+                features.updateDominantValues();
+                
+            } catch (error) {
+                console.error("Erreur dans le rendu des graphiques de réclamation:", error);
+            }
+        },
+        
+        updateDominantValues: () => {
+            try {
+                // Get dominant sentiment
+                const sentimentArray = {{ sentimentData|json_encode|raw }};
+                if (sentimentArray.length > 1) {
+                    const dominant = sentimentArray.slice(1).sort((a, b) => b[1] - a[1])[0];
+                    elements.dominantSentiment.textContent = dominant[0];
+                    elements.dominantSentiment.className = 'card-value ' + 
+                        (dominant[0] === 'Positif' ? 'positive' : 
+                         dominant[0] === 'Négatif' ? 'negative' : 'neutral');
+                }
+
+                // Get dominant type
+                const typeArray = {{ typeData|json_encode|raw }};
+                if (typeArray.length > 1) {
+                    const dominant = typeArray.slice(1).sort((a, b) => b[1] - a[1])[0];
+                    elements.dominantType.textContent = dominant[0];
+                }
+            } catch (error) {
+                console.error("Erreur dans la mise à jour des valeurs dominantes:", error);
+            }
+        },
+        
+        initSparklines: () => {
+            $('.project-sparkline').each(function() {
+                const data = $(this).data('sparkline').split(',').map(Number);
+                
+                if(data.length > 0 && !data.some(isNaN)) {
+                    $(this).sparkline(data, {
+                        type: 'line',
+                        width: '100%',
+                        height: '50px',
+                        lineWidth: 2,
+                        lineColor: '#4e73df',
+                        fillColor: 'rgba(78, 115, 223, 0.1)',
+                        spotRadius: 3,
+                        spotColor: '#4e73df',
+                        minSpotColor: '#e74a3b',
+                        maxSpotColor: '#1cc88a',
+                        highlightSpotColor: '#4e73df',
+                        highlightLineColor: '#4e73df',
+                        tooltipFormatter: function(sparkline, options, fields) {
+                            return `Semaine ${fields.offset + 1}: ${fields.value}%`;
+                        }
+                    });
+                }
+            });
+        },
+        
+        initFlowChart: () => {
+            try {
+                elements.flowchartDiagram.innerHTML = '';
+                
+                const mermaidDiv = document.createElement('div');
+                mermaidDiv.className = 'mermaid';
+                
+                const projectsData = [];
+                {% for project in projects %}
+                    projectsData.push({
+                        name: '{{ project.entity.nom|e('js') }}',
+                        completed: {{ project.done_missions }},
+                        total: {{ project.total_missions }},
+                        completion: {{ project.done_missions > 0 ? (project.done_missions / project.total_missions * 100)|round : 0 }}
+                    });
+                {% endfor %}
+                
+                projectsData.sort((a, b) => a.completion - b.completion);
+                
+                let mermaidDefinition = 'flowchart LR\n';
+                mermaidDefinition += '    Start([Début du Workflow]) --> ';
+                
+                for (let i = 0; i < projectsData.length; i++) {
+                    const project = projectsData[i];
+                    const nodeId = `P${i}`;
+                    
+                    let nodeStyle = '';
+                    if (project.completion >= 100) {
+                        nodeStyle = ':::complete';
+                    } else if (project.completion >= 70) {
+                        nodeStyle = ':::advanced';
+                    } else if (project.completion >= 30) {
+                        nodeStyle = ':::progress';
+                    } else {
+                        nodeStyle = ':::start';
+                    }
+                    
+                    mermaidDefinition += `${nodeId}["${project.name}<br>(${project.completion}%)"]${nodeStyle}`;
+                    
+                    if (i < projectsData.length - 1) {
+                        mermaidDefinition += ' --> ';
+                    } else {
+                        mermaidDefinition += ' --> End([Fin])';
+                    }
+                }
+                
+                mermaidDefinition += '\n';
+                mermaidDefinition += '    classDef complete fill:#1cc88a,stroke:#169a6b,color:white;\n';
+                mermaidDefinition += '    classDef advanced fill:#4e73df,stroke:#2653d4,color:white;\n';
+                mermaidDefinition += '    classDef progress fill:#f6c23e,stroke:#dda20a,color:black;\n';
+                mermaidDefinition += '    classDef start fill:#e74a3b,stroke:#be2617,color:white;\n';
+                
+                mermaidDiv.textContent = mermaidDefinition;
+                elements.flowchartDiagram.appendChild(mermaidDiv);
+                
+                mermaid.initialize({ 
+                    startOnLoad: true,
+                    theme: 'neutral',
+                    flowchart: {
+                        useMaxWidth: true,
+                        htmlLabels: true,
+                        curve: 'basis'
+                    }
+                });
+                
+                mermaid.init(undefined, mermaidDiv);
+                
+            } catch (error) {
+                console.error("Erreur Mermaid:", error);
+                elements.flowchartDiagram.innerHTML = `
+                    <div class="alert alert-danger m-2">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        Erreur: Le diagramme n'a pas pu être chargé (${error.message})
+                    </div>
+                `;
+            }
+        },
+        
+        handleReportGeneration: async (isRefresh = false) => {
+            if (state.isGeneratingReport) return;
+            
+            state.isGeneratingReport = true;
+            ui.showLoader();
+            ui.updateButtonState(true, isRefresh);
+            
+            try {
+                const data = await api.generateAnalysis();
+                state.currentReport = data.report;
+                ui.updateReportContent(data.report);
+            } catch (error) {
+                ui.showError(error.message || 'Erreur lors de la génération du rapport');
+                state.currentReport = null;
+            } finally {
+                state.isGeneratingReport = false;
+                ui.hideLoader();
+                ui.updateButtonState(false, isRefresh);
+            }
+        }
+    };
+    
+    // Event Listeners
+    elements.generateBtn.addEventListener('click', () => features.handleReportGeneration(false));
+    
+    // Initialize all features with delay to ensure everything is loaded
+    setTimeout(() => {
+        features.loadCharts();
+        features.initSparklines();
+        features.initFlowChart();
+    }, 100);
+    
+    // Handle window resize
+    window.addEventListener('resize', () => {
+        if (typeof google !== 'undefined' && google.visualization) {
+            google.charts.setOnLoadCallback(() => {
+                ['projectChart', 'missionChart', 'status-chart', 'sentiment-chart', 'type-chart', 'timeline-chart'].forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element && element.innerHTML === '') {
+                        // Only redraw if chart exists and is empty (to avoid redrawing during loading)
+                        const chart = google.visualization.chart.getChart(element);
+                        if (chart) chart.draw();
+                    }
+                });
+            });
+        }
+    });
+});
 </script>
-
-<!-- knob plugin -->
-<script src="/libs/jquery-knob/jquery.knob.min.js"></script>
-
-<!--Morris Chart-->
-<script src="/libs/morris.js06/morris.min.js"></script>
-<script src="/libs/raphael/raphael.min.js"></script>
-
-<!-- Dashboar init js-->
-<script src="/js/pages/dashboard.init.js"></script>
 {% endblock %}

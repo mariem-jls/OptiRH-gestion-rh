@@ -1,0 +1,15 @@
+{# templates/notification/_recent.html.twig #}
+
+{% for notification in notifications %}
+    <a href="{{ path('app_admin_notification_read', {id: notification.id}) }}" class="dropdown-item notify-item">
+        <div class="notify-icon bg-{{ notification.isRead ? 'secondary' : 'primary' }}">
+            <i class="fe-bell"></i>
+        </div>
+        <p class="notify-details">{{ notification.message }}</p>
+        <small class="text-muted">{{ notification.createdAt|date('d/m/Y H:i') }}</small>
+    </a>
+{% else %}
+    <div class="dropdown-item notify-item">
+        <p class="text-muted text-center">Aucune nouvelle notification</p>
+    </div>
+{% endfor %}

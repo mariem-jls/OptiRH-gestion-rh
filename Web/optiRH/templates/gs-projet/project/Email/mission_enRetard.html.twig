@@ -1,128 +1,60 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html lang="fr" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; box-sizing: border-box;">
 <head>
-    <meta name="viewport" content="width=device-width"/>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <title>Mission en retard - Optirh</title>
-    <style type="text/css">
-        body {
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            line-height: 1.5;
-            color: #333333;
-            background-color: #f7f7f7;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .content {
-            background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            overflow: hidden;
-        }
-        .header {
-            background-color: #e4dddd;
-            padding: 25px;
-            text-align: center;
-            color: white;
-        }
-        .header img {
-            height: 40px;
-            margin-bottom: 15px;
-        }
-        .header h1 {
-            margin: 0;
-            font-size: 20px;
-            font-weight: 600;
-        }
-        .body-content {
-            padding: 25px;
-        }
-        .mission-card {
-            background-color: #e4dddd;
-            border-left: 4px solid #e74c3c;
-            border-radius: 4px;
-            padding: 15px;
-            margin: 20px 0;
-        }
-        .mission-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin: 0 0 10px 0;
-            color: #e74c3c;
-        }
-        .mission-detail {
-            margin: 8px 0;
-        }
-        .btn {
-            display: inline-block;
-            background-color: #e74c3c;
-            color: white;
-            text-decoration: none;
-            padding: 12px 25px;
-            border-radius: 4px;
-            font-weight: 600;
-            margin: 15px 0;
-        }
-        .footer {
-            text-align: center;
-            padding: 20px;
-            color: #95a5a6;
-            font-size: 12px;
-        }
-        .highlight {
-            color: #e74c3c;
-            font-weight: 600;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mission en retard - OptiRH</title>
 </head>
-<body>
-    <div class="container">
-        <div class="content">
-            <!-- En-tête -->
-            <div class="header">
-                <img src='data:image/png;base64,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' alt="Logo Optirh" style="width: 100%; max-width: 300px; height: auto; display: block; margin: 0 auto; "/>
-                <h1>Alerte : Mission en retard</h1>
-            </div>
-            
-            <!-- Corps du message -->
-            <div class="body-content">
-                <p>Bonjour <strong>{{ user.nom }}</strong>,</p>
-                
-                <p>La mission suivante est en retard de <span class="highlight">{{ daysLate }} jour(s)</span> :</p>
-                
-                <!-- Carte de mission -->
-                <div class="mission-card">
-                    <h2 class="mission-title">{{ mission.titre }}</h2>
-                    <p class="mission-detail"><strong>Projet :</strong> {{ mission.getProjectTitle() }}</p>
-                    <p class="mission-detail"><strong>Statut :</strong> {{ mission.status }}</p>
-                    <p class="mission-detail"><strong>Date d'échéance :</strong> {{ mission.dateTerminer|date('d/m/Y') }}</p>
-                    <p class="mission-detail"><strong>Jours de retard :</strong> <span class="highlight">{{ daysLate }} jour(s)</span></p>
+
+<body style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f6f6f6; margin: 0; padding: 0;">
+    <table class="body-wrap" width="100%" bgcolor="#f6f6f6" style="margin: 0; padding: 0;">
+        <tr>
+            <td></td>
+            <td class="container" width="100%" style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                <div class="content" style="background: #ffffff; border-radius: 8px; padding: 30px; border: 3px solid #e74c3c;">
+                    <table width="100%">
+                        <tr>
+                            <td style="text-align: center;">
+                                <a href="{{ absolute_url('home') }}" style="display: block; margin-bottom: 20px;">
+                                    <img src="https://i.ibb.co/0yTLr7bq/408065252-0f3bdb15-6321-42da-b294-c12b76d025d3.png" alt="OptiRH" height="80"/>
+                                </a>
+                                <h2 style="margin: 0; font-size: 22px; color: #e74c3c;">Alerte : Mission en retard</h2>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding-top: 30px;">
+                                <p>Bonjour <strong>{{ user.nom }}</strong>,</p>
+                                <p>La mission suivante est en retard de <strong style="color: #e74c3c;">{{ daysLate }} jour(s)</strong> :</p>
+                                
+                                <div style="background: #fdf6ee; border-left: 4px solid #e74c3c; border-radius: 6px; padding: 20px; margin: 20px 0;">
+                                    <h3 style="margin: 0 0 10px; color: #e74c3c; font-size: 18px; text-align: center;">{{ mission.titre }}</h3>
+                                    <p><strong>Projet :</strong> {{ mission.getProjectTitle() }}</p>
+                                    <p><strong>Statut :</strong> {{ mission.status }}</p>
+                                    <p><strong>Date d'échéance :</strong> {{ mission.dateTerminer|date('d/m/Y') }}</p>
+                                    <p><strong>Jours de retard :</strong> <span style="color: #e74c3c; font-weight: bold;">{{ daysLate }} jour(s)</span></p>
+                                </div>
+                                
+                                <p>Veuillez prendre les mesures nécessaires pour terminer cette mission dès que possible.</p>
+
+                                <div style="text-align: center; margin-top: 30px;">
+                                    <a href="{{ url('gs-projet_project_missions_index', {id: mission.id}) }}" style="background-color: #e74c3c; color: white; text-decoration: none; padding: 12px 24px; border-radius: 5px; font-weight: bold; display: inline-block;">Accéder à la mission</a>
+                                </div>
+
+                                <p style="margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px;">
+                                    Cordialement,<br>
+                                    <strong>L'équipe OptiRH</strong>
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
                 </div>
-                
-                <p>Veuillez prendre les mesures nécessaires pour terminer cette mission dès que possible.</p>
-                
-                <div style="text-align: center;">
-                    <a href="{{ url('gs-projet_project_missions_index', {id: mission.id}) }}" class="btn">
-                        Accéder à la mission
-                    </a>
+
+                <div class="footer" style="text-align: center; padding: 20px; font-size: 12px; color: #999;">
+                    © {{ "now"|date("Y") }} OptiRH. Tous droits réservés.
                 </div>
-                
-                <p style="margin-top: 30px; border-top: 1px solid #eeeeee; padding-top: 20px;">
-                    Cordialement,<br>
-                    <strong>L'équipe Optirh</strong>
-                </p>
-            </div>
-        </div>
-        
-        <!-- Pied de page -->
-        <div class="footer">
-            © {{ "now"|date("Y") }} Optirh. Tous droits réservés.
-        </div>
-    </div>
+            </td>
+            <td></td>
+        </tr>
+    </table>
 </body>
 </html>

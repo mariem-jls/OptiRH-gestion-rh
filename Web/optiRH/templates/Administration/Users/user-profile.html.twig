@@ -1,0 +1,107 @@
+{% extends 'partials/layout-vertical.html.twig' %}
+
+{% block title %}
+	Réinitialiser votre mot de passe
+{% endblock %}
+
+{% block topbar %}
+	{{ include('partials/topbar.html.twig', { page_title: 'Profil Utilisateur' }) }}
+{% endblock %}
+
+{% block body %}
+	<div class="container-fluid">
+		<div class="row">
+			<div
+				class="col-12">
+				<!-- Profile Card -->
+				<div class="card shadow-sm border-0">
+					<div class="card-body p-4">
+						<div
+							class="d-flex align-items-center mb-4">
+							<!-- User Avatar -->
+							<img src="https://ui-avatars.com/api/?name={{ user.nom|url_encode }}&background=6658dd&color=fff&size=100" alt="Avatar de {{ user.nom }}" class="rounded-circle me-3" style="width: 100px; height: 100px;">
+							<div>
+								<h3 class="fw-bold mb-1">{{ user.nom }}</h3>
+								<p class="text-muted mb-0">{{ user.email }}</p>
+								{% if user.isVerified %}
+									<span class="badge bg-success mt-2">Compte Vérifié</span>
+								{% else %}
+									<span class="badge bg-warning mt-2">Non Vérifié</span>
+								{% endif %}
+							</div>
+						</div>
+
+						<!-- Profile Details -->
+						<div class="row">
+							<div class="col-md-6">
+								<h5 class="fw-semibold mb-3">Détails du Profil</h5>
+								<ul class="list-unstyled">
+									<li class="mb-2">
+										<strong>Email :</strong>
+										{{ user.email }}
+									</li>
+									<li class="mb-2">
+										<strong>Adresse :</strong>
+										{{ user.address|default('Non spécifiée') }}
+									</li>
+									<li class="mb-2">
+										<strong>Rôles :</strong>
+										{% for role in user.roles %}
+											<span class="badge bg-primary me-1 p-1">{{ role|replace({'ROLE_': ''})|capitalize }}</span>
+										{% endfor %}
+									</li>
+									<li class="mb-2">
+										<strong>Notifications non lues :</strong>
+										<span class="badge bg-info">{{ user.getUnreadNotificationsCount }}</span>
+									</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Notifications Section -->
+				{% if user.getNotifications|length > 0 %}
+					<div class="card shadow-sm border-0 mt-4">
+						<div class="card-body p-4">
+							<h5 class="fw-semibold mb-3">Notifications Récentes</h5>
+							<div class="table-responsive">
+								<table class="table table-hover">
+									<thead>
+										<tr>
+											<th>Message</th>
+											<th>Date</th>
+											<th>Statut</th>
+										</tr>
+									</thead>
+									<tbody>
+										{% for notification in user.getNotifications|slice(0, 5) %}
+											<tr>
+												<td>{{ notification.message|default('N/A') }}</td>
+												<td>{{ notification.createdAt|date('d/m/Y H:i')|default('N/A') }}</td>
+												<td>
+													{% if notification.isRead %}
+														<span class="badge bg-success">Lu</span>
+													{% else %}
+														<span class="badge bg-warning">Non lu</span>
+													{% endif %}
+												</td>
+											</tr>
+										{% endfor %}
+									</tbody>
+								</table>
+							</div>
+							{% if user.getNotifications|length > 5 %}
+								<a href="{{ path('admin_notifications_list', {'userId': user.id}) }}" class="btn btn-link">Voir toutes les notifications</a>
+							{% endif %}
+						</div>
+					</div>
+				{% else %}
+					<div class="alert alert-info mt-4" role="alert">
+						Aucune notification pour vous.
+					</div>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+{% endblock %}
