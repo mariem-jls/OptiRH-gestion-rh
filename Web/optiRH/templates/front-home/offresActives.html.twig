@@ -3,15 +3,14 @@
 {% block title %}Jobs{% endblock %}
 
 {% block stylesheets %}
-    {{ parent() }} {# Conserve les styles de la base #}
+    {{ parent() }}
 {% endblock %}
 
 {% block slider %}{% endblock %}
 
 {% block body %}
-
-    <!-- Hero Area Start-->
-    <div class="slider-area ">
+    <!-- Hero Area Start -->
+    <div class="slider-area">
         <div class="single-slider section-overly slider-height2 d-flex align-items-center" data-background="{{ asset('img-front/hero/about.jpg') }}">
             <div class="container">
                 <div class="row">
@@ -25,21 +24,19 @@
         </div>
     </div>
     <!-- Hero Area End -->
+
     <!-- Job List Area Start -->
     <div class="job-listing-area pt-120 pb-120">
         <div class="container">
             <div class="row">
-                <!-- Left content -->
+                <!-- Left content (Filtres) -->
                 <div class="col-xl-3 col-lg-3 col-md-4">
                     <div class="row">
                         <div class="col-12">
                             <div class="small-section-tittle2 mb-45">
-                                <div class="ion"> <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            xmlns:xlink="http://www.w3.org/1999/xlink"
-                                            width="20px" height="12px">
-                                        <path fill-rule="evenodd"  fill="rgb(27, 207, 107)"
-                                              d="M7.778,12.000 L12.222,12.000 L12.222,10.000 L7.778,10.000 L7.778,12.000 ZM-0.000,-0.000 L-0.000,2.000 L20.000,2.000 L20.000,-0.000 L-0.000,-0.000 ZM3.333,7.000 L16.667,7.000 L16.667,5.000 L3.333,5.000 L3.333,7.000 Z"/>
+                                <div class="ion">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="12px">
+                                        <path fill-rule="evenodd" fill="rgb(27, 207, 107)" d="M7.778,12.000 L12.222,12.000 L12.222,10.000 L7.778,10.000 L7.778,12.000 ZM-0.000,-0.000 L-0.000,2.000 L20.000,2.000 L20.000,-0.000 L-0.000,-0.000 ZM3.333,7.000 L16.667,7.000 L16.667,5.000 L3.333,5.000 L3.333,7.000 Z"/>
                                     </svg>
                                 </div>
                                 <h4>Filtrer les offres d'emploi</h4>
@@ -48,173 +45,294 @@
                     </div>
                     <!-- Job Category Listing start -->
                     <div class="job-category-listing mb-50">
-                        <!-- single one -->
+                        <!-- Recherche par mots-clés -->
                         <div class="single-listing">
                             <div class="small-section-tittle2">
                                 <h4>Recherche par mots-clés</h4>
                             </div>
-                            <!-- Select job items start -->
                             <div class="select-job-items2">
-                                <input type="text" name="keyword" placeholder="Ex: développeur, stage..." value="{{ app.request.get('keyword') }}">
+                                <input type="text" id="keyword" placeholder="Ex: développeur, stage..." value="{{ app.request.get('keyword') }}">
                             </div>
-                            <!--  Select job items End-->
-                            <!-- select-Categories start -->
-                            <div class="select-Categories pt-80 pb-50">
-                                <div class="small-section-tittle2">
-                                    <h4>Mode de Travail</h4>
-                                </div>
+                        </div>
+                        <!-- Mode de travail -->
+                        <div class="single-listing">
+                            <div class="small-section-tittle2">
+                                <h4>Mode de Travail</h4>
+                            </div>
+                            <div class="select-Categories pt-20 pb-50">
                                 <label class="container">Télétravail
-                                    <input type="checkbox" >
+                                    <input type="checkbox" name="modeTravail[]" value="Télétravail">
                                     <span class="checkmark"></span>
                                 </label>
                                 <label class="container">Présentiel
-                                    <input type="checkbox" checked="checked active">
+                                    <input type="checkbox" name="modeTravail[]" value="Présentiel">
                                     <span class="checkmark"></span>
                                 </label>
                                 <label class="container">Hybride
-                                    <input type="checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="container">Tous
-                                    <input type="checkbox">
+                                    <input type="checkbox" name="modeTravail[]" value="Hybride">
                                     <span class="checkmark"></span>
                                 </label>
                             </div>
-                            <!-- select-Categories End -->
                         </div>
-                        <!-- single two -->
+                        <!-- Type de contrat -->
                         <div class="single-listing">
                             <div class="small-section-tittle2">
                                 <h4>Type de Contrat</h4>
                             </div>
-                            <!-- Select job items start -->
                             <div class="select-job-items2">
-                                <select name="select">
-                                    <option value="">CDD</option>
-                                    <option value="">CDI</option>
-                                    <option value="">Freelance</option>
-                                    <option value="">Stage</option>
+                                <select id="typeContrat">
+                                    <option value="">Tous</option>
+                                    <option value="CDD">CDD</option>
+                                    <option value="CDI">CDI</option>
+                                    <option value="Freelance">Freelance</option>
+                                    <option value="Stage">Stage</option>
                                 </select>
                             </div>
-                            <!--  Select job items End-->
-                            <!-- select-Categories start -->
-                            <div class="select-Categories pt-80 pb-50">
-                                <div class="small-section-tittle2">
-                                    <h4>Niveau d'Expérience</h4>
-                                </div>
+                        </div>
+                        <!-- Niveau d'expérience -->
+                        <div class="single-listing">
+                            <div class="small-section-tittle2">
+                                <h4>Niveau d'Expérience</h4>
+                            </div>
+                            <div class="select-Categories pt-20 pb-50">
                                 <label class="container">Junior
-                                    <input type="checkbox" >
+                                    <input type="checkbox" name="experience[]" value="Junior">
                                     <span class="checkmark"></span>
                                 </label>
                                 <label class="container">Senior
-                                    <input type="checkbox" checked="checked active">
+                                    <input type="checkbox" name="experience[]" value="Senior">
                                     <span class="checkmark"></span>
                                 </label>
                                 <label class="container">Débutant
-                                    <input type="checkbox">
+                                    <input type="checkbox" name="experience[]" value="Débutant">
                                     <span class="checkmark"></span>
                                 </label>
                             </div>
-                            <!-- select-Categories End -->
                         </div>
-                        <!-- single three -->
-                        <div class="single-listing">
-                            <!-- select-Categories start -->
-                            <div class="select-Categories pb-50">
-                                <div class="small-section-tittle2">
-                                    <h4>Posted Within</h4>
-                                </div>
-                                <label class="container">Any
-                                    <input type="checkbox" >
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="container">Today
-                                    <input type="checkbox" checked="checked active">
-                                    <span class="checkmark"></span>
-                                </label>
-                            </div>
-                            <!-- select-Categories End -->
-                        </div>
-
                     </div>
                     <!-- Job Category Listing End -->
                 </div>
-                <!-- Right content -->
+
+                <!-- Right content (Liste des offres) -->
                 <div class="col-xl-9 col-lg-9 col-md-8">
-                    <!-- Featured_job_start -->
                     <section class="featured-job-area">
                         <div class="container">
-                            <!-- Count of Job list Start -->
                             <div class="row">
                                 <div class="col-lg-12">
                                     <div class="count-job mb-35">
-                                        <span>{{ totalOffres }} Offres trouvées</span>
-                                        <!-- Select job items start -->
+                                        <span id="totalOffres">{{ totalOffres|default(0) }} Offres trouvées</span>
                                         <div class="select-job-items">
                                             <span>Trier par</span>
-                                            <select name="select">
-                                                <option value="">Aucun</option>
-                                                <option value="">Date</option>
-                                                <option value="">Titre du poste</option>
+                                            <select name="sort" id="sortBy">
+                                                <option value="none">Aucun</option>
+                                                <option value="date">Date</option>
+                                                <option value="title">Titre du poste</option>
                                             </select>
                                         </div>
-                                        <!--  Select job items End-->
                                     </div>
                                 </div>
                             </div>
-                            <!-- Count of Job list End -->
+                            <div id="offres-list">
+                                {% include 'front-home/_offres_list.html.twig' with {'offres': pagination} %}
+                            </div>
+                            <!-- Conteneur pour la pagination -->
+                            <div id="pagination-container">
 
-                            {% for offre in offres %}
-                                <!-- single-job-content -->
-                                <div class="single-job-items mb-30">
-                                    <div class="job-items">
-                                        <div class="company-img">
-                                            <a href="#"><img src="{{ asset('img-front/icon/job-list1.png') }}" alt=""></a>
-                                        </div>
-                                        <div class="job-tittle job-tittle2">
-                                            <a href="{{path('app_offre_show', {'id': offre.id})  }}">
-                                                <h4>{{ offre.poste }}</h4>
-                                            </a>
-                                            <ul>
-                                                <li><i class="fas fa-briefcase"></i> {{ offre.modeTravail }}</li>
-                                                <li><i class="fas fa-map-marker-alt"></i> {{ offre.localisation }}</li>
-                                                <li><i class="fas fa-users"></i>{{ offre.nbPostes }}</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                    <div class="items-link items-link2 f-right">
-                                        <a href="{{ path('app_front_show', {'id': offre.id}) }}">Voir plus</a>
-                                        <span>{{ offre.getTimeAgo() }}</span>
-                                    </div>
-                                </div>
-                            {% endfor %}
+                                {% include 'front-home/_pagination.html.twig' with {'pagination': pagination} %}
+                            </div>
                         </div>
                     </section>
-                    <!-- Featured_job_end -->
                 </div>
             </div>
         </div>
     </div>
     <!-- Job List Area End -->
-    <!--Pagination Start  -->
-    <div class="pagination-area pb-115 text-center">
-        <div class="container">
-            <div class="row">
-                <div class="col-xl-12">
-                    <div class="single-wrap d-flex justify-content-center">
-                        <nav aria-label="Page navigation example">
-                            <ul class="pagination justify-content-start">
-                                <li class="page-item active"><a class="page-link" href="#">01</a></li>
-                                <li class="page-item"><a class="page-link" href="#">02</a></li>
-                                <li class="page-item"><a class="page-link" href="#">03</a></li>
-                                <li class="page-item"><a class="page-link" href="#"><span class="ti-angle-right"></span></a></li>
-                            </ul>
-                        </nav>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!--Pagination End  -->
 {% endblock %}
 
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Sélection des éléments de filtre
+            const keywordInput = document.getElementById('keyword');
+            const modeTravailCheckboxes = document.querySelectorAll('input[name="modeTravail[]"]');
+            const typeContratSelect = document.getElementById('typeContrat');
+            const experienceCheckboxes = document.querySelectorAll('input[name="experience[]"]');
+            const sortBySelect = document.getElementById('sortBy');
+
+            // Vérifier si les éléments existent
+            if (!typeContratSelect) {
+                console.error('Erreur : l\'élément #typeContrat n\'est pas trouvé dans le DOM');
+                return;
+            }
+            console.log('Élément #typeContrat trouvé :', typeContratSelect);
+
+            if (!sortBySelect) {
+                console.error('Erreur : l\'élément #sortBy n\'est pas trouvé dans le DOM');
+                return;
+            }
+            console.log('Élément #sortBy trouvé :', sortBySelect);
+
+            // Vérifier si Nice Select est appliqué
+            const niceSelectWrapperTypeContrat = typeContratSelect.nextElementSibling;
+            if (niceSelectWrapperTypeContrat && niceSelectWrapperTypeContrat.classList.contains('nice-select')) {
+                console.log('Nice Select détecté pour #typeContrat');
+            }
+            const niceSelectWrapperSortBy = sortBySelect.nextElementSibling;
+            if (niceSelectWrapperSortBy && niceSelectWrapperSortBy.classList.contains('nice-select')) {
+                console.log('Nice Select détecté pour #sortBy');
+            }
+
+            // Variable pour suivre la page actuelle
+            let currentPage = 1;
+
+            // Fonction pour collecter les valeurs des filtres et du tri
+            function getFilterData() {
+                const modeTravail = Array.from(modeTravailCheckboxes)
+                    .filter(cb => cb.checked)
+                    .map(cb => cb.value);
+                const experience = Array.from(experienceCheckboxes)
+                    .filter(cb => cb.checked)
+                    .map(cb => cb.value);
+
+                const filters = {
+                    keyword: keywordInput ? keywordInput.value : '',
+                    modeTravail: modeTravail,
+                    typeContrat: typeContratSelect.value,
+                    experience: experience,
+                    sortBy: sortBySelect.value,
+                    page: currentPage
+                };
+                console.log('Filtres collectés :', filters);
+                return filters;
+            }
+
+            // Fonction pour envoyer la requête AJAX
+            function filterOffres() {
+                const filters = getFilterData();
+                console.log('Envoi de la requête AJAX avec :', filters);
+
+                fetch('{{ path('app_front_filter') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify(filters)
+                })
+                    .then(response => {
+                        console.log('Réponse HTTP :', response.status, response.statusText);
+                        if (!response.ok) {
+                            throw new Error('Erreur HTTP : ' + response.status);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Données JSON reçues :', data);
+                        const offresList = document.getElementById('offres-list');
+                        const totalOffres = document.getElementById('totalOffres');
+                        const paginationContainer = document.getElementById('pagination-container');
+                        offresList.innerHTML = data.html;
+                        totalOffres.textContent = `${data.total} Offres trouvées`;
+                        paginationContainer.innerHTML = data.pagination;
+
+                        // Ajouter des écouteurs sur les liens de pagination
+                        addPaginationListeners();
+                    })
+                    .catch(error => console.error('Erreur AJAX :', error));
+            }
+
+            // Fonction pour ajouter des écouteurs sur les liens de pagination
+            function addPaginationListeners() {
+                const paginationLinks = document.querySelectorAll('.pagination a');
+                paginationLinks.forEach(link => {
+                    link.addEventListener('click', (event) => {
+                        event.preventDefault();
+                        const href = link.getAttribute('href');
+                        const pageMatch = href.match(/page=(\d+)/);
+                        if (pageMatch) {
+                            currentPage = parseInt(pageMatch[1]);
+                            filterOffres();
+                        }
+                    });
+                });
+            }
+
+            // Écouteurs d'événements sur les filtres
+            if (keywordInput) {
+                keywordInput.addEventListener('input', debounce(() => {
+                    currentPage = 1;
+                    filterOffres();
+                }, 500));
+            }
+            modeTravailCheckboxes.forEach(cb => cb.addEventListener('change', () => {
+                currentPage = 1;
+                filterOffres();
+            }));
+            experienceCheckboxes.forEach(cb => cb.addEventListener('change', () => {
+                currentPage = 1;
+                filterOffres();
+            }));
+
+            // Gérer Nice Select pour typeContrat
+            if (niceSelectWrapperTypeContrat && niceSelectWrapperTypeContrat.classList.contains('nice-select')) {
+                typeContratSelect.addEventListener('change', () => {
+                    console.log('Type contrat changé (via Nice Select) :', typeContratSelect.value);
+                    currentPage = 1;
+                    filterOffres();
+                });
+                const optionsTypeContrat = niceSelectWrapperTypeContrat.querySelectorAll('li.option');
+                optionsTypeContrat.forEach(option => {
+                    option.addEventListener('click', () => {
+                        const value = option.getAttribute('data-value');
+                        console.log('Option Nice Select (typeContrat) cliquée :', value);
+                        typeContratSelect.value = value;
+                        typeContratSelect.dispatchEvent(new Event('change'));
+                    });
+                });
+            } else {
+                typeContratSelect.addEventListener('change', () => {
+                    console.log('Type contrat changé :', typeContratSelect.value);
+                    currentPage = 1;
+                    filterOffres();
+                });
+            }
+
+            // Gérer Nice Select pour sortBy
+            if (niceSelectWrapperSortBy && niceSelectWrapperSortBy.classList.contains('nice-select')) {
+                sortBySelect.addEventListener('change', () => {
+                    console.log('Tri changé (via Nice Select) :', sortBySelect.value);
+                    currentPage = 1;
+                    filterOffres();
+                });
+                const optionsSortBy = niceSelectWrapperSortBy.querySelectorAll('li.option');
+                optionsSortBy.forEach(option => {
+                    option.addEventListener('click', () => {
+                        const value = option.getAttribute('data-value');
+                        console.log('Option Nice Select (sortBy) cliquée :', value);
+                        sortBySelect.value = value;
+                        sortBySelect.dispatchEvent(new Event('change'));
+                    });
+                });
+            } else {
+                sortBySelect.addEventListener('change', () => {
+                    console.log('Tri changé :', sortBySelect.value);
+                    currentPage = 1;
+                    filterOffres();
+                });
+            }
+
+            // Initialiser les écouteurs de pagination au chargement initial
+            addPaginationListeners();
+
+            // Fonction debounce pour limiter les requêtes AJAX
+            function debounce(func, wait) {
+                let timeout;
+                return function (...args) {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => func.apply(this, args), wait);
+                };
+            }
+        });
+    </script>
+{% endblock %}
