@@ -475,7 +475,7 @@
 
     .stats-card i {
         font-size: 2rem;
-        color: #6658dd;
+        color: rgb(113, 182, 249);
         margin-bottom: 0.5rem;
     }
 
@@ -536,27 +536,48 @@
 {# Administration Section #}
     <h3 class="m-2"><i class="fas fa-cog"></i></i> Administration </h3>
     <div class="summary-cards">
-        <div class="stats-card summary-card">
+        <div class="summary-card stats-card">
             <i class="fas fa-users"></i>
             <h4>{{ adminStats.total_users }}</h4>
             <p>Utilisateurs totaux</p>
         </div>
-        <div class="stats-card summary-card">
-            <i class="fas fa-check-circle"></i>
-            <h4>{{ adminStats.verified_users }}</h4>
-            <p>Utilisateurs vérifiés</p>
-        </div>
-        <div class="stats-card summary-card">
+        <div class="summary-card stats-card">
             <i class="fas fa-user-shield"></i>
             <h4>{{ adminStats.admin_users }}</h4>
             <p>Administrateurs</p>
         </div>
-        <div class="stats-card summary-card">
+        <div class="summary-card stats-card">
+            <i class="fas fa-user"></i>
+            <h4>{{ adminStats.standard_users }}</h4>
+            <p>Employés</p>
+        </div>
+        <div class="summary-card stats-card">
+            <i class="fas fa-check-circle"></i>
+            <h4>{{ adminStats.verified_users }}</h4>
+            <p>Utilisateurs vérifiés</p>
+        </div>
+        <div class="summary-card stats-card">
             <i class="fas fa-user-plus"></i>
             <h4>{{ adminStats.recent_users }}</h4>
             <p>Inscriptions récentes (30 jours)</p>
         </div>
+        <div class="summary-card stats-card">
+            <i class="fas fa-user-times"></i>
+            <h4>{{ adminStats.pending_verification }}</h4>
+            <p>Vérifications en attente</p>
+        </div>
+        <div class="summary-card stats-card">
+            <i class="fas fa-sync-alt"></i>
+            <h4>{{ adminStats.recently_updated }}</h4>
+            <p>Comptes récemment mis à jour (30 jours)</p>
+        </div>
+        <div class="summary-card stats-card">
+            <i class="fas fa-hourglass-half"></i>
+            <h4>{{ adminStats.average_account_age|round(0, 'floor') }} jours</h4>
+            <p>Âge moyen des comptes</p>
+        </div>
     </div>
+
     <hr>
 
 

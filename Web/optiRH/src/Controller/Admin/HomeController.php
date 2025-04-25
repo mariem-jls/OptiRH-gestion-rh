@@ -233,22 +233,40 @@ private function renderAdminDashboard(
         $formattedMissionStats[$stat['status']] = $stat['count'];
     }
 
-    $adminStats = [
-        'total_users' => $this->userRepository->count([]),
-        'verified_users' => $this->userRepository->count(['isVerified' => true]),
-        'admin_users' => $this->userRepository->createQueryBuilder('u')
-            ->where('u.roles LIKE :role')
-            ->setParameter('role', '%ROLE_ADMIN%')
-            ->select('COUNT(u.id)')
-            ->getQuery()
-            ->getSingleScalarResult(),
-        'recent_users' => $this->userRepository->createQueryBuilder('u')
-            ->where('u.createdAt >= :date')
-            ->setParameter('date', new \DateTime('-30 days'))
-            ->select('COUNT(u.id)')
-            ->getQuery()
-            ->getSingleScalarResult(),
-    ];
+        $adminStats = [
+            'total_users' => $this->userRepository->count([]),
+            'verified_users' => $this->userRepository->count(['isVerified' => true]),
+            'pending_verification' => $this->userRepository->count(['isVerified' => false]),
+            'admin_users' => $this->userRepository->createQueryBuilder('u')
+                ->where('u.roles LIKE :role')
+                ->setParameter('role', '%ROLE_ADMIN%')
+                ->select('COUNT(u.id)')
+                ->getQuery()
+                ->getSingleScalarResult(),
+            'standard_users' => $this->userRepository->createQueryBuilder('u')
+                ->where('u.roles NOT LIKE :role')
+                ->setParameter('role', '%ROLE_ADMIN%')
+                ->select('COUNT(u.id)')
+                ->getQuery()
+                ->getSingleScalarResult(),
+            'recent_users' => $this->userRepository->createQueryBuilder('u')
+                ->where('u.createdAt >= :date')
+                ->setParameter('date', new \DateTime('-30 days'))
+                ->select('COUNT(u.id)')
+                ->getQuery()
+                ->getSingleScalarResult(),
+            'recently_updated' => $this->userRepository->createQueryBuilder('u')
+                ->where('u.updatedAt >= :date')
+                ->setParameter('date', new \DateTime('-30 days'))
+                ->select('COUNT(u.id)')
+                ->getQuery()
+                ->getSingleScalarResult(),
+            'average_account_age' => $this->userRepository->createQueryBuilder('u')
+                ->select('AVG(DATE_DIFF(CURRENT_DATE(), u.createdAt))')
+                ->getQuery()
+                ->getSingleScalarResult() ?? 0,
+        ];
+
 
     return $this->render('admin/index.html.twig', [
         'project_stats' => $formattedProjectStats,
