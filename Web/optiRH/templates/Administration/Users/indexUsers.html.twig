@@ -1,6 +1,7 @@
 {% extends 'partials/layout-vertical.html.twig' %}
 
-{% block title %}Gestion des Utilisateurs
+{% block title %}
+	Gestion des Utilisateurs
 {% endblock %}
 
 {% block topbar %}
@@ -8,71 +9,166 @@
 {% endblock %}
 
 {% block body %}
-	<div class="container mt-4">
-		<div class="d-flex justify-content-between align-items-center mb-3">
-			<h2>Liste des utilisateurs</h2>
-			<a href="{{ path('admin_users_new') }}" class="btn btn-primary">➕ Ajouter un utilisateur</a>
-		</div>
+	<div class="container-fluid mt-4">
+		<div class="card shadow-sm border-0">
+			<div
+				class="card-body p-4">
+				<!-- Header and Search -->
+				<div class="d-flex justify-content-between align-items-center mb-4">
+					<h3 class="fw-bold">Liste des Utilisateurs</h3>
+					<a href="{{ path('admin_users_new') }}" class="btn btn-primary fw-semibold">
+						<i class="mdi mdi-plus me-1"></i>
+						Ajouter un Utilisateur
+					</a>
+				</div>
 
-		<table class="table table-bordered table-hover shadow-sm">
-			<thead class="table-light">
-				<tr>
-					<th>Avatar</th>
-					<th>Nom</th>
-					<th>Email</th>
-					<th>Adresse</th>
-					<th>Rôles</th>
-					<th>Vérifié</th>
-					<th>Actions</th>
-				</tr>
-			</thead>
-			<tbody>
-				{% for user in users %}
-					<tr>
-						<td style="text-align: center;">
-							<div class="avatar-md">
-								<img class="rounded-circle avatar-md" src="https://ui-avatars.com/api/?name={{ app.user.nom|default(app.user.email)|url_encode }}" alt="Avatar de {{ app.user.nom|default(app.user.email) }}" style="width: 40px; height: 40px;">
-							</div>
-						</td>
+				<!-- Search Form -->
+				<form method="get" class="mb-4">
+					<div class="input-group">
+						<input type="text" name="q" class="form-control" placeholder="Rechercher par nom ou email..." value="{{ searchTerm|default('') }}">
+						<button type="submit" class="btn btn-outline-primary">
+							<i class="mdi mdi-magnify"></i>
+							Rechercher
+						</button>
+						{% if searchTerm %}
+							<a href="{{ path('admin_users') }}" class="btn btn-outline-secondary ms-2">
+								<i class="mdi mdi-close"></i>
+								Réinitialiser
+							</a>
+						{% endif %}
+					</div>
+				</form>
 
-						<td>{{ user.nom }}</td>
-						<td>{{ user.email }}</td>
-						<td>{{ user.address ?? '—' }}</td>
-						<td>
-							{% for role in user.roles %}
-								<span class="badge bg-secondary text-white me-1">{{ role }}</span>
-							{% endfor %}
-						</td>
-						<td>
-							{% if user.isVerified %}
-								<i class="fas fa-check-circle text-success"></i>
+				<!-- Users Table -->
+				<div class="table-responsive">
+					<table class="table table-hover table-bordered">
+						<thead class="table-light">
+							<tr>
+								<th>Avatar</th>
+								<th>Nom</th>
+								<th>Email</th>
+								<th>Adresse</th>
+								<th>Rôles</th>
+								<th>Vérifié</th>
+								<th>Actions</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for user in pagination %}
+								<tr>
+									<td class="text-center">
+										<img src="https://ui-avatars.com/api/?name={{ user.nom|url_encode }}&background=6658dd&color=fff&size=40" alt="Avatar de {{ user.nom }}" class="rounded-circle" style="width: 40px; height: 40px;">
+									</td>
+									<td>{{ user.nom }}</td>
+									<td>{{ user.email }}</td>
+									<td>{{ user.address|default('—') }}</td>
+									<td>
+										{% for role in user.roles %}
+											<span class="badge bg-primary me-1">{{ role|replace({'ROLE_': ''})|capitalize }}</span>
+										{% endfor %}
+									</td>
+									<td class="text-center">
+										{% if user.isVerified %}
+											<span class="badge bg-success">Vérifié</span>
+										{% else %}
+											<span class="badge bg-warning">Non Vérifié</span>
+										{% endif %}
+									</td>
+									<td>
+										<div class="dropdown">
+											<button class="btn btn-sm btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton{{ user.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+												<i class="mdi mdi-dots-horizontal"></i>
+											</button>
+											<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton{{ user.id }}">
+												<li>
+													<a class="dropdown-item" href="{{ path('admin_users_show', { id: user.id }) }}">Voir</a>
+												</li>
+												<li>
+													<a class="dropdown-item" href="{{ path('admin_users_edit', { id: user.id }) }}">Modifier</a>
+												</li>
+												<li><hr class="dropdown-divider"></li>
+												<li>
+													<form method="post" action="{{ path('admin_users_delete', { id: user.id }) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?');">
+														<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
+														<input type="hidden" name="_method" value="DELETE">
+														<button class="dropdown-item text-danger" type="submit">Supprimer</button>
+													</form>
+												</li>
+											</ul>
+										</div>
+									</td>
+								</tr>
 							{% else %}
-								<i class="fas fa-times-circle text-danger"></i>
-							{% endif %}
-						</td>
-						<td>
-							<div class="dropdown">
-								<button class="btn btn-sm btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">...</button>
-								<div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
-									<a href="{{ path('admin_users_show', { id: user.id }) }}" class="dropdown-item">Voir</a>
-									<a href="{{ path('admin_users_edit', { id: user.id }) }}" class="dropdown-item">Modifier</a>
-									<div class="dropdown-divider"></div>
-                                    <form method="post" action="{{ path('admin_users_delete', { id: user.id }) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?');">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
-                                        <input type="hidden" name="_method" value="DELETE"> {# <- ajoute cette ligne #}
-                                        <button class="dropdown-item text-danger" type="submit">Supprimer</button>
-                                    </form>
+								<tr>
+									<td colspan="7" class="text-center">Aucun utilisateur trouvé.</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
 
-								</div>
-							</div>
-						</td>
-					</tr>
-				{% else %}
-					<tr>
-						<td colspan="6" class="text-center">Aucun utilisateur trouvé.</td>
-					</tr>
-				{% endfor %}
-			</tbody>
-		</table>
+				<!-- Pagination -->
+				{% set pageCount = (pagination.getTotalItemCount / pagination.getItemNumberPerPage)|round(0, 'ceil') %}
+				{% set queryParams = query|default(app.request.query.all) %}
+				{% set pageParameterName = pageParameterName|default('page') %}
+				{% if pageCount > 1 %}
+					<nav aria-label="Navigation de la liste des utilisateurs">
+						<ul
+							class="pagination justify-content-center mb-0">
+							{# First Page #}
+							<li class="page-item {{ pagination.getCurrentPageNumber == 1 ? 'disabled' : '' }}">
+								<a class="page-link" href="{{ path(app.request.attributes.get('_route'), queryParams|merge({(pageParameterName): 1})) }}" aria-label="Première page">
+									<i class="mdi mdi-chevron-double-left"></i>
+								</a>
+							</li>
+
+							{# Previous Page #}
+							<li class="page-item {{ pagination.getCurrentPageNumber == 1 ? 'disabled' : '' }}">
+								<a class="page-link" href="{{ path(app.request.attributes.get('_route'), queryParams|merge({(pageParameterName): pagination.getCurrentPageNumber - 1})) }}" aria-label="Page précédente">
+									<i class="mdi mdi-chevron-left"></i>
+								</a>
+							</li>
+
+							{# Page Numbers with Ellipsis #}
+							{% set maxPagesToShow = 5 %}
+							{% set halfMaxPages = (maxPagesToShow / 2)|round(0, 'floor') %}
+							{% set startPage = max(1, pagination.getCurrentPageNumber - halfMaxPages) %}
+							{% set endPage = min(pageCount, startPage + maxPagesToShow - 1) %}
+							{% if startPage > 1 %}
+								<li class="page-item disabled">
+									<span class="page-link">...</span>
+								</li>
+							{% endif %}
+
+							{% for page in startPage..endPage %}
+								<li class="page-item {{ page == pagination.getCurrentPageNumber ? 'active' : '' }}">
+									<a class="page-link" href="{{ path(app.request.attributes.get('_route'), queryParams|merge({(pageParameterName): page})) }}">{{ page }}</a>
+								</li>
+							{% endfor %}
+
+							{% if endPage < pageCount %}
+								<li class="page-item disabled">
+									<span class="page-link">...</span>
+								</li>
+							{% endif %}
+
+							{# Next Page #}
+							<li class="page-item {{ pagination.getCurrentPageNumber == pageCount ? 'disabled' : '' }}">
+								<a class="page-link" href="{{ path(app.request.attributes.get('_route'), queryParams|merge({(pageParameterName): pagination.getCurrentPageNumber + 1})) }}" aria-label="Page suivante">
+									<i class="mdi mdi-chevron-right"></i>
+								</a>
+							</li>
+
+							{# Last Page #}
+							<li class="page-item {{ pagination.getCurrentPageNumber == pageCount ? 'disabled' : '' }}">
+								<a class="page-link" href="{{ path(app.request.attributes.get('_route'), queryParams|merge({(pageParameterName): pageCount})) }}" aria-label="Dernière page">
+									<i class="mdi mdi-chevron-double-right"></i>
+								</a>
+							</li>
+						</ul>
+					</nav>
+				{% endif %}
+			</div>
+		</div>
 	</div>
 {% endblock %}

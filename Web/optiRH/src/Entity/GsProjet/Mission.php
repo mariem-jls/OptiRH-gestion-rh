@@ -46,7 +46,8 @@ private ?Project $project = null;
     private ?User $assignedTo = null;
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $dateTerminer = null;
-
+    #[ORM\Column(type: 'boolean')]
+private bool $notifiedLate = false;
     public function __construct()
     {
         $this->createdAt = new \DateTime();
@@ -148,7 +149,39 @@ private ?Project $project = null;
     }
     
     // Dans Mission.php
+// Dans App\Entity\GsProjet\Mission
+
+public function getDaysLate(): int
+{
+    if (!$this->dateTerminer || $this->status === 'Done') {
+        return 0;
+    }
+    
+    $today = new \DateTime();
+    if ($this->dateTerminer > $today) {
+        return 0;
+    }
+    
+    return $today->diff($this->dateTerminer)->days;
+}
+// Dans votre entité Mission.php
+public function getProjectTitle(): string
+{
+    return $this->project ? $this->project->getNom() : 'Aucun projet associé';
+}
+// src/Entity/GsProjet/Mission.php
 
 
+
+public function isNotifiedLate(): bool
+{
+    return $this->notifiedLate;
+}
+
+public function setNotifiedLate(bool $notifiedLate): self
+{
+    $this->notifiedLate = $notifiedLate;
+    return $this;
+}
 
 }

@@ -5,10 +5,10 @@ namespace App\Form\GsProjet;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use App\Entity\GsProjet\Project;
-
+use Symfony\Component\Form\Extension\Core\Type\SubmitType; // Ajoutez cette ligne
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 class ProjectFilterType extends AbstractType
 {
@@ -16,26 +16,24 @@ class ProjectFilterType extends AbstractType
     {
         $builder
             ->add('search', TextType::class, [
+                'label' => 'Recherche',
                 'required' => false,
-                'attr' => ['placeholder' => 'Rechercher...']
+                'attr' => [
+                    'placeholder' => 'Nom ou description...',
+                    'class' => 'form-control'
+                ]
             ])
-           
             ->add('status', ChoiceType::class, [
-                'choices' => array_flip(Project::getStatusChoices()), // Label => valeur
+                'label' => 'Statut',
                 'required' => false,
-                'placeholder' => 'Tous les statuts',
-                'label' => false
-            ])
-            
-            ->add('sort', ChoiceType::class, [
-                'required' => false,
-                'label' => 'Trier par',
                 'choices' => [
-                    'Date de création' => 'createdAt',
-                    'Nom' => 'nom',
-                    'Statut' => 'status'
+                    'Actif' => Project::STATUS_ACTIVE,
+                    'En Cour' => Project::STATUS_INACTIVE,
+                    'Terminé' => Project::STATUS_COMPLETED,
+                    'En retard' => Project::STATUS_DELAYED
                 ],
-                'empty_data' => 'createdAt' // Valeur par défaut si non soumis
+                'placeholder' => 'Tous les statuts',
+                'attr' => ['class' => 'form-select']
             ]);
     }
 
@@ -44,7 +42,8 @@ class ProjectFilterType extends AbstractType
         $resolver->setDefaults([
             'method' => 'GET',
             'csrf_protection' => false,
-            'allow_extra_fields' => true
+            'allow_extra_fields' => true,
+            'data_class' => null // Important pour un formulaire sans entité
         ]);
     }
 }

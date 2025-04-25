@@ -27,32 +27,30 @@ use App\Repository\GsProjet\MissionRepository;
 class ProjectController extends AbstractController {
     #[Route('/', name: 'index', methods: ['GET'])]
     #[IsGranted('ROLE_ADMIN')]
-
+    #[Route('/', name: 'index', methods: ['GET'])]
     public function index(Request $request, ProjectRepository $projectRepository): Response
     {
-        $filterForm = $this->createForm(ProjectFilterType::class);
-        $filterForm->handleRequest($request);
-    
-        // Récupération indépendante des paramètres
         $search = $request->query->get('search');
         $status = $request->query->get('status');
-        $sort = $request->query->get('sort');
     
-        // Appel indépendant au repository
-        $projects = $projectRepository->findByIndependentFilters(
+        $projects = $projectRepository->findWithFilters(
             $search,
             $status,
-            $sort,
             $request->query->getInt('page', 1)
         );
     
         if ($request->isXmlHttpRequest()) {
-            return $this->render('gs-projet/project/_list.html.twig', ['projects' => $projects]);
+            return $this->render('gs-projet/project/_list.html.twig', [
+                'projects' => $projects
+            ]);
         }
     
         return $this->render('gs-projet/project/index.html.twig', [
             'projects' => $projects,
-            'filterForm' => $filterForm->createView()
+            'current_filters' => [
+                'search' => $search,
+                'status' => $status
+            ]
         ]);
     }
     #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
@@ -195,23 +193,24 @@ private function groupMissionsByStatus(array $missions): array
    
     #[Route('/{id}', name: 'show', methods: ['GET'])]
     #[IsGranted('ROLE_ADMIN')]
-
     public function show(Project $project, MissionRepository $missionRepository): Response
     {
         $user = $this->getUser();
         if ($project->getCreatedBy() !== $user) {
             throw $this->createAccessDeniedException();
         }
-
+    
         $stats = $missionRepository->getProjectStats($project);
         $groupedMissions = $missionRepository->findGroupedByStatus($project);
-
+        $overdueMissions = $missionRepository->findOverdueMissions($project);
+    
         return $this->render('gs-projet/project/show.html.twig', [
             'project' => $project,
             'groupedMissions' => $groupedMissions,
+            'overdueMissions' => $overdueMissions,
             'totalTasks' => $stats['total'] ?? 0,
             'completedTasks' => $stats['completed'] ?? 0,
-            'overdueTasks' => $stats['overdue'] ?? 0,
+            'overdueTasks' => count($overdueMissions),
             'membersCount' => $stats['members'] ?? 0
         ]);
     }

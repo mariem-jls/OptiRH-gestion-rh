@@ -1,0 +1,275 @@
+{% extends 'partials/layout-vertical.html.twig' %}
+
+{% block title %}Mon Dashboard{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+    /* Styles communs */
+    #weather { 
+        display: flex; 
+        flex-wrap: wrap; 
+        gap: 1.5rem; 
+        margin-top: 2rem;
+    }
+    .weather-card { 
+        background: #fff; 
+        border-radius: 16px; 
+        box-shadow: 0 6px 20px rgba(0,0,0,0.05); 
+        padding: 1.25rem 1.5rem;
+        flex: 1 1 300px;
+    }
+    
+    /* Styles spécifiques employé */
+    .employee-stats { 
+        display: grid; 
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    .stat-card { 
+        background: #fff; 
+        padding: 1.5rem; 
+        border-radius: 8px; 
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .stat-value { 
+        font-size: 2rem; 
+        font-weight: bold; 
+    }
+    .mission-list { 
+        margin-top: 2rem; 
+    }
+    .mission-item { 
+        padding: 1rem; 
+        margin-bottom: 1rem; 
+        border-left: 4px solid #4e73df;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    .mission-item.late { 
+        border-left-color: #e74a3b;
+        background: #fff9f9;
+    }
+    .chart-wrapper { 
+        background: white; 
+        border-radius: 8px; 
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .weather-icon {
+        width: 60px;
+        height: 60px;
+        margin: 0 auto;
+        display: block;
+    }
+    #totalMissions { color: #4e73df; }
+    #inProgress { color: #f6c23e; }
+    #completed { color: #1cc88a; }
+    #lateMissions { color: #e74a3b; }
+</style>
+{{ parent() }}
+{% endblock %}
+
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', { page_title: 'Mon Tableau de Bord' }) }}
+{% endblock %}
+
+{% block body %}
+<div id="weather">
+    <div class="weather-card">
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Chargement...</span>
+            </div>
+            <p>Chargement des données météo...</p>
+        </div>
+    </div>
+</div>
+
+<div class="employee-stats">
+    <div class="stat-card">
+        <h3>Mes Missions</h3>
+        <p class="stat-value" id="totalMissions">{{ total_missions }}</p>
+    </div>
+    <div class="stat-card">
+        <h3>En Cours</h3>
+        <p class="stat-value" id="inProgress">{{ mission_stats|filter(stat => stat.status == 'In Progress')|first.count|default(0) }}</p>
+    </div>
+    <div class="stat-card">
+        <h3>Terminées</h3>
+        <p class="stat-value" id="completed">{{ mission_stats|filter(stat => stat.status == 'Done')|first.count|default(0) }}</p>
+    </div>
+    <div class="stat-card">
+        <h3>En Retard</h3>
+        <p class="stat-value" id="lateMissions">{{ late_missions|length }}</p>
+    </div>
+</div>
+
+<div class="chart-wrapper">
+    <h3>État de mes missions</h3>
+    <div id="personalMissionChart" style="width: 100%; height: 300px;"></div>
+</div>
+
+<div class="mission-list">
+    <h3><i class="fas fa-exclamation-triangle text-danger"></i> Mes missions en retard</h3>
+    {% if late_missions is empty %}
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle me-2"></i> Félicitations ! Aucune mission en retard.
+        </div>
+    {% else %}
+        {% for mission in late_missions %}
+            <div class="mission-item late">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4 class="mb-1">{{ mission.titre }}</h4>
+                    <span class="badge bg-danger">
+                        Retard: {{ mission.getDaysLate() }} jour{{ mission.getDaysLate() > 1 ? 's' : '' }}
+                    </span>
+                </div>
+                <p class="mb-1"><i class="fas fa-project-diagram me-2"></i>Projet: {{ mission.project.nom }}</p>
+                <p class="mb-0"><i class="far fa-calendar-times me-2"></i>Date limite: {{ mission.dateTerminer|date('d/m/Y') }}</p>
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block javascript %}
+{{ parent() }}
+<script src="https://www.gstatic.com/charts/loader.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Chargement de la météo
+        function loadWeather() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        
+                        fetch(`/admin/weather?lat=${lat}&lon=${lon}`)
+                            .then(response => {
+                                if (!response.ok) throw new Error('Erreur réseau');
+                                return response.json();
+                            })
+                            .then(data => {
+                                const weatherHTML = `
+                                    <div class="weather-card">
+                                        <div class="weather-card-header">
+                                            <i class="fas fa-map-marker-alt"></i> ${data.name}, ${data.sys.country}
+                                        </div>
+                                        <div class="weather-card-body text-center">
+                                            <img src="https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png" 
+                                                 alt="Weather icon" class="weather-icon">
+                                            <p class="mb-1">${data.weather[0].description}</p>
+                                            <p class="h4">${Math.round(data.main.temp)}°C</p>
+                                            <small>Vent: ${data.wind.speed} m/s | Humidité: ${data.main.humidity}%</small>
+                                        </div>
+                                    </div>
+                                `;
+                                document.getElementById('weather').innerHTML = weatherHTML;
+                            })
+                            .catch(error => {
+                                document.getElementById('weather').innerHTML = `
+                                    <div class="weather-card">
+                                        <div class="weather-card-body text-center">
+                                            <i class="fas fa-cloud-exclamation fa-2x mb-2"></i>
+                                            <p>Données météo indisponibles</p>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                    },
+                    function(error) {
+                        document.getElementById('weather').innerHTML = `
+                            <div class="weather-card">
+                                <div class="weather-card-body text-center">
+                                    <i class="fas fa-location-crosshairs fa-2x mb-2"></i>
+                                    <p>Activez la géolocalisation pour voir la météo</p>
+                                </div>
+                            </div>
+                        `;
+                    }
+                );
+            } else {
+                document.getElementById('weather').innerHTML = `
+                    <div class="weather-card">
+                        <div class="weather-card-body text-center">
+                            <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                            <p>Géolocalisation non supportée</p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Chargement du graphique
+        function loadChart() {
+            google.charts.load('current', {'packages':['corechart']});
+            google.charts.setOnLoadCallback(function() {
+                const data = new google.visualization.DataTable();
+                data.addColumn('string', 'Statut');
+                data.addColumn('number', 'Nombre');
+                data.addRows([
+                    {% for stat in mission_stats %}
+                        ['{{ stat.status }}', {{ stat.count }}],
+                    {% endfor %}
+                ]);
+
+                const chart = new google.visualization.PieChart(
+                    document.getElementById('personalMissionChart')
+                );
+                chart.draw(data, {
+                    title: 'Mes missions',
+                    colors: ['#e74a3b', '#f6c23e', '#1cc88a'],
+                    chartArea: {width: '90%', height: '80%'},
+                    legend: {position: 'labeled'}
+                });
+            });
+        }
+
+        // Redimensionnement du graphique
+        function handleResize() {
+            if (typeof google !== 'undefined' && google.visualization) {
+                google.charts.setOnLoadCallback(function() {
+                    const chart = google.visualization.chart.getChart(
+                        document.getElementById('personalMissionChart')
+                    );
+                    if (chart) chart.draw();
+                });
+            }
+        }
+
+        // Initialisation
+        loadWeather();
+        loadChart();
+        window.addEventListener('resize', handleResize);
+
+        // Animation des stats
+        function animateValue(id, start, end, duration) {
+            const obj = document.getElementById(id);
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = Math.floor(progress * (end - start) + start);
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        // Animer les valeurs au chargement
+        setTimeout(() => {
+            animateValue('totalMissions', 0, {{ total_missions }}, 1000);
+            animateValue('inProgress', 0, {{ mission_stats|filter(stat => stat.status == 'In Progress')|first.count|default(0) }}, 1000);
+            animateValue('completed', 0, {{ mission_stats|filter(stat => stat.status == 'Done')|first.count|default(0) }}, 1000);
+            animateValue('lateMissions', 0, {{ late_missions|length }}, 1000);
+        }, 500);
+    });
+</script>
+{% endblock %}
