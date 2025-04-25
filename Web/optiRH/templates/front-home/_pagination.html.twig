@@ -1,0 +1,25 @@
+{% if pagination is defined %}
+    <div class="pagination-area pb-115 text-center">
+        <div class="container">
+            <div class="row">
+                <div class="col-xl-12">
+                    <div class="single-wrap d-flex justify-content-center">
+                        <nav aria-label="Page navigation example">
+                            {{ knp_pagination_render(
+                                pagination,
+                                null,
+                                {},
+                                {
+                                    'prev_label': 'Précédent',
+                                    'next_label': 'Suivant',
+                                    'first_label': 'Première',
+                                    'last_label': 'Dernière'
+                                }
+                            ) }}
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
