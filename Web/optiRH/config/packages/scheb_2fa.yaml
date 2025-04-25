@@ -1,0 +1,9 @@
+# See the configuration reference at https://symfony.com/bundles/SchebTwoFactorBundle/6.x/configuration.html
+scheb_two_factor:
+    google:
+        enabled: true
+        issuer: OptiRH
+        digits: 6
+        leeway: 0
+        template: security/2fa_form.html.twig
+
