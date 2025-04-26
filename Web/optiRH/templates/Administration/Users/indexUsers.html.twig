@@ -57,8 +57,8 @@
 							{% for user in pagination %}
 								<tr>
 									<td class="text-center">
-										<img src="https://ui-avatars.com/api/?name={{ user.nom|url_encode }}&background=6658dd&color=fff&size=40" alt="Avatar de {{ user.nom }}" class="rounded-circle" style="width: 40px; height: 40px;">
-									</td>
+                                        <img src="{% if user.avatar %}{{ asset(user.avatar) }}{% else %}https://ui-avatars.com/api/?name={{ user.nom|url_encode }}&background=6658dd&color=fff&size=100{% endif %}" alt="Avatar de {{ user.nom }}" class="rounded-circle me-3" style="width: 40px; height: 40px;">
+                                    </td>
 									<td>{{ user.nom }}</td>
 									<td>{{ user.email }}</td>
 									<td>{{ user.address|default('—') }}</td>

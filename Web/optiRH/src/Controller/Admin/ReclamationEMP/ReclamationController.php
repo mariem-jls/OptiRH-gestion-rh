@@ -22,7 +22,7 @@ use Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelHigh;
 use Endroid\QrCode\RoundBlockSizeMode\RoundBlockSizeModeMargin;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use App\Service\InfobipSmsSender;
-
+use Knp\Component\Pager\PaginatorInterface;
 #[Route('/list')]
 class ReclamationController extends AbstractController
 {
@@ -40,7 +40,7 @@ class ReclamationController extends AbstractController
     }
 
     #[Route('/reclamations', name: 'front_reclamations')]
-    public function list(Request $request, EntityManagerInterface $em): Response
+    public function list(Request $request, EntityManagerInterface $em, PaginatorInterface $paginator): Response
     {
         $user = $this->getUser();
         $searchTerm = $request->query->get('search', '');
@@ -62,10 +62,14 @@ class ReclamationController extends AbstractController
                 ->setParameter('type', $typeFilter);
         }
     
-        $reclamations = $queryBuilder->getQuery()->getResult();
+        $pagination = $paginator->paginate(
+            $queryBuilder->getQuery(),
+            $request->query->getInt('page', 1),
+            10 // Nombre d'éléments par page
+        );
     
         return $this->render('front/reclamation/list.html.twig', [
-            'reclamations' => $reclamations,
+            'pagination' => $pagination,
             'searchTerm' => $searchTerm,
             'selectedType' => $typeFilter,
             'typeChoices' => Reclamation::getTypeChoices(),

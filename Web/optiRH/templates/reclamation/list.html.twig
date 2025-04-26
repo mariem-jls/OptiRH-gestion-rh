@@ -62,6 +62,21 @@
             font-weight: 600;
             padding: 0.35em 0.65em;
         }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+        
+        .pagination span {
+            margin: 0 0.25rem;
+        }
+        
+        .pagination .current {
+            font-weight: bold;
+            color: #0d6efd;
+        }
     </style>
 {% endblock %}
 
@@ -84,7 +99,6 @@
                     <table class="table table-bordered table-striped table-hover">
                         <thead class="thead-light">
                             <tr>
-                         
                                 <th>Type</th>
                                 <th>Description</th>
                                 <th>Utilisateur</th>
@@ -96,9 +110,8 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for reclamation in reclamations %}
+                            {% for reclamation in pagination %}
                                 <tr>
-                                 
                                     <td>{{ reclamation.type }}</td>
                                     <td>{{ reclamation.description|slice(0, 50) }}{% if reclamation.description|length > 50 %}...{% endif %}</td>
                                     <td>{{ reclamation.utilisateur.nom }}</td>
@@ -147,11 +160,16 @@
                                 </tr>
                             {% else %}
                                 <tr>
-                                    <td colspan="9" class="text-center text-muted">Aucune réclamation trouvée</td>
+                                    <td colspan="8" class="text-center text-muted">Aucune réclamation trouvée</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
                     </table>
+                    
+                    {# Remplacer la div navigation par la pagination Bootstrap #}
+<div class="d-flex justify-content-center mt-3">
+    {{ knp_pagination_render(pagination) }}
+</div>
                 </div>
             </div>
         </div>

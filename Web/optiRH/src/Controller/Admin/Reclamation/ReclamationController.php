@@ -20,18 +20,29 @@ use Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelHigh;
 use Endroid\QrCode\Writer\PngWriter;
 use Dompdf\Dompdf;
 use Dompdf\Options;
-use Symfony\Component\Mailer\MailerInterface; // <-- Ajouté ici
+use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
+use Knp\Component\Pager\PaginatorInterface;
 
 class ReclamationController extends AbstractController
 {
     #[Route('/reclamations', name: 'admin_reclamations', methods: ['GET'])]
-    public function list(EntityManagerInterface $em): Response
+    public function list(Request $request, EntityManagerInterface $em, PaginatorInterface $paginator): Response
     {
-        $reclamations = $em->getRepository(Reclamation::class)->findAll();
+        // Créer une query pour récupérer toutes les réclamations
+        $query = $em->getRepository(Reclamation::class)->createQueryBuilder('r')
+            ->orderBy('r.date', 'DESC')
+            ->getQuery();
+        
+        // Paginer les résultats
+        $pagination = $paginator->paginate(
+            $query, // Query à paginer
+            $request->query->getInt('page', 1), // Numéro de page, 1 par défaut
+            10 // Nombre d'éléments par page
+        );
 
         return $this->render('reclamation/list.html.twig', [
-            'reclamations' => $reclamations,
+            'pagination' => $pagination,
         ]);
     }
 
@@ -69,12 +80,22 @@ class ReclamationController extends AbstractController
     }
     
     #[Route('/reclamations/archive', name: 'admin_reclamations_archive', methods: ['GET'])]
-    public function listArchive(EntityManagerInterface $em): Response
+    public function listArchive(Request $request, EntityManagerInterface $em, PaginatorInterface $paginator): Response
     {
-        $archives = $em->getRepository(ReclamationArchive::class)->findAll();
+        // Créer une query pour récupérer toutes les archives
+        $query = $em->getRepository(ReclamationArchive::class)->createQueryBuilder('ra')
+            ->orderBy('ra.date', 'DESC')
+            ->getQuery();
+        
+        // Paginer les résultats
+        $pagination = $paginator->paginate(
+            $query,
+            $request->query->getInt('page', 1),
+            10
+        );
 
         return $this->render('reclamation/archive_list.html.twig', [
-            'archives' => $archives,
+            'pagination' => $pagination,
         ]);
     }
     
@@ -173,8 +194,6 @@ class ReclamationController extends AbstractController
             'can_edit' => false
         ]);
     }
-
-
 
     #[Route('/reclamation/{id}/qr-code', name: 'admin_reclamation_qr_code', methods: ['GET'])]
     public function generateQrCode(Reclamation $reclamation): Response
@@ -278,121 +297,122 @@ class ReclamationController extends AbstractController
 
         return $this->redirectToRoute('admin_reclamation_reponses', ['id' => $reponse->getReclamation()->getId()]);
     }
+    
     #[Route('/reclamations/statistics', name: 'admin_reclamations_statistics', methods: ['GET'])]
-public function statistics(EntityManagerInterface $em): Response
-{
-    // Statistiques par statut
-    $statusStats = $em->createQueryBuilder()
-        ->select('r.status as status, COUNT(r.id) as count')
-        ->from(Reclamation::class, 'r')
-        ->groupBy('r.status')
-        ->getQuery()
-        ->getArrayResult();
-    
-    // Statistiques par sentiment
-    $sentimentStats = $em->createQueryBuilder()
-        ->select('r.sentimentLabel as sentiment, COUNT(r.id) as count')
-        ->from(Reclamation::class, 'r')
-        ->where('r.sentimentLabel IS NOT NULL')
-        ->groupBy('r.sentimentLabel')
-        ->getQuery()
-        ->getArrayResult();
-    
-    // Statistiques par type
-    $typeStats = $em->createQueryBuilder()
-        ->select('r.type as type, COUNT(r.id) as count')
-        ->from(Reclamation::class, 'r')
-        ->groupBy('r.type')
-        ->getQuery()
-        ->getArrayResult();
-    
-    // Statistiques combinées (type + sentiment)
-    $typeSentimentStats = $em->createQueryBuilder()
-        ->select('r.type as type, r.sentimentLabel as sentiment, COUNT(r.id) as count')
-        ->from(Reclamation::class, 'r')
-        ->where('r.sentimentLabel IS NOT NULL')
-        ->groupBy('r.type, r.sentimentLabel')
-        ->getQuery()
-        ->getArrayResult();
-    
-    // Conversion des données pour Google Chart
-    $statusData = $this->formatChartData($statusStats, 'status', 'count');
-    $sentimentData = $this->formatChartData($sentimentStats, 'sentiment', 'count');
-    $typeData = $this->formatChartData($typeStats, 'type', 'count');
-    
-    // Calcul du taux de résolution
-    $totalReclamations = $em->createQueryBuilder()
-        ->select('COUNT(r.id)')
-        ->from(Reclamation::class, 'r')
-        ->getQuery()
-        ->getSingleScalarResult();
-    
-    $resolvedReclamations = $em->createQueryBuilder()
-        ->select('COUNT(r.id)')
-        ->from(Reclamation::class, 'r')
-        ->where('r.status = :status')
-        ->setParameter('status', Reclamation::STATUS_RESOLVED)
-        ->getQuery()
-        ->getSingleScalarResult();
-    
-    $resolutionRate = $totalReclamations > 0 ? 
-        round(($resolvedReclamations / $totalReclamations) * 100, 2) : 0;
-    
-    // Réclamations sur le temps (par mois)
-    $reclamationsByMonth = $em->createQueryBuilder()
-        ->select("CONCAT(YEAR(r.date), '-', MONTH(r.date)) as month, COUNT(r.id) as count")
-        ->from(Reclamation::class, 'r')
-        ->groupBy('month')
-        ->orderBy('month', 'ASC')
-        ->getQuery()
-        ->getArrayResult();
-    
-    $timelineData = $this->formatTimelineData($reclamationsByMonth);
-    
-    return $this->render('reclamation/statistics.html.twig', [
-        'statusData' => json_encode($statusData),
-        'sentimentData' => json_encode($sentimentData),
-        'typeData' => json_encode($typeData),
-        'typeSentimentData' => json_encode($typeSentimentStats),
-        'resolutionRate' => $resolutionRate,
-        'timelineData' => json_encode($timelineData)
-    ]);
-}
-
-/**
- * Formate les données pour les graphiques
- */
-private function formatChartData(array $data, string $labelKey, string $valueKey): array
-{
-    $formattedData = [];
-    $formattedData[] = [$labelKey, 'Nombre'];
-    
-    foreach ($data as $item) {
-        $formattedData[] = [$item[$labelKey] ?? 'Non défini', (int)$item[$valueKey]];
-    }
-    
-    return $formattedData;
-}
-
-/**
- * Formate les données pour les graphiques en timeline
- */
-private function formatTimelineData(array $data): array
-{
-    $formattedData = [];
-    $formattedData[] = ['Mois', 'Nombre de réclamations'];
-    
-    foreach ($data as $item) {
-        // Formater le mois pour affichage (ex: 2025-4 -> Avril 2025)
-        $parts = explode('-', $item['month']);
-        $year = $parts[0];
-        $month = $parts[1];
-        $dateObj = new \DateTime("$year-$month-01");
-        $formattedMonth = $dateObj->format('M Y'); // Abr. mois et année
+    public function statistics(EntityManagerInterface $em): Response
+    {
+        // Statistiques par statut
+        $statusStats = $em->createQueryBuilder()
+            ->select('r.status as status, COUNT(r.id) as count')
+            ->from(Reclamation::class, 'r')
+            ->groupBy('r.status')
+            ->getQuery()
+            ->getArrayResult();
         
-        $formattedData[] = [$formattedMonth, (int)$item['count']];
+        // Statistiques par sentiment
+        $sentimentStats = $em->createQueryBuilder()
+            ->select('r.sentimentLabel as sentiment, COUNT(r.id) as count')
+            ->from(Reclamation::class, 'r')
+            ->where('r.sentimentLabel IS NOT NULL')
+            ->groupBy('r.sentimentLabel')
+            ->getQuery()
+            ->getArrayResult();
+        
+        // Statistiques par type
+        $typeStats = $em->createQueryBuilder()
+            ->select('r.type as type, COUNT(r.id) as count')
+            ->from(Reclamation::class, 'r')
+            ->groupBy('r.type')
+            ->getQuery()
+            ->getArrayResult();
+        
+        // Statistiques combinées (type + sentiment)
+        $typeSentimentStats = $em->createQueryBuilder()
+            ->select('r.type as type, r.sentimentLabel as sentiment, COUNT(r.id) as count')
+            ->from(Reclamation::class, 'r')
+            ->where('r.sentimentLabel IS NOT NULL')
+            ->groupBy('r.type, r.sentimentLabel')
+            ->getQuery()
+            ->getArrayResult();
+        
+        // Conversion des données pour Google Chart
+        $statusData = $this->formatChartData($statusStats, 'status', 'count');
+        $sentimentData = $this->formatChartData($sentimentStats, 'sentiment', 'count');
+        $typeData = $this->formatChartData($typeStats, 'type', 'count');
+        
+        // Calcul du taux de résolution
+        $totalReclamations = $em->createQueryBuilder()
+            ->select('COUNT(r.id)')
+            ->from(Reclamation::class, 'r')
+            ->getQuery()
+            ->getSingleScalarResult();
+        
+        $resolvedReclamations = $em->createQueryBuilder()
+            ->select('COUNT(r.id)')
+            ->from(Reclamation::class, 'r')
+            ->where('r.status = :status')
+            ->setParameter('status', Reclamation::STATUS_RESOLVED)
+            ->getQuery()
+            ->getSingleScalarResult();
+        
+        $resolutionRate = $totalReclamations > 0 ? 
+            round(($resolvedReclamations / $totalReclamations) * 100, 2) : 0;
+        
+        // Réclamations sur le temps (par mois)
+        $reclamationsByMonth = $em->createQueryBuilder()
+            ->select("CONCAT(YEAR(r.date), '-', MONTH(r.date)) as month, COUNT(r.id) as count")
+            ->from(Reclamation::class, 'r')
+            ->groupBy('month')
+            ->orderBy('month', 'ASC')
+            ->getQuery()
+            ->getArrayResult();
+        
+        $timelineData = $this->formatTimelineData($reclamationsByMonth);
+        
+        return $this->render('reclamation/statistics.html.twig', [
+            'statusData' => json_encode($statusData),
+            'sentimentData' => json_encode($sentimentData),
+            'typeData' => json_encode($typeData),
+            'typeSentimentData' => json_encode($typeSentimentStats),
+            'resolutionRate' => $resolutionRate,
+            'timelineData' => json_encode($timelineData)
+        ]);
     }
-    
-    return $formattedData;
-}
+
+    /**
+     * Formate les données pour les graphiques
+     */
+    private function formatChartData(array $data, string $labelKey, string $valueKey): array
+    {
+        $formattedData = [];
+        $formattedData[] = [$labelKey, 'Nombre'];
+        
+        foreach ($data as $item) {
+            $formattedData[] = [$item[$labelKey] ?? 'Non défini', (int)$item[$valueKey]];
+        }
+        
+        return $formattedData;
+    }
+
+    /**
+     * Formate les données pour les graphiques en timeline
+     */
+    private function formatTimelineData(array $data): array
+    {
+        $formattedData = [];
+        $formattedData[] = ['Mois', 'Nombre de réclamations'];
+        
+        foreach ($data as $item) {
+            // Formater le mois pour affichage (ex: 2025-4 -> Avril 2025)
+            $parts = explode('-', $item['month']);
+            $year = $parts[0];
+            $month = $parts[1];
+            $dateObj = new \DateTime("$year-$month-01");
+            $formattedMonth = $dateObj->format('M Y'); // Abr. mois et année
+            
+            $formattedData[] = [$formattedMonth, (int)$item['count']];
+        }
+        
+        return $formattedData;
+    }
 }
