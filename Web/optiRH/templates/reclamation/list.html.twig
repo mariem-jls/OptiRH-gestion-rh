@@ -1,177 +1,427 @@
 {# templates/reclamation/list.html.twig #}
 {% extends 'partials/layout-vertical.html.twig' %}
 
-{% block title %}Liste des réclamations{% endblock %}
+{% block title %}Liste des réclamations • OPTIRH{% endblock %}
 
 {% block topbar %}
-    {{ include('partials/topbar.html.twig', { page_title: 'Liste des réclamations' }) }}
+    {{ include('partials/topbar.html.twig', { page_title: 'Liste des réclamations • OPTIRH' }) }}
 {% endblock %}
 
-{% block stylesheets %}
+{% block css %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
-        .status-select { 
-            width: 150px; 
-            border-radius: 4px; 
-            padding: 5px; 
+        /* Thème OPTIRH - Bleu ciel */
+        :root {
+            --optirh-blue: #4da6ff;
+            --optirh-dark-blue: #3399ff;
+            --optirh-light-blue: #e6f2ff;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-color: #f8f9fa;
+            --dark-color: #2c3e50;
         }
-        .status-pending { 
-            background-color: #fff3cd; 
-            color: #856404; 
+
+        /* Style global */
+        body {
+            background-color: #f5f9ff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        .status-in-progress { 
-            background-color: #d1ecf1; 
-            color: #0c5460; 
+
+        /* Carte principale */
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(77, 166, 255, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-top: 3px solid var(--optirh-blue);
         }
-        .status-resolved { 
-            background-color: #d4edda; 
-            color: #155724; 
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(77, 166, 255, 0.15);
         }
-        
-        .sentiment-indicator { 
-            display: inline-block; 
-            width: 10px; 
-            height: 10px; 
-            border-radius: 50%; 
-            margin-right: 5px; 
+
+        .card-header {
+            background: linear-gradient(135deg, var(--optirh-blue), var(--optirh-dark-blue));
+            color: white;
+            border-bottom: none;
+            padding: 1rem 1.5rem;
         }
-        .sentiment-positive { 
-            background-color: #28a745; 
+
+        /* Sélecteur de statut amélioré */
+        .status-select {
+            width: 160px;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 16px;
         }
-        .sentiment-neutral { 
-            background-color: #ffc107; 
+
+        .status-select:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(77, 166, 255, 0.3);
         }
-        .sentiment-negative { 
-            background-color: #dc3545; 
+
+        .status-select.status-en-attente {
+            background-color: #fff3cd;
+            color: #856404;
         }
-        .sentiment-unknown { 
-            background-color: #6c757d; 
+
+        .status-select.status-en-cours {
+            background-color: #d1ecf1;
+            color: #0c5460;
         }
-        
-        .btn-sm { 
-            padding: 0.25rem 0.5rem; 
-            font-size: 0.875rem; 
-            line-height: 1.5; 
+
+        .status-select.status-resolue {
+            background-color: #d4edda;
+            color: #155724;
         }
-        
-        .table-responsive {
-            overflow-x: auto;
+
+        /* Affichage des sentiments */
+        .sentiment-display {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background-color: white;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
         }
-        
-        .badge {
-            font-size: 0.85em;
+
+        .sentiment-display:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .sentiment-bubble {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            box-shadow: 0 2px 3px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .sentiment-bubble::after {
+            content: "";
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.6);
+        }
+
+        .sentiment-bubble.positive { background-color: var(--success-color); }
+        .sentiment-bubble.neutral { background-color: var(--warning-color); }
+        .sentiment-bubble.negative { background-color: var(--danger-color); }
+        .sentiment-bubble.unknown { background-color: #95a5a6; }
+
+        .sentiment-label {
+            font-size: 0.85rem;
             font-weight: 600;
-            padding: 0.35em 0.65em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
-        
-        .pagination {
+
+        .sentiment-label.positive { color: var(--success-color); }
+        .sentiment-label.neutral { color: var(--warning-color); }
+        .sentiment-label.negative { color: var(--danger-color); }
+        .sentiment-label.unknown { color: #7f8c8d; }
+
+        .sentiment-emoji {
+            font-size: 1.1rem;
+        }
+
+        .sentiment-score {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+
+        .priority-flag {
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            background: linear-gradient(135deg, var(--danger-color), #c0392b);
+            color: white;
+            border-radius: 20px;
+            margin-left: 5px;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Tableau modernisé */
+        .table-reclamations {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+
+        .table-reclamations thead th {
+            background: linear-gradient(135deg, var(--optirh-blue), var(--optirh-dark-blue));
+            color: white;
+            font-weight: 600;
+            border: none;
+            padding: 14px 16px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .table-reclamations tbody tr {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.03);
+            transition: all 0.3s ease;
+        }
+
+        .table-reclamations tbody tr:hover {
+            transform: translateX(5px);
+            box-shadow: 0 8px 20px rgba(77, 166, 255, 0.1);
+        }
+
+        .table-reclamations td {
+            padding: 14px 16px;
+            vertical-align: middle;
+            border: none;
+        }
+
+        .table-reclamations td:first-child {
+            border-top-left-radius: 10px;
+            border-bottom-left-radius: 10px;
+        }
+
+        .table-reclamations td:last-child {
+            border-top-right-radius: 10px;
+            border-bottom-right-radius: 10px;
+        }
+
+        /* Boutons d'action */
+        .action-btn {
+            width: 34px;
+            height: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+        }
+
+        .action-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        /* État vide */
+        .empty-state {
+            background-color: white;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            border: 2px dashed var(--optirh-light-blue);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: var(--optirh-blue);
+            margin-bottom: 1rem;
+            opacity: 0.7;
+        }
+
+        /* Pagination */
+        .pagination-container {
             display: flex;
             justify-content: center;
-            margin-top: 1rem;
+            margin-top: 1.5rem;
         }
-        
-        .pagination span {
-            margin: 0 0.25rem;
+
+        .pagination .page-item.active .page-link {
+            background: linear-gradient(135deg, var(--optirh-blue), var(--optirh-dark-blue));
+            border-color: var(--optirh-blue);
         }
-        
-        .pagination .current {
-            font-weight: bold;
-            color: #0d6efd;
+
+        .pagination .page-link {
+            color: var(--optirh-blue);
+            border-radius: 8px !important;
+            margin: 0 3px;
+            border: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .card-header {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+            
+            .header-actions {
+                justify-content: center;
+            }
         }
     </style>
 {% endblock %}
 
 {% block body %}
-    <div class="container-fluid">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                <h6 class="m-0 font-weight-bold text-primary">Liste des réclamations</h6>
-                <div>
-                    <a href="{{ path('admin_reclamations_pdf') }}" class="btn btn-sm btn-success">
-                        <i class="fas fa-file-pdf"></i> Exporter en PDF
-                    </a>
-                    <a href="{{ path('admin_reclamations_archive') }}" class="btn btn-sm btn-secondary ml-2">
-                        <i class="fas fa-archive"></i> Voir l'historique
-                    </a>
-                </div>
+<div class="container-fluid animate__animated animate__fadeIn">
+    <div class="card mb-4">
+        <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-white">Gestion des réclamations <span class="text-light">OPTIRH</span></h6>
+            <div class="header-actions d-flex gap-2">
+                <a href="{{ path('admin_reclamations_pdf') }}" class="btn btn-sm btn-success">
+                    <i class="fas fa-file-pdf me-1"></i> Exporter PDF
+                </a>
+                <a href="{{ path('admin_reclamations_archive') }}" class="btn btn-sm btn-light">
+                    <i class="fas fa-archive me-1"></i> Historique
+                </a>
             </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-bordered table-striped table-hover">
-                        <thead class="thead-light">
-                            <tr>
-                                <th>Type</th>
-                                <th>Description</th>
-                                <th>Utilisateur</th>
-                                <th>Date</th>
-                                <th>Statut</th>
-                                <th>Sentiment</th>
-                                <th>QR Code</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for reclamation in pagination %}
-                                <tr>
-                                    <td>{{ reclamation.type }}</td>
-                                    <td>{{ reclamation.description|slice(0, 50) }}{% if reclamation.description|length > 50 %}...{% endif %}</td>
-                                    <td>{{ reclamation.utilisateur.nom }}</td>
-                                    <td>{{ reclamation.date|date('d/m/Y H:i') }}</td>
-                                    <td>
-                                        <form method="post" action="{{ path('admin_update_status', {'id': reclamation.id}) }}">
-                                            <select name="status" class="status-select status-{{ reclamation.status|lower|replace({' ': '-'}) }}"
-                                                    onchange="this.form.submit()">
-                                                <option value="En attente" {% if reclamation.status == 'En attente' %}selected{% endif %}>En attente</option>
-                                                <option value="En cours" {% if reclamation.status == 'En cours' %}selected{% endif %}>En cours</option>
-                                                <option value="Résolue" {% if reclamation.status == 'Résolue' %}selected{% endif %}>Résolue</option>
-                                            </select>
-                                        </form>
-                                    </td>
-                                    <td>
+        </div>
+        
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-reclamations">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Description</th>
+                            <th>Utilisateur</th>
+                            <th>Date</th>
+                            <th>Statut</th>
+                            <th>Sentiment</th>
+                            <th>QR Code</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reclamation in pagination %}
+                            <tr class="animate__animated animate__fadeIn" style="animation-delay: {{ loop.index * 0.05 }}s">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        {% if reclamation.type == "Technique" %}🛠️
+                                        {% elseif reclamation.type == "Administrative" %}📋
+                                        {% elseif reclamation.type == "Service" %}🤝
+                                        {% else %}📌{% endif %}
+                                        <span class="ms-2">{{ reclamation.type }}</span>
+                                    </div>
+                                </td>
+                                <td title="{{ reclamation.description }}">
+                                    {{ reclamation.description|slice(0, 50) }}
+                                    {% if reclamation.description|length > 50 %}...{% endif %}
+                                </td>
+                                <td>{{ reclamation.utilisateur.nom }}</td>
+                                <td>{{ reclamation.date|date('d/m/Y H:i') }}</td>
+                                <td>
+                                    <form method="post" action="{{ path('admin_update_status', {'id': reclamation.id}) }}">
+                                        {% set status_class = 'status-' ~ reclamation.status|lower|replace({' ': '-', 'é': 'e'}) %}
+                                        <select name="status" class="status-select {{ status_class }}" onchange="this.form.submit()">
+                                            <option value="En attente" {% if reclamation.status == 'En attente' %}selected{% endif %}>⏳ En attente</option>
+                                            <option value="En cours" {% if reclamation.status == 'En cours' %}selected{% endif %}>🔄 En cours</option>
+                                            <option value="Résolue" {% if reclamation.status == 'Résolue' %}selected{% endif %}>✅ Résolue</option>
+                                        </select>
+                                    </form>
+                                </td>
+                                <td>
+                                    <div class="sentiment-display">
                                         {% if reclamation.sentimentLabel %}
-                                            {% set sentiment_class = reclamation.sentimentLabel == 'positive' ? 'sentiment-positive' : 
-                                                (reclamation.sentimentLabel == 'negative' ? 'sentiment-negative' : 'sentiment-neutral') %}
-                                            <span class="sentiment-indicator {{ sentiment_class }}"></span>
-                                            <span class="{{ reclamation.sentimentScore < 0.3 ? 'text-danger fw-bold' : '' }}">
-                                                {{ reclamation.sentimentLabel|trans }} ({{ reclamation.sentimentScore|number_format(2) }})
+                                            {% set sentiment_type = reclamation.sentimentLabel %}
+                                            <span class="sentiment-bubble {{ sentiment_type }}"></span>
+                                            <span class="sentiment-label">
+                                                <span class="sentiment-emoji">
+                                                    {% if sentiment_type == 'positive' %}😊
+                                                    {% elseif sentiment_type == 'neutral' %}😐
+                                                    {% elseif sentiment_type == 'negative' %}😠{% endif %}
+                                                </span>
+                                                {{ sentiment_type|trans|capitalize }}
                                             </span>
+                                            <span class="sentiment-score">{{ reclamation.sentimentScore|number_format(2) }}</span>
                                             {% if reclamation.sentimentScore < 0.3 %}
-                                                <span class="badge bg-danger">Priorité</span>
+                                                <span class="priority-flag">⚠️ Urgent</span>
                                             {% endif %}
                                         {% else %}
-                                            <span class="sentiment-indicator sentiment-unknown"></span>
-                                            Non analysé
+                                            <span class="sentiment-bubble unknown"></span>
+                                            <span class="sentiment-label unknown">🤔 Non analysé</span>
                                         {% endif %}
-                                    </td>
-                                    <td>
-                                        <a href="{{ path('admin_reclamation_qr_code', {'id': reclamation.id}) }}" 
-                                           target="_blank" 
-                                           class="btn btn-info btn-sm"
-                                           title="Voir le QR Code">
-                                            <i class="fas fa-qrcode"></i> QR
-                                        </a>
-                                    </td>
-                                    <td>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="{{ path('admin_reclamation_qr_code', {'id': reclamation.id}) }}" 
+                                       class="action-btn btn btn-info"
+                                       title="Voir le QR Code">
+                                        <i class="fas fa-qrcode"></i>
+                                    </a>
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-2">
                                         <a href="{{ path('admin_reclamation_reponses', {'id': reclamation.id}) }}" 
-                                           class="btn btn-primary btn-sm"
+                                           class="action-btn btn btn-primary"
                                            title="Gérer les réponses">
                                             <i class="fas fa-comments"></i>
                                         </a>
-                                    </td>
-                                </tr>
-                            {% else %}
-                                <tr>
-                                    <td colspan="8" class="text-center text-muted">Aucune réclamation trouvée</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    
-                    {# Remplacer la div navigation par la pagination Bootstrap #}
-<div class="d-flex justify-content-center mt-3">
-    {{ knp_pagination_render(pagination) }}
-</div>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="8">
+                                    <div class="empty-state">
+                                        <i class="fas fa-inbox"></i>
+                                        <h4 class="mb-3">Aucune réclamation trouvée</h4>
+                                        <p class="text-muted">Commencez par créer une nouvelle réclamation</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                <div class="pagination-container">
+                    {{ knp_pagination_render(pagination) }}
                 </div>
             </div>
         </div>
     </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animation des éléments au chargement
+            const cards = document.querySelectorAll('.card, .table-responsive');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.animation = `fadeInUp 0.5s ease forwards ${index * 0.1}s`;
+            });
+
+            // Tooltips
+            $('[title]').tooltip({
+                trigger: 'hover',
+                placement: 'top',
+                animation: true
+            });
+        });
+    </script>
 {% endblock %}
