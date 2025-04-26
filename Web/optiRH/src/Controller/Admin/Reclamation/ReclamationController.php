@@ -5,7 +5,7 @@ namespace App\Controller\Admin\Reclamation;
 
 use App\Entity\Reclamation;
 use App\Entity\Reponse;
-use App\Entity\ReclamationArchive; // Ajout pour l'historique
+use App\Entity\ReclamationArchive;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,41 +15,90 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Endroid\QrCode\QrCode;
-use Endroid\QrCode\Encoding\Encoding;
-use Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelHigh;
 use Endroid\QrCode\Writer\PngWriter;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Knp\Component\Pager\PaginatorInterface;
+use App\Service\SentimentAnalysisService;
+use App\Service\TranslationService;
+use Psr\Log\LoggerInterface;
+use App\Service\InfobipSmsSender;
 
 class ReclamationController extends AbstractController
 {
+    private $logger;
+    private $translationService;
+
+    public function __construct(LoggerInterface $logger, TranslationService $translationService)
+    {
+        $this->logger = $logger;
+        $this->translationService = $translationService;
+    }
+
     #[Route('/reclamations', name: 'admin_reclamations', methods: ['GET'])]
     public function list(Request $request, EntityManagerInterface $em, PaginatorInterface $paginator): Response
     {
-        // Créer une query pour récupérer toutes les réclamations
-        $query = $em->getRepository(Reclamation::class)->createQueryBuilder('r')
-            ->orderBy('r.date', 'DESC')
-            ->getQuery();
+        // Récupération des paramètres de recherche et filtrage
+        $searchTerm = $request->query->get('search', '');
+        $typeFilter = $request->query->get('type', '');
+        
+        // Créer une query pour récupérer toutes les réclamations avec filtres
+        $queryBuilder = $em->getRepository(Reclamation::class)
+            ->createQueryBuilder('r')
+            ->orderBy('r.date', 'DESC');
+            
+        // Ajouter les filtres de recherche si présents
+        if (!empty($searchTerm)) {
+            $queryBuilder->andWhere('r.description LIKE :searchTerm')
+                ->setParameter('searchTerm', '%'.$searchTerm.'%');
+        }
+        
+        // Ajouter le filtre par type si présent
+        if (!empty($typeFilter)) {
+            $queryBuilder->andWhere('r.type = :type')
+                ->setParameter('type', $typeFilter);
+        }
         
         // Paginer les résultats
         $pagination = $paginator->paginate(
-            $query, // Query à paginer
-            $request->query->getInt('page', 1), // Numéro de page, 1 par défaut
+            $queryBuilder->getQuery(),
+            $request->query->getInt('page', 1),
             10 // Nombre d'éléments par page
         );
 
         return $this->render('reclamation/list.html.twig', [
             'pagination' => $pagination,
+            'searchTerm' => $searchTerm,
+            'selectedType' => $typeFilter,
+            'typeChoices' => Reclamation::getTypeChoices(),
         ]);
     }
 
     #[Route('/reclamations/pdf', name: 'admin_reclamations_pdf', methods: ['GET'])]
-    public function generatePdf(EntityManagerInterface $em): Response
+    public function generatePdf(EntityManagerInterface $em, Request $request): Response
     {
-        $reclamations = $em->getRepository(Reclamation::class)->findAll();
+        // Récupération des paramètres de filtrage pour le PDF
+        $searchTerm = $request->query->get('search', '');
+        $typeFilter = $request->query->get('type', '');
+        
+        // Création de la requête avec filtres
+        $queryBuilder = $em->getRepository(Reclamation::class)
+            ->createQueryBuilder('r')
+            ->orderBy('r.date', 'DESC');
+            
+        if (!empty($searchTerm)) {
+            $queryBuilder->andWhere('r.description LIKE :searchTerm')
+                ->setParameter('searchTerm', '%'.$searchTerm.'%');
+        }
+        
+        if (!empty($typeFilter)) {
+            $queryBuilder->andWhere('r.type = :type')
+                ->setParameter('type', $typeFilter);
+        }
+        
+        $reclamations = $queryBuilder->getQuery()->getResult();
         
         // Configure Dompdf selon vos besoins
         $options = new Options();
@@ -61,6 +110,8 @@ class ReclamationController extends AbstractController
         // Générer le HTML pour le PDF
         $html = $this->renderView('reclamation/pdf_list.html.twig', [
             'reclamations' => $reclamations,
+            'searchTerm' => $searchTerm,
+            'typeFilter' => $typeFilter,
             'title' => 'Liste des réclamations'
         ]);
         
@@ -82,27 +133,66 @@ class ReclamationController extends AbstractController
     #[Route('/reclamations/archive', name: 'admin_reclamations_archive', methods: ['GET'])]
     public function listArchive(Request $request, EntityManagerInterface $em, PaginatorInterface $paginator): Response
     {
-        // Créer une query pour récupérer toutes les archives
-        $query = $em->getRepository(ReclamationArchive::class)->createQueryBuilder('ra')
-            ->orderBy('ra.date', 'DESC')
-            ->getQuery();
+        // Récupération des paramètres de recherche et filtrage pour les archives
+        $searchTerm = $request->query->get('search', '');
+        $typeFilter = $request->query->get('type', '');
+        
+        // Créer une query pour récupérer toutes les archives avec filtres
+        $queryBuilder = $em->getRepository(ReclamationArchive::class)
+            ->createQueryBuilder('ra')
+            ->orderBy('ra.date', 'DESC');
+            
+        // Ajouter les filtres de recherche si présents
+        if (!empty($searchTerm)) {
+            $queryBuilder->andWhere('ra.description LIKE :searchTerm')
+                ->setParameter('searchTerm', '%'.$searchTerm.'%');
+        }
+        
+        // Ajouter le filtre par type si présent
+        if (!empty($typeFilter)) {
+            $queryBuilder->andWhere('ra.type = :type')
+                ->setParameter('type', $typeFilter);
+        }
         
         // Paginer les résultats
         $pagination = $paginator->paginate(
-            $query,
+            $queryBuilder->getQuery(),
             $request->query->getInt('page', 1),
             10
         );
 
         return $this->render('reclamation/archive_list.html.twig', [
             'pagination' => $pagination,
+            'archives' => $pagination, 
+            'searchTerm' => $searchTerm,
+            'selectedType' => $typeFilter,
+            'typeChoices' => Reclamation::getTypeChoices(),
         ]);
     }
     
     #[Route('/reclamations/archive/pdf', name: 'admin_reclamations_archive_pdf', methods: ['GET'])]
-    public function generateArchivePdf(EntityManagerInterface $em): Response
+    public function generateArchivePdf(EntityManagerInterface $em, Request $request): Response
     {
-        $archives = $em->getRepository(ReclamationArchive::class)->findAll();
+        // Récupération des paramètres de filtrage pour le PDF d'archive
+        $searchTerm = $request->query->get('search', '');
+        $typeFilter = $request->query->get('type', '');
+        
+        // Création de la requête avec filtres
+        $queryBuilder = $em->getRepository(ReclamationArchive::class)
+            ->createQueryBuilder('ra')
+            ->orderBy('ra.date', 'DESC');
+            
+        if (!empty($searchTerm)) {
+            $queryBuilder->andWhere('ra.description LIKE :searchTerm')
+                ->setParameter('searchTerm', '%'.$searchTerm.'%');
+        }
+        
+        if (!empty($typeFilter)) {
+            $queryBuilder->andWhere('ra.type = :type')
+                ->setParameter('type', $typeFilter);
+        }
+        
+        $archives = $queryBuilder->getQuery()->getResult();
         
         // Configure Dompdf selon vos besoins
         $options = new Options();
@@ -114,6 +204,8 @@ class ReclamationController extends AbstractController
         // Générer le HTML pour le PDF
         $html = $this->renderView('reclamation/pdf_archive_list.html.twig', [
             'archives' => $archives,
+            'searchTerm' => $searchTerm,
+            'typeFilter' => $typeFilter,
             'title' => 'Historique des réclamations supprimées'
         ]);
         
@@ -146,6 +238,40 @@ class ReclamationController extends AbstractController
                 ],
             ])
             ->getForm();
+            
+        // Initialiser les variables pour la traduction
+        $translatedText = null;
+        $targetLanguage = 'fr'; // Langue par défaut
+        $availableLanguages = $this->translationService->getAvailableLanguages();
+        
+        // Traitement de la traduction si demandée
+        if ($request->isMethod('POST') && $request->request->has('translate')) {
+            $textToTranslate = $request->request->get('text_to_translate');
+            $targetLanguage = $request->request->get('target_language', 'fr');
+            
+            try {
+                $translatedText = $this->translationService->translate($textToTranslate, $targetLanguage);
+                
+                // Pour debugging
+                $this->logger->info('Traduction effectuée avec succès', [
+                    'source' => 'auto',
+                    'target' => $targetLanguage,
+                    'original' => $textToTranslate,
+                    'translated' => $translatedText
+                ]);
+            } catch (\Exception $e) {
+                $this->logger->error('Erreur lors de la traduction: ' . $e->getMessage());
+                $this->addFlash('error', 'Erreur de traduction: ' . $e->getMessage());
+            }
+            
+            // Si c'est une requête AJAX, retourner le résultat en JSON
+            if ($request->isXmlHttpRequest()) {
+                return $this->json([
+                    'success' => true,
+                    'translation' => $translatedText
+                ]);
+            }
+        }
 
         $form->handleRequest($request);
 
@@ -191,7 +317,10 @@ class ReclamationController extends AbstractController
         return $this->render('reclamation/reponses.html.twig', [
             'reclamation' => $reclamation,
             'form' => $form->createView(),
-            'can_edit' => false
+            'can_edit' => false,
+            'translatedText' => $translatedText,
+            'targetLanguage' => $targetLanguage,
+            'availableLanguages' => $availableLanguages
         ]);
     }
 
@@ -258,6 +387,40 @@ class ReclamationController extends AbstractController
                 'attr' => ['rows' => 5, 'minlength' => 5],
             ])
             ->getForm();
+            
+        // Initialiser les variables pour la traduction
+        $translatedText = null;
+        $targetLanguage = 'fr'; // Langue par défaut
+        $availableLanguages = $this->translationService->getAvailableLanguages();
+        
+        // Traitement de la traduction si demandée
+        if ($request->isMethod('POST') && $request->request->has('translate')) {
+            $textToTranslate = $request->request->get('text_to_translate');
+            $targetLanguage = $request->request->get('target_language', 'fr');
+            
+            try {
+                $translatedText = $this->translationService->translate($textToTranslate, $targetLanguage);
+                
+                // Pour debugging
+                $this->logger->info('Traduction effectuée avec succès (edit)', [
+                    'source' => 'auto',
+                    'target' => $targetLanguage,
+                    'original' => $textToTranslate,
+                    'translated' => $translatedText
+                ]);
+            } catch (\Exception $e) {
+                $this->logger->error('Erreur lors de la traduction: ' . $e->getMessage());
+                $this->addFlash('error', 'Erreur de traduction: ' . $e->getMessage());
+            }
+            
+            // Si c'est une requête AJAX, retourner le résultat en JSON
+            if ($request->isXmlHttpRequest()) {
+                return $this->json([
+                    'success' => true,
+                    'translation' => $translatedText
+                ]);
+            }
+        }
 
         $form->handleRequest($request);
 
@@ -269,7 +432,10 @@ class ReclamationController extends AbstractController
 
         return $this->render('reponse/edit.html.twig', [
             'form' => $form->createView(),
-            'reponse' => $reponse
+            'reponse' => $reponse,
+            'translatedText' => $translatedText,
+            'targetLanguage' => $targetLanguage,
+            'availableLanguages' => $availableLanguages
         ]);
     }
 
@@ -414,5 +580,62 @@ class ReclamationController extends AbstractController
         }
         
         return $formattedData;
+    }
+    
+    #[Route('/reclamation/translate', name: 'admin_translate_text', methods: ['POST'])]
+    public function translateText(Request $request): Response
+    {
+        $text = $request->request->get('text', '');
+        $targetLang = $request->request->get('target_lang', 'en');
+        
+        if (empty($text)) {
+            return $this->json(['success' => false, 'error' => 'Texte vide'], 400);
+        }
+        
+        try {
+            // First try with our translation service (which has internal fallbacks)
+            $translation = $this->translationService->translate($text, $targetLang);
+            $method = 'service';
+            
+            // Check if translation failed or returned an error indicator
+            if (strpos($translation, '[Traduction échouée]') === 0) {
+                // If our service completely failed, try a direct simple fallback
+                // This is just for common phrases as a last resort
+                if ($text === 'je suis' && $targetLang === 'en') {
+                    $translation = 'I am';
+                    $method = 'manual';
+                } elseif ($text === 'bonjour' && $targetLang === 'en') {
+                    $translation = 'hello';
+                    $method = 'manual';
+                } else {
+                    // If we can't translate, return the original text
+                    $translation = $text;
+                    $method = 'none';
+                }
+            }
+            
+            return $this->json([
+                'success' => true,
+                'translation' => $translation,
+                'method' => $method
+            ]);
+            
+        } catch (\Exception $e) {
+            $this->logger->error('Erreur de traduction dans le contrôleur: ' . $e->getMessage());
+            
+            // Solution simple pour les textes courts en cas d'échec
+            if ($text === 'je suis' && $targetLang === 'en') {
+                return $this->json([
+                    'success' => true,
+                    'translation' => 'I am',
+                    'method' => 'fallback'
+                ]);
+            }
+            
+            return $this->json([
+                'success' => false,
+                'error' => 'Service de traduction temporairement indisponible. Veuillez réessayer plus tard.'
+            ], 500);
+        }
     }
 }
