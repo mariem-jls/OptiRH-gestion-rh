@@ -47,6 +47,21 @@ class MissionRepository extends ServiceEntityRepository
         'members' => (int) $result['members']
     ];
 }
+public function countMissionsByDateRange(\DateTimeInterface $startDate, \DateTimeInterface $endDate, ?string $status = null): int
+{
+    $qb = $this->createQueryBuilder('m')
+        ->select('COUNT(m.id)')
+        ->where('m.createdAt BETWEEN :start AND :end')
+        ->setParameter('start', $startDate)
+        ->setParameter('end', $endDate);
+
+    if ($status !== null) {
+        $qb->andWhere('m.status = :status')
+           ->setParameter('status', $status);
+    }
+
+    return (int) $qb->getQuery()->getSingleScalarResult();
+}
 
 public function findGroupedByStatus(Project $project): array
 {
@@ -163,6 +178,28 @@ public function findLateMissions(): array
         ->setParameter('today', new \DateTime())
         ->getQuery()
         ->getResult();
+}
+public function findWithFilters(array $filters)
+{
+    $qb = $this->createQueryBuilder('m');
+    
+    if (!empty($filters['status']) && $filters['status'] !== 'all') {
+        $qb->andWhere('m.statut = :status')
+           ->setParameter('status', $filters['status']);
+    }
+    
+    if (!empty($filters['late'])) {
+        $qb->andWhere('m.deadline < CURRENT_DATE()')
+           ->andWhere('m.statut != :done')
+           ->setParameter('done', 'Done');
+    }
+    
+    if (!empty($filters['search'])) {
+        $qb->andWhere('m.title LIKE :search OR m.description LIKE :search')
+           ->setParameter('search', '%'.$filters['search'].'%');
+    }
+    
+    return $qb->getQuery()->getResult();
 }
 
 

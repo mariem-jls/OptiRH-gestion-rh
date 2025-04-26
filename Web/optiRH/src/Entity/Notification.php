@@ -10,8 +10,9 @@ use App\Repository\NotificationRepository;
 #[ORM\HasLifecycleCallbacks]
 class Notification
 {
-    public const TYPE_LATE_MISSION = 'late_mission';
+    
     public const TYPE_NEW_MISSION = 'new_mission';
+    public const TYPE_LATE_MISSION = 'late_mission';
     public const TYPE_GENERAL = 'general';
 
     #[ORM\Id]

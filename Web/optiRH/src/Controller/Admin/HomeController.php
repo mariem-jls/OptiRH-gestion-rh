@@ -146,7 +146,8 @@ private function renderAdminDashboard(
 ): Response {
     // Get all projects with their statistics
     $projects = $projectRepository->findAllWithObjectsAndStats();
-    
+    $missionTimelineData = $this->getMissionTimelineData($missionRepository);
+
     // Prepare data for sparklines
     $projectsWithStats = [];
     foreach ($projects as $project) {
@@ -286,6 +287,7 @@ private function renderAdminDashboard(
         'typeDataJson' => json_encode($typeData),
         'timelineDataJson' => json_encode($timelineData),
         'adminStats' => $adminStats,
+        'mission_timeline_data' => $missionTimelineData,
     ]);
 }
     private function getMissionCompletionTrend(
@@ -371,7 +373,31 @@ private function renderAdminDashboard(
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-
+    private function getMissionTimelineData(MissionRepository $missionRepository, int $months = 6): array
+    {
+        $timelineData = [];
+        $now = new \DateTime();
+        
+        for ($i = $months - 1; $i >= 0; $i--) {
+            $startDate = (new \DateTime("first day of -$i months"))->setTime(0, 0, 0);
+            $endDate = (clone $startDate)->modify('+1 month');
+            $monthKey = $startDate->format('M Y');
+            
+            if ($endDate > $now) {
+                $endDate = clone $now;
+            }
+            
+            $created = $missionRepository->countMissionsByDateRange($startDate, $endDate);
+            $completed = $missionRepository->countMissionsByDateRange($startDate, $endDate, 'Done');
+            
+            $timelineData[$monthKey] = [
+                'created' => $created,
+                'completed' => $completed
+            ];
+        }
+        
+        return $timelineData;
+    }
     private function prepareProjectsData(ProjectRepository $repository): array
     {
         $results = $repository->createQueryBuilder('p')

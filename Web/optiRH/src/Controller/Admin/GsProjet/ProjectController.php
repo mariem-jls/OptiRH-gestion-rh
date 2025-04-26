@@ -2,6 +2,7 @@
 
 namespace App\Controller\Admin\GsProjet;
 use Knp\Snappy\Pdf;
+use App\Service\GeminiAnalysisService;
 use Symfony\Component\Process\Process;
 use Twig\Environment;
 use Symfony\Component\Form\FormInterface; // Correction de l'import
@@ -21,10 +22,18 @@ use App\Form\GsProjet\ProjectFilterType;
 use App\Repository\GsProjet\ProjectRepository;
 use App\Repository\GsProjet\MissionRepository;
 
+use Psr\Log\LoggerInterface;
+
 #[Route('/gs-projet/project', name: 'gs-projet_project_')]
-#[IsGranted('ROLE_ADMIN')]
 
 class ProjectController extends AbstractController {
+    private $logger;
+
+    public function __construct(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+    }
+
     #[Route('/', name: 'index', methods: ['GET'])]
     #[IsGranted('ROLE_ADMIN')]
     #[Route('/', name: 'index', methods: ['GET'])]
@@ -52,6 +61,29 @@ class ProjectController extends AbstractController {
                 'status' => $status
             ]
         ]);
+    }
+    #[Route('/api/mission/chatbot/{id}', name: 'mission_chatbot', methods: ['POST'])]
+    public function chatbot(Request $request, GeminiAnalysisService $geminiService, $id): JsonResponse
+    {
+
+        $data = json_decode($request->getContent(), true);
+        $question = $data['question'] ?? '';
+        $missionData = $data['missionData'] ?? [];
+
+        if (empty($question) || empty($missionData)) {
+            return $this->json(['error' => 'Question ou données de mission manquantes'], 400);
+        }
+
+        try {
+            $response = $geminiService->generateMissionChatbotResponse($question, $missionData);
+            return $this->json(['response' => $response]);
+        } catch (\Exception $e) {
+            $this->logger->error('Erreur chatbot Gemini', [
+                'error' => $e->getMessage(),
+                'mission_id' => $id
+            ]);
+            return $this->json(['error' => 'Erreur lors de la génération de la réponse'], 500);
+        }
     }
     #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_ADMIN')]
