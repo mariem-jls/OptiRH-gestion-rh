@@ -118,3 +118,7 @@ services:
         arguments:
             - '%env(STRIPE_SECRET_KEY)%'
             - '%env(STRIPE_PUBLIC_KEY)%'
+    App\Service\TranslationService:
+        arguments:
+            $logger: '@logger'
+            $defaultTargetLanguage: 'fr'
