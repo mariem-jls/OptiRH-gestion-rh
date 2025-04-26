@@ -39,6 +39,49 @@ class EvenementRepository extends ServiceEntityRepository
         }
     }
 
+
+
+
+/*employe*/
+public function findByCombinedFilters(?string $searchTerm, ?string $modalite, ?string $type)
+{
+    $qb = $this->createQueryBuilder('e');
+
+    if ($searchTerm) {
+        $qb->andWhere('e.titre LIKE :term')
+           ->orWhere('e.description LIKE :term')
+           ->setParameter('term', '%' . $searchTerm . '%');
+    }
+
+    if ($modalite) {
+        $qb->andWhere('e.modalite = :modalite')
+           ->setParameter('modalite', $modalite);
+    }
+
+    if ($type) {
+        $qb->andWhere('e.type = :type')
+           ->setParameter('type', $type);
+    }
+
+    return $qb->getQuery()->getResult();
+}
+
+/*admin*/
+public function findByTitleLieuModalite(?string $searchTerm)
+{
+    $qb = $this->createQueryBuilder('e');
+
+    if ($searchTerm) {
+        $qb->andWhere('e.titre LIKE :term')
+           ->orWhere('e.lieu LIKE :term')
+           ->orWhere('e.modalite LIKE :term')
+           ->setParameter('term', '%' . $searchTerm . '%');
+    }
+
+    return $qb->getQuery()->getResult();
+}
+
+
 //    /**
 //     * @return Evenement[] Returns an array of Evenement objects
 //     */

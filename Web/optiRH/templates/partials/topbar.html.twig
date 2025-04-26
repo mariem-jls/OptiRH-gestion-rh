@@ -106,10 +106,10 @@
     
             <li class="dropdown notification-list topbar-dropdown">
                 <a class="nav-link dropdown-toggle nav-user me-0 waves-effect waves-light" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
-                <img class="rounded-circle img-thumbnail avatar-md" src="https://ui-avatars.com/api/?name={{ app.user.nom|default(app.user.email)|url_encode }}" alt="Avatar de {{ app.user.nom|default(app.user.email) }}" style="width: 40px; height: 40px;">
-                    <span class="pro-user-name ms-1">
-                        {{ app.user.nom }} <i class="mdi mdi-chevron-down"></i> 
-                    </span>
+                <img src="{% if app.user.avatar %}{{ asset(app.user.avatar) }}{% else %}https://ui-avatars.com/api/?name={{ app.user.nom|url_encode }}&background=6658dd&color=fff&size=100{% endif %}" alt="Avatar de {{ app.user.nom }}" class="rounded-circle img-thumbnail avatar-md" style="width: 40px; height: 40px;">
+                <span class="pro-user-name ms-1">
+                    {{ app.user.nom }} <i class="mdi mdi-chevron-down"></i> 
+                </span>
                 </a>
                 <div class="dropdown-menu dropdown-menu-end profile-dropdown ">
                     <!-- item-->
