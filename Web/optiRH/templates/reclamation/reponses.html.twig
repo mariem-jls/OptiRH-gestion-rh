@@ -19,6 +19,47 @@
             <!-- Colonne principale -->
             <div class="col-lg-10 offset-lg-1">
 
+                <!-- Outil de traduction avec reconnaissance vocale -->
+                <div id="translation-container" data-translation-url="{{ path('front_translate_text') }}" class="mb-4">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-language me-2"></i>Outil de traduction
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="text_to_translate" class="form-label fw-bold text-primary">Texte à traduire</label>
+                                    <textarea name="text_to_translate" id="text_to_translate" class="form-control" rows="5" placeholder="Entrez votre texte ici"></textarea>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="translated_text" class="form-label fw-bold text-success">Texte traduit</label>
+                                    <textarea name="translated_text" id="translated_text" class="form-control" rows="5" placeholder="Résultat de la traduction" readonly></textarea>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="target_language" class="form-label fw-bold text-primary">Langue cible</label>
+                                    <select name="target_language" id="target_language" class="form-select">
+                                        {% for code, langue in availableLanguages %}
+                                            <option value="{{ code }}">{{ langue }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-8 mb-3 d-flex align-items-end justify-content-end">
+                                    <button type="button" id="translate-btn" class="btn btn-info text-white">
+                                        <i class="fas fa-exchange-alt me-1"></i> Traduire
+                                    </button>
+                                    <button type="button" id="use-translation" class="btn btn-success ms-2">
+                                        <i class="fas fa-check me-1"></i> Utiliser cette traduction
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Détails + Formulaire dans une seule carte -->
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body">
@@ -60,13 +101,19 @@
                                     }
                                 }) }}
 
-                                <div class="mb-3">
-                                    {{ form_label(form.description, null, { 'label_attr': {'class': 'form-label'} }) }}
+                                <div class="mb-3 input-with-icon">
+                                    <div class="d-flex align-items-center mb-2">
+                                        {{ form_label(form.description, null, { 'label_attr': {'class': 'form-label fw-bold text-primary m-0'} }) }}
+                                        <button type="button" id="start-recording" class="btn btn-sm btn-outline-primary ms-2">
+                                            <i class="fas fa-microphone"></i> Parler
+                                        </button>
+                                    </div>
                                     {{ form_widget(form.description, {
                                         'attr': {
                                             'class': 'form-control' ~ (form.description.vars.errors|length ? ' is-invalid' : ''),
                                             'rows': 4,
-                                            'placeholder': 'Votre réponse...'
+                                            'placeholder': 'Votre réponse...',
+                                            'id': form.description.vars.id
                                         }
                                     }) }}
                                     <div class="invalid-feedback">{{ form_errors(form.description) }}</div>
@@ -109,7 +156,7 @@
                 </div>
 
                 <!-- Liste des Réponses -->
-
+                <div class="card shadow-sm border-0">
                     <div class="card-body p-0">
                         {% if reclamation.reponses|length > 0 %}
                             <!-- Titre ajouté ici -->
@@ -145,13 +192,12 @@
                                                     <a href="{{ path('admin_reponse_edit', {'id': reponse.id}) }}" class="btn btn-sm btn-outline-primary me-2">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
-<form method="post" action="{{ path('admin_reponse_delete', {'id': reponse.id}) }}" class="d-inline" id="delete-form-{{ reponse.id }}">
-    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reponse.id) }}">
-    <button type="button" class="btn btn-sm btn-outline-danger delete-btn" data-id="{{ reponse.id }}">
-        <i class="fas fa-trash"></i>
-    </button>
-</form>
-
+                                                    <form method="post" action="{{ path('admin_reponse_delete', {'id': reponse.id}) }}" class="d-inline" id="delete-form-{{ reponse.id }}">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reponse.id) }}">
+                                                        <button type="button" class="btn btn-sm btn-outline-danger delete-btn" data-id="{{ reponse.id }}">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </form>
                                                 </div>
                                             {% endif %}
                                         </div>
@@ -166,13 +212,13 @@
                         {% endif %}
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
 {% endblock %}
 
 {% block css %}
+    {{ parent() }}
     <style>
         .card {
             border-radius: 0.75rem;
@@ -203,10 +249,309 @@
         .btn-outline-primary:hover, .btn-outline-danger:hover {
             opacity: 0.8;
         }
+        .input-with-icon {
+            position: relative;
+        }
+        .input-icon {
+            font-size: 0.9rem;
+        }
+        #start-recording {
+            transition: all 0.3s ease;
+        }
+        #start-recording:hover {
+            transform: scale(1.05);
+        }
+        .btn-recording {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .card-header.bg-info {
+            background-color: #0dcaf0 !important;
+        }
+        .btn-info {
+            background-color: #0dcaf0;
+            border-color: #0dcaf0;
+        }
+        .btn-success {
+            background-color: #198754;
+            border-color: #198754;
+        }
     </style>
 {% endblock %}
 
 {% block javascript %}
+    {{ parent() }}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="{{ asset('js recc/reponse.js') }}"></script>  {# Inclusion du fichier JS externe #}
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialisation des variables
+        const translationUrl = document.getElementById('translation-container')?.dataset.translationUrl || '/reclamation/translate';
+        const translateBtn = document.getElementById('translate-btn');
+        const useTranslationBtn = document.getElementById('use-translation');
+        const textToTranslateField = document.getElementById('text_to_translate');
+        const translatedTextField = document.getElementById('translated_text');
+        const descriptionField = document.getElementById('{{ form.description.vars.id }}');
+        const startRecordingBtn = document.getElementById('start-recording');
+        
+        // Track when the last translation was requested (to prevent rapid successive calls)
+        let lastTranslationTime = 0;
+        const TRANSLATION_COOLDOWN = 2000; // 2 seconds cooldown
+
+        // Vérifier si la reconnaissance vocale est disponible dans le navigateur
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+        let isRecording = false;
+        let recognition = null;
+
+        // Fonction de traduction améliorée avec cooldown
+        if (translateBtn) {
+            translateBtn.addEventListener('click', async function() {
+                const textToTranslate = textToTranslateField.value.trim();
+                const targetLanguage = document.getElementById('target_language').value;
+                const currentTime = Date.now();
+
+                if (!textToTranslate) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Texte manquant',
+                        text: 'Veuillez entrer un texte à traduire.'
+                    });
+                    return;
+                }
+                
+                // Check if we're trying to translate too frequently
+                if (currentTime - lastTranslationTime < TRANSLATION_COOLDOWN) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Attendez svp',
+                        text: 'Veuillez attendre quelques secondes entre les traductions.'
+                    });
+                    return;
+                }
+                
+                lastTranslationTime = currentTime;
+
+                // Afficher l'indicateur de chargement
+                const originalBtnText = translateBtn.innerHTML;
+                translateBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Traduction en cours...';
+                translateBtn.disabled = true;
+
+                try {
+                    // Utiliser une URL absolue pour éviter les problèmes de routage
+                    const fullUrl = translationUrl.startsWith('/') ? 
+                        window.location.origin + translationUrl : translationUrl;
+                    
+                    const response = await fetch(fullUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: new URLSearchParams({
+                            'text': textToTranslate,
+                            'target_lang': targetLanguage
+                        })
+                    });
+
+                    // Vérifier le type de contenu
+                    const contentType = response.headers.get('content-type');
+                    
+                    if (!response.ok) {
+                        if (contentType && contentType.includes('application/json')) {
+                            const errorData = await response.json();
+                            throw new Error(errorData.error || 'Erreur de traduction');
+                        } else {
+                            // Pour les erreurs 502, message spécifique
+                            if (response.status === 502) {
+                                throw new Error('Le service de traduction externe est temporairement indisponible. Veuillez réessayer plus tard.');
+                            } else {
+                                console.error('Réponse non-JSON:', await response.text());
+                                throw new Error('Erreur de communication avec le serveur');
+                            }
+                        }
+                    }
+                    
+                    // S'assurer que la réponse est du JSON
+                    if (contentType && contentType.includes('application/json')) {
+                        const data = await response.json();
+                        translatedTextField.value = data.translation;
+                        
+                        // Afficher la méthode de traduction utilisée
+                        const methodInfo = document.createElement('small');
+                        methodInfo.className = 'form-text text-info mt-1';
+                        methodInfo.innerHTML = `<i class="fas fa-info-circle"></i> Traduction via: ${data.method || 'API principale'}`;
+                        const infoContainer = document.querySelector('#translation-info');
+                        if (infoContainer) {
+                            infoContainer.innerHTML = '';
+                            infoContainer.appendChild(methodInfo);
+                        }
+
+                        // Notifier l'utilisateur
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Traduction réussie',
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                    } else {
+                        console.error('Le serveur n\'a pas renvoyé de JSON:', contentType);
+                        throw new Error('Format de réponse invalide');
+                    }
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erreur',
+                        text: error.message
+                    });
+                } finally {
+                    translateBtn.innerHTML = originalBtnText;
+                    translateBtn.disabled = false;
+                }
+            });
+        }
+
+        // Utiliser la traduction
+        if (useTranslationBtn && descriptionField) {
+            useTranslationBtn.addEventListener('click', function() {
+                if (translatedTextField.value.trim()) {
+                    descriptionField.value = translatedTextField.value;
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Texte inséré',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erreur',
+                        text: 'Aucun texte traduit à utiliser.'
+                    });
+                }
+            });
+        }
+
+        // Reconnaissance vocale améliorée
+        if (startRecordingBtn && descriptionField) {
+            // Mise à jour de l'état du bouton en fonction de la compatibilité
+            if (!SpeechRecognition) {
+                startRecordingBtn.innerHTML = '<i class="fas fa-microphone-slash"></i> Non supporté';
+                startRecordingBtn.classList.add('btn-secondary');
+                startRecordingBtn.disabled = true;
+                startRecordingBtn.title = "La reconnaissance vocale n'est pas supportée par votre navigateur";
+            } else {
+                // Initialiser l'objet de reconnaissance
+                recognition = new SpeechRecognition();
+                recognition.lang = 'fr-FR';
+                recognition.continuous = false;
+                recognition.interimResults = true;
+                
+                // Événement pour commencer ou arrêter l'enregistrement
+                startRecordingBtn.addEventListener('click', function() {
+                    if (isRecording) {
+                        // Arrêter l'enregistrement
+                        recognition.stop();
+                    } else {
+                        // Commencer l'enregistrement
+                        try {
+                            recognition.start();
+                            isRecording = true;
+                            startRecordingBtn.innerHTML = '<i class="fas fa-microphone-slash"></i> Arrêter';
+                            startRecordingBtn.classList.add('btn-danger', 'btn-recording');
+                            startRecordingBtn.classList.remove('btn-outline-primary');
+                        } catch (error) {
+                            console.error('Erreur lors du démarrage de la reconnaissance vocale:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Erreur microphone',
+                                text: 'Impossible de démarrer la reconnaissance vocale: ' + error.message
+                            });
+                        }
+                    }
+                });
+                
+                // Gérer les résultats de la reconnaissance
+                recognition.onresult = function(event) {
+                    let finalTranscript = '';
+                    let interimTranscript = '';
+                    
+                    for (let i = event.resultIndex; i < event.results.length; ++i) {
+                        if (event.results[i].isFinal) {
+                            finalTranscript += event.results[i][0].transcript;
+                        } else {
+                            interimTranscript += event.results[i][0].transcript;
+                        }
+                    }
+                    
+                    if (finalTranscript !== '') {
+                        // Ajouter au champ de description ou remplacer son contenu
+                        if (descriptionField.value.trim() !== '') {
+                            descriptionField.value += ' ' + finalTranscript;
+                        } else {
+                            descriptionField.value = finalTranscript;
+                        }
+                    }
+                };
+                
+                // Gérer les erreurs
+                recognition.onerror = function(event) {
+                    console.error('Erreur reconnaissance vocale:', event.error);
+                    let errorMessage = "Erreur de reconnaissance vocale";
+                    if (event.error === 'not-allowed') {
+                        errorMessage = "Veuillez autoriser l'accès au microphone dans les paramètres de votre navigateur.";
+                    } else if (event.error === 'no-speech') {
+                        errorMessage = "Aucune parole détectée. Veuillez parler plus fort ou plus clairement.";
+                    }
+                    
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erreur microphone',
+                        text: errorMessage
+                    });
+                    resetRecordingButton();
+                };
+                
+                // Quand la reconnaissance s'arrête
+                recognition.onend = function() {
+                    resetRecordingButton();
+                };
+            }
+            
+            // Fonction pour réinitialiser l'état du bouton
+            function resetRecordingButton() {
+                isRecording = false;
+                startRecordingBtn.innerHTML = '<i class="fas fa-microphone"></i> Parler';
+                startRecordingBtn.classList.remove('btn-danger', 'btn-recording');
+                startRecordingBtn.classList.add('btn-outline-primary');
+            }
+        }
+
+        // Gestion de la suppression des réponses
+        document.querySelectorAll('.delete-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const reponseId = this.getAttribute('data-id');
+                
+                Swal.fire({
+                    title: 'Êtes-vous sûr?',
+                    text: "Vous ne pourrez pas annuler cette action!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Oui, supprimer!',
+                    cancelButtonText: 'Annuler'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        document.getElementById(`delete-form-${reponseId}`).submit();
+                    }
+                });
+            });
+        });
+    });
+    </script>
 {% endblock %}

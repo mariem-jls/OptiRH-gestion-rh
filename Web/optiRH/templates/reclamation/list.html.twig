@@ -1,159 +1,245 @@
 {# templates/reclamation/list.html.twig #}
 {% extends 'partials/layout-vertical.html.twig' %}
 
-{% block title %}Liste des réclamations{% endblock %}
+{% block title %}Liste des réclamations • OPTIRH{% endblock %}
 
 {% block topbar %}
-    {{ include('partials/topbar.html.twig', { page_title: 'Liste des réclamations' }) }}
+    {{ include('partials/topbar.html.twig', { page_title: 'Liste des réclamations • OPTIRH' }) }}
 {% endblock %}
 
-{% block stylesheets %}
+{% block css %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
-        .status-select { 
-            width: 150px; 
-            border-radius: 4px; 
-            padding: 5px; 
+        /* Thème OPTIRH - Bleu ciel */
+        :root {
+            --optirh-blue: #4da6ff;
+            --optirh-dark-blue: #3399ff;
+            --optirh-light-blue: #e6f2ff;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-color: #f8f9fa;
+            --dark-color: #2c3e50;
         }
-        .status-pending { 
-            background-color: #fff3cd; 
-            color: #856404; 
+
+        /* ... (autres styles CSS existants) ... */
+
+        /* Styles pour les statuts */
+        .status-select {
+            width: 160px;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+            border: 1px solid rgba(0,0,0,0.1);
         }
-        .status-in-progress { 
-            background-color: #d1ecf1; 
-            color: #0c5460; 
+
+        .status-select.status-en-attente {
+            background-color: #fff3cd;
+            color: #856404;
         }
-        .status-resolved { 
-            background-color: #d4edda; 
-            color: #155724; 
+
+        .status-select.status-en-cours {
+            background-color: #d1ecf1;
+            color: #0c5460;
         }
-        
-        .sentiment-indicator { 
-            display: inline-block; 
-            width: 10px; 
-            height: 10px; 
-            border-radius: 50%; 
-            margin-right: 5px; 
+
+        .status-select.status-resolue {
+            background-color: #d4edda;
+            color: #155724;
         }
-        .sentiment-positive { 
-            background-color: #28a745; 
+
+        /* Affichage des sentiments */
+        .sentiment-display {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background-color: white;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
         }
-        .sentiment-neutral { 
-            background-color: #ffc107; 
+
+        .sentiment-bubble {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            box-shadow: 0 2px 3px rgba(0,0,0,0.1);
         }
-        .sentiment-negative { 
-            background-color: #dc3545; 
-        }
-        .sentiment-unknown { 
-            background-color: #6c757d; 
-        }
-        
-        .btn-sm { 
-            padding: 0.25rem 0.5rem; 
-            font-size: 0.875rem; 
-            line-height: 1.5; 
-        }
-        
-        .table-responsive {
-            overflow-x: auto;
-        }
-        
-        .badge {
-            font-size: 0.85em;
+
+        .sentiment-bubble.positive { background-color: var(--success-color); }
+        .sentiment-bubble.neutral { background-color: var(--warning-color); }
+        .sentiment-bubble.negative { background-color: var(--danger-color); }
+        .sentiment-bubble.unknown { background-color: #95a5a6; }
+
+        .sentiment-label {
+            font-size: 0.85rem;
             font-weight: 600;
-            padding: 0.35em 0.65em;
         }
     </style>
 {% endblock %}
 
 {% block body %}
-    <div class="container-fluid">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                <h6 class="m-0 font-weight-bold text-primary">Liste des réclamations</h6>
-                <div>
-                    <a href="{{ path('admin_reclamations_pdf') }}" class="btn btn-sm btn-success">
-                        <i class="fas fa-file-pdf"></i> Exporter en PDF
-                    </a>
-                    <a href="{{ path('admin_reclamations_archive') }}" class="btn btn-sm btn-secondary ml-2">
-                        <i class="fas fa-archive"></i> Voir l'historique
-                    </a>
-                </div>
+<div class="container-fluid animate__animated animate__fadeIn">
+    <div class="card mb-4">
+        <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-white">Gestion des réclamations <span class="text-light">OPTIRH</span></h6>
+            <div class="header-actions d-flex gap-2">
+                <a href="{{ path('admin_reclamations_pdf') }}" class="btn btn-sm btn-success">
+                    <i class="fas fa-file-pdf me-1"></i> Exporter PDF
+                </a>
+                <a href="{{ path('admin_reclamations_archive') }}" class="btn btn-sm btn-light">
+                    <i class="fas fa-archive me-1"></i> Historique
+                </a>
             </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-bordered table-striped table-hover">
-                        <thead class="thead-light">
-                            <tr>
-                         
-                                <th>Type</th>
-                                <th>Description</th>
-                                <th>Utilisateur</th>
-                                <th>Date</th>
-                                <th>Statut</th>
-                                <th>Sentiment</th>
-                                <th>QR Code</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for reclamation in reclamations %}
-                                <tr>
-                                 
-                                    <td>{{ reclamation.type }}</td>
-                                    <td>{{ reclamation.description|slice(0, 50) }}{% if reclamation.description|length > 50 %}...{% endif %}</td>
-                                    <td>{{ reclamation.utilisateur.nom }}</td>
-                                    <td>{{ reclamation.date|date('d/m/Y H:i') }}</td>
-                                    <td>
-                                        <form method="post" action="{{ path('admin_update_status', {'id': reclamation.id}) }}">
-                                            <select name="status" class="status-select status-{{ reclamation.status|lower|replace({' ': '-'}) }}"
-                                                    onchange="this.form.submit()">
-                                                <option value="En attente" {% if reclamation.status == 'En attente' %}selected{% endif %}>En attente</option>
-                                                <option value="En cours" {% if reclamation.status == 'En cours' %}selected{% endif %}>En cours</option>
-                                                <option value="Résolue" {% if reclamation.status == 'Résolue' %}selected{% endif %}>Résolue</option>
-                                            </select>
-                                        </form>
-                                    </td>
-                                    <td>
+        </div>
+        
+        <div class="card-body">
+            <form method="get" class="search-filter-form mb-4 animate__animated animate__fadeInUp">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
+                            <input type="text" name="search" class="form-control border-start-0" 
+                                   placeholder="Rechercher..." value="{{ searchTerm }}">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <select name="type" class="form-select">
+                            <option value="">Tous les types</option>
+                            {% for typeValue, typeLabel in typeChoices %}
+                                <option value="{{ typeValue }}" {% if selectedType == typeValue %}selected{% endif %}>
+                                    {{ typeLabel }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary w-100 btn-filter">
+                            <i class="fas fa-filter me-1"></i> Filtrer
+                        </button>
+                    </div>
+                </div>
+            </form>
+            
+            <div class="table-responsive">
+                <table class="table table-reclamations">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Description</th>
+                            <th>Utilisateur</th>
+                            <th>Date</th>
+                            <th>Statut</th>
+                            <th>Sentiment</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reclamation in pagination %}
+                            <tr class="animate__animated animate__fadeIn" style="animation-delay: {{ loop.index * 0.05 }}s">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        {% if reclamation.type == "Technique" %}🛠️
+                                        {% elseif reclamation.type == "Administrative" %}📋
+                                        {% elseif reclamation.type == "Service" %}🤝
+                                        {% else %}📌{% endif %}
+                                        <span class="ms-2">{{ reclamation.type }}</span>
+                                    </div>
+                                </td>
+                                <td title="{{ reclamation.description }}">
+                                    {{ reclamation.description|slice(0, 50) }}
+                                    {% if reclamation.description|length > 50 %}...{% endif %}
+                                </td>
+                                <td>{{ reclamation.utilisateur.nom }}</td>
+                                <td>{{ reclamation.date|date('d/m/Y H:i') }}</td>
+                                <td>
+                                    <form method="post" action="{{ path('admin_update_status', {'id': reclamation.id}) }}">
+                                        {% set status_class = 'status-' ~ reclamation.status|lower|replace({' ': '-', 'é': 'e'}) %}
+                                        <select name="status" class="status-select {{ status_class }}" onchange="this.form.submit()">
+                                            <option value="En attente" {% if reclamation.status == 'En attente' %}selected{% endif %}>⏳ En attente</option>
+                                            <option value="En cours" {% if reclamation.status == 'En cours' %}selected{% endif %}>🔄 En cours</option>
+                                            <option value="Résolue" {% if reclamation.status == 'Résolue' %}selected{% endif %}>✅ Résolue</option>
+                                        </select>
+                                    </form>
+                                </td>
+                                <td>
+                                    <div class="sentiment-display">
                                         {% if reclamation.sentimentLabel %}
-                                            {% set sentiment_class = reclamation.sentimentLabel == 'positive' ? 'sentiment-positive' : 
-                                                (reclamation.sentimentLabel == 'negative' ? 'sentiment-negative' : 'sentiment-neutral') %}
-                                            <span class="sentiment-indicator {{ sentiment_class }}"></span>
-                                            <span class="{{ reclamation.sentimentScore < 0.3 ? 'text-danger fw-bold' : '' }}">
-                                                {{ reclamation.sentimentLabel|trans }} ({{ reclamation.sentimentScore|number_format(2) }})
+                                            {% set sentiment_type = reclamation.sentimentLabel %}
+                                            <span class="sentiment-bubble {{ sentiment_type }}"></span>
+                                            <span class="sentiment-label">
+                                                {% if sentiment_type == 'positive' %}😊 Positif
+                                                {% elseif sentiment_type == 'neutral' %}😐 Neutre
+                                                {% elseif sentiment_type == 'negative' %}😠 Négatif{% endif %}
                                             </span>
-                                            {% if reclamation.sentimentScore < 0.3 %}
-                                                <span class="badge bg-danger">Priorité</span>
-                                            {% endif %}
+                                            <span class="text-muted small ms-2">{{ reclamation.sentimentScore|number_format(2) }}</span>
                                         {% else %}
-                                            <span class="sentiment-indicator sentiment-unknown"></span>
-                                            Non analysé
+                                            <span class="sentiment-bubble unknown"></span>
+                                            <span class="sentiment-label">🤔 Non analysé</span>
                                         {% endif %}
-                                    </td>
-                                    <td>
-                                        <a href="{{ path('admin_reclamation_qr_code', {'id': reclamation.id}) }}" 
-                                           target="_blank" 
-                                           class="btn btn-info btn-sm"
-                                           title="Voir le QR Code">
-                                            <i class="fas fa-qrcode"></i> QR
-                                        </a>
-                                    </td>
-                                    <td>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-2">
                                         <a href="{{ path('admin_reclamation_reponses', {'id': reclamation.id}) }}" 
-                                           class="btn btn-primary btn-sm"
-                                           title="Gérer les réponses">
+                                           class="btn btn-sm btn-primary"
+                                           title="Voir les réponses">
                                             <i class="fas fa-comments"></i>
                                         </a>
-                                    </td>
-                                </tr>
-                            {% else %}
-                                <tr>
-                                    <td colspan="9" class="text-center text-muted">Aucune réclamation trouvée</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                                        <a href="{{ path('admin_reclamation_qr_code', {'id': reclamation.id}) }}" 
+                                           class="btn btn-sm btn-info"
+                                           title="QR Code">
+                                            <i class="fas fa-qrcode"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="7">
+                                    <div class="empty-state text-center py-4">
+                                        <i class="fas fa-inbox fa-3x mb-3 text-muted"></i>
+                                        <h4 class="mb-3">Aucune réclamation trouvée</h4>
+                                        <p class="text-muted">Aucune réclamation ne correspond à vos critères de recherche</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                <div class="pagination-container mt-4">
+                    {{ knp_pagination_render(pagination) }}
                 </div>
             </div>
         </div>
     </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animation des éléments au chargement
+            const cards = document.querySelectorAll('.card, .table-responsive');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.animation = `fadeInUp 0.5s ease forwards ${index * 0.1}s`;
+            });
+
+            // Tooltips
+            $('[title]').tooltip({
+                trigger: 'hover',
+                placement: 'top',
+                animation: true
+            });
+        });
+    </script>
 {% endblock %}

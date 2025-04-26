@@ -3,8 +3,10 @@
 namespace App\Controller\Admin\Evenement;
 
 use App\Entity\Evenement\Evenement;
+use App\Entity\Evenement\FavorisEvenement;
 use App\Form\Evenement\EvenementType;
 use App\Repository\Evenement\EvenementRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,23 +15,28 @@ use Symfony\Component\Routing\Annotation\Route;
 use App\Repository\Evenement\ReservationEvenementRepository;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Twig\Environment;
-
+use App\Service\OpenAiService;
 
 #[Route('/evenement')]
 class EvenementController extends AbstractController
 {
     /*******************Liste des evenment back********* */
     #[Route('/', name: 'app_evenement_index', methods: ['GET'])]
-    public function index(EvenementRepository $evenementRepository): Response
-    {
-        $evenements = $evenementRepository->findAll();
-            foreach ($evenements as $evenement) {
-            $evenement->updateStatus();
-        }
-        return $this->render('evenement/index.html.twig', [
+public function index(EvenementRepository $evenementRepository, Request $request): Response
+{
+    $searchTerm = $request->query->get('term');
+    $evenements = $evenementRepository->findByTitleLieuModalite($searchTerm);
+
+    if ($request->isXmlHttpRequest()) {
+        return $this->render('evenement/listevenementadmin.html.twig', [ // Créer un nouveau template pour la liste
             'evenements' => $evenements,
         ]);
     }
+
+    return $this->render('evenement/index.html.twig', [
+        'evenements' => $evenements,
+    ]);
+}
 
   
     /***************Ajouter evenment*********** */
@@ -75,6 +82,64 @@ class EvenementController extends AbstractController
             'form' => $form,
         ]);
     }
+
+
+
+    #[Route('/generer-description', name: 'app_evenement_generer_description', methods: ['POST'])]
+    public function genererDescription(Request $request, OpenAIService $openAIService): JsonResponse
+    {
+        $titre = $request->request->get('titre');
+        $lieu = $request->request->get('lieu');
+        $type = $request->request->get('type');
+        $modalite = $request->request->get('modalite');
+        
+
+
+        if (!$titre) {
+            return $this->json(['error' => 'Le titre de l\'événement est requis pour générer la description.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $prompt = $this->construirePrompt($titre, $lieu, $type, $modalite); // Fonction pour construire le prompt
+
+        try {
+            $description = $openAIService->generateDescription($prompt); // Utilise le prompt complet
+            return $this->json(['description' => $description]);
+        } catch (\Exception $e) {
+            return $this->json(['error' => 'Erreur lors de la génération de la description par l\'IA : ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function construirePrompt(string $titre, ?string $lieu, ?string $type, ?string $modalite): string
+    {
+        $prompt = "Génère une description attrayante et informative pour un événement intitulé \"{$titre}\". ";
+
+        if ($lieu) {
+            $prompt .= "L'événement se déroulera à {$lieu}. ";
+        }
+
+        if ($type) {
+            $prompt .= "C'est un événement de type {$type}. ";
+        }
+
+        if ($modalite) {
+            $prompt .= "La modalité de l'événement est {$modalite}. ";
+        }
+
+        $prompt .= "La description doit être concise et captiver l'intérêt des participants potentiels.";
+
+        return $prompt;
+    }
+
+
+
+
+
+
+
+
+
+
+    /******************EDIT********* */
 
     #[Route('/{id}/edit', name: 'app_evenement_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Evenement $evenement, EvenementRepository $evenementRepository): Response
@@ -143,18 +208,47 @@ class EvenementController extends AbstractController
         ]);
     }
 
-    /****************Afficher les evenment front********* */
+/****************Affichage liste ds evenement+filtre+recherche pour employee */
+#[Route('/evenements/indexfront', name: 'app_evenement_indexfront', methods: ['GET'])]
+public function showall(
+    EvenementRepository $evenementRepository,
+    EntityManagerInterface $em,
+    Request $request
+): Response {
+    $searchTerm = $request->query->get('term');
+    $modalite = $request->query->get('modalite');
+    $type = $request->query->get('type');
 
-    #[Route('/evenements/indexfront', name: 'app_evenement_indexfront', methods: ['GET'])]
-    public function showall(EvenementRepository $evenementRepository): Response
-    {
-        
-        return $this->render('evenement/indexfront.html.twig', [
-            'evenements' => $evenementRepository->findAll(),
-        ]);
-    
+    $evenements = $evenementRepository->findByCombinedFilters($searchTerm, $modalite, $type);
+
+    $user = $this->getUser();
+    $favorisIds = [];
+    if ($user) {
+        $favoris = $em->getRepository(FavorisEvenement::class)->findBy(['id_user' => $user]);
+        foreach ($favoris as $favori) {
+            $favorisIds[] = $favori->getIdEvenement()->getId();
+        }
     }
-/*************detaille d un evenmentfront*********** */
+
+    if ($request->isXmlHttpRequest()) {
+        return $this->render('evenement/card.html.twig', [
+            'evenements' => $evenements,
+            'favorisIds' => $favorisIds,
+        ]);
+    } else {
+        return $this->render('evenement/indexfront.html.twig', [
+            'evenements' => $evenements,
+            'favorisIds' => $favorisIds,
+        ]);
+    }
+}
+
+
+
+    
+
+
+/*************detaille d un evenment pour employee*********** */
     #[Route('/event/{id}', name: 'event_details', methods: ['GET'])]
     public function eventDetails($id, EvenementRepository $EvenementRepository): Response
     {
