@@ -4,11 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-<<<<<<< HEAD
-    "content-hash": "8cd8ab2613294b8c3502c71f20f7d1fd",
-=======
-    "content-hash": "741dcc9beeeb445eb56b5c2c8f020665",
->>>>>>> bef9e5f094f1bd8d0611a972ecd095f8a6d7d055
+    "content-hash": "0c81b00f10ab9d623983c977a53012c9",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -1865,8 +1861,6 @@
             "time": "2024-10-21T23:18:20+00:00"
         },
         {
-<<<<<<< HEAD
-=======
             "name": "giggsey/libphonenumber-for-php",
             "version": "9.0.3",
             "source": {
@@ -1999,7 +1993,6 @@
             "time": "2025-03-20T14:25:27+00:00"
         },
         {
->>>>>>> bef9e5f094f1bd8d0611a972ecd095f8a6d7d055
             "name": "guzzlehttp/guzzle",
             "version": "7.9.3",
             "source": {
@@ -3813,30 +3806,6 @@
             "time": "2025-03-31T13:16:09+00:00"
         },
         {
-<<<<<<< HEAD
-            "name": "stichoza/google-translate-php",
-            "version": "v5.2.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Stichoza/google-translate-php.git",
-                "reference": "9429773d991c98f68a25bec40d20f590ea3312a0"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Stichoza/google-translate-php/zipball/9429773d991c98f68a25bec40d20f590ea3312a0",
-                "reference": "9429773d991c98f68a25bec40d20f590ea3312a0",
-                "shasum": ""
-            },
-            "require": {
-                "ext-dom": "*",
-                "ext-json": "*",
-                "ext-mbstring": "*",
-                "guzzlehttp/guzzle": "^7.0",
-                "php": "^8.0"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "^9.5.10"
-=======
             "name": "spomky-labs/otphp",
             "version": "11.3.0",
             "source": {
@@ -3870,16 +3839,11 @@
                 "rector/rector": "^1.0",
                 "symfony/phpunit-bridge": "^6.1|^7.0",
                 "symplify/easy-coding-standard": "^12.0"
->>>>>>> bef9e5f094f1bd8d0611a972ecd095f8a6d7d055
             },
             "type": "library",
             "autoload": {
                 "psr-4": {
-<<<<<<< HEAD
-                    "Stichoza\\GoogleTranslate\\": "src/"
-=======
                     "OTPHP\\": "src/"
->>>>>>> bef9e5f094f1bd8d0611a972ecd095f8a6d7d055
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -3888,7 +3852,77 @@
             ],
             "authors": [
                 {
-<<<<<<< HEAD
+                    "name": "Florent Morselli",
+                    "homepage": "https://github.com/Spomky"
+                },
+                {
+                    "name": "All contributors",
+                    "homepage": "https://github.com/Spomky-Labs/otphp/contributors"
+                }
+            ],
+            "description": "A PHP library for generating one time passwords according to RFC 4226 (HOTP Algorithm) and the RFC 6238 (TOTP Algorithm) and compatible with Google Authenticator",
+            "homepage": "https://github.com/Spomky-Labs/otphp",
+            "keywords": [
+                "FreeOTP",
+                "RFC 4226",
+                "RFC 6238",
+                "google authenticator",
+                "hotp",
+                "otp",
+                "totp"
+            ],
+            "support": {
+                "issues": "https://github.com/Spomky-Labs/otphp/issues",
+                "source": "https://github.com/Spomky-Labs/otphp/tree/11.3.0"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/Spomky",
+                    "type": "github"
+                },
+                {
+                    "url": "https://www.patreon.com/FlorentMorselli",
+                    "type": "patreon"
+                }
+            ],
+            "time": "2024-06-12T11:22:32+00:00"
+        },
+        {
+            "name": "stichoza/google-translate-php",
+            "version": "v5.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Stichoza/google-translate-php.git",
+                "reference": "9429773d991c98f68a25bec40d20f590ea3312a0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Stichoza/google-translate-php/zipball/9429773d991c98f68a25bec40d20f590ea3312a0",
+                "reference": "9429773d991c98f68a25bec40d20f590ea3312a0",
+                "shasum": ""
+            },
+            "require": {
+                "ext-dom": "*",
+                "ext-json": "*",
+                "ext-mbstring": "*",
+                "guzzlehttp/guzzle": "^7.0",
+                "php": "^8.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^9.5.10"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Stichoza\\GoogleTranslate\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
                     "name": "Levan Velijanashvili",
                     "email": "me@stichoza.com"
                 }
@@ -3933,42 +3967,6 @@
                 }
             ],
             "time": "2024-08-05T19:11:36+00:00"
-=======
-                    "name": "Florent Morselli",
-                    "homepage": "https://github.com/Spomky"
-                },
-                {
-                    "name": "All contributors",
-                    "homepage": "https://github.com/Spomky-Labs/otphp/contributors"
-                }
-            ],
-            "description": "A PHP library for generating one time passwords according to RFC 4226 (HOTP Algorithm) and the RFC 6238 (TOTP Algorithm) and compatible with Google Authenticator",
-            "homepage": "https://github.com/Spomky-Labs/otphp",
-            "keywords": [
-                "FreeOTP",
-                "RFC 4226",
-                "RFC 6238",
-                "google authenticator",
-                "hotp",
-                "otp",
-                "totp"
-            ],
-            "support": {
-                "issues": "https://github.com/Spomky-Labs/otphp/issues",
-                "source": "https://github.com/Spomky-Labs/otphp/tree/11.3.0"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/Spomky",
-                    "type": "github"
-                },
-                {
-                    "url": "https://www.patreon.com/FlorentMorselli",
-                    "type": "patreon"
-                }
-            ],
-            "time": "2024-06-12T11:22:32+00:00"
->>>>>>> bef9e5f094f1bd8d0611a972ecd095f8a6d7d055
         },
         {
             "name": "stripe/stripe-php",

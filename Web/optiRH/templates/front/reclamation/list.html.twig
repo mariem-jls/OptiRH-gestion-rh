@@ -226,8 +226,7 @@
                                         
                                         <form method="post" 
                                               action="{{ path('front_delete_reclamation', {'id': reclamation.id}) }}" 
-                                              style="display: inline-block;"
-                                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette réclamation?')">
+                                              style="display: inline-block;">
                                             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reclamation.id) }}">
                                             <button type="submit" class="btn btn-danger btn-sm" title="Supprimer">
                                                 <i class="fas fa-trash"></i>
@@ -258,4 +257,35 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sélectionner tous les formulaires de suppression
+            const deleteForms = document.querySelectorAll('form[action*="delete"]');
+            
+            deleteForms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    Swal.fire({
+                        title: 'Êtes-vous sûr?',
+                        text: "Vous ne pourrez pas annuler cette action!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Oui, supprimer!',
+                        cancelButtonText: 'Annuler'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+                });
+            });
+        });
+    </script>
 {% endblock %}

@@ -124,14 +124,14 @@ services:
         arguments:
             - '%env(STRIPE_SECRET_KEY)%'
             - '%env(STRIPE_PUBLIC_KEY)%'
-<<<<<<< HEAD
+
     App\Service\TranslationService:
         arguments:
             $logger: '@logger'
             $defaultTargetLanguage: 'fr'
-=======
+
 
     App\Service\OpenAiService:
         arguments:
             $apiKey: '%openai.api_key%'
->>>>>>> bef9e5f094f1bd8d0611a972ecd095f8a6d7d055
+

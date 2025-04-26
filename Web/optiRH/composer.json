@@ -15,12 +15,8 @@
         "doctrine/orm": "2.20",
         "dompdf/dompdf": "^3.1",
         "endroid/qr-code": "^6.0",
-<<<<<<< HEAD
         "endroid/qr-code-bundle": "^6.0",
-=======
-        "endroid/qr-code-bundle": "*",
         "giggsey/libphonenumber-for-php": "^9.0",
->>>>>>> bef9e5f094f1bd8d0611a972ecd095f8a6d7d055
         "guzzlehttp/guzzle": "^7.9",
         "knplabs/knp-paginator-bundle": "^6.4",
         "knplabs/knp-snappy-bundle": "^1.10",
