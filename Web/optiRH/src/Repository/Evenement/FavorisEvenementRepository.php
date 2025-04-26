@@ -16,6 +16,21 @@ class FavorisEvenementRepository extends ServiceEntityRepository
         parent::__construct($registry, FavorisEvenement::class);
     }
 
+    // src/Repository/FavorisEvenementRepository.php
+
+public function findFavorisEventIdsByUser($user): array
+{
+    $result = $this->createQueryBuilder('f')
+        ->select('IDENTITY(f.idEvenement) AS id')
+        ->where('f.idUser = :user')
+        ->setParameter('user', $user)
+        ->getQuery()
+        ->getResult();
+
+    return array_column($result, 'id'); // Résultat final : [3, 5, 7]
+}
+
+
     //    /**
     //     * @return FavorisEvenement[] Returns an array of FavorisEvenement objects
     //     */

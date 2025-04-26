@@ -11,13 +11,12 @@
     <div class="col-12">
         <div class="card">
             <div class="card-body">
-                <!-- Barre de recherche -->
                 <div class="row mb-3 align-items-center">
                     <div class="col-md-8">
                         <div class="search-box">
                             <div class="position-relative">
-                                <input type="text" class="form-control" 
-                                    placeholder="Rechercher par titre, lieu ou modalité...">
+                                <input type="text" class="form-control" id="searchInput"
+                                       placeholder="Rechercher par titre, lieu ou modalité...">
                                 <i class="mdi mdi-magnify search-icon"></i>
                             </div>
                         </div>
@@ -29,7 +28,6 @@
                     </div>
                 </div>
 
-                <!-- Tableau optimisé -->
                 <div class="table-responsive">
                     <table class="table table-hover table-centered table-nowrap mb-0">
                         <thead class="table-light">
@@ -47,62 +45,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                        {% for evenement in evenements %}
-                            <tr>
-                                <td>{{ evenement.titre }}</td>
-                               <td>
-                                    <img src="{{ asset(evenement.image) }}" alt="Image de l'événement" style="max-width: 100px; height: auto;">
-                                </td>
-                                <td>{{ evenement.lieu }}</td>
-                                <td>
-                                    <div>{{ evenement.dateDebut ? evenement.dateDebut|date('Y-m-d') : '' }}</div>
-                                    <small class="text-muted">au{{ evenement.dateFin ? evenement.dateFin|date('Y-m-d') : '' }}  </small>
-                                </td>
-                                <td>{{ evenement.heure ? evenement.heure|date('H:i') : '' }}</td>
-                                <td>{{ evenement.nbrpersonnes}}</td>
-                                <td>{{ evenement.type }}</td>
-                                <td>
-                                    {% if evenement.modalite == 'Présentiel' %}
-                                        <span class="badge bg-info text-white">{{ evenement.modalite }}</span>
-                                    {% elseif evenement.modalite== 'En ligne' %}
-                                        <span class="badge bg-success text-white">{{ evenement.modalite }}</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if evenement.status is defined %}
-                                        {% set status = evenement.status|upper %}
-                                        {% if status == 'TERMINE' or status == 'TERMINÉ' %}
-                                            <span class="badge bg-danger text-white">{{ evenement.status}}</span>
-                                        {% elseif status == 'EN_COURS' or status == 'EN COURS' %}
-                                            <span class="badge bg-warning text-capitalize">{{ evenement.status }}</span>
-                                        {% elseif status == 'A_VENIR' or status == 'À_VENIR' or status == 'A VENIR' or status == 'À VENIR' %}
-                                            <span class="badge bg-info text-white">{{ evenement.status }}</span>
-                                        {% else %}
-                                            <span class="badge bg-secondary text-capitalize">{{ evenement.status }}</span>
-                                        {% endif %}
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <a href="{{ path('app_evenement_show', {'id': evenement.id}) }}"class="btn btn-sm btn-outline-primary" title="Voir les reservations">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <a href="{{ path('app_evenement_edit', {'id': evenement.id}) }}"class="btn btn-sm btn-outline-secondary" title="Modifier cet evenement">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <form action="{{ path('app_evenement_delete', {'id': evenement.id}) }}" method="post" style="display:inline;">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ evenement.id) }}">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger"title="Supprimer" onclick="confirmDelete(event)">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </button>
-                                    </form>
-                                </td>
-                                
-                            </tr>
-                        {% else %}
-                            <tr>
-                                <td colspan="8">Aucun événement trouvé</td>
-                            </tr>
-                        {% endfor %}
+                            {{ include('evenement/listevenementadmin.html.twig', { 'evenements': evenements }) }}
                         </tbody>
                     </table>
                 </div>
@@ -111,15 +54,31 @@
     </div>
 </div>
 {% block javascripts %}
-    <!-- Inclure SweetAlert2 -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
+
     <script>
-        // Fonction pour la confirmation de suppression
+        $(document).ready(function() {
+            $('#searchInput').on('input', function() {
+                var searchTerm = $(this).val();
+                $.ajax({
+                    url: '{{ path('app_evenement_index') }}', // Utiliser la route de votre page d'administration
+                    type: 'GET',
+                    data: { term: searchTerm },
+                    success: function(response) {
+                        $('tbody').html(response); // Mettre à jour le contenu du tbody
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Erreur AJAX:", error);
+                    }
+                });
+            });
+        });
+
+        // Fonction pour la confirmation de suppression (inchangée)
         function confirmDelete(event) {
-            event.preventDefault(); // Empêche la soumission directe du formulaire
-            const form = event.target.closest('form'); // Trouve le formulaire parent
-            
+            event.preventDefault();
+            const form = event.target.closest('form');
             Swal.fire({
                 title: 'Êtes-vous sûr ?',
                 text: "Vous ne pourrez pas revenir en arrière !",
@@ -131,11 +90,11 @@
                 cancelButtonText: 'Annuler'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    form.submit(); // Soumet le formulaire si confirmation
+                    form.submit();
                 }
             });
         }
     </script>
 {% endblock %}
-    
+
 {% endblock %}
