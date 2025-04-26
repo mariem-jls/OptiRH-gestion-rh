@@ -1,7 +1,7 @@
 {% extends 'partials/layout-vertical.html.twig' %}
 
 {% block title %}
-	Réinitialiser votre mot de passe
+	Profil Utilisateur
 {% endblock %}
 
 {% block topbar %}
@@ -11,15 +11,23 @@
 {% block body %}
 	<div class="container-fluid">
 		<div class="row">
-			<div
-				class="col-12">
+			<div class="col-12">
+				<!-- Flash Messages -->
+				{% for label, messages in app.flashes %}
+					{% for message in messages %}
+						<div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+							{{ message }}
+							<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+						</div>
+					{% endfor %}
+				{% endfor %}
+
 				<!-- Profile Card -->
 				<div class="card shadow-sm border-0">
 					<div class="card-body p-4">
-						<div
-							class="d-flex align-items-center mb-4">
+						<div class="d-flex align-items-center mb-4">
 							<!-- User Avatar -->
-							<img src="https://ui-avatars.com/api/?name={{ user.nom|url_encode }}&background=6658dd&color=fff&size=100" alt="Avatar de {{ user.nom }}" class="rounded-circle me-3" style="width: 100px; height: 100px;">
+							<img src="{% if user.avatar %}{{ asset(user.avatar) }}{% else %}https://ui-avatars.com/api/?name={{ user.nom|url_encode }}&background=6658dd&color=fff&size=100{% endif %}" alt="Avatar de {{ user.nom }}" class="rounded-circle avatar me-3" style="width: 100px; height: 100px;">
 							<div>
 								<h3 class="fw-bold mb-1">{{ user.nom }}</h3>
 								<p class="text-muted mb-0">{{ user.email }}</p>
@@ -56,6 +64,51 @@
 									</li>
 								</ul>
 							</div>
+							<div class="col-md-6">
+								<h5 class="fw-semibold mb-3">Authentification à Deux Facteurs</h5>
+								<p>
+									<strong>Statut :</strong>
+									{% if user.googleAuthenticatorSecret %}
+										<span class="badge bg-success">Activée</span>
+									{% else %}
+										<span class="badge bg-warning">Désactivée</span>
+									{% endif %}
+								</p>
+								<form action="{{ path('admin_users_profile_2fa_toggle', {'id': user.id}) }}" method="post">
+									<button type="submit" class="btn btn-{% if user.googleAuthenticatorSecret %}danger{% else %}primary{% endif %}">
+										{% if user.googleAuthenticatorSecret %}
+											Désactiver 2FA
+										{% else %}
+											Activer 2FA
+										{% endif %}
+									</button>
+								</form>
+							</div>
+						</div>
+
+						<!-- Profile Update Form -->
+						<div class="mt-4">
+							<h5 class="fw-semibold mb-3">Mettre à Jour le Profil</h5>
+							{{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': '', 'action': path('admin_users_profile_update', {'id': user.id})}}) }}
+							<div class="row">
+								<div class="col-md-6 mb-3">
+									{{ form_label(form.nom, 'Nom', {'label_attr': {'class': 'form-label'}}) }}
+									{{ form_widget(form.nom, {'attr': {'class': 'form-control'}}) }}
+									{{ form_errors(form.nom) }}
+								</div>
+								<div class="col-md-6 mb-3">
+									{{ form_label(form.address, 'Adresse', {'label_attr': {'class': 'form-label'}}) }}
+									{{ form_widget(form.address, {'attr': {'class': 'form-control'}}) }}
+									{{ form_errors(form.address) }}
+								</div>
+								<div class="col-md-6 mb-3">
+									{{ form_label(form.avatarFile, 'Avatar', {'label_attr': {'class': 'form-label'}}) }}
+									{{ form_widget(form.avatarFile, {'attr': {'class': 'form-control'}}) }}
+									{{ form_errors(form.avatarFile) }}
+								</div>
+							</div>
+							<button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+							{{ form_end(form) }}
 						</div>
 					</div>
 				</div>

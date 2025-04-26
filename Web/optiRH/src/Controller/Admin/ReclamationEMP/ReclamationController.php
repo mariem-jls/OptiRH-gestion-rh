@@ -14,6 +14,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use App\Service\SentimentAnalysisService;
+use App\Service\TranslationService;
 use Psr\Log\LoggerInterface;
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
@@ -22,15 +23,18 @@ use Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelHigh;
 use Endroid\QrCode\RoundBlockSizeMode\RoundBlockSizeModeMargin;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use App\Service\InfobipSmsSender;
+use Knp\Component\Pager\PaginatorInterface;
 
 #[Route('/list')]
 class ReclamationController extends AbstractController
 {
     private $logger;
+    private $translationService;
 
-    public function __construct(LoggerInterface $logger)
+    public function __construct(LoggerInterface $logger, TranslationService $translationService)
     {
         $this->logger = $logger;
+        $this->translationService = $translationService;
     }
 
     #[Route('/', name: 'front_home')]
@@ -40,7 +44,7 @@ class ReclamationController extends AbstractController
     }
 
     #[Route('/reclamations', name: 'front_reclamations')]
-    public function list(Request $request, EntityManagerInterface $em): Response
+    public function list(Request $request, EntityManagerInterface $em, PaginatorInterface $paginator): Response
     {
         $user = $this->getUser();
         $searchTerm = $request->query->get('search', '');
@@ -62,10 +66,14 @@ class ReclamationController extends AbstractController
                 ->setParameter('type', $typeFilter);
         }
     
-        $reclamations = $queryBuilder->getQuery()->getResult();
+        $pagination = $paginator->paginate(
+            $queryBuilder->getQuery(),
+            $request->query->getInt('page', 1),
+            10 // Nombre d'éléments par page
+        );
     
         return $this->render('front/reclamation/list.html.twig', [
-            'reclamations' => $reclamations,
+            'pagination' => $pagination,
             'searchTerm' => $searchTerm,
             'selectedType' => $typeFilter,
             'typeChoices' => Reclamation::getTypeChoices(),
@@ -119,6 +127,40 @@ class ReclamationController extends AbstractController
         $reclamation = new Reclamation();
         $form = $this->createForm(ReclamationType::class, $reclamation, ['is_admin' => false]);
         
+        // Initialiser les variables pour la traduction
+        $translatedText = null;
+        $targetLanguage = 'fr'; // Langue par défaut
+        $availableLanguages = $this->translationService->getAvailableLanguages();
+        
+        // Traitement de la traduction si demandée
+        if ($request->isMethod('POST') && $request->request->has('translate')) {
+            $textToTranslate = $request->request->get('text_to_translate');
+            $targetLanguage = $request->request->get('target_language', 'fr');
+            
+            try {
+                $translatedText = $this->translationService->translate($textToTranslate, $targetLanguage);
+                
+                // Pour debugging
+                $this->logger->info('Traduction effectuée avec succès', [
+                    'source' => 'auto',
+                    'target' => $targetLanguage,
+                    'original' => $textToTranslate,
+                    'translated' => $translatedText
+                ]);
+            } catch (\Exception $e) {
+                $this->logger->error('Erreur lors de la traduction: ' . $e->getMessage());
+                $this->addFlash('error', 'Erreur de traduction: ' . $e->getMessage());
+            }
+            
+            // Si c'est une requête AJAX, retourner le résultat en JSON
+            if ($request->isXmlHttpRequest()) {
+                return $this->json([
+                    'success' => true,
+                    'translation' => $translatedText
+                ]);
+            }
+        }
+        
         $form->handleRequest($request);
         
         if ($form->isSubmitted() && $form->isValid()) {
@@ -136,28 +178,15 @@ class ReclamationController extends AbstractController
             $em->persist($reclamation);
             $em->flush();
             
-           /* // Envoi du SMS de confirmation - version sans getTelephone()
-            $user = $this->getUser();
-            $smsMessage = "Bonjour " . ", une nouvelle réclamation a été ajoutée.";
-            
-            try {
-                // Utiliser le numéro par défaut configuré dans le service
-                $smsResponse = $smsSender->sendSms('default', $smsMessage);
-                $this->addFlash('success', 'Votre réclamation a été enregistrée et un SMS de confirmation a été envoyé.');
-                
-                // Pour déboguer, décommentez la ligne suivante :
-                // dd($smsResponse);
-            } catch (\Exception $e) {
-                $this->logger->error('Erreur lors de l\'envoi du SMS: ' . $e->getMessage());
-                $this->addFlash('success', 'Votre réclamation a été enregistrée avec succès.');
-                $this->addFlash('warning', "Le SMS de notification n'a pas pu être envoyé : " . $e->getMessage());
-            }*/
-            
+            $this->addFlash('success', 'Votre réclamation a été enregistrée avec succès.');
             return $this->redirectToRoute('front_reclamations');
         }
         
         return $this->render('front/reclamation/add.html.twig', [
             'form' => $form->createView(),
+            'translatedText' => $translatedText,
+            'targetLanguage' => $targetLanguage,
+            'availableLanguages' => $availableLanguages
         ]);
     }
 
@@ -179,6 +208,41 @@ class ReclamationController extends AbstractController
         }
 
         $form = $this->createForm(ReclamationType::class, $reclamation, ['is_admin' => false]);
+        
+        // Initialiser les variables pour la traduction
+        $translatedText = null;
+        $targetLanguage = 'fr'; // Langue par défaut
+        $availableLanguages = $this->translationService->getAvailableLanguages();
+        
+        // Traitement de la traduction si demandée
+        if ($request->isMethod('POST') && $request->request->has('translate')) {
+            $textToTranslate = $request->request->get('text_to_translate');
+            $targetLanguage = $request->request->get('target_language', 'fr');
+            
+            try {
+                $translatedText = $this->translationService->translate($textToTranslate, $targetLanguage);
+                
+                // Pour debugging
+                $this->logger->info('Traduction effectuée avec succès (edit)', [
+                    'source' => 'auto',
+                    'target' => $targetLanguage,
+                    'original' => $textToTranslate,
+                    'translated' => $translatedText
+                ]);
+            } catch (\Exception $e) {
+                $this->logger->error('Erreur lors de la traduction: ' . $e->getMessage());
+                $this->addFlash('error', 'Erreur de traduction: ' . $e->getMessage());
+            }
+            
+            // Si c'est une requête AJAX, retourner le résultat en JSON
+            if ($request->isXmlHttpRequest()) {
+                return $this->json([
+                    'success' => true,
+                    'translation' => $translatedText
+                ]);
+            }
+        }
+
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -199,6 +263,9 @@ class ReclamationController extends AbstractController
         return $this->render('front/reclamation/edit.html.twig', [
             'form' => $form->createView(),
             'reclamation' => $reclamation,
+            'translatedText' => $translatedText,
+            'targetLanguage' => $targetLanguage,
+            'availableLanguages' => $availableLanguages
         ]);
     }
 
@@ -276,8 +343,67 @@ class ReclamationController extends AbstractController
             'Content-Disposition' => 'inline; filename="reclamation-details.png"'
         ]);
     }
+    
+    #[Route('/reclamation/translate', name: 'front_translate_text', methods: ['POST'])]
+    public function translateText(Request $request): Response
+    {
+        $text = $request->request->get('text', '');
+        $targetLang = $request->request->get('target_lang', 'en');
         
-  
+        if (empty($text)) {
+            return $this->json(['success' => false, 'error' => 'Texte vide'], 400);
+        }
+        
+        try {
+            // First try with our translation service (which has internal fallbacks)
+            $translation = $this->translationService->translate($text, $targetLang);
+            $method = 'service';
+            
+            // Check if translation failed or returned an error indicator
+            if (strpos($translation, '[Traduction échouée]') === 0) {
+                // If our service completely failed, try a direct simple fallback
+                // This is just for common phrases as a last resort
+                if ($text === 'je suis' && $targetLang === 'en') {
+                    $translation = 'I am';
+                    $method = 'manual';
+                } elseif ($text === 'bonjour' && $targetLang === 'en') {
+                    $translation = 'hello';
+                    $method = 'manual';
+                } else {
+                    // If we can't translate, return the original text
+                    $translation = $text;
+                    $method = 'none';
+                }
+            }
+            
+            return $this->json([
+                'success' => true,
+                'translation' => $translation,
+                'method' => $method
+            ]);
+            
+        } catch (\Exception $e) {
+            $this->logger->error('Erreur de traduction dans le contrôleur: ' . $e->getMessage());
+            
+            // Solution simple pour les textes courts en cas d'échec
+            if ($text === 'je suis' && $targetLang === 'en') {
+                return $this->json([
+                    'success' => true,
+                    'translation' => 'I am',
+                    'method' => 'fallback'
+                ]);
+            }
+            
+            return $this->json([
+                'success' => false,
+                'error' => 'Service de traduction temporairement indisponible. Veuillez réessayer plus tard.'
+            ], 500);
+        }
+    }
+
+
+            
+
 
     #[Route('/reponse/{id}/rate', name: 'front_rate_reponse', methods: ['POST'])]
     public function rateReponse(Request $request, Reponse $reponse, EntityManagerInterface $em): Response

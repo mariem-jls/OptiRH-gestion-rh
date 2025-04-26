@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="fr">
+	<head>
+		{{ include('partials/title-meta.html.twig', {title: 'Authentification à deux facteurs'}) }}
+		{{ include('partials/head-css.html.twig') }}
+		<style>
+			body {
+				font-family: Arial, sans-serif;
+				background-color: #f4f4f4;
+				margin: 0;
+				padding: 0;
+				color: #333;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				height: 100vh;
+			}
+			.container {
+				max-width: 400px;
+				background: #ffffff;
+				border-radius: 8px;
+				box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+				padding: 20px;
+				text-align: center;
+			}
+			.header img {
+				height: 140px;
+				width: auto;
+				margin-bottom: 20px;
+			}
+			.form-group {
+				margin-bottom: 20px;
+				display: flex;
+				justify-content: center;
+				gap: 10px;
+			}
+			.digit-input {
+				width: 40px;
+				height: 40px;
+				padding: 0;
+				text-align: center;
+				border: 1px solid #ddd;
+				border-radius: 4px;
+				font-size: 18px;
+				line-height: 40px;
+			}
+			.digit-input:focus {
+				border-color: rgb(113, 182, 249);
+				outline: none;
+				box-shadow: 0 0 5px rgba(102, 88, 221, 0.3);
+			}
+			button {
+				background-color: rgb(113, 182, 249);
+				color: #ffffff;
+				padding: 10px 20px;
+				border: none;
+				border-radius: 4px;
+				cursor: pointer;
+				font-size: 16px;
+			}
+			button:hover {
+				background-color: rgb(103, 158, 227);
+			}
+			.error {
+				color: #dc3545;
+				font-size: 14px;
+				margin-top: 10px;
+			}
+		</style>
+	</head>
+
+	<body class="authentication-bg authentication-bg-pattern">
+		<div class="container">
+			<div class="header">
+				<img src="{{ asset('images/logo-dark.png') }}" alt="OptiRH Logo" height="140">
+			</div>
+			<h2>Authentification à deux facteurs</h2>
+			<p>Entrez le code à 6 chiffres de votre application Authenticator :</p>
+			<form action="{{ path('2fa_login_check') }}" method="post" id="twoFaForm">
+				<div class="form-group">
+					<input type="text" class="digit-input" maxlength="1" data-index="1" required>
+					<input type="text" class="digit-input" maxlength="1" data-index="2" required>
+					<input type="text" class="digit-input" maxlength="1" data-index="3" required>
+					<input type="text" class="digit-input" maxlength="1" data-index="4" required>
+					<input type="text" class="digit-input" maxlength="1" data-index="5" required>
+					<input type="text" class="digit-input" maxlength="1" data-index="6" required>
+					<input type="hidden" name="_auth_code" id="authCode">
+				</div>
+				<button type="submit">Vérifier</button>
+				{% if error is defined and error %}
+					<div class="error">{{ error|trans({}, 'SchebTwoFactorBundle') }}</div>
+				{% endif %}
+			</form>
+		</div>
+
+		<script>
+			const form = document.getElementById('twoFaForm');
+			const inputs = form.querySelectorAll('.digit-input');
+			const authCodeInput = document.getElementById('authCode');
+
+			// Handle input and focus
+			inputs.forEach((input, index) => {
+				input.addEventListener('input', (e) => {
+					const value = e.target.value;
+					if (/^[0-9]$/.test(value)) {
+						if (index < inputs.length - 1) {
+							inputs[index + 1].focus();
+						}
+					} else {
+						e.target.value = '';
+					}
+				});
+
+				input.addEventListener('keydown', (e) => {
+					if (e.key === 'Backspace' && !input.value && index > 0) {
+						inputs[index - 1].focus();
+					}
+				});
+
+				// Handle paste into first input
+				if (index === 0) {
+					input.addEventListener('paste', (e) => {
+						const paste = (e.clipboardData || window.clipboardData).getData('text').trim();
+						if (/^\d{6}$/.test(paste)) {
+							paste.split('').forEach((char, i) => {
+								if (inputs[i]) {
+									inputs[i].value = char;
+								}
+							});
+							inputs[inputs.length - 1].focus();
+							e.preventDefault();
+						}
+					});
+				}
+			});
+
+			// Concatenate digits on form submit
+			form.addEventListener('submit', (e) => {
+				const code = Array.from(inputs).map(input => input.value).join('');
+				if (code.length === 6 && /^\d{6}$/.test(code)) {
+					authCodeInput.value = code;
+				} else {
+					e.preventDefault();
+					alert('Veuillez entrer un code à 6 chiffres valide.');
+				}
+			});
+		</script>
+	</body>
+</html>

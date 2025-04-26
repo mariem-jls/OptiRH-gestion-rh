@@ -14,10 +14,15 @@ class FavorisEvenement
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne]
-    private ?User $id_user = null;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'id_user', referencedColumnName: 'id', nullable: false ,onDelete: 'CASCADE')]
 
-    #[ORM\ManyToOne]
+    private ?User $id_user = null;
+    
+
+    #[ORM\ManyToOne(targetEntity: Evenement::class)]
+    #[ORM\JoinColumn(name: 'id_evenement', referencedColumnName: 'id_evenement', nullable: false, onDelete: 'CASCADE')]
+
     private ?Evenement $id_evenement = null;
 
     public function getId(): ?int
