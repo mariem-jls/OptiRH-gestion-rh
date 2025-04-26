@@ -36,7 +36,7 @@ class Notification
     private ?array $context = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'notifications')]
-    #[ORM\JoinColumn(nullable: True)] // Ceci garantit qu'une notification doit toujours avoir un destinataire
+    #[ORM\JoinColumn(nullable: false)] // Changé à false pour forcer un destinataire
     private User $recipient ;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]

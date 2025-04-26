@@ -253,7 +253,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFact
     }
 
 
-    #[ORM\OneToMany(mappedBy: 'recipient', targetEntity: Notification::class, cascade: ['persist'], orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'recipient', targetEntity: Notification::class, cascade: ['persist','remove'], orphanRemoval: true)]
     private Collection $notifications;
 
     public function __construct()
