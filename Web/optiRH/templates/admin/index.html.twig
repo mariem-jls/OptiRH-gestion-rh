@@ -6,7 +6,7 @@
 <!-- CSS Resources -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-
+<link rel="stylesheet" href="/libs/morris.js06/morris.css">
 <style>
     :root {
         --primary-color: #4e73df;
@@ -67,10 +67,7 @@
         font-weight: 600;
         color: var(--dark-color);
     }
-    
 
-  
-  
     
     /* Stats Cards */
     .admin-stats {
@@ -578,12 +575,9 @@
         </div>
     </div>
 
-    <hr>
+<h3 class="mt-5"><i class="fas fa-tasks"></i> Projets-Missions</h3>
 
-
-
-<div><br></div>
-<!-- Stats Cards -->
+    <!-- Stats Cards -->
 <div class="admin-stats">
     <div class="stat-card">
         <h3>Projets Totaux</h3>
@@ -613,7 +607,35 @@
     </div>
 </div>
 
-<!-- Section Statistiques des réclamations -->
+    <!-- Recruitment Section -->
+    <h3 class="mt-5"><i class="fas fa-users"></i> Recrutement</h3>
+
+    <!-- Recruitment Summary Cards -->
+    <div class="summary-cards">
+        <div class="summary-card stats-card">
+            <i class="fas fa-file-alt"></i>
+            <h4>{{ recruitment_stats.total_demandes }}</h4>
+            <p>Demandes totales</p>
+        </div>
+        <div class="summary-card stats-card">
+            <i class="fas fa-check-circle"></i>
+            <h4>{{ recruitment_stats.accepted_demandes }}</h4>
+            <p>Demandes acceptées</p>
+        </div>
+        <div class="summary-card stats-card">
+            <i class="fas fa-bullhorn"></i>
+            <h4>{{ recruitment_stats.active_offres }}</h4>
+            <p>Offres actives</p>
+        </div>
+        <div class="summary-card stats-card">
+            <i class="fas fa-clock"></i>
+            <h4>{{ recruitment_stats.avg_processing_time }} jours</h4>
+            <p>Temps moyen de traitement</p>
+        </div>
+    </div>
+
+    <!-- Section Statistiques des réclamations -->
+    <h3 class="mt-5"><i class="fas fa-comment-alt"></i> Réclamations</h3>
 
     <!-- Summary Cards -->
     <div class="summary-cards">        
@@ -642,6 +664,23 @@
         </div>
     </div>
 <div>
+    <!-- Recruitment Charts -->
+    <div class="chart-container">
+        <div class="chart-wrapper fade-in">
+            <h3><i class="fas fa-chart-pie me-2"></i>Demandes par statut</h3>
+            <div id="morris-donut-demande" style="height: 350px;" class="morris-chart" data-colors="#3AB5CE,#1B3583,#A8E0EA"></div>
+        </div>
+
+        <div class="chart-wrapper fade-in">
+            <h3><i class="fas fa-chart-bar me-2"></i>Offres par type de contrat</h3>
+            <div id="morris-bar-offre" style="height: 350px;" class="morris-chart" data-colors="#3AB5CE"></div>
+        </div>
+
+        <div class="chart-wrapper fade-in">
+            <h3><i class="fas fa-chart-bar me-2"></i>Évolution des demandes</h3>
+            <div id="morris-bar-demande" style="height: 350px;" class="morris-chart" data-colors="#3AB5CE"></div>
+        </div>
+    </div>
 <!-- Charts Container -->
     <h3 class="mt-5"><i class="fas fa-chart-bar"></i> Statistiques des Projets </h3>
 
@@ -795,11 +834,12 @@
             </div>
         </div>
     </div>
-</div>
-</div>
+</div></div>
+
+
+
 <div class="mt-4">
     <h3 class="mt-4"><i class="fas fa-chart-bar"></i> Statistiques des réclamations</h3>
-    
     <!-- Charts -->
     <div class="stats-container">
         <div class="stats-card">
@@ -844,8 +884,12 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.11.3/release/flowchart.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
-
+<script src="/libs/morris.js06/morris.min.js"></script>
+<script src="/libs/raphael/raphael.min.js"></script>
 <script>
+var demandeStats = {{ demande_stats|json_encode|raw }};
+var offreStats = {{ offre_stats|json_encode|raw }};
+var demandeTimeline = {{ demande_timeline|json_encode|raw }};
 function formatTime(unix) {
     return new Date(unix * 1000).toLocaleTimeString('fr-FR', {
         hour: '2-digit',
@@ -921,7 +965,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // State Management
     const state = {
         isGeneratingReport: false,
-        currentReport: null
+        currentReport: null,
+        morrisCharts: {}
     };
     
     // DOM Elements
@@ -1021,6 +1066,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 features.drawProjectCharts();
                 features.drawReclamationCharts();
             });
+            // Initialize Morris Charts for Recruitment
+            features.drawRecruitmentCharts();
         },
         
         drawProjectCharts: () => {
@@ -1197,7 +1244,95 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error("Erreur dans le rendu des graphiques de réclamation:", error);
             }
         },
-        
+
+        drawRecruitmentCharts: () => {
+            try {
+                // Donut Chart for Demande Status
+                state.morrisCharts['morris-donut-demande'] = Morris.Donut({
+                    element: 'morris-donut-demande',
+                    data: demandeStats.map(function(item) {
+                        return {
+                            label: item.statut,
+                            value: parseInt(item.count)
+                        };
+                    }),
+                    colors: ['#3AB5CE', '#1B3583', '#A8E0EA'],
+                    resize: true
+                });
+
+                // Bar Chart for Offre by Contract Type
+                state.morrisCharts['morris-bar-offre'] = Morris.Bar({
+                    element: 'morris-bar-offre',
+                    data: offreStats.map(function(item) {
+                        return {
+                            y: item.typeContrat,
+                            a: parseInt(item.count)
+                        };
+                    }),
+                    xkey: 'y',
+                    ykeys: ['a'],
+                    labels: ['Nombre d\'offres'],
+                    colors: ['#3AB5CE'],
+                    resize: true
+                });
+
+                // Bar Chart for Demande Timeline
+if (!demandeTimeline || demandeTimeline.length < 1 || demandeTimeline.every(item => item.count === 0)) {
+    document.getElementById('morris-bar-demande').innerHTML = `
+        <div class="alert alert-info p-3">
+            <i class="fas fa-info-circle me-2"></i>
+            Données insuffisantes pour afficher l'évolution des demandes.
+        </div>
+    `;
+} else {
+    const maxCount = Math.max(...demandeTimeline.map(item => item.count));
+    const ymax = maxCount <= 0 ? 5 : Math.ceil(maxCount * 1.2);
+
+    state.morrisCharts['morris-bar-demande'] = Morris.Bar({
+        element: 'morris-bar-demande',
+        data: demandeTimeline.filter(item => item.month && typeof item.count === 'number').map(function(item) {
+            return {
+                y: item.month,
+                a: item.count
+            };
+        }),
+        xkey: 'y',
+        ykeys: ['a'],
+        labels: ['Demandes'],
+        colors: ['#3AB5CE'],
+        resize: true,
+        barSizeRatio: 0.4,
+        xLabelAngle: 45,
+        gridTextSize: 12,
+        ymin: 0,
+        ymax: ymax,
+        numLines: 5,
+        hideHover: 'auto'
+    });
+}
+            } catch (error) {
+                console.error("Erreur dans le rendu des graphiques de recrutement:", error);
+                document.getElementById('morris-donut-demande').innerHTML = `
+                    <div class="alert alert-warning p-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Le graphique des demandes n'a pas pu être chargé.
+                    </div>
+                `;
+                document.getElementById('morris-bar-offre').innerHTML = `
+                    <div class="alert alert-warning p-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Le graphique des offres n'a pas pu être chargé.
+                    </div>
+                `;
+                document.getElementById('morris-line-demande').innerHTML = `
+                    <div class="alert alert-warning p-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Le graphique de l'évolution des demandes n'a pas pu être chargé.
+                    </div>
+                `;
+            }
+        },
+
         updateDominantValues: () => {
             try {
                 // Get dominant sentiment
@@ -1220,7 +1355,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error("Erreur dans la mise à jour des valeurs dominantes:", error);
             }
         },
-        
+
         initSparklines: () => {
             $('.project-sparkline').each(function() {
                 const data = $(this).data('sparkline').split(',').map(Number);
@@ -1369,6 +1504,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (chart) chart.draw();
                     }
                 });
+            });
+        }
+        // Redraw Morris charts
+        if (typeof Morris !== 'undefined') {
+            ['morris-donut-demande', 'morris-bar-offre', 'morris-line-demande'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element && element.innerHTML !== '' && state.morrisCharts[id]) {
+                    state.morrisCharts[id].redraw();
+                }
             });
         }
     });

@@ -1,0 +1,36 @@
+{# templates/form/address_embeddable_theme.html.twig #}
+{% block address_embeddable_widget %}
+    <div>
+        <p>Custom form theme is applied!</p>
+        {# Hidden fields #}
+        <div style="display: none;">
+            {{ form_widget(form.countryCode) }}
+            {{ form_widget(form.givenName) }}
+            {{ form_widget(form.familyName) }}
+            {{ form_widget(form.organization) }}
+            {{ form_widget(form.addressLine1) }}
+            {{ form_widget(form.addressLine2) }}
+            {{ form_widget(form.addressLine3) }}
+            {{ form_widget(form.postalCode) }}
+            {{ form_widget(form.sortingCode) }}
+            {{ form_widget(form.dependentLocality) }}
+            {{ form_widget(form.locality) }}
+        </div>
+        {# Governorate #}
+        {% if form.administrativeArea is defined %}
+            <div class="form-group">
+                {{ form_label(form.administrativeArea, 'Gouvernorat') }}
+                {{ form_widget(form.administrativeArea, {
+                    'attr': {
+                        'class': 'form-control ' ~ (form.administrativeArea.vars.errors|length ? 'is-invalid' : '')
+                    }
+                }) }}
+                <div class="text-danger">
+                    {{ form_errors(form.administrativeArea) }}
+                </div>
+            </div>
+        {% else %}
+            <p>administrativeArea field is not available.</p>
+        {% endif %}
+    </div>
+{% endblock %}

@@ -5,6 +5,10 @@ use Doctrine\ORM\Query;
 use App\Entity\Reclamation;
 use Psr\Log\LoggerInterface;
 
+use App\Entity\Demande;
+use App\Entity\Offre;
+use App\Repository\DemandeRepository;
+use App\Repository\OffreRepository;
 
 use App\Entity\Notification ; 
 use App\Repository\UserRepository;
@@ -40,14 +44,16 @@ class HomeController extends AbstractController
         ProjectRepository $projectRepository,
         MissionRepository $missionRepository,
         EntityManagerInterface $entityManager,
-        NotificationRepository $notificationRepository
+        NotificationRepository $notificationRepository,
+        DemandeRepository $demandeRepository,
+        OffreRepository $offreRepository
     ): Response {
         $user = $this->security->getUser();
 
         $this->checkLateMissionsForUser($user, $missionRepository, $entityManager, $notificationRepository);
 
         if ($this->isGranted('ROLE_ADMIN')) {
-            return $this->renderAdminDashboard($projectRepository, $missionRepository);
+            return $this->renderAdminDashboard($projectRepository, $missionRepository,$demandeRepository,$offreRepository);
         }
 
         return $this->renderEmployeeDashboard($missionRepository, $user);
@@ -142,7 +148,9 @@ private function getWorkflowData(
 }
 private function renderAdminDashboard(
     ProjectRepository $projectRepository,
-    MissionRepository $missionRepository
+    MissionRepository $missionRepository,
+    DemandeRepository $demandeRepository,
+    OffreRepository $offreRepository
 ): Response {
     // Get all projects with their statistics
     $projects = $projectRepository->findAllWithObjectsAndStats();
@@ -182,6 +190,89 @@ private function renderAdminDashboard(
 
     $delayedProjects = $projectRepository->findBy(['status' => 'delayed']);
     $delayedMissions = $missionRepository->findOverdueMissions2();
+
+// Recruitment statistics
+// 1. Demande statistics
+    $demandeStats = $demandeRepository->createQueryBuilder('d')
+        ->select('d.statut, COUNT(d.id) as count')
+        ->groupBy('d.statut')
+        ->getQuery()
+        ->getResult();
+
+    $totalDemandes = $demandeRepository->createQueryBuilder('d')
+        ->select('COUNT(d.id) as count')
+        ->getQuery()
+        ->getSingleScalarResult();
+
+    $acceptedDemandes = $demandeRepository->createQueryBuilder('d')
+        ->select('COUNT(d.id) as count')
+        ->where('d.statut = :statut')
+        ->setParameter('statut', Demande::STATUT_ACCEPTEE)
+        ->getQuery()
+        ->getSingleScalarResult();
+
+// Average processing time (from creation date to current date for completed demands)
+    $avgProcessingTime = $demandeRepository->createQueryBuilder('d')
+        ->select('AVG(DATE_DIFF(CURRENT_DATE(), d.date)) as avg_days')
+        ->where('d.statut IN (:statuts)')
+        ->setParameter('statuts', [Demande::STATUT_ACCEPTEE, Demande::STATUT_REFUSEE])
+        ->getQuery()
+        ->getSingleScalarResult() ?? 0;
+
+// Demandes over time (dynamic range based on data)
+    $demandeTimeline = [];
+    $minMaxDates = $demandeRepository->createQueryBuilder('d')
+        ->select('MIN(d.date) as min_date, MAX(d.date) as max_date')
+        ->getQuery()
+        ->getSingleResult();
+
+    $minDate = $minMaxDates['min_date'] ? new \DateTime($minMaxDates['min_date']) : new \DateTime('first day of -1 month');
+    $maxDate = $minMaxDates['max_date'] ? new \DateTime($minMaxDates['max_date']) : new \DateTime();
+
+// Extend range slightly for better visualization
+    $startDate = (clone $minDate)->modify('first day of -1 month');
+    $endDate = (clone $maxDate)->modify('last day of +1 month');
+
+// Generate monthly data points
+    $current = (clone $startDate);
+    while ($current <= $endDate) {
+        $monthStart = (clone $current)->setTime(0, 0, 0);
+        $monthEnd = (clone $current)->modify('last day of this month')->setTime(23, 59, 59);
+        $count = $demandeRepository->createQueryBuilder('d')
+            ->select('COUNT(d.id) as count')
+            ->where('d.date BETWEEN :start AND :end')
+            ->setParameter('start', $monthStart)
+            ->setParameter('end', $monthEnd)
+            ->getQuery()
+            ->getSingleScalarResult();
+        $demandeTimeline[] = [
+            'month' => $monthStart->format('M Y'),
+            'count' => (int)$count
+        ];
+        $current->modify('+1 month');
+    }
+
+// Ensure at least two data points
+    if (count($demandeTimeline) < 2) {
+        $demandeTimeline[] = [
+            'month' => (clone $current)->modify('first day of this month')->format('M Y'),
+            'count' => 0
+        ];
+    }
+
+// 2. Offre statistics
+    $offreStats = $offreRepository->createQueryBuilder('o')
+        ->select('o.typeContrat, COUNT(o.id) as count')
+        ->groupBy('o.typeContrat')
+        ->getQuery()
+        ->getResult();
+
+    $activeOffres = $offreRepository->createQueryBuilder('o')
+        ->select('COUNT(o.id) as count')
+        ->where('o.statut = :statut')
+        ->setParameter('statut', 'Active')
+        ->getQuery()
+        ->getSingleScalarResult();
 
     // Calculate reclamation resolution rate
     $resolutionRate = 0; // Default value
@@ -233,7 +324,15 @@ private function renderAdminDashboard(
         $formattedMissionStats[$stat['status']] = $stat['count'];
     }
 
-        $adminStats = [
+    // Recruitment stats array for summary cards
+    $recruitmentStats = [
+        'total_demandes' => $totalDemandes,
+        'accepted_demandes' => $acceptedDemandes,
+        'active_offres' => $activeOffres,
+        'avg_processing_time' => round($avgProcessingTime, 1)
+    ];
+
+    $adminStats = [
             'total_users' => $this->userRepository->count([]),
             'verified_users' => $this->userRepository->count(['isVerified' => true]),
             'pending_verification' => $this->userRepository->count(['isVerified' => false]),
@@ -286,6 +385,10 @@ private function renderAdminDashboard(
         'typeDataJson' => json_encode($typeData),
         'timelineDataJson' => json_encode($timelineData),
         'adminStats' => $adminStats,
+        'demande_stats' => $demandeStats,
+        'offre_stats' => $offreStats,
+        'recruitment_stats' => $recruitmentStats,
+        'demande_timeline' => $demandeTimeline,
     ]);
 }
     private function getMissionCompletionTrend(
