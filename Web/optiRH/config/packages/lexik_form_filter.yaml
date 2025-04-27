@@ -1,0 +1,6 @@
+# config/packages/lexik_form_filter.yaml
+lexik_form_filter:
+    listeners:
+        doctrine_orm: true
+    force_case_insensitivity: true
+    encoding: UTF-8

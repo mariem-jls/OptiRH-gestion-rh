@@ -6,6 +6,7 @@ namespace App\Controller\Admin\Reclamation;
 use App\Entity\Reclamation;
 use App\Entity\Reponse;
 use App\Entity\ReclamationArchive;
+use App\Form\ReclamationFilterType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,40 +26,39 @@ use App\Service\SentimentAnalysisService;
 use App\Service\TranslationService;
 use Psr\Log\LoggerInterface;
 use App\Service\InfobipSmsSender;
+use Lexik\Bundle\FormFilterBundle\Filter\FilterBuilderUpdaterInterface;
 
 class ReclamationController extends AbstractController
 {
     private $logger;
     private $translationService;
+    private $filterBuilderUpdater;
 
-    public function __construct(LoggerInterface $logger, TranslationService $translationService)
-    {
+    public function __construct(
+        LoggerInterface $logger, 
+        TranslationService $translationService, 
+        FilterBuilderUpdaterInterface $filterBuilderUpdater
+    ) {
         $this->logger = $logger;
         $this->translationService = $translationService;
+        $this->filterBuilderUpdater = $filterBuilderUpdater;
     }
 
     #[Route('/reclamations', name: 'admin_reclamations', methods: ['GET'])]
     public function list(Request $request, EntityManagerInterface $em, PaginatorInterface $paginator): Response
     {
-        // Récupération des paramètres de recherche et filtrage
-        $searchTerm = $request->query->get('search', '');
-        $typeFilter = $request->query->get('type', '');
+        // Créer le form filter
+        $filterForm = $this->createForm(ReclamationFilterType::class);
+        $filterForm->handleRequest($request);
         
-        // Créer une query pour récupérer toutes les réclamations avec filtres
+        // Créer le QueryBuilder de base
         $queryBuilder = $em->getRepository(Reclamation::class)
             ->createQueryBuilder('r')
             ->orderBy('r.date', 'DESC');
             
-        // Ajouter les filtres de recherche si présents
-        if (!empty($searchTerm)) {
-            $queryBuilder->andWhere('r.description LIKE :searchTerm')
-                ->setParameter('searchTerm', '%'.$searchTerm.'%');
-        }
-        
-        // Ajouter le filtre par type si présent
-        if (!empty($typeFilter)) {
-            $queryBuilder->andWhere('r.type = :type')
-                ->setParameter('type', $typeFilter);
+        // Appliquer les filtres si le formulaire est soumis
+        if ($filterForm->isSubmitted()) {
+            $this->filterBuilderUpdater->addFilterConditions($filterForm, $queryBuilder);
         }
         
         // Paginer les résultats
@@ -70,32 +70,26 @@ class ReclamationController extends AbstractController
 
         return $this->render('reclamation/list.html.twig', [
             'pagination' => $pagination,
-            'searchTerm' => $searchTerm,
-            'selectedType' => $typeFilter,
+            'filterForm' => $filterForm->createView(),
             'typeChoices' => Reclamation::getTypeChoices(),
         ]);
     }
 
     #[Route('/reclamations/pdf', name: 'admin_reclamations_pdf', methods: ['GET'])]
-    public function generatePdf(EntityManagerInterface $em, Request $request): Response
+    public function generatePdf(Request $request, EntityManagerInterface $em): Response
     {
-        // Récupération des paramètres de filtrage pour le PDF
-        $searchTerm = $request->query->get('search', '');
-        $typeFilter = $request->query->get('type', '');
+        // Créer le form filter avec les mêmes filtres
+        $filterForm = $this->createForm(ReclamationFilterType::class);
+        $filterForm->handleRequest($request);
         
-        // Création de la requête avec filtres
+        // Créer la requête de base
         $queryBuilder = $em->getRepository(Reclamation::class)
             ->createQueryBuilder('r')
             ->orderBy('r.date', 'DESC');
             
-        if (!empty($searchTerm)) {
-            $queryBuilder->andWhere('r.description LIKE :searchTerm')
-                ->setParameter('searchTerm', '%'.$searchTerm.'%');
-        }
-        
-        if (!empty($typeFilter)) {
-            $queryBuilder->andWhere('r.type = :type')
-                ->setParameter('type', $typeFilter);
+        // Appliquer les filtres si le formulaire est soumis
+        if ($filterForm->isSubmitted()) {
+            $this->filterBuilderUpdater->addFilterConditions($filterForm, $queryBuilder);
         }
         
         $reclamations = $queryBuilder->getQuery()->getResult();
@@ -110,9 +104,8 @@ class ReclamationController extends AbstractController
         // Générer le HTML pour le PDF
         $html = $this->renderView('reclamation/pdf_list.html.twig', [
             'reclamations' => $reclamations,
-            'searchTerm' => $searchTerm,
-            'typeFilter' => $typeFilter,
-            'title' => 'Liste des réclamations'
+            'title' => 'Liste des réclamations',
+            'filters' => $filterForm->getData()
         ]);
         
         $dompdf->loadHtml($html);
@@ -129,6 +122,8 @@ class ReclamationController extends AbstractController
             ]
         );
     }
+        
+
     
     #[Route('/reclamations/archive', name: 'admin_reclamations_archive', methods: ['GET'])]
     public function listArchive(Request $request, EntityManagerInterface $em, PaginatorInterface $paginator): Response
@@ -465,58 +460,69 @@ class ReclamationController extends AbstractController
     }
     
     #[Route('/reclamations/statistics', name: 'admin_reclamations_statistics', methods: ['GET'])]
-    public function statistics(EntityManagerInterface $em): Response
+    public function statistics(Request $request, EntityManagerInterface $em): Response
     {
+        // Créer le form filter avec les mêmes filtres
+        $filterForm = $this->createForm(ReclamationFilterType::class);
+        $filterForm->handleRequest($request);
+        
+        // Créer la requête de base pour les statistiques
+        $baseQueryBuilder = $em->getRepository(Reclamation::class)
+            ->createQueryBuilder('r');
+            
+        // Appliquer les filtres si le formulaire est soumis
+        if ($filterForm->isSubmitted()) {
+            $this->filterBuilderUpdater->addFilterConditions($filterForm, $baseQueryBuilder);
+        }
+        
+        // Cloner le query builder pour chaque requête statistique
+        $statusQueryBuilder = clone $baseQueryBuilder;
+        $sentimentQueryBuilder = clone $baseQueryBuilder;
+        $typeQueryBuilder = clone $baseQueryBuilder;
+        $combinedQueryBuilder = clone $baseQueryBuilder;
+        $resolvedQueryBuilder = clone $baseQueryBuilder;
+        $totalQueryBuilder = clone $baseQueryBuilder;
+        $timelineQueryBuilder = clone $baseQueryBuilder;
+        
         // Statistiques par statut
-        $statusStats = $em->createQueryBuilder()
+        $statusStats = $statusQueryBuilder
             ->select('r.status as status, COUNT(r.id) as count')
-            ->from(Reclamation::class, 'r')
             ->groupBy('r.status')
             ->getQuery()
             ->getArrayResult();
         
         // Statistiques par sentiment
-        $sentimentStats = $em->createQueryBuilder()
+        $sentimentStats = $sentimentQueryBuilder
             ->select('r.sentimentLabel as sentiment, COUNT(r.id) as count')
-            ->from(Reclamation::class, 'r')
             ->where('r.sentimentLabel IS NOT NULL')
             ->groupBy('r.sentimentLabel')
             ->getQuery()
             ->getArrayResult();
         
         // Statistiques par type
-        $typeStats = $em->createQueryBuilder()
+        $typeStats = $typeQueryBuilder
             ->select('r.type as type, COUNT(r.id) as count')
-            ->from(Reclamation::class, 'r')
             ->groupBy('r.type')
             ->getQuery()
             ->getArrayResult();
         
         // Statistiques combinées (type + sentiment)
-        $typeSentimentStats = $em->createQueryBuilder()
+        $typeSentimentStats = $combinedQueryBuilder
             ->select('r.type as type, r.sentimentLabel as sentiment, COUNT(r.id) as count')
-            ->from(Reclamation::class, 'r')
             ->where('r.sentimentLabel IS NOT NULL')
             ->groupBy('r.type, r.sentimentLabel')
             ->getQuery()
             ->getArrayResult();
         
-        // Conversion des données pour Google Chart
-        $statusData = $this->formatChartData($statusStats, 'status', 'count');
-        $sentimentData = $this->formatChartData($sentimentStats, 'sentiment', 'count');
-        $typeData = $this->formatChartData($typeStats, 'type', 'count');
-        
-        // Calcul du taux de résolution
-        $totalReclamations = $em->createQueryBuilder()
+        // Calcul du taux de résolution basé sur les filtres
+        $totalReclamations = $totalQueryBuilder
             ->select('COUNT(r.id)')
-            ->from(Reclamation::class, 'r')
             ->getQuery()
             ->getSingleScalarResult();
         
-        $resolvedReclamations = $em->createQueryBuilder()
+        $resolvedReclamations = $resolvedQueryBuilder
             ->select('COUNT(r.id)')
-            ->from(Reclamation::class, 'r')
-            ->where('r.status = :status')
+            ->andWhere('r.status = :status')
             ->setParameter('status', Reclamation::STATUS_RESOLVED)
             ->getQuery()
             ->getSingleScalarResult();
@@ -524,10 +530,9 @@ class ReclamationController extends AbstractController
         $resolutionRate = $totalReclamations > 0 ? 
             round(($resolvedReclamations / $totalReclamations) * 100, 2) : 0;
         
-        // Réclamations sur le temps (par mois)
-        $reclamationsByMonth = $em->createQueryBuilder()
+        // Réclamations sur le temps (par mois) avec filtres
+        $reclamationsByMonth = $timelineQueryBuilder
             ->select("CONCAT(YEAR(r.date), '-', MONTH(r.date)) as month, COUNT(r.id) as count")
-            ->from(Reclamation::class, 'r')
             ->groupBy('month')
             ->orderBy('month', 'ASC')
             ->getQuery()
@@ -535,15 +540,24 @@ class ReclamationController extends AbstractController
         
         $timelineData = $this->formatTimelineData($reclamationsByMonth);
         
+        // Conversion des données pour Google Chart
+        $statusData = $this->formatChartData($statusStats, 'status', 'count');
+        $sentimentData = $this->formatChartData($sentimentStats, 'sentiment', 'count');
+        $typeData = $this->formatChartData($typeStats, 'type', 'count');
+        
         return $this->render('reclamation/statistics.html.twig', [
             'statusData' => json_encode($statusData),
             'sentimentData' => json_encode($sentimentData),
             'typeData' => json_encode($typeData),
             'typeSentimentData' => json_encode($typeSentimentStats),
             'resolutionRate' => $resolutionRate,
-            'timelineData' => json_encode($timelineData)
+            'timelineData' => json_encode($timelineData),
+            'filterForm' => $filterForm->createView(),
+            'hasFilters' => $filterForm->isSubmitted()
         ]);
     }
+  
+
 
     /**
      * Formate les données pour les graphiques
