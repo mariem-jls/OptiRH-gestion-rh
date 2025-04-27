@@ -20,6 +20,8 @@
         "endroid/qr-code": "^6.0",
         "endroid/qr-code-bundle": "^6.0",
         "giggsey/libphonenumber-for-php": "^9.0",
+        "google/apiclient": "2.17",
+        "google/apiclient-services": "~0.350",
         "guzzlehttp/guzzle": "^7.9",
         "knplabs/knp-paginator-bundle": "^6.4",
         "knplabs/knp-snappy-bundle": "^1.10",
