@@ -1,0 +1,121 @@
+{# templates/address_test/index.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% form_theme form 'form/address_embeddable_theme.html.twig' %}
+
+{% block title %}Test du Bundle d'Adresse{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        select {
+            min-height: 45px;
+            padding: 0.375rem 0.75rem;
+            width: 100%;
+            box-sizing: border-box;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+            font-size: 1rem;
+        }
+        .text-danger {
+            font-size: 0.875em;
+            margin-top: 0.25rem;
+            color: #dc3545;
+        }
+        .text-danger ul {
+            padding-left: 0;
+            list-style: none;
+            margin-bottom: 0;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 5px;
+            color: #fff;
+            cursor: pointer;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+        .alert {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <h1>Test du Bundle d'Adresse</h1>
+
+        {% for type, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ type }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+        {# Debug: Address format #}
+        {% if app.debug %}
+            <div class="debug" style="background: #f0f0f0; padding: 10px; margin-bottom: 20px;">
+                <strong>Required Fields (TN):</strong>
+                {{ dump(required_fields) }}
+                <strong>Used Fields (TN):</strong>
+                {{ dump(used_fields) }}
+            </div>
+        {% endif %}
+
+        {# Debug: Inspect address subfields #}
+        {% if app.debug %}
+            <div class="debug" style="background: #f0f0f0; padding: 10px; margin-bottom: 20px;">
+                <strong>Address Subfields:</strong>
+                {{ dump(form.address.children) }}
+            </div>
+        {% endif %}
+
+        {{ form_start(form) }}
+        <div class="form-group">
+            {{ form_label(form.address) }}
+            {{ form_widget(form.address) }}
+            <div class="text-danger">
+                {{ form_errors(form.address) }}
+            </div>
+        </div>
+
+        <div class="form-group">
+            {{ form_widget(form.submit) }}
+        </div>
+        {{ form_end(form) }}
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('app') }}
+{% endblock %}

@@ -42,7 +42,7 @@ class DemandeController extends AbstractController
         OffreRepository $offreRepository,
         int $offre_id,
         EmailService $emailService,
-        LoggerInterface $logger // Ajout du logger
+        LoggerInterface $logger
     ): Response {
         $offre = $offreRepository->find($offre_id);
         if (!$offre) {
@@ -83,18 +83,15 @@ class DemandeController extends AbstractController
                 }
             }
 
-            // Enregistrement de la demande
             $demandeRepository->save($demande, true);
             $logger->info('Demande enregistrée avec succès');
 
-            // Ajout d'un message flash avant l'envoi de l'email
             $this->addFlash('info', 'Demande enregistrée, envoi de l\'email en cours...');
             $logger->info('Tentative d\'envoi d\'email à : ' . $demande->getEmail(), [
                 'candidateName' => $demande->getNomComplet(),
                 'jobTitle' => $offre->getPoste(),
             ]);
 
-            // Envoi de l'email de confirmation
             try {
                 $emailService->sendApplicationConfirmationEmail(
                     $demande->getEmail(),
@@ -140,19 +137,16 @@ class DemandeController extends AbstractController
             $file = $form->get('fichierPieceJointe')->getData();
 
             if ($file) {
-                // Utiliser le nom original avec timestamp
                 $originalFileName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
                 $extension = $file->getClientOriginalExtension();
                 $fileName = $originalFileName . '_' . time() . '.' . $extension;
 
                 try {
-                    // Supprimer l'ancien fichier
                     $oldFile = $demande->getFichierPieceJointe();
                     if ($oldFile && file_exists($this->getParameter('uploads_directory') . '/' . $oldFile)) {
                         unlink($this->getParameter('uploads_directory') . '/' . $oldFile);
                     }
 
-                    // Déplacer le nouveau fichier
                     $file->move(
                         $this->getParameter('uploads_directory'),
                         $fileName
@@ -178,7 +172,6 @@ class DemandeController extends AbstractController
     public function delete(Request $request, Demande $demande, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('delete'.$demande->getId(), $request->request->get('_token'))) {
-            // Supprimer le fichier associé
             $file = $demande->getFichierPieceJointe();
             if ($file && file_exists($this->getParameter('uploads_directory') . '/' . $file)) {
                 unlink($this->getParameter('uploads_directory') . '/' . $file);

@@ -5,7 +5,13 @@ namespace App\Controller\Admin;
 use Doctrine\ORM\Query;
 use App\Entity\Reclamation;
 use Psr\Log\LoggerInterface;
-use App\Entity\Notification;
+
+use App\Entity\Demande;
+use App\Entity\Offre;
+use App\Repository\DemandeRepository;
+use App\Repository\OffreRepository;
+
+use App\Entity\Notification ;
 use App\Repository\UserRepository;
 use App\Service\GeminiAnalysisService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -40,21 +46,23 @@ class HomeController extends AbstractController
         ProjectRepository $projectRepository,
         MissionRepository $missionRepository,
         EntityManagerInterface $entityManager,
-        NotificationRepository $notificationRepository
+        NotificationRepository $notificationRepository,
+        DemandeRepository $demandeRepository,
+        OffreRepository $offreRepository
     ): Response {
         $user = $this->security->getUser();
 
         $this->checkLateMissionsForUser($user, $missionRepository, $entityManager, $notificationRepository);
 
         if ($this->isGranted('ROLE_ADMIN')) {
-            return $this->renderAdminDashboard($projectRepository, $missionRepository);
+            return $this->renderAdminDashboard($projectRepository, $missionRepository, $demandeRepository, $offreRepository);
         }
 
         return $this->renderEmployeeDashboard($missionRepository, $user);
     }
 
     private function checkLateMissionsForUser(
-        $user, 
+        $user,
         MissionRepository $missionRepository,
         EntityManagerInterface $entityManager,
         NotificationRepository $notificationRepository
@@ -95,11 +103,11 @@ class HomeController extends AbstractController
     ): array {
         $projects = $projectRepository->findAll();
         $workflowData = [];
-        
+
         foreach ($projects as $project) {
             $missionsByStatus = [];
             $allMissions = $project->getMissions();
-            
+
             foreach ($allMissions as $mission) {
                 $status = $mission->getStatus();
                 if (!isset($missionsByStatus[$status])) {
@@ -107,11 +115,11 @@ class HomeController extends AbstractController
                 }
                 $missionsByStatus[$status]++;
             }
-            
+
             $totalMissions = count($allMissions);
             $completedMissions = $missionsByStatus['Done'] ?? 0;
             $progressRate = ($totalMissions > 0) ? round(($completedMissions / $totalMissions) * 100) : 0;
-            
+
             $status = 'À démarrer';
             if ($progressRate >= 100) {
                 $status = 'Terminé';
@@ -120,7 +128,7 @@ class HomeController extends AbstractController
             } elseif ($progressRate >= 30) {
                 $status = 'En cours';
             }
-            
+
             $workflowData[] = [
                 'project' => $project,
                 'missions_by_status' => $missionsByStatus,
@@ -130,17 +138,101 @@ class HomeController extends AbstractController
                 'status' => $status
             ];
         }
-        
+
+        // Sort projects by progress rate
         usort($workflowData, function($a, $b) {
             return $b['progress_rate'] <=> $a['progress_rate'];
         });
-        
+
         return $workflowData;
+    }
+
+    // Moved these methods before renderAdminDashboard to ensure they are defined before being called
+    private function getReclamationStatusData(): array
+    {
+        $statusStats = $this->entityManager->createQueryBuilder()
+            ->select('r.status as status, COUNT(r.id) as count')
+            ->from(Reclamation::class, 'r')
+            ->groupBy('r.status')
+            ->getQuery()
+            ->getArrayResult();
+
+        return $this->formatChartData($statusStats, 'status', 'count');
+    }
+
+    private function getReclamationSentimentData(): array
+    {
+        $sentimentStats = $this->entityManager->createQueryBuilder()
+            ->select('r.sentimentLabel as sentiment, COUNT(r.id) as count')
+            ->from(Reclamation::class, 'r')
+            ->where('r.sentimentLabel IS NOT NULL')
+            ->groupBy('r.sentimentLabel')
+            ->getQuery()
+            ->getArrayResult();
+
+        return $this->formatChartData($sentimentStats, 'sentiment', 'count');
+    }
+
+    private function getReclamationTypeData(): array
+    {
+        $typeStats = $this->entityManager->createQueryBuilder()
+            ->select('r.type as type, COUNT(r.id) as count')
+            ->from(Reclamation::class, 'r')
+            ->groupBy('r.type')
+            ->getQuery()
+            ->getArrayResult();
+
+        return $this->formatChartData($typeStats, 'type', 'count');
+    }
+
+    private function getReclamationTimelineData(): array
+    {
+        $timelineStats = $this->entityManager->createQueryBuilder()
+            ->select("SUBSTRING(r.date, 1, 7) as month, COUNT(r.id) as count")
+            ->from(Reclamation::class, 'r')
+            ->groupBy('month')
+            ->orderBy('month', 'ASC')
+            ->getQuery()
+            ->getArrayResult();
+
+        return $this->formatTimelineData($timelineStats);
+    }
+
+    private function formatChartData(array $data, string $labelKey, string $valueKey): array
+    {
+        $formattedData = [];
+        $formattedData[] = [$labelKey, 'Nombre'];
+
+        foreach ($data as $item) {
+            $formattedData[] = [$item[$labelKey] ?? 'Non défini', (int)$item[$valueKey]];
+        }
+
+        return $formattedData;
+    }
+
+    private function formatTimelineData(array $data): array
+    {
+        $formattedData = [];
+        $formattedData[] = ['Mois', 'Nombre de réclamations'];
+
+        foreach ($data as $item) {
+            $parts = explode('-', $item['month']);
+            $year = $parts[0];
+            $month = $parts[1];
+            $dateObj = new \DateTime("$year-$month-01");
+            $formattedMonth = $dateObj->format('M Y');
+
+            $formattedData[] = [$formattedMonth, (int)$item['count']];
+        }
+
+        return $formattedData;
     }
 
     private function renderAdminDashboard(
         ProjectRepository $projectRepository,
-        MissionRepository $missionRepository
+        MissionRepository $missionRepository,
+        DemandeRepository $demandeRepository,
+        OffreRepository $offreRepository
     ): Response {
         // Get all projects with their statistics
         $projects = $projectRepository->findAllWithObjectsAndStats();
@@ -156,7 +248,7 @@ class HomeController extends AbstractController
                     fn($m) => $m->getStatus() === 'Done'
                 )->count(),
                 'sparkline_data' => $this->getMissionCompletionTrend(
-                    $project, 
+                    $project,
                     $missionRepository
                 )
             ];
@@ -182,9 +274,99 @@ class HomeController extends AbstractController
         $delayedProjects = $projectRepository->findBy(['status' => 'delayed']);
         $delayedMissions = $missionRepository->findOverdueMissions2();
 
+        // Recruitment statistics
+        // 1. Demande statistics
+        $demandeStats = $demandeRepository->createQueryBuilder('d')
+            ->select('d.statut, COUNT(d.id) as count')
+            ->groupBy('d.statut')
+            ->getQuery()
+            ->getResult();
+
+        $totalDemandes = $demandeRepository->createQueryBuilder('d')
+            ->select('COUNT(d.id) as count')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        $acceptedDemandes = $demandeRepository->createQueryBuilder('d')
+            ->select('COUNT(d.id) as count')
+            ->where('d.statut = :statut')
+            ->setParameter('statut', Demande::STATUT_ACCEPTEE)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        // Average processing time (from creation date to current date for completed demands)
+        $avgProcessingTime = $demandeRepository->createQueryBuilder('d')
+            ->select('AVG(DATE_DIFF(CURRENT_DATE(), d.date)) as avg_days')
+            ->where('d.statut IN (:statuts)')
+            ->setParameter('statuts', [Demande::STATUT_ACCEPTEE, Demande::STATUT_REFUSEE])
+            ->getQuery()
+            ->getSingleScalarResult() ?? 0;
+
+        // Demandes over time (dynamic range based on data)
+        $demandeTimeline = [];
+        $minMaxDates = $demandeRepository->createQueryBuilder('d')
+            ->select('MIN(d.date) as min_date, MAX(d.date) as max_date')
+            ->getQuery()
+            ->getSingleResult();
+
+        $minDate = $minMaxDates['min_date'] ? new \DateTime($minMaxDates['min_date']) : new \DateTime('first day of -1 month');
+        $maxDate = $minMaxDates['max_date'] ? new \DateTime($minMaxDates['max_date']) : new \DateTime();
+
+        // Extend range slightly for better visualization
+        $startDate = (clone $minDate)->modify('first day of -1 month');
+        $endDate = (clone $maxDate)->modify('last day of +1 month');
+
+        // Generate monthly data points
+        $current = (clone $startDate);
+        while ($current <= $endDate) {
+            $monthStart = (clone $current)->setTime(0, 0, 0);
+            $monthEnd = (clone $current)->modify('last day of this month')->setTime(23, 59, 59);
+            $count = $demandeRepository->createQueryBuilder('d')
+                ->select('COUNT(d.id) as count')
+                ->where('d.date BETWEEN :start AND :end')
+                ->setParameter('start', $monthStart)
+                ->setParameter('end', $monthEnd)
+                ->getQuery()
+                ->getSingleScalarResult();
+            $demandeTimeline[] = [
+                'month' => $monthStart->format('M Y'),
+                'count' => (int)$count
+            ];
+            $current->modify('+1 month');
+        }
+
+        // Ensure at least two data points
+        if (count($demandeTimeline) < 2) {
+            $demandeTimeline[] = [
+                'month' => (clone $current)->modify('first day of this month')->format('M Y'),
+                'count' => 0
+            ];
+        }
+
+        // 2. Offre statistics
+        $offreStats = $offreRepository->createQueryBuilder('o')
+            ->select('o.typeContrat, COUNT(o.id) as count')
+            ->groupBy('o.typeContrat')
+            ->getQuery()
+            ->getResult();
+
+        $activeOffres = $offreRepository->createQueryBuilder('o')
+            ->select('COUNT(o.id) as count')
+            ->where('o.statut = :statut')
+            ->setParameter('statut', 'Active')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        // Recruitment stats array for summary cards
+        $recruitmentStats = [
+            'total_demandes' => $totalDemandes,
+            'accepted_demandes' => $acceptedDemandes,
+            'active_offres' => $activeOffres,
+            'avg_processing_time' => round($avgProcessingTime, 1)
+        ];
+
         // Calculate reclamation resolution rate
         $resolutionRate = 0;
-        
         try {
             if (class_exists('App\Entity\Reclamation')) {
                 $totalReclamations = $this->entityManager->createQueryBuilder()
@@ -192,7 +374,7 @@ class HomeController extends AbstractController
                     ->from(Reclamation::class, 'r')
                     ->getQuery()
                     ->getSingleScalarResult();
-                
+
                 $resolvedReclamations = $this->entityManager->createQueryBuilder()
                     ->select('COUNT(r.id)')
                     ->from(Reclamation::class, 'r')
@@ -200,7 +382,7 @@ class HomeController extends AbstractController
                     ->setParameter('status', Reclamation::STATUS_RESOLVED)
                     ->getQuery()
                     ->getSingleScalarResult();
-                
+
                 if ($totalReclamations > 0) {
                     $resolutionRate = round(($resolvedReclamations / $totalReclamations) * 100, 2);
                 }
@@ -226,6 +408,7 @@ class HomeController extends AbstractController
             $formattedMissionStats[$stat['status']] = $stat['count'];
         }
 
+        // Admin statistics
         $adminStats = [
             'total_users' => $this->userRepository->count([]),
             'verified_users' => $this->userRepository->count(['isVerified' => true]),
@@ -255,9 +438,9 @@ class HomeController extends AbstractController
                 ->getQuery()
                 ->getSingleScalarResult(),
             'average_account_age' => $this->userRepository->createQueryBuilder('u')
-                ->select('AVG(DATE_DIFF(CURRENT_DATE(), u.createdAt))')
-                ->getQuery()
-                ->getSingleScalarResult() ?? 0,
+                    ->select('AVG(DATE_DIFF(CURRENT_DATE(), u.createdAt))')
+                    ->getQuery()
+                    ->getSingleScalarResult() ?? 0,
         ];
 
         return $this->render('admin/index.html.twig', [
@@ -278,121 +461,44 @@ class HomeController extends AbstractController
             'typeDataJson' => json_encode($typeData),
             'timelineDataJson' => json_encode($timelineData),
             'adminStats' => $adminStats,
+            'demande_stats' => $demandeStats,
+            'offre_stats' => $offreStats,
+            'recruitment_stats' => $recruitmentStats,
+            'demande_timeline' => $demandeTimeline,
             'mission_timeline_data' => $missionTimelineData,
         ]);
     }
 
-    private function getReclamationStatusData(): array
-    {
-        $statusStats = $this->entityManager->createQueryBuilder()
-            ->select('r.status as status, COUNT(r.id) as count')
-            ->from(Reclamation::class, 'r')
-            ->groupBy('r.status')
-            ->getQuery()
-            ->getArrayResult();
-        
-        return $this->formatChartData($statusStats, 'status', 'count');
-    }
-
-    private function getReclamationSentimentData(): array
-    {
-        $sentimentStats = $this->entityManager->createQueryBuilder()
-            ->select('r.sentimentLabel as sentiment, COUNT(r.id) as count')
-            ->from(Reclamation::class, 'r')
-            ->where('r.sentimentLabel IS NOT NULL')
-            ->groupBy('r.sentimentLabel')
-            ->getQuery()
-            ->getArrayResult();
-        
-        return $this->formatChartData($sentimentStats, 'sentiment', 'count');
-    }
-
-    private function getReclamationTypeData(): array
-    {
-        $typeStats = $this->entityManager->createQueryBuilder()
-            ->select('r.type as type, COUNT(r.id) as count')
-            ->from(Reclamation::class, 'r')
-            ->groupBy('r.type')
-            ->getQuery()
-            ->getArrayResult();
-        
-        return $this->formatChartData($typeStats, 'type', 'count');
-    }
-
-    private function getReclamationTimelineData(): array
-    {
-        // Correction de la requête pour utiliser les fonctions Doctrine
-        $timelineStats = $this->entityManager->createQueryBuilder()
-            ->select("SUBSTRING(r.date, 1, 7) as month, COUNT(r.id) as count")
-            ->from(Reclamation::class, 'r')
-            ->groupBy('month')
-            ->orderBy('month', 'ASC')
-            ->getQuery()
-            ->getArrayResult();
-        
-        return $this->formatTimelineData($timelineStats);
-    }
-
-    private function formatChartData(array $data, string $labelKey, string $valueKey): array
-    {
-        $formattedData = [];
-        $formattedData[] = [$labelKey, 'Nombre'];
-        
-        foreach ($data as $item) {
-            $formattedData[] = [$item[$labelKey] ?? 'Non défini', (int)$item[$valueKey]];
-        }
-        
-        return $formattedData;
-    }
-
-    private function formatTimelineData(array $data): array
-    {
-        $formattedData = [];
-        $formattedData[] = ['Mois', 'Nombre de réclamations'];
-        
-        foreach ($data as $item) {
-            $parts = explode('-', $item['month']);
-            $year = $parts[0];
-            $month = $parts[1];
-            $dateObj = new \DateTime("$year-$month-01");
-            $formattedMonth = $dateObj->format('M Y');
-            
-            $formattedData[] = [$formattedMonth, (int)$item['count']];
-        }
-        
-        return $formattedData;
-    }
-
     private function getMissionCompletionTrend(
-        $project, 
+        $project,
         MissionRepository $missionRepository,
         int $months = 12
     ): array {
         $completionData = [];
         $now = new \DateTime();
-        
+
         for ($i = $months - 1; $i >= 0; $i--) {
             $startDate = (new \DateTime("first day of -$i months"))->setTime(0, 0, 0);
             $endDate = (clone $startDate)->modify('+1 month');
-            
+
             if ($endDate > $now) {
                 $endDate = clone $now;
             }
-    
+
             try {
                 $total = $missionRepository->countMissionsByProjectAndDateRange(
                     $project,
                     $startDate,
                     $endDate
                 );
-                
+
                 $completed = $missionRepository->countMissionsByProjectAndDateRange(
                     $project,
                     $startDate,
                     $endDate,
                     'Done'
                 );
-                
+
                 $rate = ($total > 0) ? round(($completed / $total) * 100) : 0;
                 $completionData[] = $rate;
             } catch (\Exception $e) {
@@ -404,7 +510,7 @@ class HomeController extends AbstractController
                 $completionData[] = 0;
             }
         }
-        
+
         return $completionData;
     }
 
@@ -451,25 +557,25 @@ class HomeController extends AbstractController
     {
         $timelineData = [];
         $now = new \DateTime();
-        
+
         for ($i = $months - 1; $i >= 0; $i--) {
             $startDate = (new \DateTime("first day of -$i months"))->setTime(0, 0, 0);
             $endDate = (clone $startDate)->modify('+1 month');
             $monthKey = $startDate->format('M Y');
-            
+
             if ($endDate > $now) {
                 $endDate = clone $now;
             }
-            
+
             $created = $missionRepository->countMissionsByDateRange($startDate, $endDate);
             $completed = $missionRepository->countMissionsByDateRange($startDate, $endDate, 'Done');
-            
+
             $timelineData[$monthKey] = [
                 'created' => $created,
                 'completed' => $completed
             ];
         }
-        
+
         return $timelineData;
     }
 
@@ -519,12 +625,12 @@ class HomeController extends AbstractController
 
     private function renderEmployeeDashboard(
         MissionRepository $missionRepository,
-        $user
+                          $user
     ): Response {
         $userMissions = $missionRepository->findBy(['assignedTo' => $user]);
 
         $lateMissions = array_filter($userMissions, function($mission) {
-            return $mission->getDateTerminer() < new \DateTime() 
+            return $mission->getDateTerminer() < new \DateTime()
                 && $mission->getStatus() !== 'Done';
         });
 
