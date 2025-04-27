@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmation de réservation</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f7f7f7;
+        }
+        .email-container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        .logo-container {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eeeeee;
+        }
+        .logo {
+            height: 80px;
+            max-width: 100%;
+        }
+        h1 {
+            color: #2c3e50;
+            font-size: 24px;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        p {
+            margin-bottom: 15px;
+            font-size: 15px;
+        }
+        ul {
+            padding-left: 20px;
+            margin-bottom: 25px;
+        }
+        li {
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+        .reservation-detail {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 25px;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #2c3e50;
+            display: inline-block;
+            width: 80px;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eeeeee;
+            font-style: italic;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #3498db;
+            color: #ffffff !important;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="logo-container">
+            <!-- Remplacez par votre logo en base64 ou URL absolue -->
+            <img src="https://www.votredomaine.com/images/logo-dark.png" alt="Logo OptiRH" class="logo">
+        </div>
+        
+        <h1>Confirmation de réservation</h1>
+        
+        <p>Bonjour <strong>{{ user.nom }}</strong>,</p>
+        
+        <p>Votre réservation a bien été enregistrée. Voici le récapitulatif :</p>
+        
+        <div class="reservation-detail">
+            <ul>
+                <li><span class="detail-label">Trajet :</span> {{ trajet.depart }} → {{ trajet.arrive }}</li>
+                <li><span class="detail-label">Véhicule :</span> {{ vehicule.type }} ({{ vehicule.nbrplace }} places)</li>
+                <li><span class="detail-label">Station :</span> {{ trajet.station }}</li>
+                <li><span class="detail-label">Statut :</span> <strong style="color: #27ae60;">{{ reservation.disponibilite }}</strong></li>
+            </ul>
+        </div>
+        
+        <p>Merci d'avoir utilisé notre service de transport. Votre réservation est maintenant confirmée.</p>
+        
+       
+        <p class="footer">
+            Cordialement,<br>
+            <strong>L'équipe OptiRH</strong><br>
+            <small>Pour toute question, contactez-nous à <a href="mailto:support@optirh.com">support@optirh.com</a></small>
+        </p>
+    </div>
+</body>
+</html>

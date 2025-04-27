@@ -107,4 +107,26 @@ class VehiculeRepository extends ServiceEntityRepository
     return $qb->getQuery()->getResult();
 }
 
+
+
+
+public function findByCoordinates($departLat, $departLon, $arriveLat, $arriveLon)
+{
+    // Implémentez votre logique de recherche ici
+    // Exemple simple : recherche par proximité
+    return $this->createQueryBuilder('v')
+        ->join('v.trajet', 't')
+        ->where('ACOS(SIN(:departLat)*SIN(t.latitudeDepart) + COS(:departLat)*COS(t.latitudeDepart)*COS(t.longitudeDepart-:departLon)) * 6371 <= 10') // 10km radius
+        ->andWhere('ACOS(SIN(:arriveLat)*SIN(t.latitudeArrivee) + COS(:arriveLat)*COS(t.latitudeArrivee)*COS(t.longitudeArrivee-:arriveLon)) * 6371 <= 10')
+        ->setParameters([
+            'departLat' => deg2rad($departLat),
+            'departLon' => deg2rad($departLon),
+            'arriveLat' => deg2rad($arriveLat),
+            'arriveLon' => deg2rad($arriveLon)
+        ])
+        ->getQuery()
+        ->getResult();
+}
+
+
 }

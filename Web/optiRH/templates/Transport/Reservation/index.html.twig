@@ -2,6 +2,17 @@
 
 {% block title %}Réservation de trajets{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        .fullscreen-map-container {
+            height: 70vh;
+            width: 100%;
+        }
+    </style>
+{% endblock %}
+
 {% block topbar %}
     {{ include('partials/topbar.html.twig', { page_title: 'Réservation de trajets' }) }}
 {% endblock %}
@@ -11,11 +22,39 @@
     <div class="col-12">
         <div class="card">
             <div class="card-body">
-                <!-- Bouton Mes Réservations -->
-                <div class="mb-3">
-                    <button class="btn btn-info" id="showReservationsBtn">
-                        <i class="mdi mdi-calendar-text me-1"></i> Mes Réservations
-                    </button>
+                <div class="mb-3 d-flex justify-content-between">
+                    <div>
+                        <button class="btn btn-info" id="showReservationsBtn">
+                            <i class="mdi mdi-calendar-text me-1"></i> Mes Réservations
+                        </button>
+                    </div>
+                    <div>
+                        <button class="btn btn-success" id="showMapBtn">
+                            <i class="mdi mdi-map-marker-radius me-1"></i> Afficher la carte
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Modal pour la carte -->
+                <div class="modal fade" id="mapModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-xl">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Carte des trajets</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body p-0">
+                                <div class="fullscreen-map-container">
+                                    <div id="map"></div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                    <i class="mdi mdi-close me-1"></i> Fermer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Barre de recherche -->
@@ -44,7 +83,6 @@
                 <div id="myReservationsContainer" style="display: none;">
                     <h4 class="mb-3">Mes Réservations</h4>
                     <div id="reservationsList">
-                        <!-- Le contenu sera chargé via AJAX -->
                         <div class="alert alert-info">Chargement en cours...</div>
                     </div>
                 </div>
@@ -55,19 +93,58 @@
 {% endblock %}
 
 {% block javascript %}
+{{ parent() }}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
+// Configuration globale
+const MAP_CONFIG = {
+    defaultView: [36.8065, 10.1815],
+    defaultZoom: 7,
+    tileLayer: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+};
+
 document.addEventListener('DOMContentLoaded', function() {
+    let map = null; // Variable pour stocker la carte
+    
+    // Gestion du bouton d'affichage de la carte
+    document.getElementById('showMapBtn').addEventListener('click', function() {
+        const modal = new bootstrap.Modal(document.getElementById('mapModal'));
+        
+        // Initialiser la carte seulement si elle n'existe pas encore
+        if (!map) {
+            map = L.map('map').setView(MAP_CONFIG.defaultView, MAP_CONFIG.defaultZoom);
+            L.tileLayer(MAP_CONFIG.tileLayer, { 
+                attribution: MAP_CONFIG.attribution 
+            }).addTo(map);
+            
+            // Activer les interactions
+            map.scrollWheelZoom.enable();
+        }
+        
+        // Toujours redimensionner et afficher la modal
+        setTimeout(() => {
+            map.invalidateSize();
+            modal.show();
+        }, 100);
+    });
+
     // Gestion de la recherche
     document.getElementById('searchBtn').addEventListener('click', function() {
         const depart = document.getElementById('depart').value;
         const arrive = document.getElementById('arrive').value;
 
         if (!depart && !arrive) {
-            alert('Veuillez entrer au moins un point de départ ou d\'arrivée');
+            const errorHtml = `
+                <div class="alert alert-warning alert-dismissible fade show">
+                    Veuillez saisir au moins un point de départ ou d'arrivée
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            document.getElementById('resultsContainer').innerHTML = errorHtml;
             return;
         }
 
-        // Masquer les réservations et montrer les résultats
         document.getElementById('myReservationsContainer').style.display = 'none';
         document.getElementById('resultsContainer').style.display = 'block';
 
@@ -84,7 +161,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const isVisible = container.style.display !== 'none';
         
         if (!isVisible) {
-            // Charger les réservations via AJAX
             fetch('{{ path("app_transport_reservation_list") }}')
                 .then(response => response.text())
                 .then(html => {
@@ -98,7 +174,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Optionnel: permettre la recherche avec la touche Entrée
+    // Recherche avec la touche Entrée
     ['depart', 'arrive'].forEach(id => {
         document.getElementById(id).addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
@@ -110,7 +186,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function deleteReservation(reservationId) {
     if (confirm('Êtes-vous sûr de vouloir annuler cette réservation ?')) {
-        // Afficher un indicateur de chargement
         const button = event.target;
         button.disabled = true;
         button.innerHTML = '<i class="mdi mdi-loading mdi-spin"></i> Traitement...';
@@ -134,9 +209,7 @@ function deleteReservation(reservationId) {
         })
         .then(data => {
             if (data.success) {
-                // Recharger la liste
                 document.getElementById('showReservationsBtn').click();
-                // Afficher notification
                 showAlert('success', 'Réservation annulée avec succès');
             } else {
                 throw new Error(data.error || 'Erreur inconnue');
@@ -163,13 +236,10 @@ function showAlert(type, message) {
     const container = document.getElementById('myReservationsContainer');
     container.prepend(alert);
     
-    // Fermeture automatique après 5s
     setTimeout(() => {
         alert.classList.remove('show');
         setTimeout(() => alert.remove(), 150);
     }, 5000);
 }
-
-
 </script>
 {% endblock %}

@@ -82,3 +82,11 @@ services:
         arguments:
             $logger: '@monolog.logger'
             $entityManager: '@doctrine.orm.entity_manager'
+
+
+    App\Service\ReservationMailer:
+        arguments:
+            $mailer: '@Symfony\Component\Mailer\MailerInterface'
+            $senderEmail: 'azettt532@gmail.com'
+            
+    
