@@ -22,6 +22,8 @@
             --light-color: #f8f9fa;
             --dark-color: #2c3e50;
             --optirh-blue: #4da6ff; /* Couleur principale OPTIRH */
+            --optirh-dark-blue: #3399ff;
+            --optirh-light-blue: #e6f2ff;
         }
 
         /* Style OPTIRH dans l'en-tête */
@@ -130,7 +132,7 @@
         }
 
         .sentiment-emoji {
-            font-size: 1.3rem;
+            font-size: S.3rem;
             filter: drop-shadow(0 2px 3px rgba(0,0,0,0.1));
         }
 
@@ -297,6 +299,101 @@
         .optirh-float {
             animation: optirhFloat 4s ease-in-out infinite;
         }
+        
+        /* Styles pour les filtres avancés */
+        .filter-card {
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+            border: none;
+        }
+        
+        .filter-card .card-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 10px 10px 0 0;
+            padding: 15px 20px;
+        }
+        
+        .filter-btn {
+            background-color: var(--optirh-blue);
+            border-color: var(--optirh-dark-blue);
+            transition: all 0.3s ease;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        
+        .filter-btn:hover {
+            background-color: var(--optirh-dark-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .filter-reset {
+            color: #6c757d;
+            background-color: #f8f9fa;
+            border-color: #e9ecef;
+            transition: all 0.3s ease;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        
+        .filter-reset:hover {
+            background-color: #e9ecef;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        
+        .date-range-filter .form-group {
+            margin-bottom: 10px;
+        }
+        
+        /* Style pour les filtres actifs */
+        .active-filters {
+            background-color: var(--optirh-light-blue);
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--optirh-blue);
+            box-shadow: 0 4px 12px rgba(67, 149, 255, 0.08);
+            transition: all 0.3s ease;
+        }
+        
+        .active-filters:hover {
+            box-shadow: 0 8px 20px rgba(67, 149, 255, 0.12);
+            transform: translateY(-2px);
+        }
+        
+        .active-filters .filter-badge {
+            display: inline-block;
+            background-color: var(--optirh-blue);
+            color: white;
+            border-radius: 20px;
+            padding: 5px 12px;
+            font-size: 0.85rem;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            box-shadow: 0 2px 5px rgba(67, 149, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .active-filters .filter-badge:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(67, 149, 255, 0.3);
+        }
+        
+        .form-control, .form-select {
+            border-radius: 10px;
+            padding: 10px 15px;
+            border: 1px solid rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--optirh-blue);
+            box-shadow: 0 0 0 0.25rem rgba(77, 166, 255, 0.25);
+        }
     </style>
 {% endblock %}
 
@@ -324,29 +421,79 @@
         </div>
         
         <div class="card-body">
-            <form method="get" class="mb-4 animate__animated animate__fadeInUp">
-                <div class="row g-3">
-                    <div class="col-md-5">
-                        <div class="input-group">
-                            <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
-                            <input type="text" name="search" class="form-control border-start-0" placeholder="Rechercher une réclamation..." value="{{ searchTerm }}">
+            <!-- Filtres avancés -->
+            <div class="card filter-card animate__animated animate__fadeInUp mb-4">
+                <div class="card-header">
+                    <h6 class="m-0"><i class="fas fa-filter me-2"></i>Filtres avancés</h6>
+                </div>
+                <div class="card-body">
+                    {{ form_start(filterForm, {'attr': {'id': 'filter-form', 'class': 'filter-form'}}) }}
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            {{ form_row(filterForm.description, {'label': 'Recherche par description'}) }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form_row(filterForm.type) }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form_row(filterForm.status) }}
                         </div>
                     </div>
-                    <div class="col-md-5">
-                        <select name="type" class="form-select">
-                            <option value="">Tous les types</option>
-                            {% for typeValue, typeLabel in typeChoices %}
-                                <option value="{{ typeValue }}" {% if selectedType == typeValue %}selected{% endif %}>{{ typeLabel }}</option>
-                            {% endfor %}
-                        </select>
+                    
+                    <div class="row g-3 mt-2 date-range-filter">
+                        <div class="col-md-6">
+                            {{ form_row(filterForm.date.left_date, {'label': 'Date de début'}) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_row(filterForm.date.right_date, {'label': 'Date de fin'}) }}
+                        </div>
                     </div>
-                    <div class="col-md-2">
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="fas fa-filter me-1"></i> Filtrer
+                    
+                    <div class="d-flex justify-content-end mt-3 gap-2">
+                        <a href="{{ path('front_reclamations') }}" class="btn filter-reset">
+                            <i class="fas fa-undo me-1"></i> Réinitialiser
+                        </a>
+                        <button type="submit" class="btn filter-btn text-white">
+                            <i class="fas fa-search me-1"></i> Appliquer les filtres
                         </button>
                     </div>
+                    {{ form_end(filterForm) }}
                 </div>
-            </form>
+            </div>
+            
+            <!-- Filtres actifs -->
+            {% if app.request.query.all|length > 0 %}
+            <div class="active-filters animate__animated animate__fadeIn">
+                <h6><i class="fas fa-tag me-2"></i>Filtres actifs:</h6>
+                <div class="mt-2">
+                    {% if app.request.query.has('reclamation_filter') %}
+                        {% set filterParams = app.request.query.all['reclamation_filter'] %}
+                        
+                        {% if filterParams.description is defined and filterParams.description.value is defined and filterParams.description.value is not empty %}
+                            <span class="filter-badge"><i class="fas fa-search me-1"></i> {{ filterParams.description.value }}</span>
+                        {% endif %}
+                        
+                        {% if filterParams.type is defined and filterParams.type.value is defined and filterParams.type.value is not empty %}
+                            <span class="filter-badge"><i class="fas fa-tags me-1"></i> {{ filterParams.type.value }}</span>
+                        {% endif %}
+                        
+                        {% if filterParams.status is defined and filterParams.status.value is defined and filterParams.status.value is not empty %}
+                            <span class="filter-badge"><i class="fas fa-info-circle me-1"></i> {{ filterParams.status.value }}</span>
+                        {% endif %}
+                        
+                        {% if filterParams.date is defined %}
+                            {% if filterParams.date.left_date is defined and filterParams.date.left_date.value is defined and filterParams.date.left_date.value is not empty %}
+                                <span class="filter-badge"><i class="fas fa-calendar-alt me-1"></i> À partir du {{ filterParams.date.left_date.value|date('d/m/Y') }}</span>
+                            {% endif %}
+                            
+                            {% if filterParams.date.right_date is defined and filterParams.date.right_date.value is defined and filterParams.date.right_date.value is not empty %}
+                                <span class="filter-badge"><i class="fas fa-calendar-alt me-1"></i> Jusqu'au {{ filterParams.date.right_date.value|date('d/m/Y') }}</span>
+                            {% endif %}
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
             
             <div class="table-responsive">
                 <table class="table table-reclamations">
@@ -370,6 +517,11 @@
                                             {% if reclamation.type == "Technique" %}🛠️
                                             {% elseif reclamation.type == "Administrative" %}📋
                                             {% elseif reclamation.type == "Service" %}🤝
+                                            {% elseif reclamation.type == "Salaire" %}💰
+                                            {% elseif reclamation.type == "Rémunération" %}💵
+                                            {% elseif reclamation.type == "Congés" %}🏖️
+                                            {% elseif reclamation.type == "Relations professionnelles" %}👥
+                                            {% elseif reclamation.type == "Conditions de travail" %}🏢
                                             {% else %}📌{% endif %}
                                         </span>
                                         {{ reclamation.type }}
@@ -530,6 +682,43 @@
                 animation: true,
                 delay: { "show": 100, "hide": 100 }
             });
+            
+            // Appliquer datepicker aux inputs de date si non-native
+            if (typeof $.fn.datepicker !== 'undefined') {
+                $('.filter-form input[type="date"]').datepicker({
+                    format: 'yyyy-mm-dd',
+                    autoclose: true,
+                    todayHighlight: true,
+                    language: 'fr'
+                });
+            }
+            
+            // Soumission automatique du formulaire lors de la modification des filtres
+            const autoSubmitInputs = document.querySelectorAll('#filter-form select, #filter-form input[type="date"]');
+            autoSubmitInputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    // Petite pause pour permettre à l'utilisateur de voir le changement avant soumission
+                    setTimeout(() => {
+                        document.getElementById('filter-form').submit();
+                    }, 300);
+                });
+            });
+            
+            // Pour l'input de recherche, on soumet après un délai de frappe
+            const searchInput = document.querySelector('#filter-form input[type="text"]');
+            if (searchInput) {
+                let typingTimer;
+                const doneTypingInterval = 800; // ms
+                
+                searchInput.addEventListener('keyup', function() {
+                    clearTimeout(typingTimer);
+                    if (this.value) {
+                        typingTimer = setTimeout(() => {
+                            document.getElementById('filter-form').submit();
+                        }, doneTypingInterval);
+                    }
+                });
+            }
         });
     </script>
 {% endblock %}
