@@ -76,6 +76,9 @@ services:
         arguments:
             $senderEmail: '%app.mailer.sender_email%'
             $senderName: '%app.mailer.sender_name%'
+            $entityManager: '@doctrine.orm.entity_manager'
+            $notificationManager: '@App\Service\NotificationManager'
+            $logger: '@logger'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

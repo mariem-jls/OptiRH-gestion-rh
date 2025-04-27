@@ -235,6 +235,20 @@
             "./config/packages/security.yaml"
         ]
     },
+    "symfony/stimulus-bundle": {
+        "version": "2.24",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "2.13",
+            "ref": "6acd9ff4f7fd5626d2962109bd4ebab351d43c43"
+        },
+        "files": [
+            "./assets/bootstrap.js",
+            "./assets/controllers.json",
+            "./assets/controllers/hello_controller.js"
+        ]
+    },
     "symfony/translation": {
         "version": "6.3",
         "recipe": {
@@ -269,6 +283,9 @@
             "version": "5.0",
             "ref": "10af129fcac6d00ffc9bb23d039d997dee35e657"
         }
+    },
+    "symfony/ux-chartjs": {
+        "version": "v2.24.0"
     },
     "symfony/validator": {
         "version": "6.3",

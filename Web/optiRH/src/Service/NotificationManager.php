@@ -30,7 +30,7 @@ class NotificationManager
             $missionId,
             $projectId,
             $daysLate,
-            'mission_show',
+            'gs-projet_project_mission_show',
             ['id' => $missionId]
         );
     }
@@ -46,7 +46,7 @@ class NotificationManager
             $missionTitle,
             $missionId,
             $projectId,
-            'mission_show',
+            'gs-projet_project_mission_show',
             ['id' => $missionId]
         );
     }

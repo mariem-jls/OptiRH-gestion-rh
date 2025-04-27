@@ -86,7 +86,7 @@ class MissionController extends AbstractController
             'user' => $user
         ]);
     }
-    
+
   
     #[Route('/missions/{id}/update-status', name: 'missions_update_status', methods: ['POST'])]
     #[IsGranted('ROLE_USER')]
@@ -144,7 +144,6 @@ class MissionController extends AbstractController
         };
     }
     #[Route('/{id}/missions/new', name: 'mission_new', methods: ['GET', 'POST'])]
-    #[IsGranted('ROLE_USER')]
     public function new(
         Request $request, 
         Project $project, 
@@ -157,13 +156,19 @@ class MissionController extends AbstractController
     
         if ($form->isSubmitted() && $form->isValid()) {
             try {
+                // Associer la mission au projet
                 $mission->setProject($project);
+                
+                // Persister la mission pour obtenir un ID
                 $em->persist($mission);
                 $em->flush();
     
-                // Envoi de la notification
-                $notificationService->sendNewMissionNotification($mission);
+                // Envoyer la notification seulement après la persistance
+                if ($mission->getAssignedTo()) {
+                    $notificationService->sendNewMissionNotification($mission);
+                }
     
+                // Réponse pour requêtes AJAX
                 if ($request->isXmlHttpRequest()) {
                     return $this->json([
                         'success' => true,
@@ -176,6 +181,7 @@ class MissionController extends AbstractController
                 return $this->redirectToRoute('gs-projet_project_show', ['id' => $project->getId()]);
                 
             } catch (\Exception $e) {
+                // Gestion des erreurs
                 if ($request->isXmlHttpRequest()) {
                     return $this->json(['error' => $e->getMessage()], 500);
                 }
@@ -183,45 +189,51 @@ class MissionController extends AbstractController
             }
         }
     
+        // Affichage du formulaire
         return $this->render('gs-projet/project/newMiss.html.twig', [
             'form' => $form->createView(),
             'project' => $project
         ]);
     }
-    
-    private function getFormErrors(FormInterface $form): array
-    {
-        $errors = [];
-        foreach ($form->getErrors(true) as $error) {
-            $errors[$error->getOrigin()->getName()][] = $error->getMessage();
-        }
-        return $errors;
-    }
-    
+
     #[Route('/mission/{id}/edit', name: 'mission_edit', methods: ['GET', 'POST'])]
-    #[IsGranted('ROLE_USER')]
-    public function edit(Request $request, Mission $mission, EntityManagerInterface $em): Response
-    {
+    public function edit(
+        Request $request, 
+        Mission $mission, 
+        EntityManagerInterface $em,
+        MissionNotificationService $notificationService
+    ): Response {
+        // Sauvegarder l'assigné original pour comparaison
+        $originalAssignee = $mission->getAssignedTo();
+        
         $form = $this->createForm(MissionType::class, $mission);
         $form->handleRequest($request);
-    
+
         if ($form->isSubmitted() && $form->isValid()) {
+            // Vérifier si l'assigné a changé
+            $newAssignee = $mission->getAssignedTo();
+            
+            // Envoyer une notification si l'assigné a changé et n'est pas null
+            if ($newAssignee && $originalAssignee !== $newAssignee) {
+                $notificationService->sendNewMissionNotification($mission);
+            }
+
             $em->flush();
-    
-            // Retourner une réponse JSON pour SweetAlert
+
+            // Réponse JSON pour les requêtes AJAX
             return $this->json([
                 'success' => true,
                 'redirect' => $this->generateUrl('gs-projet_project_show', ['id' => $mission->getProject()->getId()]),
                 'message' => 'Les modifications ont été enregistrées avec succès.'
             ]);
         }
-    
+
+        // Affichage du formulaire d'édition
         return $this->render('gs-projet/project/editMission.html.twig', [
             'form' => $form->createView(),
             'mission' => $mission,
         ]);
     }
-    
     #[Route('/mission/{id}', name: 'mission_show', methods: ['GET'])]
     #[IsGranted('ROLE_USER')]
     public function show(Mission $mission): Response

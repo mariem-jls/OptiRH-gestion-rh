@@ -14,14 +14,24 @@
         --danger-color: #e74a3b;
         --warning-color: #f6c23e;
         --info-color: #36b9cc;
-        --light-color: #f8f9fa;
-        --dark-color: #5a5c69;
-        --border-radius: 0.35rem;
-        --box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
-        --transition: all 0.3s ease-in-out;
+        --light-color: #f8f9fc;
+        --dark-color: #2d3748;
+        --border-radius: 12px;
+        --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        --transition: all 0.3s ease;
+        --mission-primary: #4a6bdf;
+        --mission-secondary: #20c997;
+        --mission-danger: #ff6b6b;
+        --mission-warning: #ffd43b;
+        --mission-info: #66d9e8;
+        --mission-light: #f8f9fa;
+        --mission-dark: #343a40;
+        --mission-border-radius: 12px;
+        --mission-box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        --mission-transition: all 0.3s ease;
     }
 
-    /* Optimized CSS */
+    /* Loading Overlay */
     .loading-overlay {
         position: fixed;
         top: 0;
@@ -38,14 +48,14 @@
         display: none;
         backdrop-filter: blur(5px);
     }
-    
+
     .loading-overlay .spinner-border {
         width: 3.5rem;
         height: 3.5rem;
         border-width: 0.25em;
     }
-    
-    /* Cards General Style */
+
+    /* Card Style */
     .card-style {
         background: #fff;
         border-radius: var(--border-radius);
@@ -53,296 +63,430 @@
         box-shadow: var(--box-shadow);
         transition: var(--transition);
         overflow: hidden;
+        margin-bottom: 1.5rem;
     }
-    
-    .card-style:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 0.5rem 2rem 0 rgba(58, 59, 69, 0.2);
-    }
-    
-    .card-header-style {
-        background-color: rgba(255, 255, 255, 0.9);
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        padding: 1.25rem 1.5rem;
-        font-weight: 600;
-        color: var(--dark-color);
-    }
-    
 
-  
-  
-    
+    .card-style:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    .card-header-style {
+        background: linear-gradient(135deg, #f8f9fc, #e2e8f0);
+        border-bottom: none;
+        padding: 1rem 1.5rem;
+        font-weight: 700;
+        color: var(--dark-color);
+        font-size: 1.1rem;
+    }
+
     /* Stats Cards */
     .admin-stats {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        display: flex;
+        justify-content: space-between;
         gap: 1.5rem;
         margin-bottom: 2rem;
-    }
-    
-    .stat-card {
-        composes: card-style;
-        padding: 1.75rem;
-        text-align: center;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .stat-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
         width: 100%;
-        height: 5px;
-        background: var(--primary-color);
     }
-    
-    .stat-card:nth-child(2)::before {
-        background: var(--secondary-color);
+
+    /* Cartes individuelles */
+    .stat-card {
+        flex: 1;
+        min-width: 0;
+        text-align: center;
+        padding: 1.5rem;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        transition: var(--transition);
     }
-    
-    .stat-card:nth-child(3)::before {
-        background: var(--danger-color);
-    }
-    
+
     .stat-card h3 {
-        font-size: 1rem;
+        font-size: 1.2rem;
         font-weight: 600;
         color: var(--dark-color);
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
     }
-    
+
     .stat-value {
-        font-size: 2.25rem;
-        font-weight: 700;
+        font-size: 2.5rem;
+        font-weight: 800;
         color: var(--primary-color);
-        line-height: 1;
+        line-height: 1.2;
     }
-    
+
     .stat-card:nth-child(2) .stat-value {
         color: var(--secondary-color);
     }
-    
+
     .stat-card:nth-child(3) .stat-value {
         color: var(--danger-color);
     }
-    
+
     /* Charts Section */
     .chart-container {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
         gap: 1.5rem;
         margin-bottom: 2rem;
     }
-    
+
     .chart-wrapper {
         composes: card-style;
         padding: 1.5rem;
+        background: linear-gradient(135deg, #ffffff, #f7fafc);
     }
-    
+
     .chart-wrapper h3 {
-        font-size: 1.25rem;
-        font-weight: 600;
+        font-size: 1.3rem;
+        font-weight: 700;
         color: var(--dark-color);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* Mission Charts Section */
+    .mission-chart-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .mission-chart-wrapper {
+        flex: 1 1 48%;
+        min-width: 300px;
+        background: white;
+        border-radius: var(--mission-border-radius);
+        box-shadow: var(--mission-box-shadow);
+        padding: 1.5rem;
+        transition: var(--mission-transition);
+    }
+
+    .mission-chart-wrapper:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .mission-chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         margin-bottom: 1.5rem;
     }
-    
+
+    .mission-chart-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--mission-dark);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .mission-chart-period {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+
+    .mission-chart-canvas {
+        width: 100%;
+        height: 300px;
+        position: relative;
+    }
+
     /* Late Missions Section */
     .late-items {
         composes: card-style;
         padding: 1.5rem;
-        margin-bottom: 2rem;
+        background: #fff;
     }
-    
-    .late-items h3 {
-        font-size: 1.25rem;
-        font-weight: 600;
+
+       .late-items h3 {
+        font-size: 1.3rem;
+        font-weight: 700;
         color: var(--dark-color);
         margin-bottom: 1.5rem;
         display: flex;
         align-items: center;
+        gap: 0.5rem;
     }
-    
+
     .late-item {
         padding: 1rem;
         border-left: 4px solid var(--danger-color);
         margin-bottom: 0.75rem;
-        background: #fff9f9;
-        border-radius: 4px;
+        background: #fef5f5;
+        border-radius: 8px;
         transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
     }
-    
+
     .late-item:hover {
-        background: #fff0f0;
+        background: #fee2e2;
+        transform: translateX(4px);
     }
-    
+
     .late-item strong {
         font-weight: 600;
         color: var(--dark-color);
     }
-    
+
     .late-item small {
-        color: #6c757d;
-        font-size: 0.85rem;
+        color: #6b7280;
+        font-size: 0.9rem;
     }
-    
+
     /* Analysis Section */
     .analysis-card {
         composes: card-style;
         padding: 1.5rem;
-        margin-bottom: 2rem;
+        background: #fff;
     }
-    
+
     .analysis-card h3 {
-        font-size: 1.25rem;
-        font-weight: 600;
+        font-size: 1.3rem;
+        font-weight: 700;
         color: var(--dark-color);
-        margin-bottom: 0;
     }
-    
+
+    .gemini-analysis-container {
+        font-family: 'Inter', sans-serif;
+        line-height: 1.7;
+        color: #1f2937;
+    }
+
+    .analysis-section {
+        margin-bottom: 1.5rem;
+        padding: 1.25rem;
+        background: #f9fafb;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .analysis-section h3 {
+        color: #1e40af;
+        margin-bottom: 0.75rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .analysis-item {
+        padding-left: 1.5rem;
+        margin-bottom: 1rem;
+        position: relative;
+    }
+
+    .analysis-item:before {
+        content: "●";
+        position: absolute;
+        left: 0;
+        color: var(--primary-color);
+        font-size: 0.8rem;
+    }
+
+    .analysis-error {
+        padding: 1.5rem;
+        border-radius: 8px;
+        background: #f8d7da;
+        border-left: 4px solid #dc3545;
+    }
+
+    .alert-danger {
+        color: #721c24;
+    }
+
     #analysisPlaceholder {
         min-height: 200px;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        background: rgba(248, 249, 250, 0.5);
-        border-radius: var(--border-radius);
-        border: 2px dashed #dee2e6;
+        background: #f8fafc;
+        border-radius: 8px;
+        border: 2px dashed #d1d5db;
+        animation: pulse 2s infinite;
     }
-    
+
     #analysisPlaceholder i {
-        font-size: 3rem;
-        color: #d1d3e2;
+        font-size: 2.5rem;
+        color: #9ca3af;
         margin-bottom: 1rem;
     }
-    
+
     .generated-report {
         padding: 1.5rem;
-        background: var(--light-color);
-        border-radius: var(--border-radius);
+        background: #f9fafb;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
         max-height: 500px;
         overflow-y: auto;
+        font-size: 0.95rem;
     }
-    
+
     /* Sparkline Section */
     .sparkline-card {
         composes: card-style;
         padding: 1.25rem;
-        margin-bottom: 1.5rem;
+        border-left: 4px solid var(--primary-color);
+        background: linear-gradient(135deg, #ffffff, #f9fafb);
     }
-    
+
     .sparkline-title {
-        font-weight: 600;
-        margin-bottom: 0.5rem;
+        font-weight: 700;
+        font-size: 1.1rem;
         color: var(--dark-color);
-        font-size: 1rem;
-    }
-    
-    .sparkline-stats {
-        font-size: 0.85rem;
-        color: #6c757d;
         margin-bottom: 1rem;
     }
-    
+
+    .sparkline-stats {
+        font-size: 0.9rem;
+        color: #6b7280;
+        margin-bottom: 1rem;
+        font-weight: 500;
+    }
+
     .sparkline-container {
-        height: 50px;
+        height: 60px;
         margin-top: 1rem;
-        width: 100%;
     }
-    
-/* Styles pour les statistiques */
-.stats-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.5rem;
-    margin-top: 2rem;
-}
 
-.stats-card {
-    background: #ffffff;
-    border-radius: 16px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
-    flex: 1 1 calc(50% - 1.5rem);
-    padding: 1.25rem 1.5rem;
-    margin-bottom: 1.5rem;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
+    /* Workflow Table */
+    .table-responsive table {
+        background: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+    }
 
-.stats-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
-}
+    .table-responsive th {
+        background: #f8fafc;
+        font-weight: 600;
+        color: var(--dark-color);
+        padding: 1rem;
+    }
 
-.stats-card-header {
-    font-weight: 600;
-    font-size: 1.1rem;
-    margin-bottom: 0.75rem;
-    color: #333;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
+    .table-responsive tbody tr {
+        transition: var(--transition);
+    }
 
-.stats-chart {
-    width: 100%;
-    height: 350px;
-}
+    .table-responsive tbody tr:hover {
+        background: #f9fafc;
+    }
 
-.summary-cards {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    margin-bottom: 2rem;
-}
+    .table-responsive .progress {
+        height: 12px;
+        border-radius: 6px;
+        background: #e5e7eb;
+    }
 
-.summary-card {
-    background: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    flex: 1 1 200px;
-    padding: 1rem;
-    text-align: center;
-}
+    .table-responsive .progress-bar {
+        background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        transition: width 0.3s ease;
+    }
 
-.card-value {
-    font-size: 2rem;
-    font-weight: 700;
-    margin: 0.5rem 0;
-}
+    .table-responsive .badge {
+        padding: 1rem 1rem;
+        border-radius: 12px;
+        font-weight: 600;
+    }
 
-.positive {
-    color: #28a745;
-}
+    /* Styles pour les statistiques */
+    .stats-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
 
-.negative {
-    color: #dc3545;
-}
-
-.neutral {
-    color: #6c757d;
-}
-
-.pending {
-    color: #ffc107;
-}
-
-.in-progress {
-    color: #17a2b8;
-}
-
-.resolved {
-    color: #28a745;
-}
-
-@media (max-width: 768px) {
     .stats-card {
-        flex: 1 1 100%;
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+        flex: 1 1 calc(50% - 1.5rem);
+        padding: 1.25rem 1.5rem;
+        margin-bottom: 1.5rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-}
 
-    
+    .stats-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .stats-card-header {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 0.75rem;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .stats-chart {
+        width: 100%;
+        height: 350px;
+    }
+
+    .summary-cards {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .summary-card {
+        background: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        flex: 1 1 200px;
+        padding: 1rem;
+        text-align: center;
+    }
+
+    .card-value {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0.5rem 0;
+    }
+
+    .positive {
+        color: #28a745;
+    }
+
+    .negative {
+        color: #dc3545;
+    }
+
+    .neutral {
+        color: #6c757d;
+    }
+
+    .pending {
+        color: #ffc107;
+    }
+
+    .in-progress {
+        color: #17a2b8;
+    }
+
+    .resolved {
+        color: #28a745;
+    }
+
+    @media (max-width: 768px) {
+        .stats-card {
+            flex: 1 1 100%;
+        }
+    }
+
     /* Flow Chart Styles */
     #flowchart-diagram {
         min-height: 300px;
@@ -367,7 +511,7 @@
     .operation-node rect {
         fill: #f6c23e !important;
     }
-    
+
     /* Buttons */
     .btn-primary {
         background-color: var(--primary-color);
@@ -375,46 +519,15 @@
         padding: 0.5rem 1.25rem;
         font-weight: 600;
     }
-    
+
     .btn-primary:hover {
         background-color: #2e59d9;
         border-color: #2653d4;
     }
-    
+
     .btn-success {
         background-color: var(--secondary-color);
         border-color: var(--secondary-color);
-    }
-    
-    /* Responsive adjustments */
-    @media (max-width: 992px) {
-        .chart-container {
-            grid-template-columns: 1fr;
-        }
-        
-        .admin-stats {
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        }
-    }
-    
-    @media (max-width: 768px) {
-        .stat-value {
-            font-size: 1.75rem;
-        }
-        
-        .chart-wrapper {
-            min-height: 300px;
-        }
-    }
-    
-    /* Animations */
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .fade-in {
-        animation: fadeIn 0.5s ease-out forwards;
     }
 
     /* Weather Section Styles */
@@ -461,12 +574,12 @@
     }
 
     .stats-card {
-    background: #ffffff;
-    border-radius: 16px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
-    padding: 1.5rem;
-    text-align: center;
-    transition: transform 0.2s ease;
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+        padding: 1.5rem;
+        text-align: center;
+        transition: transform 0.2s ease;
     }
 
     .stats-card:hover {
@@ -492,6 +605,64 @@
         margin: 0;
     }
 
+    /* Animations */
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.7; }
+        100% { opacity: 1; }
+    }
+
+    .fade-in {
+        animation: fadeIn 0.5s ease-out forwards;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInMission {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .mission-fade-in {
+        animation: fadeInMission 0.5s ease-out forwards;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 992px) {
+        .chart-container {
+            grid-template-columns: 1fr;
+        }
+
+        .admin-stats {
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        }
+
+        .mission-chart-wrapper {
+            flex: 1 1 100%;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .stat-value {
+            font-size: 2rem;
+        }
+
+        .chart-wrapper {
+            min-height: 320px;
+        }
+
+        .late-item {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .mission-chart-title {
+            font-size: 1.1rem;
+        }
+    }
 </style>
 {{ parent() }}
 {% endblock %}
@@ -508,85 +679,81 @@
 </div>
 
 {# Hello widget #}
-    <div class="weather-card mt-3 d-flex justify-content-between">
-        <div>
-            <h3><span style="font-weight: normal;">Bonjour </span><strong>{{ app.user.nom|default('Utilisateur') }}</strong> !</h3>
-        </div>
-        <div>
-            <a href="{{ path('app_logout') }}" class="btn btn-logout ">
-                <i class="fas fa-sign-out-alt"></i> Déconnexion
-            </a>
+<div class="weather-card mt-3 d-flex justify-content-between">
+    <div>
+        <h3><span style="font-weight: normal;">Bonjour </span><strong>{{ app.user.nom|default('Utilisateur') }}</strong> !</h3>
+    </div>
+    <div>
+        <a href="{{ path('app_logout') }}" class="btn btn-logout ">
+            <i class="fas fa-sign-out-alt"></i> Déconnexion
+        </a>
+    </div>
+</div>
+
+{# Weather widget #}
+<div id="weather">
+    <div class="weather-card">
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Chargement...</span>
+            </div>
+            <p>Chargement des données météo...</p>
         </div>
     </div>
-
-{# weather widget #}
-    <div id="weather">
-        <div class="weather-card">
-            <div class="text-center">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Chargement...</span>
-                </div>
-                <p>Chargement des données météo...</p>
-            </div>
-        </div>
-    </div> 
-
-    <div id="weather" style="display: flex; flex-wrap: wrap; gap: 1rem;"></div>
+</div>
 
 {# Administration Section #}
-    <h3 class="m-2"><i class="fas fa-cog"></i></i> Administration </h3>
-    <div class="summary-cards">
-        <div class="summary-card stats-card">
-            <i class="fas fa-users"></i>
-            <h4>{{ adminStats.total_users }}</h4>
-            <p>Utilisateurs totaux</p>
-        </div>
-        <div class="summary-card stats-card">
-            <i class="fas fa-user-shield"></i>
-            <h4>{{ adminStats.admin_users }}</h4>
-            <p>Administrateurs</p>
-        </div>
-        <div class="summary-card stats-card">
-            <i class="fas fa-user"></i>
-            <h4>{{ adminStats.standard_users }}</h4>
-            <p>Employés</p>
-        </div>
-        <div class="summary-card stats-card">
-            <i class="fas fa-check-circle"></i>
-            <h4>{{ adminStats.verified_users }}</h4>
-            <p>Utilisateurs vérifiés</p>
-        </div>
-        <div class="summary-card stats-card">
-            <i class="fas fa-user-plus"></i>
-            <h4>{{ adminStats.recent_users }}</h4>
-            <p>Inscriptions récentes (30 jours)</p>
-        </div>
-        <div class="summary-card stats-card">
-            <i class="fas fa-user-times"></i>
-            <h4>{{ adminStats.pending_verification }}</h4>
-            <p>Vérifications en attente</p>
-        </div>
-        <div class="summary-card stats-card">
-            <i class="fas fa-sync-alt"></i>
-            <h4>{{ adminStats.recently_updated }}</h4>
-            <p>Comptes récemment mis à jour (30 jours)</p>
-        </div>
-        <div class="summary-card stats-card">
-            <i class="fas fa-hourglass-half"></i>
-            <h4>{{ adminStats.average_account_age|round(0, 'floor') }} jours</h4>
-            <p>Âge moyen des comptes</p>
-        </div>
+<h3 class="m-2"><i class="fas fa-cog"></i> Administration </h3>
+<div class="summary-cards">
+    <div class="summary-card stats-card">
+        <i class="fas fa-users"></i>
+        <h4>{{ adminStats.total_users }}</h4>
+        <p>Utilisateurs totaux</p>
     </div>
+    <div class="summary-card stats-card">
+        <i class="fas fa-user-shield"></i>
+        <h4>{{ adminStats.admin_users }}</h4>
+        <p>Administrateurs</p>
+    </div>
+    <div class="summary-card stats-card">
+        <i class="fas fa-user"></i>
+        <h4>{{ adminStats.standard_users }}</h4>
+        <p>Employés</p>
+    </div>
+    <div class="summary-card stats-card">
+        <i class="fas fa-check-circle"></i>
+        <h4>{{ adminStats.verified_users }}</h4>
+        <p>Utilisateurs vérifiés</p>
+    </div>
+    <div class="summary-card stats-card">
+        <i class="fas fa-user-plus"></i>
+        <h4>{{ adminStats.recent_users }}</h4>
+        <p>Inscriptions récentes (30 jours)</p>
+    </div>
+    <div class="summary-card stats-card">
+        <i class="fas fa-user-times"></i>
+        <h4>{{ adminStats.pending_verification }}</h4>
+        <p>Vérifications en attente</p>
+    </div>
+    <div class="summary-card stats-card">
+        <i class="fas fa-sync-alt"></i>
+        <h4>{{ adminStats.recently_updated }}</h4>
+        <p>Comptes récemment mis à jour (30 jours)</p>
+    </div>
+    <div class="summary-card stats-card">
+        <i class="fas fa-hourglass-half"></i>
+        <h4>{{ adminStats.average_account_age|round(0, 'floor') }} jours</h4>
+        <p>Âge moyen des comptes</p>
+    </div>
+</div>
 
-    <hr>
-
-
+<hr>
 
 <div><br></div>
 <!-- Stats Cards -->
 <div class="admin-stats">
     <div class="stat-card">
-        <h3>Projets Totaux</h3>
+        <h3><i class="fas fa-project-diagram me-2"></i>Projets Totaux</h3>
         <p class="stat-value">
             {% set total_projects = 0 %}
             {% for status, count in project_stats %}
@@ -595,9 +762,8 @@
             {{ total_projects }}
         </p>
     </div>
-    
     <div class="stat-card">
-        <h3>Missions Totales</h3>
+        <h3><i class="fas fa-tasks me-2"></i>Missions Totales</h3>
         <p class="stat-value">
             {% set total_missions = 0 %}
             {% for status, count in mission_stats %}
@@ -606,57 +772,85 @@
             {{ total_missions }}
         </p>
     </div>
-    
     <div class="stat-card">
-        <h3>Missions en Retard</h3>
+        <h3><i class="fas fa-exclamation-triangle me-2"></i>Missions en Retard</h3>
         <p class="stat-value">{{ delayed_missions|length }}</p>
     </div>
 </div>
 
 <!-- Section Statistiques des réclamations -->
-
-    <!-- Summary Cards -->
-    <div class="summary-cards">        
-        <div class="summary-card">            
-            <h5><i class="fas fa-chart-pie"></i> Taux de résolution</h5>            
-            <div class="card-value {{ resolutionRate is defined ? (resolutionRate > 75 ? 'positive' : (resolutionRate < 50 ? 'negative' : 'neutral')) : 'neutral' }}">                
-                {{ resolutionRate is defined ? resolutionRate : 0 }}%            
-            </div>            
-            <p>des réclamations sont résolues</p>        
+<!-- Summary Cards -->
+<div class="summary-cards">
+    <div class="summary-card">
+        <h5><i class="fas fa-chart-pie"></i> Taux de résolution</h5>
+        <div class="card-value {{ resolutionRate is defined ? (resolutionRate > 75 ? 'positive' : (resolutionRate < 50 ? 'negative' : 'neutral')) : 'neutral' }}">
+            {{ resolutionRate is defined ? resolutionRate : 0 }}%
         </div>
-        
-        <div class="summary-card">
-            <h5><i class="fas fa-thermometer-half"></i> Sentiment dominant</h5>
-            <div class="card-value" id="dominant-sentiment">
-                <i class="fas fa-spinner fa-spin"></i>
-            </div>
-            <p>des réclamations</p>
-        </div>
-        
-        <div class="summary-card">
-            <h5><i class="fas fa-folder-open"></i> Type principal</h5>
-            <div class="card-value" id="dominant-type">
-                <i class="fas fa-spinner fa-spin"></i>
-            </div>
-            <p>des réclamations</p>
-        </div>
+        <p>des réclamations sont résolues</p>
     </div>
-<div>
-<!-- Charts Container -->
-    <h3 class="mt-5"><i class="fas fa-chart-bar"></i> Statistiques des Projets </h3>
-
-<div class="chart-container">
-    <div class="chart-wrapper fade-in">
-        <h3><i class="fas fa-project-diagram me-2"></i>Projets par statut</h3>
-        <div id="projectChart" style="width: 100%; height: 350px;"></div>
+    <div class="summary-card">
+        <h5><i class="fas fa-thermometer-half"></i> Sentiment dominant</h5>
+        <div class="card-value" id="dominant-sentiment">
+            {% if sentimentData|length > 1 %}
+                {% set dominantSentiment = sentimentData|slice(1)|sort((a, b) => b[1] <=> a[1])|first %}
+                <span class="{{ dominantSentiment[0] == 'Positif' ? 'positive' : (dominantSentiment[0] == 'Négatif' ? 'negative' : 'neutral') }}">
+                    {{ dominantSentiment[0] }}
+                </span>
+            {% else %}
+                <span class="neutral">N/A</span>
+            {% endif %}
+        </div>
+        <p>des réclamations</p>
     </div>
-    
-    <div class="chart-wrapper fade-in">
-        <h3><i class="fas fa-tasks me-2"></i>Missions par statut</h3>
-        <div id="missionChart" style="width: 100%; height: 350px;"></div>
+    <div class="summary-card">
+        <h5><i class="fas fa-folder-open"></i> Type principal</h5>
+        <div class="card-value" id="dominant-type">
+            {% if typeData|length > 1 %}
+                {% set dominantType = typeData|slice(1)|sort((a, b) => b[1] <=> a[1])|first %}
+                {{ dominantType[0] }}
+            {% else %}
+                N/A
+            {% endif %}
+        </div>
+        <p>des réclamations</p>
     </div>
 </div>
 
+<!-- Charts Container -->
+<h3 class="mt-5"><i class="fas fa-chart-bar"></i> Statistiques des Projets et Missions</h3>
+<div class="chart-container">
+    <div class="mission-chart-container">
+        <div class="mission-chart-wrapper mission-fade-in">
+            <div class="mission-chart-header">
+                <h3 class="mission-chart-title"><i class="fas fa-chart-pie"></i> Répartition par Statut</h3>
+                <span class="mission-chart-period">Mise à jour: {{ "now"|date("d/m/Y H:i") }}</span>
+            </div>
+            <div class="mission-chart-canvas">
+                <canvas id="missionStatusChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="mission-chart-wrapper mission-fade-in">
+            <div class="mission-chart-header">
+                <h3 class="mission-chart-title"><i class="fas fa-chart-line"></i> Évolution Mensuelle</h3>
+                <span class="mission-chart-period">6 derniers mois</span>
+            </div>
+            <div class="mission-chart-canvas">
+                <canvas id="missionTimelineChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="mission-chart-wrapper mission-fade-in">
+            <div class="mission-chart-header">
+                <h3 class="mission-chart-title"><i class="fas fa-chart-bar"></i> Répartition par Projet</h3>
+                <span class="mission-chart-period">Toutes les missions</span>
+            </div>
+            <div class="mission-chart-canvas">
+                <canvas id="missionProjectDistribution"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
 <!-- Late Missions Section -->
 <div class="late-items fade-in">
     <h3><i class="fas fa-exclamation-triangle text-danger me-2"></i>Missions en retard ({{ delayed_missions|length }})</h3>
@@ -668,12 +862,15 @@
     {% else %}
         {% for mission in delayed_missions %}
             <div class="late-item">
-                <strong>{{ mission.titre }}</strong> - 
-                <span class="badge bg-{{ mission.status == 'Done' ? 'success' : 'danger' }}">
-                    {{ mission.status }}
-                </span>
-                <br>
-                <small>Projet: {{ mission.project.nom }} • Date limite: {{ mission.dateTerminer|date('d/m/Y') }}</small>
+                <i class="fas fa-tasks text-danger"></i>
+                <div>
+                    <strong>{{ mission.titre }}</strong> -
+                    <span class="badge bg-{{ mission.status == 'Done' ? 'success' : 'danger' }}">
+                        {{ mission.status }}
+                    </span>
+                    <br>
+                    <small>Projet: {{ mission.project.nom }} • Date limite: {{ mission.dateTerminer|date('d/m/Y') }}</small>
+                </div>
             </div>
         {% endfor %}
     {% endif %}
@@ -694,7 +891,7 @@
                         {{ project.done_missions }} terminées / {{ project.total_missions }} total
                     </div>
                     <div class="sparkline-container">
-                        <span class="project-sparkline" 
+                        <span class="project-sparkline"
                               data-sparkline="{{ project.sparkline_data|join(',') }}"></span>
                     </div>
                 </div>
@@ -703,20 +900,18 @@
         </div>
     </div>
 </div>
+
 <!-- Flow Chart Section -->
 <div class="card card-style mt-4">
     <div class="card-header-style">
         <h4 class="mb-0"><i class="fas fa-project-diagram me-2"></i>Workflow des Projets</h4>
     </div>
     <div class="card-body">
-      
-        
-        <!-- Nouvelle section: Progression du workflow par projet -->
         <div class="mt-4">
             <h5 class="mb-3"><i class="fas fa-tasks me-2"></i>Progression détaillée par projet</h5>
             <div class="table-responsive">
                 <table class="table table-hover table-sm">
-                    <thead class="bg-light">
+                    <thead>
                         <tr>
                             <th>Projet</th>
                             <th>Progression</th>
@@ -731,12 +926,12 @@
                         <tr>
                             <td>{{ project.entity.nom }}</td>
                             <td style="width: 40%;">
-                                <div class="progress" style="height: 10px;">
-                                    <div class="progress-bar {{ completion < 30 ? 'bg-danger' : (completion < 70 ? 'bg-warning' : 'bg-success') }}" 
-                                         role="progressbar" 
-                                         style="width: {{ completion }}%;" 
-                                         aria-valuenow="{{ completion }}" 
-                                         aria-valuemin="0" 
+                                <div class="progress" title="{{ completion }}% terminé">
+                                    <div class="progress-bar {{ completion < 30 ? 'bg-danger' : (completion < 70 ? 'bg-warning' : 'bg-success') }}"
+                                         role="progressbar"
+                                         style="width: {{ completion }}%;"
+                                         aria-valuenow="{{ completion }}"
+                                         aria-valuemin="0"
                                          aria-valuemax="100">
                                     </div>
                                 </div>
@@ -763,9 +958,10 @@
         </div>
     </div>
 </div>
+
 <!-- Analysis Section -->
 <div class="analysis-card fade-in">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="card-header-style d-flex justify-content-between align-items-center">
         <h3 class="mb-0">
             <i class="fas fa-robot me-2"></i>Analyse Intelligente
         </h3>
@@ -773,11 +969,10 @@
             <i class="fas fa-magic me-1"></i> Générer le Rapport
         </button>
     </div>
-    
     <div class="analysis-content" id="geminiAnalysisContent">
         <div class="text-center py-5" id="analysisPlaceholder">
             <i class="fas fa-robot"></i>
-            <p class="mt-3 mb-0">Cliquez sur "Générer le Rapport" pour obtenir l'analyse</p>
+            <p class="mt-3 mb-0">Générez une analyse intelligente en un clic</p>
         </div>
     </div>
 </div>
@@ -796,10 +991,8 @@
         </div>
     </div>
 </div>
-</div>
 <div class="mt-4">
     <h3 class="mt-4"><i class="fas fa-chart-bar"></i> Statistiques des réclamations</h3>
-    
     <!-- Charts -->
     <div class="stats-container">
         <div class="stats-card">
@@ -808,21 +1001,18 @@
             </div>
             <div id="status-chart" class="stats-chart"></div>
         </div>
-        
         <div class="stats-card">
             <div class="stats-card-header">
                 <i class="fas fa-smile"></i> Répartition par sentiment
             </div>
             <div id="sentiment-chart" class="stats-chart"></div>
         </div>
-        
         <div class="stats-card">
             <div class="stats-card-header">
                 <i class="fas fa-tags"></i> Répartition par type
             </div>
             <div id="type-chart" class="stats-chart"></div>
         </div>
-        
         <div class="stats-card">
             <div class="stats-card-header">
                 <i class="fas fa-chart-line"></i> Évolution dans le temps
@@ -831,7 +1021,6 @@
         </div>
     </div>
 </div>
-
 {% endblock %}
 
 {% block javascript %}
@@ -862,35 +1051,34 @@ navigator.geolocation.getCurrentPosition(function(position) {
         .then(data => {
             const weatherContainer = document.getElementById('weather');
 
-weatherContainer.innerHTML = `
-    ${createCard(`<i class="fas fa-map-marker-alt"></i> Localisation`, `
-        <h3 style="margin: 0; display: flex; align-items: center;">
-            ${data.name}, ${data.sys.country}
-            <img src="https://openweathermap.org/img/wn/${data.weather[0].icon}@4x.png" alt="weather icon" style="width: 80px; height: 80px; margin-left: 15px;">
-        </h3>
-        <p style="margin: 0;">${data.weather[0].description}</p>
-    `)}
+            weatherContainer.innerHTML = `
+                ${createCard(`<i class="fas fa-map-marker-alt"></i> Localisation`, `
+                    <h3 style="margin: 0; display: flex; align-items: center;">
+                        ${data.name}, ${data.sys.country}
+                        <img src="https://openweathermap.org/img/wn/${data.weather[0].icon}@4x.png" alt="weather icon" style="width: 80px; height: 80px; margin-left: 15px;">
+                    </h3>
+                    <p style="margin: 0;">${data.weather[0].description}</p>
+                `)}
 
-    ${createCard(`<i class="fas fa-thermometer-half"></i> Température`, `
-        Température : ${data.main.temp}°C<br>
-        Ressentie : ${data.main.feels_like}°C<br>
-        Min : ${data.main.temp_min}°C<br>
-        Max : ${data.main.temp_max}°C
-    `)}
+                ${createCard(`<i class="fas fa-thermometer-half"></i> Température`, `
+                    Température : ${data.main.temp}°C<br>
+                    Ressentie : ${data.main.feels_like}°C<br>
+                    Min : ${data.main.temp_min}°C<br>
+                    Max : ${data.main.temp_max}°C
+                `)}
 
-    ${createCard(`<i class="fas fa-wind"></i> Vent & Nuages`, `
-        Vent : ${data.wind.speed} m/s (${data.wind.deg}°)<br>
-        Nuages : ${data.clouds.all}%<br>
-        Humidité : ${data.main.humidity}%<br>
-        Pression : ${data.main.pressure} hPa
-    `)}
+                ${createCard(`<i class="fas fa-wind"></i> Vent & Nuages`, `
+                    Vent : ${data.wind.speed} m/s (${data.wind.deg}°)<br>
+                    Nuages : ${data.clouds.all}%<br>
+                    Humidité : ${data.main.humidity}%<br>
+                    Pression : ${data.main.pressure} hPa
+                `)}
 
-    ${createCard(`<i class="fas fa-sun"></i> Soleil`, `
-        Lever : ${formatTime(data.sys.sunrise)}<br>
-        Coucher : ${formatTime(data.sys.sunset)}
-    `)}
-`;
-
+                ${createCard(`<i class="fas fa-sun"></i> Soleil`, `
+                    Lever : ${formatTime(data.sys.sunrise)}<br>
+                    Coucher : ${formatTime(data.sys.sunset)}
+                `)}
+            `;
         })
         .catch(() => {
             document.getElementById('weather').innerHTML = `<div class="card">Erreur : Impossible de récupérer la météo.</div>`;
@@ -911,6 +1099,7 @@ function createCard(title, content) {
         </div>
     `;
 }
+
 // Main Application Script
 document.addEventListener('DOMContentLoaded', function() {
     // Configuration
@@ -991,23 +1180,56 @@ document.addEventListener('DOMContentLoaded', function() {
     // API Functions
     const api = {
         generateAnalysis: async () => {
+            const requestOptions = {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                timeout: 10000
+            };
+
             try {
-                const response = await fetch(config.analysisEndpoint, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                });
-                
+                const controller = new AbortController();
+                const { signal } = controller;
+                requestOptions.signal = signal;
+
+                const timeoutId = setTimeout(() => controller.abort(), requestOptions.timeout);
+
+                const response = await fetch(config.analysisEndpoint, requestOptions);
+                clearTimeout(timeoutId);
+
                 if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.message || 'Erreur serveur');
+                    const errorData = await response.json().catch(() => ({
+                        message: `HTTP error! status: ${response.status}`
+                    }));
+                    
+                    throw new Error(
+                        errorData.message || 
+                        errorData.error || 
+                        `Request failed with status ${response.status}`
+                    );
                 }
-                
+
                 return await response.json();
             } catch (error) {
-                throw error;
+                const enhancedError = new Error(
+                    error.name === 'AbortError' 
+                        ? 'Request timeout: Analysis took too long to generate'
+                        : error.message || 'Failed to generate analysis'
+                );
+                
+                enhancedError.originalError = error;
+                enhancedError.isNetworkError = !error.response;
+                
+                console.error('API Error:', {
+                    endpoint: config.analysisEndpoint,
+                    error: enhancedError,
+                    timestamp: new Date().toISOString()
+                });
+                
+                throw enhancedError;
             }
         }
     };
@@ -1015,7 +1237,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Features
     const features = {
         loadCharts: () => {
-            // Load Google Charts
             google.charts.load('current', {'packages':['corechart']});
             google.charts.setOnLoadCallback(function() {
                 features.drawProjectCharts();
@@ -1025,7 +1246,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         drawProjectCharts: () => {
             try {
-                // Projects Chart
                 const projectData = new google.visualization.DataTable();
                 projectData.addColumn('string', 'Statut');
                 projectData.addColumn('number', 'Nombre');
@@ -1067,53 +1287,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.getElementById('projectChart')
                 );
                 projectChart.draw(projectData, projectOptions);
-
-                // Missions Chart
-                const missionData = new google.visualization.DataTable();
-                missionData.addColumn('string', 'Statut');
-                missionData.addColumn('number', 'Nombre');
-                missionData.addRows([
-                    {% for status, count in mission_stats %}
-                        ['{{ status }}', {{ count }}],
-                    {% endfor %}
-                ]);
-
-                const missionOptions = {
-                    title: '',
-                    is3D: true,
-                    colors: ['#4e73df', '#1cc88a', '#f6c23e', '#e74a3b', '#36b9cc'],
-                    chartArea: {
-                        width: '90%',
-                        height: '80%',
-                        left: 20,
-                        top: 20,
-                        right: 20,
-                        bottom: 20
-                    },
-                    legend: {
-                        position: 'labeled',
-                        alignment: 'center',
-                        textStyle: {
-                            color: '#5a5c69',
-                            fontSize: 12
-                        }
-                    },
-                    pieSliceText: 'value',
-                    tooltip: {
-                        text: 'percentage'
-                    },
-                    backgroundColor: 'transparent',
-                    height: 350
-                };
-
-                const missionChart = new google.visualization.PieChart(
-                    document.getElementById('missionChart')
-                );
-                missionChart.draw(missionData, missionOptions);
             } catch (error) {
                 console.error("Erreur dans le rendu des graphiques:", error);
                 
-                // Fallback content
                 document.getElementById('projectChart').innerHTML = `
                     <div class="alert alert-warning p-3">
                         <i class="fas fa-exclamation-triangle me-2"></i>
@@ -1128,23 +1304,199 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                     </div>
                 `;
-                
-                document.getElementById('missionChart').innerHTML = `
-                    <div class="alert alert-warning p-3">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        Le graphique des missions n'a pas pu être chargé.
-                        <div class="mt-2">
-                            {% for status, count in mission_stats %}
-                                <div class="d-flex justify-content-between mb-1">
-                                    <span>{{ status }}:</span>
-                                    <strong>{{ count }}</strong>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                `;
             }
         },
+        
+       drawMissionCharts: () => {
+    // Mission Status Chart
+    const statusCtx = document.getElementById('missionStatusChart').getContext('2d');
+    const statusChart = new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: [
+                {% for status, count in mission_stats %}
+                    '{{ status }}',
+                {% endfor %}
+            ],
+            datasets: [{
+                data: [
+                    {% for status, count in mission_stats %}
+                        {{ count }},
+                    {% endfor %}
+                ],
+                backgroundColor: [
+                    '#4a6bdf',
+                    '#20c997',
+                    '#ff6b6b',
+                    '#ffd43b',
+                    '#66d9e8'
+                ],
+                borderWidth: 0,
+                hoverOffset: 10
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        boxWidth: 12,
+                        padding: 20,
+                        font: {
+                            size: 12
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.raw || 0;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = Math.round((value / total) * 100);
+                            return `${label}: ${value} (${percentage}%)`;
+                        }
+                    }
+                }
+            },
+            cutout: '65%'
+        }
+    });
+
+    // Mission Timeline Chart - Utilisez maintenant les données réelles
+    const timelineCtx = document.getElementById('missionTimelineChart').getContext('2d');
+    const timelineChart = new Chart(timelineCtx, {
+        type: 'line',
+        data: {
+            labels: [
+                {% for month, data in mission_timeline_data %}
+                    '{{ month }}',
+                {% endfor %}
+            ],
+            datasets: [
+                {
+                    label: 'Créées',
+                    data: [
+                        {% for month, data in mission_timeline_data %}
+                            {{ data.created }},
+                        {% endfor %}
+                    ],
+                    borderColor: '#4a6bdf',
+                    backgroundColor: 'rgba(74, 107, 223, 0.1)',
+                    tension: 0.3,
+                    fill: true
+                },
+                {
+                    label: 'Terminées',
+                    data: [
+                        {% for month, data in mission_timeline_data %}
+                            {{ data.completed }},
+                        {% endfor %}
+                    ],
+                    borderColor: '#20c997',
+                    backgroundColor: 'rgba(32, 201, 151, 0.1)',
+                    tension: 0.3,
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        drawBorder: false
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+
+    // Project Distribution Chart
+    const projectCtx = document.getElementById('missionProjectDistribution').getContext('2d');
+    const projectChart = new Chart(projectCtx, {
+        type: 'bar',
+        data: {
+            labels: [
+                {% for project in projects %}
+                    '{{ project.entity.nom }}',
+                {% endfor %}
+            ],
+            datasets: [{
+                label: 'Missions Terminées',
+                data: [
+                    {% for project in projects %}
+                        {{ project.done_missions }},
+                    {% endfor %}
+                ],
+                backgroundColor: '#20c997',
+                borderRadius: 4
+            }, {
+                label: 'Missions Totales',
+                data: [
+                    {% for project in projects %}
+                        {{ project.total_missions }},
+                    {% endfor %}
+                ],
+                backgroundColor: '#4a6bdf',
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                }
+            },
+            scales: {
+                x: {
+                    stacked: false,
+                    grid: {
+                        display: false
+                    }
+                },
+                y: {
+                    stacked: false,
+                    beginAtZero: true,
+                    grid: {
+                        drawBorder: false
+                    }
+                }
+            }
+        }
+    });
+
+    // Handle window resize
+    window.addEventListener('resize', function() {
+        statusChart.resize();
+        timelineChart.resize();
+        projectChart.resize();
+    });
+},
         
         drawReclamationCharts: () => {
             try {
@@ -1156,7 +1508,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     pieHole: 0.4,
                     chartArea: {width: '90%', height: '80%'},
                     height: 350,
-                    colors: ['#4e73df', '#1cc88a', '#f6c23e']
+                    colors: ['#4e73df', '#1cc88a', '#f6c23e'],
+                    pieSliceText: 'value',
+                    tooltip: {
+                        text: 'percentage'
+                    }
                 });
 
                 // Sentiment Chart
@@ -1166,7 +1522,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     title: '',
                     chartArea: {width: '85%', height: '75%'},
                     height: 350,
-                    colors: ['#e74a3b', '#858796', '#1cc88a']
+                    colors: ['#e74a3b', '#858796', '#1cc88a'],
+                    legend: {position: 'top'},
+                    hAxis: {
+                        title: 'Sentiment'
+                    },
+                    vAxis: {
+                        title: 'Nombre de réclamations'
+                    }
                 });
 
                 // Type Chart
@@ -1176,7 +1539,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     title: '',
                     chartArea: {width: '85%', height: '75%'},
                     height: 350,
-                    colors: ['#36b9cc', '#f6c23e', '#4e73df']
+                    colors: ['#36b9cc', '#f6c23e', '#4e73df'],
+                    legend: {position: 'top'},
+                    hAxis: {
+                        title: 'Nombre de réclamations'
+                    }
                 });
 
                 // Timeline Chart
@@ -1187,37 +1554,32 @@ document.addEventListener('DOMContentLoaded', function() {
                     chartArea: {width: '85%', height: '75%'},
                     height: 350,
                     colors: ['#4e73df'],
-                    curveType: 'function'
+                    curveType: 'function',
+                    legend: {position: 'top'},
+                    hAxis: {
+                        title: 'Mois'
+                    },
+                    vAxis: {
+                        title: 'Nombre de réclamations'
+                    }
                 });
 
-                // Update dominant values
-                features.updateDominantValues();
-                
             } catch (error) {
                 console.error("Erreur dans le rendu des graphiques de réclamation:", error);
-            }
-        },
-        
-        updateDominantValues: () => {
-            try {
-                // Get dominant sentiment
-                const sentimentArray = {{ sentimentData|json_encode|raw }};
-                if (sentimentArray.length > 1) {
-                    const dominant = sentimentArray.slice(1).sort((a, b) => b[1] - a[1])[0];
-                    elements.dominantSentiment.textContent = dominant[0];
-                    elements.dominantSentiment.className = 'card-value ' + 
-                        (dominant[0] === 'Positif' ? 'positive' : 
-                         dominant[0] === 'Négatif' ? 'negative' : 'neutral');
-                }
-
-                // Get dominant type
-                const typeArray = {{ typeData|json_encode|raw }};
-                if (typeArray.length > 1) {
-                    const dominant = typeArray.slice(1).sort((a, b) => b[1] - a[1])[0];
-                    elements.dominantType.textContent = dominant[0];
-                }
-            } catch (error) {
-                console.error("Erreur dans la mise à jour des valeurs dominantes:", error);
+                
+                // Fallback for each chart if error occurs
+                const chartContainers = ['status-chart', 'sentiment-chart', 'type-chart', 'timeline-chart'];
+                chartContainers.forEach(id => {
+                    const container = document.getElementById(id);
+                    if (container) {
+                        container.innerHTML = `
+                            <div class="alert alert-warning p-2">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Le graphique n'a pas pu être chargé
+                            </div>
+                        `;
+                    }
+                });
             }
         },
         
@@ -1353,6 +1715,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize all features with delay to ensure everything is loaded
     setTimeout(() => {
         features.loadCharts();
+        features.drawMissionCharts();
         features.initSparklines();
         features.initFlowChart();
     }, 100);
@@ -1361,10 +1724,9 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('resize', () => {
         if (typeof google !== 'undefined' && google.visualization) {
             google.charts.setOnLoadCallback(() => {
-                ['projectChart', 'missionChart', 'status-chart', 'sentiment-chart', 'type-chart', 'timeline-chart'].forEach(id => {
+                ['status-chart', 'sentiment-chart', 'type-chart', 'timeline-chart'].forEach(id => {
                     const element = document.getElementById(id);
                     if (element && element.innerHTML === '') {
-                        // Only redraw if chart exists and is empty (to avoid redrawing during loading)
                         const chart = google.visualization.chart.getChart(element);
                         if (chart) chart.draw();
                     }
