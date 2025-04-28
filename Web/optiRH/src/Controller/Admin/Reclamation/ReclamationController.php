@@ -33,15 +33,18 @@ class ReclamationController extends AbstractController
     private $logger;
     private $translationService;
     private $filterBuilderUpdater;
-
+    private $entityManager;
+    
     public function __construct(
         LoggerInterface $logger, 
         TranslationService $translationService, 
-        FilterBuilderUpdaterInterface $filterBuilderUpdater
+        FilterBuilderUpdaterInterface $filterBuilderUpdater,
+        EntityManagerInterface $entityManager
     ) {
         $this->logger = $logger;
         $this->translationService = $translationService;
         $this->filterBuilderUpdater = $filterBuilderUpdater;
+        $this->entityManager = $entityManager;
     }
 
     #[Route('/reclamations', name: 'admin_reclamations', methods: ['GET'])]
@@ -460,18 +463,18 @@ class ReclamationController extends AbstractController
     }
     
     #[Route('/reclamations/statistics', name: 'admin_reclamations_statistics', methods: ['GET'])]
-    public function statistics(Request $request, EntityManagerInterface $em): Response
+    public function statistics(Request $request, EntityManagerInterface $entityManager, PaginatorInterface $paginator): Response
     {
-        // Créer le form filter avec les mêmes filtres
+        // Créer le form filter
         $filterForm = $this->createForm(ReclamationFilterType::class);
         $filterForm->handleRequest($request);
         
         // Créer la requête de base pour les statistiques
-        $baseQueryBuilder = $em->getRepository(Reclamation::class)
+        $baseQueryBuilder = $entityManager->getRepository(Reclamation::class)
             ->createQueryBuilder('r');
             
         // Appliquer les filtres si le formulaire est soumis
-        if ($filterForm->isSubmitted()) {
+        if ($filterForm->isSubmitted() && $filterForm->isValid()) {
             $this->filterBuilderUpdater->addFilterConditions($filterForm, $baseQueryBuilder);
         }
         
@@ -482,7 +485,6 @@ class ReclamationController extends AbstractController
         $combinedQueryBuilder = clone $baseQueryBuilder;
         $resolvedQueryBuilder = clone $baseQueryBuilder;
         $totalQueryBuilder = clone $baseQueryBuilder;
-        $timelineQueryBuilder = clone $baseQueryBuilder;
         
         // Statistiques par statut
         $statusStats = $statusQueryBuilder
@@ -530,17 +532,30 @@ class ReclamationController extends AbstractController
         $resolutionRate = $totalReclamations > 0 ? 
             round(($resolvedReclamations / $totalReclamations) * 100, 2) : 0;
         
-        // Réclamations sur le temps (par mois) avec filtres
-        $reclamationsByMonth = $timelineQueryBuilder
-            ->select("CONCAT(YEAR(r.date), '-', MONTH(r.date)) as month, COUNT(r.id) as count")
-            ->groupBy('month')
-            ->orderBy('month', 'ASC')
-            ->getQuery()
-            ->getArrayResult();
+        // Réclamations sur le temps (par mois) - Utilisez DATE_FORMAT qui est compatible avec MySQL
+        $conn = $entityManager->getConnection();
+        $timelineQuery = "
+            SELECT 
+                DATE_FORMAT(r.date, '%Y-%m-%d %H:%i') as datetime,
+                COUNT(r.id) as count
+            FROM reclamation r
+            GROUP BY datetime
+            ORDER BY datetime ASC
+        ";
         
-        $timelineData = $this->formatTimelineData($reclamationsByMonth);
+        try {
+            $stmt = $conn->prepare($timelineQuery);
+            $resultSet = $stmt->executeQuery();
+            $reclamationsByTime = $resultSet->fetchAllAssociative();
+            
+            // Format pour la timeline
+            $timelineData = $this->formatTimelineData($reclamationsByTime);
+        } catch (\Exception $e) {
+            $this->logger->error('Erreur lors de la récupération des données temporelles: ' . $e->getMessage());
+            $timelineData = [['Datetime', 'Nombre de réclamations']]; // Array vide mais valide pour le graphique
+        }
         
-        // Conversion des données pour Google Chart
+        // Conversion des données pour les graphiques
         $statusData = $this->formatChartData($statusStats, 'status', 'count');
         $sentimentData = $this->formatChartData($sentimentStats, 'sentiment', 'count');
         $typeData = $this->formatChartData($typeStats, 'type', 'count');
@@ -556,9 +571,7 @@ class ReclamationController extends AbstractController
             'hasFilters' => $filterForm->isSubmitted()
         ]);
     }
-  
-
-
+    
     /**
      * Formate les données pour les graphiques
      */
@@ -573,24 +586,18 @@ class ReclamationController extends AbstractController
         
         return $formattedData;
     }
-
+    
     /**
      * Formate les données pour les graphiques en timeline
      */
     private function formatTimelineData(array $data): array
     {
         $formattedData = [];
-        $formattedData[] = ['Mois', 'Nombre de réclamations'];
+        $formattedData[] = ['Datetime', 'Nombre de réclamations'];
         
         foreach ($data as $item) {
-            // Formater le mois pour affichage (ex: 2025-4 -> Avril 2025)
-            $parts = explode('-', $item['month']);
-            $year = $parts[0];
-            $month = $parts[1];
-            $dateObj = new \DateTime("$year-$month-01");
-            $formattedMonth = $dateObj->format('M Y'); // Abr. mois et année
-            
-            $formattedData[] = [$formattedMonth, (int)$item['count']];
+            $datetime = $item['datetime'] ?? '';
+            $formattedData[] = [$datetime, (int)$item['count']];
         }
         
         return $formattedData;
