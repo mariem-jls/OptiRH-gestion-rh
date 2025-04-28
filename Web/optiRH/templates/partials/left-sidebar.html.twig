@@ -72,9 +72,9 @@
                     </li>
                 {% endif %}
 
+                {% if is_granted('ROLE_EMPLOYEE') %}
                 <li class="menu-title mt-2">Applications</li>
                   <!-- Projets -->
-                {% if is_granted('ROLE_EMPLOYEE') %}
                 <li>
                 <a href="{{ path('gs-projet_project_missions_index', { id: app.user.id }) }}"
                    class="{{ app.request.attributes.get('_route') starts with 'gs-projet_project_missions_index' ? 'active' : '' }}">
