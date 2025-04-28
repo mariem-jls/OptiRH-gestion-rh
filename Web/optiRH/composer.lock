@@ -4,11 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-<<<<<<< HEAD
-    "content-hash": "bfaff82c32afecccc2924c97f58154a1",
-=======
-    "content-hash": "2e36d0990b272ed1b4d8dea5c325dd4e",
->>>>>>> bb9ee3b94bc9402bdc1c19f76250bc843e88294b
+    "content-hash": "2fc1f95f356d303483281ef070712b16",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -2187,16 +2183,16 @@
         },
         {
             "name": "giggsey/libphonenumber-for-php",
-            "version": "9.0.3",
+            "version": "9.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/giggsey/libphonenumber-for-php.git",
-                "reference": "f41acc3c44ce005bb0e40bccf01ba96469c6d5f8"
+                "reference": "2046666c0a10f2df25c08b3d0aed03fab6014995"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/f41acc3c44ce005bb0e40bccf01ba96469c6d5f8",
-                "reference": "f41acc3c44ce005bb0e40bccf01ba96469c6d5f8",
+                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/2046666c0a10f2df25c08b3d0aed03fab6014995",
+                "reference": "2046666c0a10f2df25c08b3d0aed03fab6014995",
                 "shasum": ""
             },
             "require": {
@@ -2259,7 +2255,7 @@
                 "issues": "https://github.com/giggsey/libphonenumber-for-php/issues",
                 "source": "https://github.com/giggsey/libphonenumber-for-php"
             },
-            "time": "2025-04-11T07:41:09+00:00"
+            "time": "2025-04-28T07:28:07+00:00"
         },
         {
             "name": "giggsey/locale",
@@ -2815,6 +2811,70 @@
                 }
             ],
             "time": "2025-03-27T12:30:47+00:00"
+        },
+        {
+            "name": "jms/metadata",
+            "version": "2.8.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/schmittjoh/metadata.git",
+                "reference": "7ca240dcac0c655eb15933ee55736ccd2ea0d7a6"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/schmittjoh/metadata/zipball/7ca240dcac0c655eb15933ee55736ccd2ea0d7a6",
+                "reference": "7ca240dcac0c655eb15933ee55736ccd2ea0d7a6",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.2|^8.0"
+            },
+            "require-dev": {
+                "doctrine/cache": "^1.0",
+                "doctrine/coding-standard": "^8.0",
+                "mikey179/vfsstream": "^1.6.7",
+                "phpunit/phpunit": "^8.5|^9.0",
+                "psr/container": "^1.0|^2.0",
+                "symfony/cache": "^3.1|^4.0|^5.0",
+                "symfony/dependency-injection": "^3.1|^4.0|^5.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Metadata\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Johannes M. Schmitt",
+                    "email": "schmittjoh@gmail.com"
+                },
+                {
+                    "name": "Asmir Mustafic",
+                    "email": "goetas@gmail.com"
+                }
+            ],
+            "description": "Class/method/property metadata management in PHP",
+            "keywords": [
+                "annotations",
+                "metadata",
+                "xml",
+                "yaml"
+            ],
+            "support": {
+                "issues": "https://github.com/schmittjoh/metadata/issues",
+                "source": "https://github.com/schmittjoh/metadata/tree/2.8.0"
+            },
+            "time": "2023-02-15T13:44:18+00:00"
         },
         {
             "name": "knplabs/knp-components",
@@ -10585,6 +10645,114 @@
             "time": "2025-04-07T15:34:07+00:00"
         },
         {
+            "name": "vich/uploader-bundle",
+            "version": "v2.6.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/dustin10/VichUploaderBundle.git",
+                "reference": "28d99f6678135ea61c7c67d6fb52fe63ac2937ee"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/dustin10/VichUploaderBundle/zipball/28d99f6678135ea61c7c67d6fb52fe63ac2937ee",
+                "reference": "28d99f6678135ea61c7c67d6fb52fe63ac2937ee",
+                "shasum": ""
+            },
+            "require": {
+                "doctrine/persistence": "^3.0 || ^4.0",
+                "ext-simplexml": "*",
+                "jms/metadata": "^2.4",
+                "php": "^8.1",
+                "symfony/config": "^5.4 || ^6.0 || ^7.0",
+                "symfony/console": "^5.4 || ^6.0 || ^7.0",
+                "symfony/dependency-injection": "^5.4 || ^6.0 || ^7.0",
+                "symfony/event-dispatcher-contracts": "^3.1",
+                "symfony/http-foundation": "^5.4 || ^6.0 || ^7.0",
+                "symfony/http-kernel": "^5.4 || ^6.0 || ^7.0",
+                "symfony/mime": "^5.4 || ^6.0 || ^7.0",
+                "symfony/property-access": "^5.4 || ^6.0 || ^7.0",
+                "symfony/string": "^5.4 || ^6.0 || ^7.0"
+            },
+            "conflict": {
+                "doctrine/annotations": "<1.12",
+                "league/flysystem": "<2.0"
+            },
+            "require-dev": {
+                "dg/bypass-finals": "^1.9",
+                "doctrine/common": "^3.0",
+                "doctrine/doctrine-bundle": "^2.7",
+                "doctrine/mongodb-odm": "^2.4",
+                "doctrine/orm": "^2.13 || ^3.0",
+                "ext-sqlite3": "*",
+                "knplabs/knp-gaufrette-bundle": "dev-master",
+                "league/flysystem-bundle": "^2.4 || ^3.0",
+                "league/flysystem-memory": "^2.0 || ^3.0",
+                "matthiasnoback/symfony-dependency-injection-test": "^5.1",
+                "mikey179/vfsstream": "^1.6.11",
+                "phpunit/phpunit": "^10.5 || ^11.5 || ^12.0",
+                "symfony/asset": "^5.4 || ^6.0 || ^7.0",
+                "symfony/browser-kit": "^5.4 || ^6.0 || ^7.0",
+                "symfony/css-selector": "^5.4 || ^6.0 || ^7.0",
+                "symfony/doctrine-bridge": "^5.4 || ^6.0 || ^7.0",
+                "symfony/dom-crawler": "^5.4 || ^6.0 || ^7.0",
+                "symfony/form": "^5.4 || ^6.0 || ^7.0",
+                "symfony/framework-bundle": "^5.4 || ^6.0 || ^7.0",
+                "symfony/phpunit-bridge": "^7.2",
+                "symfony/security-csrf": "^5.4 || ^6.0 || ^7.0",
+                "symfony/translation": "^5.4 || ^6.0 || ^7.0",
+                "symfony/twig-bridge": "^5.4 || ^6.0 || ^7.0",
+                "symfony/twig-bundle": "^5.4 || ^6.0 || ^7.0",
+                "symfony/validator": "^5.4 || ^6.0 || ^7.0",
+                "symfony/var-dumper": "^5.4 || ^6.0 || ^7.0",
+                "symfony/yaml": "^5.4 || ^6.0 || ^7.0"
+            },
+            "suggest": {
+                "doctrine/doctrine-bundle": "For integration with Doctrine",
+                "doctrine/mongodb-odm-bundle": "For integration with Doctrine ODM",
+                "doctrine/orm": "For integration with Doctrine ORM",
+                "doctrine/phpcr-odm": "For integration with Doctrine PHPCR",
+                "knplabs/knp-gaufrette-bundle": "For integration with Gaufrette",
+                "league/flysystem-bundle": "For integration with Flysystem",
+                "liip/imagine-bundle": "To generate image thumbnails",
+                "oneup/flysystem-bundle": "For integration with Flysystem",
+                "symfony/asset": "To generate better links",
+                "symfony/form": "To handle uploads in forms",
+                "symfony/yaml": "To use YAML mapping"
+            },
+            "type": "symfony-bundle",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Vich\\UploaderBundle\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Dustin Dobervich",
+                    "email": "ddobervich@gmail.com"
+                }
+            ],
+            "description": "Ease file uploads attached to entities",
+            "homepage": "https://github.com/dustin10/VichUploaderBundle",
+            "keywords": [
+                "file uploads",
+                "upload"
+            ],
+            "support": {
+                "issues": "https://github.com/dustin10/VichUploaderBundle/issues",
+                "source": "https://github.com/dustin10/VichUploaderBundle/tree/v2.6.1"
+            },
+            "time": "2025-03-30T13:31:23+00:00"
+        },
+        {
             "name": "webmozart/assert",
             "version": "1.11.0",
             "source": {
@@ -12596,21 +12764,21 @@
         },
         {
             "name": "symfony/maker-bundle",
-            "version": "v1.62.1",
+            "version": "v1.63.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/maker-bundle.git",
-                "reference": "468ff2708200c95ebc0d85d3174b6c6711b8a590"
+                "reference": "69478ab39bc303abfbe3293006a78b09a8512425"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/maker-bundle/zipball/468ff2708200c95ebc0d85d3174b6c6711b8a590",
-                "reference": "468ff2708200c95ebc0d85d3174b6c6711b8a590",
+                "url": "https://api.github.com/repos/symfony/maker-bundle/zipball/69478ab39bc303abfbe3293006a78b09a8512425",
+                "reference": "69478ab39bc303abfbe3293006a78b09a8512425",
                 "shasum": ""
             },
             "require": {
                 "doctrine/inflector": "^2.0",
-                "nikic/php-parser": "^4.18|^5.0",
+                "nikic/php-parser": "^5.0",
                 "php": ">=8.1",
                 "symfony/config": "^6.4|^7.0",
                 "symfony/console": "^6.4|^7.0",
@@ -12668,7 +12836,7 @@
             ],
             "support": {
                 "issues": "https://github.com/symfony/maker-bundle/issues",
-                "source": "https://github.com/symfony/maker-bundle/tree/v1.62.1"
+                "source": "https://github.com/symfony/maker-bundle/tree/v1.63.0"
             },
             "funding": [
                 {
@@ -12684,7 +12852,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-01-15T00:21:40+00:00"
+            "time": "2025-04-26T01:41:37+00:00"
         },
         {
             "name": "symfony/phpunit-bridge",

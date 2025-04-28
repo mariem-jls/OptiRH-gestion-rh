@@ -66,7 +66,7 @@ class HomeController extends AbstractController
             );
         }
 
-        return $this->renderEmployeeDashboard($missionRepository, $user);
+        return $this->renderEmployeeDashboard($missionRepository, $user, $reclamationRepository);
     }
 
     private function checkLateMissionsForUser(
@@ -675,7 +675,8 @@ class HomeController extends AbstractController
 
     private function renderEmployeeDashboard(
         MissionRepository $missionRepository,
-                          $user
+        $user,
+        ReclamationRepository $reclamationRepository
     ): Response {
         $userMissions = $missionRepository->findBy(['assignedTo' => $user]);
 
@@ -692,11 +693,56 @@ class HomeController extends AbstractController
             ->getQuery()
             ->getResult();
 
+        try {
+            // Récupérer les statistiques des réclamations
+            $statusData = $this->getReclamationStatusData($reclamationRepository);
+            $sentimentData = $this->getReclamationSentimentData($reclamationRepository);
+            $typeData = $this->getReclamationTypeData($reclamationRepository);
+            $timelineData = $this->getReclamationTimelineData($reclamationRepository);
+
+            // Calculer le taux de résolution
+            $totalReclamations = $reclamationRepository->createQueryBuilder('r')
+                ->select('COUNT(r.id)')
+                ->getQuery()
+                ->getSingleScalarResult();
+
+            $resolvedReclamations = $reclamationRepository->createQueryBuilder('r')
+                ->select('COUNT(r.id)')
+                ->where('r.status = :status')
+                ->setParameter('status', 'Résolue')
+                ->getQuery()
+                ->getSingleScalarResult();
+
+            $resolutionRate = $totalReclamations > 0 ? round(($resolvedReclamations / $totalReclamations) * 100, 2) : 0;
+
+        } catch (\Exception $e) {
+            // En cas d'erreur, initialiser avec des valeurs par défaut
+            $statusData = [['Status', 'Nombre']];
+            $sentimentData = [['Sentiment', 'Nombre']];
+            $typeData = [['Type', 'Nombre']];
+            $timelineData = [['Mois', 'Nombre']];
+            $resolutionRate = 0;
+            
+            $this->logger->error('Erreur lors de la récupération des statistiques de réclamations', [
+                'error' => $e->getMessage()
+            ]);
+        }
+
         return $this->render('employee/index.html.twig', [
             'mission_stats' => $missionStats,
             'late_missions' => $lateMissions,
             'total_missions' => count($userMissions),
-            'is_admin' => false
+            'is_admin' => false,
+            // Données des réclamations
+            'resolutionRate' => $resolutionRate,
+            'statusData' => $statusData,
+            'sentimentData' => $sentimentData,
+            'typeData' => $typeData,
+            'timelineData' => $timelineData,
+            'statusDataJson' => json_encode($statusData),
+            'sentimentDataJson' => json_encode($sentimentData),
+            'typeDataJson' => json_encode($typeData),
+            'timelineDataJson' => json_encode($timelineData)
         ]);
     }
 }

@@ -249,6 +249,7 @@
                             <th>Date</th>
                             <th>Statut</th>
                             <th>Sentiment</th>
+                            <th>Pièces jointes</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -273,31 +274,31 @@
                                 <td>{{ reclamation.utilisateur.nom }}</td>
                                 <td>{{ reclamation.date|date('d/m/Y H:i') }}</td>
                                 <td>
-                                    <form method="post" action="{{ path('admin_update_status', {'id': reclamation.id}) }}">
-                                        {% set status_class = 'status-' ~ reclamation.status|lower|replace({' ': '-', 'é': 'e'}) %}
-                                        <select name="status" class="status-select {{ status_class }}" onchange="this.form.submit()">
-                                            <option value="En attente" {% if reclamation.status == 'En attente' %}selected{% endif %}>⏳ En attente</option>
-                                            <option value="En cours" {% if reclamation.status == 'En cours' %}selected{% endif %}>🔄 En cours</option>
-                                            <option value="Résolue" {% if reclamation.status == 'Résolue' %}selected{% endif %}>✅ Résolue</option>
-                                        </select>
-                                    </form>
+                                    <span class="badge bg-{{ reclamation.getStatusColor(reclamation.status) }}">
+                                        {{ reclamation.status }}
+                                    </span>
                                 </td>
                                 <td>
-                                    <div class="sentiment-display">
-                                        {% if reclamation.sentimentLabel %}
-                                            {% set sentiment_type = reclamation.sentimentLabel %}
-                                            <span class="sentiment-bubble {{ sentiment_type }}"></span>
-                                            <span class="sentiment-label">
-                                                {% if sentiment_type == 'positive' %}😊 Positif
-                                                {% elseif sentiment_type == 'neutral' %}😐 Neutre
-                                                {% elseif sentiment_type == 'negative' %}😠 Négatif{% endif %}
-                                            </span>
-                                            <span class="text-muted small ms-2">{{ reclamation.sentimentScore|number_format(2) }}</span>
-                                        {% else %}
-                                            <span class="sentiment-bubble unknown"></span>
-                                            <span class="sentiment-label">🤔 Non analysé</span>
-                                        {% endif %}
-                                    </div>
+                                    {% if reclamation.sentimentLabel %}
+                                        <span class="badge bg-{{ reclamation.sentimentLabel == 'positive' ? 'success' : (reclamation.sentimentLabel == 'negative' ? 'danger' : 'warning') }}">
+                                            {{ reclamation.sentimentLabel|trans }} ({{ reclamation.sentimentScore|number_format(2) }})
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Non analysé</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if reclamation.documentName %}
+                                        <a href="{{ vich_uploader_asset(reclamation, 'documentFile') }}" 
+                                           class="btn btn-sm btn-outline-primary" 
+                                           target="_blank"
+                                           title="Voir la pièce jointe">
+                                            <i class="fas fa-file-alt me-1"></i>
+                                            {{ reclamation.documentName|slice(0, 20) }}{% if reclamation.documentName|length > 20 %}...{% endif %}
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">Aucune pièce jointe</span>
+                                    {% endif %}
                                 </td>
                                 <td>
                                     <div class="d-flex gap-2">

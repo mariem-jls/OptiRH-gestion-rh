@@ -464,10 +464,18 @@ class ReclamationController extends AbstractController
         }
 
         $rating = $request->request->get('rating');
+        $commentaire = $request->request->get('commentaire');
 
         if ($rating >= 1 && $rating <= 5) {
             $reponse->setRating((int)$rating);
-            $reclamation->setStatus(Reclamation::STATUS_RESOLVED);
+            
+            // Gérer le commentaire si le rating est 1 ou 2
+            if ($rating <= 2 && $commentaire) {
+                $reponse->setCommentaire($commentaire);
+                $reclamation->setStatus(Reclamation::STATUS_IN_PROGRESS);
+            } else if ($rating >= 3) {
+                $reclamation->setStatus(Reclamation::STATUS_RESOLVED);
+            }
             
             $em->flush();
             $this->addFlash('success', 'Merci pour votre évaluation !');

@@ -22,4 +22,5 @@ return [
     Symfony\WebpackEncoreBundle\WebpackEncoreBundle::class => ['all' => true],
     Scheb\TwoFactorBundle\SchebTwoFactorBundle::class => ['all' => true],
     Lexik\Bundle\FormFilterBundle\LexikFormFilterBundle::class => ['all' => true],
+    Vich\UploaderBundle\VichUploaderBundle::class => ['all' => true],
 ];

@@ -73,6 +73,7 @@
         "twig/string-extra": "*",
         "twig/twig": "^2.12|^3.0",
         "twilio/sdk": "^8.5",
+        "vich/uploader-bundle": "^2.6",
         "wemersonjanuario/wkhtmltopdf-windows": "^0.12.2"
     },
     "config": {
