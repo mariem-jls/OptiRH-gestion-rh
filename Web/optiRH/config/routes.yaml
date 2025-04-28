@@ -11,6 +11,24 @@ controllers:
   type: attribute
   exclude: "../src/Controller/Admin/"
 
+hwi_oauth_connect:
+    resource: '@HWIOAuthBundle/Resources/config/routing/connect.xml'
+    prefix: /connect
+
+hwi_oauth_login:
+    resource: '@HWIOAuthBundle/Resources/config/routing/login.xml'
+    prefix: /login
+
+hwi_oauth_redirect:
+    resource: '@HWIOAuthBundle/Resources/config/routing/redirect.xml'
+    prefix: /connect
+
+google_login:
+    path: /connect/google
+    defaults:
+        _controller: 'HWI\Bundle\OAuthBundle\Controller\ConnectController::redirectToServiceAction'
+        service: google
+
 # Catch-all route to redirect to the 404 page
 not_found:
     path: /{req<.+>}

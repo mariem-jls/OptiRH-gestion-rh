@@ -53,6 +53,15 @@
             "./config/packages/google_apiclient.yaml"
         ]
     },
+    "hwi/oauth-bundle": {
+        "version": "2.3",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "main",
+            "version": "2.0",
+            "ref": "20154480d558409ad3eb9de3644817c81fad2268"
+        }
+    },
     "knplabs/knp-paginator-bundle": {
         "version": "v6.4.0"
     },
