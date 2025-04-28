@@ -22,5 +22,9 @@ return [
     Symfony\WebpackEncoreBundle\WebpackEncoreBundle::class => ['all' => true],
     Scheb\TwoFactorBundle\SchebTwoFactorBundle::class => ['all' => true],
     Lexik\Bundle\FormFilterBundle\LexikFormFilterBundle::class => ['all' => true],
+<<<<<<< HEAD
     Vich\UploaderBundle\VichUploaderBundle::class => ['all' => true],
+=======
+    HWI\Bundle\OAuthBundle\HWIOAuthBundle::class => ['all' => true],
+>>>>>>> 07d9ab73552782646ce9605e91ecd5f9d88bc377
 ];

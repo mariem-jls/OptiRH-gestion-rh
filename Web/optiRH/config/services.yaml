@@ -51,8 +51,11 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+
+    App\Security\OAuthUserProvider:
+        arguments:
+            $entityManager: '@doctrine.orm.entity_manager'
     
-    # Ajoutez ce service
     App\Service\InfobipSmsSender:
         arguments:
             $client: '@http_client'
