@@ -56,6 +56,22 @@
                             <a href="{{ path('app_demande_edit', {'id': demande.id}) }}" class="btn btn-sm btn-warning">
                                 <i class="mdi mdi-pencil-outline me-1"></i> Modifier
                             </a>
+                            {% if demande.statut == 'ACCEPTEE' %}
+                                {% set interview = demande.interviews|first|default(null) %}
+                                {% if interview %}
+                                    <span class="btn btn-sm btn-success disabled">
+                                        <i class="mdi mdi-check-circle me-1"></i> Entretien planifié pour {{ interview.dateTime|date('d/m/Y H:i') }}
+                                    </span>
+                                    <button class="btn btn-sm btn-danger cancel-interview" data-interview-id="{{ interview.id }}">
+                                        <i class="mdi mdi-close-circle-outline me-1"></i> Annuler
+                                    </button>
+                                {% else %}
+                                    <a href="{{ path('plan_interview', {'demandeId': demande.id}) }}"
+                                       class="btn btn-sm btn-primary">
+                                        <i class="mdi mdi-calendar-clock me-1"></i> Planifier un entretien
+                                    </a>
+                                {% endif %}
+                            {% endif %}
                         </div>
                     </div>
 
@@ -100,27 +116,23 @@
                         </div>
                     </div>
 
-
-                    <!-- Section Documents corrigée -->
                     <div class="detail-section mb-4">
                         <h5 class="mb-3 text-primary"><i class="mdi mdi-file-check-outline me-2"></i>Documents</h5>
                         <div class="row">
                             <div class="col-12">
                                 {% if demande.fichierPieceJointe %}
-                                        <div class="mb-3">
-                                            <a href="{{ asset('uploads/' ~ demande.fichierPieceJointe) }}"
-                                               target="_blank"
-                                               class="btn btn-outline-primary">
-                                                <i class="mdi mdi-file-pdf-box me-2"></i>Télécharger le PDF
-                                            </a>
-                                        </div>
-                                        <iframe
-                                                src="{{ asset('uploads/' ~ demande.fichierPieceJointe) }}#toolbar=0&view=fitH"
-                                                class="file-preview w-100"
-                                                onerror="this.innerHTML='<div class=\'alert alert-danger\'>Impossible d\'afficher le PDF</div>'; this.style.border='none'">
-
-                                        </iframe>
-
+                                    <div class="mb-3">
+                                        <a href="{{ asset('Uploads/' ~ demande.fichierPieceJointe) }}"
+                                           target="_blank"
+                                           class="btn btn-outline-primary">
+                                            <i class="mdi mdi-file-pdf-box me-2"></i>Télécharger le PDF
+                                        </a>
+                                    </div>
+                                    <iframe
+                                            src="{{ asset('Uploads/' ~ demande.fichierPieceJointe) }}#toolbar=0&view=fitH"
+                                            class="file-preview w-100"
+                                            onerror="this.innerHTML='<div class=\'alert alert-danger\'>Impossible d\'afficher le PDF</div>'; this.style.border='none'">
+                                    </iframe>
                                 {% else %}
                                     <div class="alert alert-info">
                                         <i class="mdi mdi-information-outline me-2"></i>
@@ -133,7 +145,53 @@
 
                 </div>
             </div>
-
         </div>
     </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function() {
+            $('.cancel-interview').on('click', function() {
+                const interviewId = $(this).data('interview-id');
+                const cancelUrl = '{{ path('api_cancel_interview', {'interviewId': '__interviewId__'}) }}'.replace('__interviewId__', interviewId);
+                Swal.fire({
+                    title: 'Confirmer l\'annulation',
+                    text: 'Voulez-vous vraiment annuler cet entretien ?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Oui, annuler',
+                    cancelButtonText: 'Non'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: cancelUrl,
+                            method: 'DELETE',
+                            success: function() {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Entretien annulé',
+                                    text: 'L\'entretien a été annulé et le candidat a été informé.',
+                                    timer: 2000
+                                }).then(() => {
+                                    location.reload(); // Recharge la page pour mettre à jour l'affichage
+                                });
+                            },
+                            error: function(xhr) {
+                                let errorMessage = 'Une erreur est survenue lors de l\'annulation.';
+                                if (xhr.responseJSON && xhr.responseJSON.error) {
+                                    errorMessage = xhr.responseJSON.error;
+                                }
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Erreur',
+                                    text: errorMessage
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    </script>
 {% endblock %}
