@@ -7,6 +7,8 @@ use App\Entity\User;
 use App\Form\Evenement\ReservationEvenementType;
 use App\Repository\Evenement\ReservationEvenementRepository;
 use App\Service\TwilioService;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use Stripe\Exception\ApiErrorException;
 use Stripe\StripeClient;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -258,23 +260,86 @@ class ReservationEvenementController extends AbstractController
          ]);
      }
 
-     #[Route('/reservationspdf/{id}', name: 'app_reservation_pdf')]
-
-     public function generatePdf(ReservationEvenement $reservation): Response
- {
-     $evenement = $reservation->getEvenement();
-     
-     return $this->render('reservation_evenement/ticket.html.twig',[
-         'reservation' => $reservation,
-         'evenement' => $evenement,
-     ]);
      
  
     
  
-     
- }
- 
+    // Controller:
+#[Route('/reservationspdf/{id}', name: 'app_reservation_pdf')]
+public function generatePdf(ReservationEvenement $reservation): Response
+{
+    $evenement = $reservation->getEvenement();
+
+    // Générer le code-barres
+    $generator = new \Picqer\Barcode\BarcodeGeneratorPNG();
+    $barcode = $generator->getBarcode((string)$reservation->getId(), $generator::TYPE_CODE_128);
+
+    $fouk=$this->getParameter('kernel.project_dir') . '/public/images/fouk.png';
+    $foukBase64 = base64_encode(file_get_contents($fouk));
+
+    $louta=$this->getParameter('kernel.project_dir') . '/public/images/louta.png';
+    $loutaoBase64 = base64_encode(file_get_contents($louta));
+
+    $lignePath = $this->getParameter('kernel.project_dir') . '/public/images/ligne.png';
+    $ligneBase64 = base64_encode(file_get_contents($lignePath));
+    // Charger le logo en base64
+    $logoPath = $this->getParameter('kernel.project_dir') . '/public/images/logo-dark.png';
+    $logoBase64 = base64_encode(file_get_contents($logoPath));
+
+    $calendarIconPath = $this->getParameter('kernel.project_dir') . '/public/images/calendar.png';
+    $calendarIconBase64 = base64_encode(file_get_contents($calendarIconPath));
+
+    $clockIconPath = $this->getParameter('kernel.project_dir') . '/public/images/clock.png';
+    $clockIconBase64 = base64_encode(file_get_contents($clockIconPath));
+
+    $locationIconPath = $this->getParameter('kernel.project_dir') . '/public/images/location.png';
+    $locationIconBase64 = base64_encode(file_get_contents($locationIconPath));
+
+    // Charger les icônes SDG en base64
+    $sdgIcons = [];
+    foreach ([8, 9, 10, 12] as $num) {
+        $path = $this->getParameter('kernel.project_dir') . "/public/images/$num.png";
+        $sdgIcons[$num] = base64_encode(file_get_contents($path));
+    }
+    // Générer le HTML
+    $html = $this->renderView('reservation_evenement/ticket.html.twig', [
+        'reservation' => $reservation,
+        'evenement' => $evenement,
+        'barcode' => base64_encode($barcode),
+        'logo' => $logoBase64,
+        'calendar_icon' => $calendarIconBase64,
+        'clock_icon' => $clockIconBase64,
+        'location_icon' => $locationIconBase64,
+        'sdg_icons' => $sdgIcons,
+        'ligne' => $ligneBase64,
+    ]);
+
+    // Configuration de Dompdf
+    $pdfOptions = new Options();
+    $pdfOptions->set('defaultFont', 'Arial');
+    $pdfOptions->set('isHtml5ParserEnabled', true);
+    $pdfOptions->set('isPhpEnabled', true);
+    $pdfOptions->set('isRemoteEnabled', true);
+    $pdfOptions->set('dpi', 150);
+    $pdfOptions->set('isFontSubsettingEnabled', true);
+
+    $dompdf = new Dompdf($pdfOptions);
+    $dompdf->loadHtml($html);
+    // Définir la taille du papier sur A4 et l'orientation sur paysage
+    $dompdf->setPaper('A4', 'landscape');
+
+    // Générer le PDF
+    $dompdf->render();
+
+    return new Response(
+        $dompdf->output(),
+        200,
+        [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="ticket_reservation.pdf"'
+        ]
+    );
+}
       
       
  

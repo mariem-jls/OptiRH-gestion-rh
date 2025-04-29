@@ -65,6 +65,12 @@ public function findByEvenementId(int $evenementId): array
      return $reservations ?: [];
 }
 
+
+    public function findByReservationId($reservationId)
+{
+    return $this->findOneBy(['id_participation' => $reservationId]);
+}
+
 //    /**
 //     * @return ReservationEvenement[] Returns an array of ReservationEvenement objects
 //     */

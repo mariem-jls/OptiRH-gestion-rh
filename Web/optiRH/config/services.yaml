@@ -128,3 +128,7 @@ services:
     App\Service\OpenAiService:
         arguments:
             $apiKey: '%openai.api_key%'
+
+    App\Service\RecommendationService:
+        arguments:
+            $evenementFinder: '@fos_elastica.finder.evenement'
