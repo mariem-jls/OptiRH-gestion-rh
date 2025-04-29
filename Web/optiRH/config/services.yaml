@@ -138,7 +138,7 @@ services:
             $logger: '@logger'
             $defaultTargetLanguage: 'fr'
 
-     
+    
     App\Service\OpenAiService:
         arguments:
             $apiKey: '%openai.api_key%'

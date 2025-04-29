@@ -3,20 +3,12 @@ namespace App\Service;
 
 class MeetLinkGenerator
 {
-    private array $meetLinks = [
-        'https://meet.google.com/jdu-cqxr-bxw',
-        'https://meet.google.com/brd-dpym-pbm',
-        'https://meet.google.com/vqp-yiib-uqo',
-        'https://meet.google.com/erh-jdsv-ukw',
-        'https://meet.google.com/jby-qxqa-xqu',
-        'https://meet.google.com/ffa-dtzh-iaf',
-        'https://meet.google.com/gnt-zajy-iop',
-        'https://meet.google.com/xgy-tsur-udq',
-        'https://meet.google.com/qnz-svvn-dbo'
-    ];
+    private string $baseUrl = 'https://meet.jit.si/';
 
-    public function CreateMeetLink(): string
+    public function createMeetLink(): string
     {
-        return $this->meetLinks[array_rand($this->meetLinks)];
+        // Génère un nom de salle unique (ex : project-4f7c9a12)
+        $roomName = 'project-' . bin2hex(random_bytes(4)); // 8 caractères hex
+        return $this->baseUrl . $roomName;
     }
 }
