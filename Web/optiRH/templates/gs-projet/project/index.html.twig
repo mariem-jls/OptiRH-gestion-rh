@@ -4,10 +4,18 @@
 
 {% block topbar %}
     {{ include('partials/topbar.html.twig', { page_title: 'Gestion des projets' }) }}
+    
 {% endblock %}
 
 {% block body %}
+<div class="col-md-6">
+            <a href="{{ path('gs-projet_project_new') }}" class="btn btn-purple rounded-pill w-md waves-effect waves-light">
+                <i class="mdi mdi-plus me-2"></i>
+                Créer un projet
+            </a>
+        </div>
 <div class="row mb-4">
+    <div><br></div>
     <div class="col-md-12">
         <form id="project-filter-form" method="get" class="row g-2 align-items-center">
             <!-- Champ Recherche -->
@@ -42,7 +50,7 @@
             
             <!-- Bouton Filtrer -->
             <div class="col-md-2">
-                <button type="submit" class="btn btn-primary w-100">Filtrer</button>
+                <button type="submit" class="btn btn-primary w-100">Rechercher</button>
             </div>
         </form>
     </div>

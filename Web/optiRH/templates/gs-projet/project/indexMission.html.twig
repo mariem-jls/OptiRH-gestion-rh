@@ -7,102 +7,321 @@
 {% endblock %}
 
 {% block css %}
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
 <link href="{{ asset('libs/fullcalendar/main.min.css') }}" rel="stylesheet">
 <link href="{{ asset('libs/bootstrap-icons/font/bootstrap-icons.min.css') }}" rel="stylesheet">
 <style>
+    :root {
+        --primary: #4fc6e1;
+        --primary-dark: #3aa8c1;
+        --primary-light: #7ed5e8;
+        --text-primary: #1a3c47;
+        --shadow: 0 4px 12px rgba(79, 198, 225, 0.15);
+    }
+
     #calendar {
         min-height: 600px;
         background: white;
-        border-radius: 0.5rem;
-        box-shadow: 0 0.5rem 1rem rgba(67, 110, 238, 0.15);
+        border-radius: 1rem;
+        box-shadow: var(--shadow);
+        padding: 15px;
+        transition: opacity 0.3s ease, transform 0.3s ease;
     }
+
+    #calendar.loading {
+        opacity: 0.7;
+        transform: scale(0.99);
+    }
+
     .fc-event {
         cursor: pointer;
-        transition: all 0.2s;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
         border: none !important;
-        padding: 2px 5px;
-        margin: 1px;
+        padding: 4px 8px;
+        margin: 2px;
+        border-radius: 6px;
+        position: relative;
     }
-    .fc-daygrid-event-dot {
-        display: none !important;
-    }
-    .mission-info-item label {
-        font-weight: 500;
-        color: rgb(69, 123, 178);
-    }
-    .filter-section {
-        margin-bottom: 20px;
-        background: white;
-        padding: 15px;
-        border-radius: 0.5rem;
-        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    }
-    .filter-group {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        margin-bottom: 10px;
-    }
-    .filter-group-title {
-        font-weight: 600;
-        margin-bottom: 8px;
-        color: #495057;
-    }
-    .filter-btn {
-        border-radius: 20px;
-        padding: 5px 15px;
-        font-size: 0.85rem;
-        border: 1px solid #dee2e6;
-        transition: all 0.3s;
-    }
-    .filter-btn.active {
-        font-weight: bold;
+
+    .fc-event:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
-    .btn-status-all {
-        background-color: #3b7ddd;
+
+    .fc-daygrid-event-dot {
+        display: none !important;
+    }
+
+    .mission-info-item label {
+        font-weight: 600;
+        color: var(--primary-dark);
+    }
+
+    .filter-section {
+        margin-bottom: 25px;
+        background: linear-gradient(145deg, #ffffff, #f8f9fa);
+        padding: 20px;
+        border-radius: 1rem;
+        box-shadow: var(--shadow);
+        transition: transform 0.3s ease;
+    }
+
+    .filter-section:hover {
+        transform: translateY(-3px);
+    }
+
+    .filter-group {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+    }
+
+    .filter-group-title {
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: var(--text-primary);
+        font-size: 1.1rem;
+    }
+
+    .filter-btn {
+        border-radius: 50px;
+        padding: 8px 20px;
+        font-size: 0.9rem;
+        border: 1px solid var(--primary-light);
+        background: white;
+        color: var(--text-primary);
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .filter-btn:hover {
+        background: var(--primary-light);
+        border-color: var(--primary);
         color: white;
+        transform: translateY(-1px);
     }
-    .btn-status-todo {
-        background-color: #dc3545;
+
+    .filter-btn.active {
+        background: var(--primary);
         color: white;
+        border-color: var(--primary-dark);
+        font-weight: 600;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(79, 198, 225, 0.3);
     }
-    .btn-status-progress {
-        background-color: #ffc107;
-        color: #212529;
-    }
-    .btn-status-done {
-        background-color: #28a745;
-        color: white;
-    }
-    .btn-status-late {
-        background-color: #6f42c1;
-        color: white;
-    }
+
+    .btn-status-all { background: var(--primary); color: white; }
+    .btn-status-todo { background: #ff6b6b; color: white; }
+    .btn-status-progress { background: #ffd166; color: var(--text-primary); }
+    .btn-status-done { background: #06d6a0; color: white; }
+    .btn-status-late { background: #8338ec; color: white; }
+
     .late-indicator {
         position: absolute;
-        top: -5px;
-        right: -5px;
-        background-color: #dc3545;
+        top: -6px;
+        right: -6px;
+        background: #ff6b6b;
         color: white;
         border-radius: 50%;
-        width: 18px;
-        height: 18px;
+        width: 20px;
+        height: 20px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 10px;
+        font-size: 11px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
+
     .event-status-badge {
         position: absolute;
-        bottom: 2px;
-        right: 2px;
-        background-color: rgba(0, 0, 0, 0.7);
+        bottom: 3px;
+        right: 3px;
+        background: rgba(0, 0, 0, 0.75);
         color: white;
-        border-radius: 3px;
-        padding: 0 4px;
-        font-size: 0.65rem;
+        border-radius: 4px;
+        padding: 2px 6px;
+        font-size: 0.7rem;
+        font-weight: 500;
+    }
+
+    .card {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: var(--shadow);
+        transition: transform 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-3px);
+    }
+
+    .modal-content {
+        border-radius: 1rem;
+        border: none;
+        box-shadow: var(--shadow);
+    }
+
+    .modal-header {
+        background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+        border-radius: 1rem 1rem 0 0;
+        color: white;
+    }
+
+    .modal-footer {
+        border-top: none;
+        background: #f8f9fa;
+        border-radius: 0 0 1rem 1rem;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        border-color: var(--primary-dark);
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        border-color: var(--primary);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(79, 198, 225, 0.3);
+    }
+
+    .form-select, .form-control {
+        border-radius: 0.5rem;
+        border: 1px solid var(--primary-light);
+        transition: border-color 0.3s ease;
+    }
+
+    .form-select:focus, .form-control:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 0.2rem rgba(79, 198, 225, 0.25);
+    }
+
+    .fc-button {
+        background: var(--primary) !important;
+        border-color: var(--primary-dark) !important;
+        color: white !important;
+        border-radius: 0.5rem !important;
+        transition: all 0.3s ease;
+    }
+
+    .fc-button:hover {
+        background: var(--primary-dark) !important;
+        transform: translateY(-1px);
+    }
+
+    .tooltip-inner {
+        background: var(--primary-dark);
+        color: white;
+        border-radius: 6px;
+        padding: 8px;
+    }
+
+    .tooltip-arrow::before {
+        border-top-color: var(--primary-dark) !important;
+    }
+
+    .fc-toolbar-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        text-transform: capitalize;
+    }
+
+    .chatbot-container {
+        display: flex;
+        flex-direction: column;
+        height: 300px;
+        border: 1px solid var(--primary-light);
+        border-radius: 0.5rem;
+        overflow: hidden;
+    }
+
+    .chatbot-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 10px;
+        background: #f8f9fa;
+    }
+
+    .chatbot-message {
+        margin-bottom: 10px;
+        padding: 8px 12px;
+        border-radius: 0.5rem;
+        max-width: 80%;
+    }
+
+    .chatbot-message.user {
+        background: var(--primary);
+        color: white;
+        margin-left: auto;
+        text-align: right;
+    }
+
+    .chatbot-message.bot {
+        background: var(--primary-light);
+        color: var(--text-primary);
+    }
+
+    .chatbot-input-group {
+        display: flex;
+        border-top: 1px solid var(--primary-light);
+    }
+
+    .chatbot-input {
+        flex: 1;
+        border: none;
+        padding: 10px;
+        outline: none;
+        border-radius: 0 0 0 0.5rem;
+    }
+
+    .chatbot-send-btn {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 0 0 0.5rem 0;
+        cursor: pointer;
+        transition: background 0.3s ease;
+    }
+
+    .chatbot-send-btn:hover {
+        background: var(--primary-dark);
+    }
+
+    .nav-tabs .nav-link {
+        color: var(--text-primary);
+        border-radius: 0.5rem;
+    }
+
+    .nav-tabs .nav-link.active {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary-dark);
+    }
+
+    @media (max-width: 576px) {
+        .filter-group {
+            flex-direction: column;
+            gap: 8px;
+        }
+        .filter-btn {
+            padding: 6px 12px;
+            font-size: 0.85rem;
+        }
+        #calendar {
+            min-height: 400px;
+        }
+        .fc-toolbar-title {
+            font-size: 1.2rem;
+        }
+        .chatbot-container {
+            height: 250px;
+        }
     }
 </style>
 {% endblock %}
@@ -112,30 +331,31 @@
     <div class="row">
         <div class="col-12">
             <div class="filter-section">
+                <div class="mb-3">
+                    <input type="text" class="form-control" id="searchInput" placeholder="Rechercher une mission...">
+                </div>
                 <div class="filter-group">
                     <div class="filter-group-title">Statut :</div>
                     <button class="btn btn-status-all filter-btn active" data-filter="status" data-value="all">
-                        <i class="bi bi-list-check me-1"></i> Tous
+                        <i class="bi bi-list-check me-1"></i> Tous <span class="badge bg-light text-dark ms-1">{{ missions|length }}</span>
                     </button>
                     <button class="btn btn-status-todo filter-btn" data-filter="status" data-value="To Do">
-                        <i class="bi bi-x-circle me-1"></i> À faire
+                        <i class="bi bi-x-circle me-1"></i> À faire <span class="badge bg-light text-dark ms-1">{{ missions|filter(m => m.statut == 'To Do')|length }}</span>
                     </button>
                     <button class="btn btn-status-progress filter-btn" data-filter="status" data-value="In Progress">
-                        <i class="bi bi-arrow-repeat me-1"></i> En cours
+                        <i class="bi bi-arrow-repeat me-1"></i> En cours <span class="badge bg-light text-dark ms-1">{{ missions|filter(m => m.statut == 'In Progress')|length }}</span>
                     </button>
                     <button class="btn btn-status-done filter-btn" data-filter="status" data-value="Done">
-                        <i class="bi bi-check-circle me-1"></i> Terminé
+                        <i class="bi bi-check-circle me-1"></i> Terminé <span class="badge bg-light text-dark ms-1">{{ missions|filter(m => m.statut == 'Done')|length }}</span>
                     </button>
                 </div>
-                
                 <div class="filter-group">
                     <div class="filter-group-title">Filtres spéciaux :</div>
                     <button class="btn btn-status-late filter-btn" data-filter="late" data-value="true">
-                        <i class="bi bi-exclamation-triangle me-1"></i> En retard
+                        <i class="bi bi-exclamation-triangle me-1"></i> En retard <span class="badge bg-light text-dark ms-1">{{ missions|filter(m => m.isLate)|length }}</span>
                     </button>
                 </div>
             </div>
-            
             <div class="card">
                 <div class="card-body p-0">
                     <div id="calendar"></div>
@@ -153,58 +373,81 @@
                 <h5 class="modal-title">Détails de la Mission</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form id="statusForm">
-                <div class="modal-body">
-                    <input type="hidden" id="missionId" name="id">
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Projet</label>
-                        <div class="form-control-plaintext fw-bold" id="missionProject"></div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Titre de la mission</label>
-                        <div class="form-control-plaintext fw-bold" id="missionTitle"></div>
-                    </div>
+            <div class="modal-body">
+                <!-- Onglets -->
+                <ul class="nav nav-tabs mb-3" id="missionTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="details-tab" data-bs-toggle="tab" data-bs-target="#details" type="button" role="tab">Détails</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="chatbot-tab" data-bs-toggle="tab" data-bs-target="#chatbot" type="button" role="tab">Chatbot</button>
+                    </li>
+                </ul>
 
-                    <div class="mb-3">
-                        <label class="form-label">Description</label>
-                        <div class="border rounded p-2" id="missionDescription" style="min-height: 100px;"></div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
+                <!-- Contenu des onglets -->
+                <div class="tab-content" id="missionTabsContent">
+                    <!-- Onglet Détails -->
+                    <div class="tab-pane fade show active" id="details" role="tabpanel">
+                        <form id="statusForm">
+                            <input type="hidden" id="missionId" name="id">
                             <div class="mb-3">
-                                <label class="form-label">Date d'échéance</label>
-                                <div class="form-control-plaintext" id="missionDeadline"></div>
+                                <label class="form-label">Projet</label>
+                                <div class="form-control-plaintext fw-bold" id="missionProject"></div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Titre de la mission</label>
+                                <div class="form-control-plaintext fw-bold" id="missionTitle"></div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Description</label>
+                                <div class="border rounded p-2" id="missionDescription" style="min-height: 100px;"></div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Date d'échéance</label>
+                                        <div class="form-control-plaintext" id="missionDeadline"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Statut</label>
+                                        <div class="form-control-plaintext" id="missionStatus"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Modifier le statut</label>
+                                <select class="form-select" id="statusSelect" name="status">
+                                    <option value="To Do">À faire</option>
+                                    <option value="In Progress">En cours</option>
+                                    <option value="Done">Terminé</option>
+                                </select>
+                            </div>
+                            <input type="hidden" name="_token" value="{{ csrf_token('mission_status') }}">
+                        </form>
+                    </div>
+
+                    <!-- Onglet Chatbot -->
+                    <div class="tab-pane fade" id="chatbot" role="tabpanel">
+                        <div class="chatbot-container">
+                            <div class="chatbot-messages" id="chatbotMessages">
+                                <div class="chatbot-message bot">Bonjour ! Posez-moi des questions sur cette mission.</div>
+                            </div>
+                            <div class="chatbot-input-group">
+                                <input type="text" class="chatbot-input" id="chatbotInput" placeholder="Posez une question...">
+                                <button class="chatbot-send-btn" onclick="sendChatbotMessage()">Envoyer</button>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Statut</label>
-                                <div class="form-control-plaintext" id="missionStatus"></div>
-                            </div>
-                        </div>
                     </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Modifier le statut</label>
-                        <select class="form-select" id="statusSelect" name="status">
-                            <option value="To Do">À faire</option>
-                            <option value="In Progress">En cours</option>
-                            <option value="Done">Terminé</option>
-                        </select>
-                    </div>
-
-                    <input type="hidden" name="_token" value="{{ csrf_token('mission_status') }}">
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-save me-2"></i> Enregistrer
-                    </button>
-                </div>
-            </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                <button type="submit" form="statusForm" class="btn btn-primary">
+                    <i class="bi bi-save me-2"></i> Enregistrer
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -215,11 +458,11 @@
 <script src="{{ asset('libs/fullcalendar/main.min.js') }}"></script>
 <script src="{{ asset('libs/fullcalendar/locales/fr.global.min.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const calendarEl = document.getElementById('calendar');
     const modal = new bootstrap.Modal('#missionModal');
+    let currentMissionData = null;
     let currentEvent = null;
     let allEvents = {{ missions|json_encode|raw }};
     let calendar;
@@ -232,14 +475,90 @@ document.addEventListener('DOMContentLoaded', function() {
         return deadline < today;
     }
 
+    // Sauvegarde des filtres
+    function saveFilters() {
+        const activeStatusFilter = document.querySelector('[data-filter="status"].active')?.dataset.value || 'all';
+        const showLateOnly = document.querySelector('[data-filter="late"].active') !== null;
+        localStorage.setItem('calendarFilters', JSON.stringify({ status: activeStatusFilter, late: showLateOnly }));
+    }
+
+    // Chargement des filtres
+    function loadFilters() {
+        const savedFilters = JSON.parse(localStorage.getItem('calendarFilters') || '{}');
+        if (savedFilters.status) {
+            document.querySelectorAll('[data-filter="status"]').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.value === savedFilters.status) btn.classList.add('active');
+            });
+        }
+        if (savedFilters.late) {
+            document.querySelector('[data-filter="late"]').classList.add('active');
+        }
+    }
+
+    // Fonction pour ajouter un message au chatbot
+    function addChatbotMessage(message, isUser = false) {
+        const messagesContainer = document.getElementById('chatbotMessages');
+        const messageElement = document.createElement('div');
+        messageElement.className = `chatbot-message ${isUser ? 'user' : 'bot'}`;
+        messageElement.textContent = message;
+        messagesContainer.appendChild(messageElement);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    // Fonction pour gérer l'envoi d'un message
+    async function sendChatbotMessage() {
+        const input = document.getElementById('chatbotInput');
+        const question = input.value.trim();
+        if (!question || !currentMissionData) return;
+
+        // Afficher la question de l'utilisateur
+        addChatbotMessage(question, true);
+        input.value = '';
+
+        try {
+            const response = await fetch(`{{ path('gs-projet_project_mission_chatbot', {'id': 'MISSION_ID'}) }}`.replace('MISSION_ID', currentMissionData.id), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-Token': '{{ csrf_token('chatbot') }}'
+                },
+                body: JSON.stringify({
+                    question: question,
+                    missionData: currentMissionData
+                })
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.error || 'Erreur lors de la communication avec le serveur');
+            }
+
+            // Afficher la réponse du chatbot
+            setTimeout(() => addChatbotMessage(data.response), 500);
+        } catch (error) {
+            console.error('Chatbot error:', error);
+            setTimeout(() => addChatbotMessage('Désolé, une erreur est survenue. Veuillez réessayer.'), 500);
+        }
+    }
+
+    // Gestion de la touche Entrée pour envoyer un message
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && document.getElementById('chatbotInput') === document.activeElement) {
+            sendChatbotMessage();
+        }
+    });
+
     // Initialisation du calendrier
     function initCalendar(events) {
         if (calendar) {
             calendar.destroy();
         }
-        
+        calendarEl.classList.add('loading');
+
         calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
+            initialView: window.innerWidth < 576 ? 'timeGridDay' : 'dayGridMonth',
             locale: 'fr',
             themeSystem: 'bootstrap5',
             headerToolbar: {
@@ -247,54 +566,79 @@ document.addEventListener('DOMContentLoaded', function() {
                 center: 'title',
                 right: 'dayGridMonth,timeGridWeek,timeGridDay'
             },
+            titleFormat: { year: 'numeric', month: 'long' },
             events: events,
             eventTimeFormat: {
                 hour: '2-digit',
                 minute: '2-digit',
                 meridiem: false
             },
+            eventLimit: true,
+            eventLimitText: 'autres',
+            datesSet: function(info) {
+                calendarEl.classList.add('loading');
+                setTimeout(() => calendarEl.classList.remove('loading'), 300);
+            },
             eventDidMount: function(info) {
-                // Couleur selon le statut
                 const status = info.event.extendedProps.statut;
                 let color = '#6c757d';
-                
                 switch(status) {
-                    case 'Done': color = '#28a745'; break;
-                    case 'In Progress': color = '#ffc107'; break;
-                    case 'To Do': color = '#dc3545'; break;
+                    case 'Done': color = '#06d6a0'; break;
+                    case 'In Progress': color = '#ffd166'; break;
+                    case 'To Do': color = '#ff6b6b'; break;
                 }
-                
                 info.el.style.backgroundColor = color;
                 info.el.style.borderColor = color;
-                
-                // Badge de statut
+
                 const statusBadge = document.createElement('div');
                 statusBadge.className = 'event-status-badge';
                 statusBadge.textContent = status;
                 info.el.appendChild(statusBadge);
 
-                // Indicateur de retard
                 if (info.event.extendedProps.isLate) {
                     const lateBadge = document.createElement('div');
                     lateBadge.className = 'late-indicator';
                     lateBadge.innerHTML = '<i class="bi bi-exclamation"></i>';
                     info.el.appendChild(lateBadge);
                 }
+
+                const tooltipContent = `
+                    <strong>${info.event.title}</strong><br>
+                    Statut: ${status}<br>
+                    Date: ${moment(info.event.start).format('D MMM YYYY')}<br>
+                    ${info.event.extendedProps.description ? 'Description: ' + info.event.extendedProps.description.substring(0, 50) + '...' : ''}
+                `;
+                info.el.setAttribute('data-bs-toggle', 'tooltip');
+                info.el.setAttribute('data-bs-html', 'true');
+                info.el.setAttribute('title', tooltipContent);
+                new bootstrap.Tooltip(info.el);
             },
             eventClick: function(info) {
                 currentEvent = info.event;
+                currentMissionData = {
+                    id: info.event.id,
+                    title: info.event.title,
+                    description: info.event.extendedProps.description,
+                    statut: info.event.extendedProps.statut,
+                    start: info.event.start.toISOString(),
+                    projectTitle: info.event.extendedProps.projectTitle,
+                    isLate: info.event.extendedProps.isLate
+                };
+
+                // Réinitialiser le chatbot
+                const messagesContainer = document.getElementById('chatbotMessages');
+                messagesContainer.innerHTML = '<div class="chatbot-message bot">Bonjour ! Posez-moi des questions sur cette mission.</div>';
+
                 const startDate = info.event.start;
                 const daysRemaining = Math.ceil((startDate - new Date()) / (1000 * 3600 * 24));
 
-                // Remplissage de la modal
                 document.getElementById('missionId').value = info.event.id;
                 document.getElementById('missionProject').textContent = info.event.extendedProps.projectTitle || 'Aucun projet associé';
                 document.getElementById('missionTitle').textContent = info.event.title;
                 document.getElementById('missionDescription').textContent = info.event.extendedProps.description || 'Aucune description';
                 document.getElementById('missionStatus').textContent = info.event.extendedProps.statut || 'Non spécifié';
                 document.getElementById('statusSelect').value = info.event.extendedProps.statut;
-                
-                // Formatage de la date d'échéance
+
                 const deadlineElement = document.getElementById('missionDeadline');
                 deadlineElement.innerHTML = `
                     ${moment(startDate).format('dddd D MMMM YYYY')}<br>
@@ -309,26 +653,32 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         calendar.render();
+        setTimeout(() => calendarEl.classList.remove('loading'), 300);
     }
 
     // Filtrage des événements
     function applyFilters() {
         const activeStatusFilter = document.querySelector('[data-filter="status"].active')?.dataset.value || 'all';
         const showLateOnly = document.querySelector('[data-filter="late"].active') !== null;
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
 
         let filteredEvents = allEvents;
 
-        // Filtre par statut
         if (activeStatusFilter !== 'all') {
             filteredEvents = filteredEvents.filter(event => event.statut === activeStatusFilter);
         }
 
-        // Filtre "En retard"
         if (showLateOnly) {
             filteredEvents = filteredEvents.filter(event => event.isLate);
         }
 
-        // Réinitialisation du calendrier
+        if (searchTerm) {
+            filteredEvents = filteredEvents.filter(event => 
+                event.title.toLowerCase().includes(searchTerm) ||
+                (event.description?.toLowerCase() || '').includes(searchTerm)
+            );
+        }
+
         initCalendar(filteredEvents);
     }
 
@@ -336,14 +686,13 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('[data-filter]').forEach(btn => {
         btn.addEventListener('click', function() {
             const filterType = this.dataset.filter;
-            
             if (filterType === 'status') {
                 document.querySelectorAll('[data-filter="status"]').forEach(b => b.classList.remove('active'));
             }
-            
             this.classList.toggle('active');
             applyFilters();
-            
+            saveFilters();
+
             const Toast = Swal.mixin({
                 toast: true,
                 position: 'top-end',
@@ -351,14 +700,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 timer: 1500,
                 timerProgressBar: true,
             });
-            
+
             let message = 'Filtres appliqués';
             if (filterType === 'status' && this.dataset.value === 'all') {
                 message = 'Toutes les missions affichées';
             } else if (filterType === 'late' && this.classList.contains('active')) {
                 message = 'Missions en retard seulement';
             }
-            
+
             Toast.fire({
                 icon: 'success',
                 title: message
@@ -366,10 +715,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Gestion de la recherche
+    document.getElementById('searchInput').addEventListener('input', applyFilters);
+
     // Gestion du formulaire de mise à jour
     document.getElementById('statusForm').addEventListener('submit', async function(e) {
         e.preventDefault();
-        
         const formData = new FormData(this);
         const payload = {
             id: formData.get('id'),
@@ -388,7 +739,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             if (!response.ok) throw new Error(await response.text());
-            
+
             Swal.fire({
                 icon: 'success',
                 title: 'Succès !',
@@ -397,9 +748,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 showConfirmButton: false
             });
 
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
+            allEvents = allEvents.map(event => 
+                event.id == payload.id ? { ...event, statut: payload.status, isLate: isMissionLate({ ...event, statut: payload.status }) } : event
+            );
+            applyFilters();
 
         } catch (error) {
             console.error('Error:', error);
@@ -411,7 +763,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Initialisation avec tous les événements
+    // Initialisation
+    loadFilters();
     initCalendar(allEvents);
 });
 </script>

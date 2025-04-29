@@ -1,4 +1,16 @@
 {
+    "daften/addressing-bundle": {
+        "version": "2.0.1"
+    },
+    "doctrine/annotations": {
+        "version": "2.0",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "1.10",
+            "ref": "64d8583af5ea57b7afa4aba4b159907f3a148b05"
+        }
+    },
     "doctrine/doctrine-bundle": {
         "version": "2.10",
         "recipe": {
@@ -26,6 +38,9 @@
             "./migrations/.gitignore"
         ]
     },
+    "endroid/qr-code-bundle": {
+        "version": "5.0.2"
+    },
     "knplabs/knp-paginator-bundle": {
         "version": "v6.4.0"
     },
@@ -41,6 +56,9 @@
             "./config/packages/knp_snappy.yaml"
         ]
     },
+    "lexik/form-filter-bundle": {
+        "version": "v8.0.1"
+    },
     "phpunit/phpunit": {
         "version": "9.6",
         "recipe": {
@@ -53,6 +71,19 @@
             "./.env.test",
             "./phpunit.xml.dist",
             "./tests/bootstrap.php"
+        ]
+    },
+    "scheb/2fa-bundle": {
+        "version": "7.9",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "6.0",
+            "ref": "1e6f68089146853a790b5da9946fc5974f6fcd49"
+        },
+        "files": [
+            "./config/packages/scheb_2fa.yaml",
+            "./config/routes/scheb_2fa.yaml"
         ]
     },
     "symfony/console": {
@@ -216,6 +247,20 @@
             "./config/packages/security.yaml"
         ]
     },
+    "symfony/stimulus-bundle": {
+        "version": "2.24",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "2.13",
+            "ref": "6acd9ff4f7fd5626d2962109bd4ebab351d43c43"
+        },
+        "files": [
+            "./assets/bootstrap.js",
+            "./assets/controllers.json",
+            "./assets/controllers/hello_controller.js"
+        ]
+    },
     "symfony/translation": {
         "version": "6.3",
         "recipe": {
@@ -241,6 +286,18 @@
             "./config/packages/twig.yaml",
             "./templates/base.html.twig"
         ]
+    },
+    "symfony/twilio-notifier": {
+        "version": "6.4",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "5.0",
+            "ref": "10af129fcac6d00ffc9bb23d039d997dee35e657"
+        }
+    },
+    "symfony/ux-chartjs": {
+        "version": "v2.24.0"
     },
     "symfony/validator": {
         "version": "6.3",
@@ -277,6 +334,22 @@
         },
         "files": [
             "./config/packages/messenger.yaml"
+        ]
+    },
+    "symfony/webpack-encore-bundle": {
+        "version": "2.2",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "2.0",
+            "ref": "9ef5412a4a2a8415aca3a3f2b4edd3866aab9a19"
+        },
+        "files": [
+            "./assets/app.js",
+            "./assets/styles/app.css",
+            "./config/packages/webpack_encore.yaml",
+            "./package.json",
+            "./webpack.config.js"
         ]
     },
     "symfonycasts/reset-password-bundle": {

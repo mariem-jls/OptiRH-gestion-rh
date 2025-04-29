@@ -1,5 +1,11 @@
-{{ form_start(form, {action: action is defined ? action : '',method: method is defined ? method : 'POST',attr: { class: 'event-booking-form', novalidate: 'novalidate' }}) }}
-        <div class="booking-body">
+{{ form_start(form, {
+    'action': path('app_reservation_evenement_new', {'id': evenement.id}),
+    'method': 'POST',
+    'attr': {
+        'class': 'event-booking-form',
+        'novalidate': 'novalidate'
+    }
+}) }}       <div class="booking-body">
             <div class="row">
                 <div class="col-md-6">
                     {{ form_label(form.first_name, 'Nom', {'label_attr': {'class': 'form-label mt-2'}}) }}
@@ -63,7 +69,7 @@
         <div class="booking-footer text-center mt-4">
             <button class="btn btn-primary btn-glow rounded-pill px-4 py-2" type="submit">
                 <i class="mdi mdi-check-circle-outline me-2"></i>
-                {{ button_label is defined ? button_label : 'Confirmer la réservation' }}
+                {{ button_label is defined ? button_label : 'Continuer vers le paiement' }}
             </button>
         </div>
     

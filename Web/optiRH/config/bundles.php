@@ -15,4 +15,13 @@ return [
     SymfonyCasts\Bundle\VerifyEmail\SymfonyCastsVerifyEmailBundle::class => ['dev' => true, 'test' => true],
     Knp\Bundle\PaginatorBundle\KnpPaginatorBundle::class => ['all' => true],
     Knp\Bundle\SnappyBundle\KnpSnappyBundle::class => ['all' => true],
+    Endroid\QrCodeBundle\EndroidQrCodeBundle::class => ['all' => true],
+    Symfony\UX\StimulusBundle\StimulusBundle::class => ['all' => true],
+    Symfony\UX\Chartjs\ChartjsBundle::class => ['all' => true],
+    Daften\Bundle\AddressingBundle\AddressingBundle::class => ['all' => true],
+    Symfony\WebpackEncoreBundle\WebpackEncoreBundle::class => ['all' => true],
+    Symfony\UX\StimulusBundle\StimulusBundle::class => ['all' => true],
+    Symfony\UX\Chartjs\ChartjsBundle::class => ['all' => true],
+    Scheb\TwoFactorBundle\SchebTwoFactorBundle::class => ['all' => true],
+    Lexik\Bundle\FormFilterBundle\LexikFormFilterBundle::class => ['all' => true],
 ];

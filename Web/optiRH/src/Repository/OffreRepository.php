@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Offre;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\QueryBuilder;
 
 /**
  * @extends ServiceEntityRepository<Offre>
@@ -80,8 +81,53 @@ class OffreRepository extends ServiceEntityRepository
 
         $qb->execute();
     }
-//    /**
-//     * @return Offre[] Returns an array of Offre objects
+    /**
+     * Recherche multicritères pour les offres actives
+     *
+     * @param string|null $keyword
+     * @param array $modeTravail
+     * @param string|null $typeContrat
+     * @param array $experience
+     * @return Offre[]
+     */
+
+    public function findByFilters(?string $keyword, array $modeTravail, ?string $typeContrat, array $experience, string $sortBy = 'none'): QueryBuilder
+    {
+        $qb = $this->createQueryBuilder('o')
+            ->andWhere('o.statut = :statut')
+            ->andWhere('o.dateExpiration >= :today OR o.dateExpiration IS NULL')
+            ->setParameter('statut', 'Active')
+            ->setParameter('today', new \DateTime());
+
+        if (!empty($keyword)) {
+            $qb->andWhere('o.poste LIKE :keyword OR o.description LIKE :keyword')
+                ->setParameter('keyword', '%' . $keyword . '%');
+        }
+
+        if (!empty($modeTravail)) {
+            $qb->andWhere('o.modeTravail IN (:modeTravail)')
+                ->setParameter('modeTravail', $modeTravail);
+        }
+
+        if (!empty($typeContrat)) {
+            $qb->andWhere('o.typeContrat = :typeContrat')
+                ->setParameter('typeContrat', $typeContrat);
+        }
+
+        if (!empty($experience)) {
+            $qb->andWhere('o.niveauExperience IN (:experience)')
+                ->setParameter('experience', $experience);
+        }
+
+        if ($sortBy === 'date') {
+            $qb->orderBy('o.dateCreation', 'DESC');
+        } elseif ($sortBy === 'title') {
+            $qb->orderBy('o.poste', 'ASC');
+        }
+
+        return $qb;
+    }
+    //     * @return Offre[] Returns an array of Offre objects
 //     */
 //    public function findByExampleField($value): array
 //    {

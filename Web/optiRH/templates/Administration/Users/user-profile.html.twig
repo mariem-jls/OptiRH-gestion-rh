@@ -1,0 +1,160 @@
+{% extends 'partials/layout-vertical.html.twig' %}
+
+{% block title %}
+	Profil Utilisateur
+{% endblock %}
+
+{% block topbar %}
+	{{ include('partials/topbar.html.twig', { page_title: 'Profil Utilisateur' }) }}
+{% endblock %}
+
+{% block body %}
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-12">
+				<!-- Flash Messages -->
+				{% for label, messages in app.flashes %}
+					{% for message in messages %}
+						<div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+							{{ message }}
+							<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+						</div>
+					{% endfor %}
+				{% endfor %}
+
+				<!-- Profile Card -->
+				<div class="card shadow-sm border-0">
+					<div class="card-body p-4">
+						<div class="d-flex align-items-center mb-4">
+							<!-- User Avatar -->
+							<img src="{% if user.avatar %}{{ asset(user.avatar) }}{% else %}https://ui-avatars.com/api/?name={{ user.nom|url_encode }}&background=6658dd&color=fff&size=100{% endif %}" alt="Avatar de {{ user.nom }}" class="rounded-circle avatar me-3" style="width: 100px; height: 100px;">
+							<div>
+								<h3 class="fw-bold mb-1">{{ user.nom }}</h3>
+								<p class="text-muted mb-0">{{ user.email }}</p>
+								{% if user.isVerified %}
+									<span class="badge bg-success mt-2">Compte Vérifié</span>
+								{% else %}
+									<span class="badge bg-warning mt-2">Non Vérifié</span>
+								{% endif %}
+							</div>
+						</div>
+
+						<!-- Profile Details -->
+						<div class="row">
+							<div class="col-md-6">
+								<h5 class="fw-semibold mb-3">Détails du Profil</h5>
+								<ul class="list-unstyled">
+									<li class="mb-2">
+										<strong>Email :</strong>
+										{{ user.email }}
+									</li>
+									<li class="mb-2">
+										<strong>Adresse :</strong>
+										{{ user.address|default('Non spécifiée') }}
+									</li>
+									<li class="mb-2">
+										<strong>Rôles :</strong>
+										{% for role in user.roles %}
+											<span class="badge bg-primary me-1 p-1">{{ role|replace({'ROLE_': ''})|capitalize }}</span>
+										{% endfor %}
+									</li>
+									<li class="mb-2">
+										<strong>Notifications non lues :</strong>
+										<span class="badge bg-info">{{ user.getUnreadNotificationsCount }}</span>
+									</li>
+								</ul>
+							</div>
+							<div class="col-md-6">
+								<h5 class="fw-semibold mb-3">Authentification à Deux Facteurs</h5>
+								<p>
+									<strong>Statut :</strong>
+									{% if user.googleAuthenticatorSecret %}
+										<span class="badge bg-success">Activée</span>
+									{% else %}
+										<span class="badge bg-warning">Désactivée</span>
+									{% endif %}
+								</p>
+								<form action="{{ path('admin_users_profile_2fa_toggle', {'id': user.id}) }}" method="post">
+									<button type="submit" class="btn btn-{% if user.googleAuthenticatorSecret %}danger{% else %}primary{% endif %}">
+										{% if user.googleAuthenticatorSecret %}
+											Désactiver 2FA
+										{% else %}
+											Activer 2FA
+										{% endif %}
+									</button>
+								</form>
+							</div>
+						</div>
+
+						<!-- Profile Update Form -->
+						<div class="mt-4">
+							<h5 class="fw-semibold mb-3">Mettre à Jour le Profil</h5>
+							{{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': '', 'action': path('admin_users_profile_update', {'id': user.id})}}) }}
+							<div class="row">
+								<div class="col-md-6 mb-3">
+									{{ form_label(form.nom, 'Nom', {'label_attr': {'class': 'form-label'}}) }}
+									{{ form_widget(form.nom, {'attr': {'class': 'form-control'}}) }}
+									{{ form_errors(form.nom) }}
+								</div>
+								<div class="col-md-6 mb-3">
+									{{ form_label(form.address, 'Adresse', {'label_attr': {'class': 'form-label'}}) }}
+									{{ form_widget(form.address, {'attr': {'class': 'form-control'}}) }}
+									{{ form_errors(form.address) }}
+								</div>
+								<div class="col-md-6 mb-3">
+									{{ form_label(form.avatarFile, 'Avatar', {'label_attr': {'class': 'form-label'}}) }}
+									{{ form_widget(form.avatarFile, {'attr': {'class': 'form-control'}}) }}
+									{{ form_errors(form.avatarFile) }}
+								</div>
+							</div>
+							<button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+							{{ form_end(form) }}
+						</div>
+					</div>
+				</div>
+
+				<!-- Notifications Section -->
+				{% if user.getNotifications|length > 0 %}
+					<div class="card shadow-sm border-0 mt-4">
+						<div class="card-body p-4">
+							<h5 class="fw-semibold mb-3">Notifications Récentes</h5>
+							<div class="table-responsive">
+								<table class="table table-hover">
+									<thead>
+										<tr>
+											<th>Message</th>
+											<th>Date</th>
+											<th>Statut</th>
+										</tr>
+									</thead>
+									<tbody>
+										{% for notification in user.getNotifications|slice(0, 5) %}
+											<tr>
+												<td>{{ notification.message|default('N/A') }}</td>
+												<td>{{ notification.createdAt|date('d/m/Y H:i')|default('N/A') }}</td>
+												<td>
+													{% if notification.isRead %}
+														<span class="badge bg-success">Lu</span>
+													{% else %}
+														<span class="badge bg-warning">Non lu</span>
+													{% endif %}
+												</td>
+											</tr>
+										{% endfor %}
+									</tbody>
+								</table>
+							</div>
+							{% if user.getNotifications|length > 5 %}
+								<a href="{{ path('admin_notifications_list', {'userId': user.id}) }}" class="btn btn-link">Voir toutes les notifications</a>
+							{% endif %}
+						</div>
+					</div>
+				{% else %}
+					<div class="alert alert-info mt-4" role="alert">
+						Aucune notification pour vous.
+					</div>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+{% endblock %}
