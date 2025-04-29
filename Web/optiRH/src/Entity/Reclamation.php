@@ -7,8 +7,12 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
+use Symfony\Component\HttpFoundation\File\File;
+use Doctrine\DBAL\Types\Types;
 
 #[ORM\Entity(repositoryClass: "App\Repository\ReclamationRepository")]
+#[Vich\Uploadable]
 class Reclamation
 {
     public const STATUS_PENDING = 'En attente';
@@ -75,6 +79,15 @@ class Reclamation
     #[ORM\Column(type: "string", length: 255, nullable: true)]
     private ?string $qrCodeFilename = null; // ✅ Le nouveau champ pour le QR code
 
+    #[Vich\UploadableField(mapping: "reclamation_files", fileNameProperty: "documentName")]
+    private ?File $documentFile = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $documentName = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $updatedAt = null;
+
     public function __construct()
     {
         $this->date = new \DateTime();
@@ -135,6 +148,43 @@ class Reclamation
     public function setQrCodeFilename(?string $qrCodeFilename): self
     {
         $this->qrCodeFilename = $qrCodeFilename;
+        return $this;
+    }
+
+    public function setDocumentFile(?File $documentFile = null): void
+    {
+        $this->documentFile = $documentFile;
+
+        if (null !== $documentFile) {
+            // It is required that at least one field changes if you are using doctrine
+            // otherwise the event listeners won't be called and the file is lost
+            $this->updatedAt = new \DateTimeImmutable();
+        }
+    }
+
+    public function getDocumentFile(): ?File
+    {
+        return $this->documentFile;
+    }
+
+    public function setDocumentName(?string $documentName): void
+    {
+        $this->documentName = $documentName;
+    }
+
+    public function getDocumentName(): ?string
+    {
+        return $this->documentName;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeInterface
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(?\DateTimeInterface $updatedAt): self
+    {
+        $this->updatedAt = $updatedAt;
         return $this;
     }
 

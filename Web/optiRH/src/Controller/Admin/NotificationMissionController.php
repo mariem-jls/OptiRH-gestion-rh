@@ -21,19 +21,7 @@ class NotificationMissionController extends AbstractController
         $this->notificationRepository = $notificationRepository;
     }
 
-    #[Route('/admin/notifications', name: 'app_admin_notifications')]
-    public function index(): Response
-    {
-        $user = $this->getUser();
-        $notifications = $this->notificationRepository->findBy(
-            ['recipient' => $user],
-            ['createdAt' => 'DESC']
-        );
-    
-        return $this->render('admin/notification/index.html.twig', [
-            'notifications' => $notifications,
-        ]);
-    }
+
     #[Route('/admin/notification/{id}/read', name: 'app_admin_notification_read')]
 public function markAsRead(Notification $notification): Response
 {
@@ -45,12 +33,26 @@ public function markAsRead(Notification $notification): Response
         $notification->getRouteParams() ?? []
     );
 }
+#[Route('/admin/notifications', name: 'app_admin_notifications')]
+public function index(): Response
+{
+    $user = $this->getUser();
+    $notifications = $this->notificationRepository->findBy(
+        ['recipient' => $user],
+        ['createdAt' => 'DESC']
+    );
+
+    return $this->render('notification/index.html.twig', [
+        'notifications' => $notifications,
+    ]);
+}
 
 #[Route('admin/notification/recent', name: 'app_notification_recent')]
-public function recentNotifications(NotificationRepository $repository): Response
+public function recentNotifications(): Response
 {
-    $notifications = $repository->findBy(
-        ['recipient' => $this->getUser()],
+    $user = $this->getUser();
+    $notifications = $this->notificationRepository->findBy(
+        ['recipient' => $user],
         ['createdAt' => 'DESC'],
         5
     );

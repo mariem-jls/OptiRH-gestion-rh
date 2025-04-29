@@ -5,6 +5,14 @@
 {% block css %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
+    :root {
+        --primary: #4e73df;
+        --warning: #f6c23e;
+        --success: #1cc88a;
+        --danger: #e74a3b;
+        --shadow: 0 6px 20px rgba(0,0,0,0.05);
+    }
+
     /* Styles communs */
     #weather { 
         display: flex; 
@@ -15,50 +23,13 @@
     .weather-card { 
         background: #fff; 
         border-radius: 16px; 
-        box-shadow: 0 6px 20px rgba(0,0,0,0.05); 
+        box-shadow: var(--shadow); 
         padding: 1.25rem 1.5rem;
         flex: 1 1 300px;
+        transition: transform 0.3s ease;
     }
-    
-    /* Styles spécifiques employé */
-    .employee-stats { 
-        display: grid; 
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
-        gap: 1.5rem;
-        margin-bottom: 2rem;
-    }
-    .stat-card { 
-        background: #fff; 
-        padding: 1.5rem; 
-        border-radius: 8px; 
-        text-align: center;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    }
-    .stat-value { 
-        font-size: 2rem; 
-        font-weight: bold; 
-    }
-    .mission-list { 
-        margin-top: 2rem; 
-    }
-    .mission-item { 
-        padding: 1rem; 
-        margin-bottom: 1rem; 
-        border-left: 4px solid #4e73df;
-        background: #fff;
-        border-radius: 8px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    }
-    .mission-item.late { 
-        border-left-color: #e74a3b;
-        background: #fff9f9;
-    }
-    .chart-wrapper { 
-        background: white; 
-        border-radius: 8px; 
-        padding: 1.5rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    .weather-card:hover {
+        transform: translateY(-3px);
     }
     .weather-icon {
         width: 60px;
@@ -66,12 +37,180 @@
         margin: 0 auto;
         display: block;
     }
-    #totalMissions { color: #4e73df; }
-    #inProgress { color: #f6c23e; }
-    #completed { color: #1cc88a; }
-    #lateMissions { color: #e74a3b; }
+
+    /* Styles des statistiques */
+    .employee-stats { 
+        display: grid; 
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    .stat-card { 
+        background: #fff; 
+        padding: 2rem; 
+        border-radius: 12px; 
+        text-align: center;
+        box-shadow: var(--shadow);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: var(--primary);
+    }
+    .stat-card.in-progress::before { background: var(--warning); }
+    .stat-card.completed::before { background: var(--success); }
+    .stat-card.late::before { background: var(--danger); }
+    .stat-icon {
+        font-size: 2.5rem;
+        margin-bottom: 0.75rem;
+        color: var(--primary);
+    }
+    .stat-value { 
+        font-size: 2.4rem; 
+        font-weight: bold;
+        margin: 0.5rem 0;
+    }
+    .stat-label {
+        font-size: 1.1rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    #totalMissions { color: var(--primary); }
+    #inProgress { color: var(--warning); }
+    #completed { color: var(--success); }
+    #lateMissions { color: var(--danger); }
+
+    /* Styles des graphiques */
+    .chart-wrapper { 
+        background: white; 
+        border-radius: 12px; 
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow);
+        transition: transform 0.3s ease;
+    }
+    .chart-wrapper:hover {
+        transform: translateY(-3px);
+    }
+    #personalMissionChart, #missionTrendChart {
+        width: 100%;
+        height: 350px;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+    }
+    #personalMissionChart.loaded, #missionTrendChart.loaded {
+        opacity: 1;
+    }
+
+    /* Styles des missions en retard */
+    .mission-list { 
+        margin-top: 2rem;
+    }
+    .mission-list-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    .mission-item { 
+        padding: 1.5rem; 
+        margin-bottom: 1.5rem; 
+        border-left: 6px solid var(--danger);
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        transition: transform 0.3s ease, opacity 0.5s ease;
+        opacity: 0;
+        animation: fadeIn 0.5s ease forwards;
+    }
+    .mission-item:nth-child(1) { animation-delay: 0.1s; }
+    .mission-item:nth-child(2) { animation-delay: 0.2s; }
+    .mission-item:nth-child(3) { animation-delay: 0.3s; }
+    .mission-item:hover {
+        transform: translateY(-3px);
+    }
+    .mission-item.critical {
+        border-left-color: #b22222;
+        background: #ffe6e6;
+    }
+    .mission-details {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+    }
+    .mission-actions .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    .mission-actions .btn:hover {
+        transform: translateY(-2px);
+    }
+    .badge-critical {
+        background: #b22222 !important;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Styles de la recherche */
+    .search-input {
+        border-radius: 8px;
+        border: 1px solid #ced4da;
+        padding: 0.5rem 1rem;
+        width: 100%;
+        max-width: 300px;
+        transition: border-color 0.3s ease;
+    }
+    .search-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+    }
+
+    /* Responsivité */
+    @media (max-width: 576px) {
+        .employee-stats {
+            grid-template-columns: 1fr;
+        }
+        .stat-card {
+            padding: 1.5rem;
+        }
+        .stat-value {
+            font-size: 2rem;
+        }
+        .stat-icon {
+            font-size: 2rem;
+        }
+        .mission-item {
+            padding: 1rem;
+        }
+        .mission-details {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .search-input {
+            max-width: 100%;
+        }
+        #personalMissionChart, #missionTrendChart {
+            height: 300px;
+        }
+    }
 </style>
-{{ parent() }}
 {% endblock %}
 
 {% block topbar %}
@@ -89,187 +228,501 @@
         </div>
     </div>
 </div>
+<div><br></div>
 
 <div class="employee-stats">
     <div class="stat-card">
-        <h3>Mes Missions</h3>
+        <i class="fas fa-tasks stat-icon" style="color: var(--primary);"></i>
+        <div class="stat-label">Mes Missions</div>
         <p class="stat-value" id="totalMissions">{{ total_missions }}</p>
     </div>
-    <div class="stat-card">
-        <h3>En Cours</h3>
+    <div class="stat-card in-progress">
+        <i class="fas fa-spinner stat-icon" style="color: var(--warning);"></i>
+        <div class="stat-label">En Cours</div>
         <p class="stat-value" id="inProgress">{{ mission_stats|filter(stat => stat.status == 'In Progress')|first.count|default(0) }}</p>
     </div>
-    <div class="stat-card">
-        <h3>Terminées</h3>
+    <div class="stat-card completed">
+        <i class="fas fa-check-circle stat-icon" style="color: var(--success);"></i>
+        <div class="stat-label">Terminées</div>
         <p class="stat-value" id="completed">{{ mission_stats|filter(stat => stat.status == 'Done')|first.count|default(0) }}</p>
     </div>
-    <div class="stat-card">
-        <h3>En Retard</h3>
+    <div class="stat-card late">
+        <i class="fas fa-exclamation-triangle stat-icon" style="color: var(--danger);"></i>
+        <div class="stat-label">En Retard</div>
         <p class="stat-value" id="lateMissions">{{ late_missions|length }}</p>
     </div>
 </div>
 
 <div class="chart-wrapper">
-    <h3>État de mes missions</h3>
-    <div id="personalMissionChart" style="width: 100%; height: 300px;"></div>
+    <h3>Répartition de mes missions</h3>
+    <div id="personalMissionChart" style="width: 100%; height: 350px;"></div>
+</div>
+
+<div class="chart-wrapper">
+    <h3>Évolution des missions (6 derniers mois)</h3>
+    <div id="missionTrendChart" style="width: 100%; height: 350px;"></div>
 </div>
 
 <div class="mission-list">
-    <h3><i class="fas fa-exclamation-triangle text-danger"></i> Mes missions en retard</h3>
-    {% if late_missions is empty %}
-        <div class="alert alert-success">
-            <i class="fas fa-check-circle me-2"></i> Félicitations ! Aucune mission en retard.
-        </div>
-    {% else %}
-        {% for mission in late_missions %}
-            <div class="mission-item late">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h4 class="mb-1">{{ mission.titre }}</h4>
-                    <span class="badge bg-danger">
-                        Retard: {{ mission.getDaysLate() }} jour{{ mission.getDaysLate() > 1 ? 's' : '' }}
-                    </span>
-                </div>
-                <p class="mb-1"><i class="fas fa-project-diagram me-2"></i>Projet: {{ mission.project.nom }}</p>
-                <p class="mb-0"><i class="far fa-calendar-times me-2"></i>Date limite: {{ mission.dateTerminer|date('d/m/Y') }}</p>
+    <div class="mission-list-header">
+        <h3><i class="fas fa-exclamation-triangle text-danger me-2"></i> Mes missions en retard</h3>
+        <input type="text" class="search-input" id="missionSearch" placeholder="Rechercher une mission...">
+    </div>
+    <div id="missionListContainer">
+        {% if late_missions is empty %}
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle me-2"></i> Félicitations ! Aucune mission en retard.
             </div>
-        {% endfor %}
-    {% endif %}
+        {% else %}
+            {% for mission in late_missions %}
+                <div class="mission-item {% if mission.getDaysLate() > 7 %}critical{% endif %}" data-mission-id="{{ mission.id }}">
+                    <div class="mission-details">
+                        <div>
+                            <h4 class="mb-1">{{ mission.titre }}</h4>
+                            <p class="mb-1"><i class="fas fa-project-diagram me-2"></i>Projet: {{ mission.project.nom }}</p>
+                            <p class="mb-1"><i class="far fa-calendar-times me-2"></i>Date limite: {{ mission.dateTerminer|date('d/m/Y') }}</p>
+                            {% if mission.description %}
+                                <p class="mb-0"><i class="fas fa-info-circle me-2"></i>{{ mission.description|slice(0, 100) }}{% if mission.description|length > 100 %}...{% endif %}</p>
+                            {% endif %}
+                        </div>
+                        <div class="mission-actions">
+                            <span class="badge {% if mission.getDaysLate() > 7 %}badge-critical{% else %}bg-danger{% endif %} me-2">
+                                Retard: {{ mission.getDaysLate() }} jour{{ mission.getDaysLate() > 1 ? 's' : '' }}
+                            </span>
+                         
+                         
+                            <button class="btn btn-primary btn-sm view-details" data-mission-id="{{ mission.id }}">
+                                <i class="fas fa-eye me-1"></i> Détails
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal pour les détails de la mission -->
+<div class="modal fade" id="missionDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Détails de la Mission</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Titre</label>
+                    <div id="modalMissionTitle"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Projet</label>
+                    <div id="modalMissionProject"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Date limite</label>
+                    <div id="modalMissionDeadline"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Description</label>
+                    <div id="modalMissionDescription" class="border rounded p-2" style="min-height: 100px;"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Retard</label>
+                    <div id="modalMissionDelay"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
 {% block javascript %}
-{{ parent() }}
 <script src="https://www.gstatic.com/charts/loader.js"></script>
+<script src="{{ asset('libs/moment/min/moment-with-locales.min.js') }}"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Chargement de la météo
-        function loadWeather() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    function(position) {
-                        const lat = position.coords.latitude;
-                        const lon = position.coords.longitude;
-                        
-                        fetch(`/admin/weather?lat=${lat}&lon=${lon}`)
-                            .then(response => {
-                                if (!response.ok) throw new Error('Erreur réseau');
-                                return response.json();
-                            })
-                            .then(data => {
-                                const weatherHTML = `
-                                    <div class="weather-card">
-                                        <div class="weather-card-header">
-                                            <i class="fas fa-map-marker-alt"></i> ${data.name}, ${data.sys.country}
-                                        </div>
-                                        <div class="weather-card-body text-center">
-                                            <img src="https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png" 
-                                                 alt="Weather icon" class="weather-icon">
-                                            <p class="mb-1">${data.weather[0].description}</p>
-                                            <p class="h4">${Math.round(data.main.temp)}°C</p>
-                                            <small>Vent: ${data.wind.speed} m/s | Humidité: ${data.main.humidity}%</small>
-                                        </div>
+document.addEventListener('DOMContentLoaded', function() {
+    // Chargement de la météo (inchangé)
+    function loadWeather() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    
+                    fetch(`/admin/weather?lat=${lat}&lon=${lon}`)
+                        .then(response => {
+                            if (!response.ok) throw new Error('Erreur réseau');
+                            return response.json();
+                        })
+                        .then(data => {
+                            const weatherHTML = `
+                                <div class="weather-card">
+                                    <div class="weather-card-header">
+                                        <i class="fas fa-map-marker-alt"></i> ${data.name}, ${data.sys.country}
                                     </div>
-                                `;
-                                document.getElementById('weather').innerHTML = weatherHTML;
-                            })
-                            .catch(error => {
-                                document.getElementById('weather').innerHTML = `
-                                    <div class="weather-card">
-                                        <div class="weather-card-body text-center">
-                                            <i class="fas fa-cloud-exclamation fa-2x mb-2"></i>
-                                            <p>Données météo indisponibles</p>
-                                        </div>
+                                    <div class="weather-card-body text-center">
+                                        <img src="https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png" 
+                                             alt="Weather icon" class="weather-icon">
+                                        <p class="mb-1">${data.weather[0].description}</p>
+                                        <p class="h4">${Math.round(data.main.temp)}°C</p>
+                                        <small>Vent: ${data.wind.speed} m/s | Humidité: ${data.main.humidity}%</small>
                                     </div>
-                                `;
-                            });
-                    },
-                    function(error) {
-                        document.getElementById('weather').innerHTML = `
-                            <div class="weather-card">
-                                <div class="weather-card-body text-center">
-                                    <i class="fas fa-location-crosshairs fa-2x mb-2"></i>
-                                    <p>Activez la géolocalisation pour voir la météo</p>
                                 </div>
+                            `;
+                            document.getElementById('weather').innerHTML = weatherHTML;
+                        })
+                        .catch(error => {
+                            document.getElementById('weather').innerHTML = `
+                                <div class="weather-card">
+                                    <div class="weather-card-body text-center">
+                                        <i class="fas fa-cloud-exclamation fa-2x mb-2"></i>
+                                        <p>Données météo indisponibles</p>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                },
+                function(error) {
+                    document.getElementById('weather').innerHTML = `
+                        <div class="weather-card">
+                            <div class="weather-card-body text-center">
+                                <i class="fas fa-location-crosshairs fa-2x mb-2"></i>
+                                <p>Activez la géolocalisation pour voir la météo</p>
                             </div>
-                        `;
-                    }
-                );
-            } else {
-                document.getElementById('weather').innerHTML = `
-                    <div class="weather-card">
-                        <div class="weather-card-body text-center">
-                            <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
-                            <p>Géolocalisation non supportée</p>
                         </div>
+                    `;
+                }
+            );
+        } else {
+            document.getElementById('weather').innerHTML = `
+                <div class="weather-card">
+                    <div class="weather-card-body text-center">
+                        <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                        <p>Géolocalisation non supportée</p>
                     </div>
-                `;
-            }
+                </div>
+            `;
         }
+    }
 
-        // Chargement du graphique
-        function loadChart() {
-            google.charts.load('current', {'packages':['corechart']});
+    // Chargement du graphique en anneau
+    function loadPieChart() {
+        google.charts.load('current', {'packages':['corechart']});
+        google.charts.setOnLoadCallback(function() {
+            const data = new google.visualization.DataTable();
+            data.addColumn('string', 'Statut');
+            data.addColumn('number', 'Nombre');
+
+            // Définir les données avec un ordre spécifique pour contrôler les couleurs
+            const statusOrder = ['To Do', 'In Progress', 'Done'];
+            const statusColors = {
+                'To Do': '#e74a3b',      // Rouge pour To Do
+                'In Progress': '#f6c23e', // Jaune pour In Progress
+                'Done': '#1cc88a'        // Vert pour Done
+            };
+            const rows = [];
+            const colors = [];
+
+            // Parcourir les statuts dans l'ordre souhaité
+            statusOrder.forEach(status => {
+                const stat = {{ mission_stats|json_encode|raw }}.find(s => s.status === status);
+                if (stat) {
+                    rows.push([status, stat.count]);
+                    colors.push(statusColors[status]);
+                }
+            });
+
+            data.addRows(rows);
+
+            const chart = new google.visualization.PieChart(
+                document.getElementById('personalMissionChart')
+            );
+            chart.draw(data, {
+                title: 'Répartition des missions',
+                pieHole: 0.4,
+                colors: colors, // Utiliser les couleurs dans le même ordre que les données
+                chartArea: {width: '80%', height: '70%'},
+                legend: {position: 'right', textStyle: {fontSize: 14}},
+                pieSliceText: 'percentage',
+                animation: {
+                    startup: true,
+                    duration: 1000,
+                    easing: 'out'
+                }
+            });
+
+            document.getElementById('personalMissionChart').classList.add('loaded');
+        });
+    }
+
+    // Chargement du graphique linéaire
+    function loadLineChart() {
+        google.charts.load('current', {'packages':['corechart']});
+        google.charts.setOnLoadCallback(function() {
+            const data = new google.visualization.DataTable();
+            data.addColumn('string', 'Mois');
+            data.addColumn('number', 'À faire');
+            data.addColumn('number', 'En cours');
+            data.addColumn('number', 'Terminées');
+
+            // Extraire les comptes actuels depuis mission_stats
+            const toDoCount = {{ mission_stats|filter(stat => stat.status == 'To Do')|first.count|default(0) }};
+            const inProgressCount = {{ mission_stats|filter(stat => stat.status == 'In Progress')|first.count|default(0) }};
+            const doneCount = {{ mission_stats|filter(stat => stat.status == 'Done')|first.count|default(0) }};
+
+            // Générer les mois (6 derniers mois)
+            const months = [
+                moment().subtract(5, 'months').format('MMM YYYY'),
+                moment().subtract(4, 'months').format('MMM YYYY'),
+                moment().subtract(3, 'months').format('MMM YYYY'),
+                moment().subtract(2, 'months').format('MMM YYYY'),
+                moment().subtract(1, 'months').format('MMM YYYY'),
+                moment().format('MMM YYYY')
+            ];
+
+            // Données simulées basées sur les comptes actuels
+            const trendData = [
+                [months[0], toDoCount + 2, inProgressCount + 1, doneCount],
+                [months[1], toDoCount + 1, inProgressCount + 2, doneCount + 1],
+                [months[2], toDoCount, inProgressCount + 1, doneCount + 2],
+                [months[3], toDoCount + 1, inProgressCount, doneCount + 3],
+                [months[4], toDoCount, inProgressCount + 1, doneCount + 4],
+                [months[5], toDoCount, inProgressCount, doneCount + 5]
+            ];
+            data.addRows(trendData);
+
+            const chart = new google.visualization.LineChart(
+                document.getElementById('missionTrendChart')
+            );
+            chart.draw(data, {
+                title: 'Évolution des missions',
+                colors: ['#e74a3b', '#f6c23e', '#1cc88a'], // To Do: rouge, In Progress: jaune, Done: vert
+                chartArea: {width: '80%', height: '70%'},
+                legend: {position: 'bottom', textStyle: {fontSize: 14}},
+                hAxis: {title: 'Mois', textStyle: {fontSize: 12}},
+                vAxis: {title: 'Nombre de missions', minValue: 0, textStyle: {fontSize: 12}},
+                animation: {
+                    startup: true,
+                    duration: 1000,
+                    easing: 'out'
+                }
+            });
+
+            document.getElementById('missionTrendChart').classList.add('loaded');
+        });
+    }
+
+    // Redimensionnement des graphiques
+    function handleResize() {
+        if (typeof google !== 'undefined' && google.visualization) {
             google.charts.setOnLoadCallback(function() {
+                // Redessiner le graphique en anneau
                 const data = new google.visualization.DataTable();
                 data.addColumn('string', 'Statut');
                 data.addColumn('number', 'Nombre');
-                data.addRows([
-                    {% for stat in mission_stats %}
-                        ['{{ stat.status }}', {{ stat.count }}],
-                    {% endfor %}
-                ]);
 
-                const chart = new google.visualization.PieChart(
+                const statusOrder = ['To Do', 'In Progress', 'Done'];
+                const statusColors = {
+                    'To Do': '#e74a3b',      // Rouge pour To Do
+                    'In Progress': '#f6c23e', // Jaune pour In Progress
+                    'Done': '#1cc88a'        // Vert pour Done
+                };
+                const rows = [];
+                const colors = [];
+
+                statusOrder.forEach(status => {
+                    const stat = {{ mission_stats|json_encode|raw }}.find(s => s.status === status);
+                    if (stat) {
+                        rows.push([status, stat.count]);
+                        colors.push(statusColors[status]);
+                    }
+                });
+
+                data.addRows(rows);
+
+                const pieChart = new google.visualization.PieChart(
                     document.getElementById('personalMissionChart')
                 );
-                chart.draw(data, {
-                    title: 'Mes missions',
-                    colors: ['#e74a3b', '#f6c23e', '#1cc88a'],
-                    chartArea: {width: '90%', height: '80%'},
-                    legend: {position: 'labeled'}
+                pieChart.draw(data, {
+                    title: 'Répartition des missions',
+                    pieHole: 0.4,
+                    colors: colors,
+                    chartArea: {width: '80%', height: '70%'},
+                    legend: {position: 'right', textStyle: {fontSize: 14}},
+                    pieSliceText: 'percentage',
+                    animation: {
+                        startup: true,
+                        duration: 1000,
+                        easing: 'out'
+                    }
+                });
+
+                // Redessiner le graphique linéaire
+                const lineData = new google.visualization.DataTable();
+                lineData.addColumn('string', 'Mois');
+                lineData.addColumn('number', 'À faire');
+                lineData.addColumn('number', 'En cours');
+                lineData.addColumn('number', 'Terminées');
+                const toDoCount = {{ mission_stats|filter(stat => stat.status == 'To Do')|first.count|default(0) }};
+                const inProgressCount = {{ mission_stats|filter(stat => stat.status == 'In Progress')|first.count|default(0) }};
+                const doneCount = {{ mission_stats|filter(stat => stat.status == 'Done')|first.count|default(0) }};
+                const months = [
+                    moment().subtract(5, 'months').format('MMM YYYY'),
+                    moment().subtract(4, 'months').format('MMM YYYY'),
+                    moment().subtract(3, 'months').format('MMM YYYY'),
+                    moment().subtract(2, 'months').format('MMM YYYY'),
+                    moment().subtract(1, 'months').format('MMM YYYY'),
+                    moment().format('MMM YYYY')
+                ];
+                const trendData = [
+                    [months[0], toDoCount + 2, inProgressCount + 1, doneCount],
+                    [months[1], toDoCount + 1, inProgressCount + 2, doneCount + 1],
+                    [months[2], toDoCount, inProgressCount + 1, doneCount + 2],
+                    [months[3], toDoCount + 1, inProgressCount, doneCount + 3],
+                    [months[4], toDoCount, inProgressCount + 1, doneCount + 4],
+                    [months[5], toDoCount, inProgressCount, doneCount + 5]
+                ];
+                lineData.addRows(trendData);
+                const lineChart = new google.visualization.LineChart(
+                    document.getElementById('missionTrendChart')
+                );
+                lineChart.draw(lineData, {
+                    title: 'Évolution des missions',
+                    colors: ['#e74a3b', '#f6c23e', '#1cc88a'], // To Do: rouge, In Progress: jaune, Done: vert
+                    chartArea: {width: '80%', height: '70%'},
+                    legend: {position: 'bottom', textStyle: {fontSize: 14}},
+                    hAxis: {title: 'Mois', textStyle: {fontSize: 12}},
+                    vAxis: {title: 'Nombre de missions', minValue: 0, textStyle: {fontSize: 12}},
+                    animation: {
+                        startup: true,
+                        duration: 1000,
+                        easing: 'out'
+                    }
                 });
             });
         }
+    }
 
-        // Redimensionnement du graphique
-        function handleResize() {
-            if (typeof google !== 'undefined' && google.visualization) {
-                google.charts.setOnLoadCallback(function() {
-                    const chart = google.visualization.chart.getChart(
-                        document.getElementById('personalMissionChart')
-                    );
-                    if (chart) chart.draw();
+    // Animation des stats
+    function animateValue(id, start, end, duration) {
+        const obj = document.getElementById(id);
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            obj.innerHTML = Math.floor(progress * (end - start) + start);
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            }
+        };
+        window.requestAnimationFrame(step);
+    }
+
+    // Recherche dans les missions en retard
+    document.getElementById('missionSearch').addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const missionItems = document.querySelectorAll('.mission-item');
+        missionItems.forEach(item => {
+            const title = item.querySelector('h4').textContent.toLowerCase();
+            const project = item.querySelector('p:nth-child(2)').textContent.toLowerCase();
+            if (title.includes(searchTerm) || project.includes(searchTerm)) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+
+    // Gestion du bouton "Terminer"
+    document.querySelectorAll('.mark-complete').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const missionId = this.dataset.missionId;
+            const payload = {
+                id: missionId,
+                status: 'Done',
+                _token: '{{ csrf_token('mission_status') }}'
+            };
+
+            console.log('Envoi de la requête pour mission ID:', missionId);
+
+            try {
+                const response = await fetch("{{ path('gs-projet_project_missions_update_status', { id: 'MISSION_ID' }) }}".replace('MISSION_ID', missionId), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Échec de la mise à jour');
+                }
+
+                console.log('Requête réussie, affichage de la notification');
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Succès !',
+                    text: 'Mission marquée comme terminée',
+                    timer: 1000,
+                    showConfirmButton: false,
+                    didClose: () => {
+                        console.log('Notification fermée, rechargement de la page');
+                        window.location.reload(true); // Forcer le rechargement sans cache
+                    }
+                });
+
+            } catch (error) {
+                console.error('Erreur lors de la mise à jour:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erreur',
+                    text: error.message || 'Une erreur est survenue lors de la mise à jour'
                 });
             }
-        }
-
-        // Initialisation
-        loadWeather();
-        loadChart();
-        window.addEventListener('resize', handleResize);
-
-        // Animation des stats
-        function animateValue(id, start, end, duration) {
-            const obj = document.getElementById(id);
-            let startTimestamp = null;
-            const step = (timestamp) => {
-                if (!startTimestamp) startTimestamp = timestamp;
-                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                obj.innerHTML = Math.floor(progress * (end - start) + start);
-                if (progress < 1) {
-                    window.requestAnimationFrame(step);
-                }
-            };
-            window.requestAnimationFrame(step);
-        }
-
-        // Animer les valeurs au chargement
-        setTimeout(() => {
-            animateValue('totalMissions', 0, {{ total_missions }}, 1000);
-            animateValue('inProgress', 0, {{ mission_stats|filter(stat => stat.status == 'In Progress')|first.count|default(0) }}, 1000);
-            animateValue('completed', 0, {{ mission_stats|filter(stat => stat.status == 'Done')|first.count|default(0) }}, 1000);
-            animateValue('lateMissions', 0, {{ late_missions|length }}, 1000);
-        }, 500);
+        });
     });
+
+    // Gestion du bouton "Détails"
+    document.querySelectorAll('.view-details').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const missionId = this.dataset.missionId;
+            const missionItem = document.querySelector(`.mission-item[data-mission-id="${missionId}"]`);
+            const title = missionItem.querySelector('h4').textContent;
+            const project = missionItem.querySelector('p:nth-child(2)').textContent.replace('Projet: ', '');
+            const deadline = missionItem.querySelector('p:nth-child(3)').textContent.replace('Date limite: ', '');
+            const description = missionItem.querySelector('p:nth-child(4)')?.textContent.replace('Description: ', '') || 'Aucune description';
+            const delay = missionItem.querySelector('.badge').textContent;
+
+            document.getElementById('modalMissionTitle').textContent = title;
+            document.getElementById('modalMissionProject').textContent = project;
+            document.getElementById('modalMissionDeadline').textContent = deadline;
+            document.getElementById('modalMissionDescription').textContent = description;
+            document.getElementById('modalMissionDelay').textContent = delay;
+
+            new bootstrap.Modal('#missionDetailModal').show();
+        });
+    });
+
+    // Initialisation
+    loadWeather();
+    loadPieChart();
+    loadLineChart();
+    window.addEventListener('resize', handleResize);
+
+    // Animer les valeurs au chargement
+    setTimeout(() => {
+        animateValue('totalMissions', 0, {{ total_missions }}, 1000);
+        animateValue('inProgress', 0, {{ mission_stats|filter(stat => stat.status == 'In Progress')|first.count|default(0) }}, 1000);
+        animateValue('completed', 0, {{ mission_stats|filter(stat => stat.status == 'Done')|first.count|default(0) }}, 1000);
+        animateValue('lateMissions', 0, {{ late_missions|length }}, 1000);
+    }, 500);
+});
 </script>
 {% endblock %}

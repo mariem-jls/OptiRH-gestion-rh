@@ -3,523 +3,694 @@
 {% block title %}Dashboard Admin{% endblock %}
 
 {% block css %}
-<!-- CSS Resources -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-
-<style>
-    :root {
-        --primary-color: #4e73df;
-        --secondary-color: #1cc88a;
-        --danger-color: #e74a3b;
-        --warning-color: #f6c23e;
-        --info-color: #36b9cc;
-        --light-color: #f8f9fa;
-        --dark-color: #5a5c69;
-        --border-radius: 0.35rem;
-        --box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
-        --transition: all 0.3s ease-in-out;
-    }
-
-    /* Optimized CSS */
-    .loading-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.7);
-        z-index: 9999;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        color: white;
-        display: none;
-        backdrop-filter: blur(5px);
-    }
-    
-    .loading-overlay .spinner-border {
-        width: 3.5rem;
-        height: 3.5rem;
-        border-width: 0.25em;
-    }
-    
-    /* Cards General Style */
-    .card-style {
-        background: #fff;
-        border-radius: var(--border-radius);
-        border: none;
-        box-shadow: var(--box-shadow);
-        transition: var(--transition);
-        overflow: hidden;
-    }
-    
-    .card-style:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 0.5rem 2rem 0 rgba(58, 59, 69, 0.2);
-    }
-    
-    .card-header-style {
-        background-color: rgba(255, 255, 255, 0.9);
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        padding: 1.25rem 1.5rem;
-        font-weight: 600;
-        color: var(--dark-color);
-    }
-    
-
-  
-  
-    
-    /* Stats Cards */
-    .admin-stats {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 2rem;
-    }
-    
-    .stat-card {
-        composes: card-style;
-        padding: 1.75rem;
-        text-align: center;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .stat-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 5px;
-        background: var(--primary-color);
-    }
-    
-    .stat-card:nth-child(2)::before {
-        background: var(--secondary-color);
-    }
-    
-    .stat-card:nth-child(3)::before {
-        background: var(--danger-color);
-    }
-    
-    .stat-card h3 {
-        font-size: 1rem;
-        font-weight: 600;
-        color: var(--dark-color);
-        margin-bottom: 0.5rem;
-    }
-    
-    .stat-value {
-        font-size: 2.25rem;
-        font-weight: 700;
-        color: var(--primary-color);
-        line-height: 1;
-    }
-    
-    .stat-card:nth-child(2) .stat-value {
-        color: var(--secondary-color);
-    }
-    
-    .stat-card:nth-child(3) .stat-value {
-        color: var(--danger-color);
-    }
-    
-    /* Charts Section */
-    .chart-container {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 2rem;
-    }
-    
-    .chart-wrapper {
-        composes: card-style;
-        padding: 1.5rem;
-    }
-    
-    .chart-wrapper h3 {
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: var(--dark-color);
-        margin-bottom: 1.5rem;
-    }
-    
-    /* Late Missions Section */
-    .late-items {
-        composes: card-style;
-        padding: 1.5rem;
-        margin-bottom: 2rem;
-    }
-    
-    .late-items h3 {
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: var(--dark-color);
-        margin-bottom: 1.5rem;
-        display: flex;
-        align-items: center;
-    }
-    
-    .late-item {
-        padding: 1rem;
-        border-left: 4px solid var(--danger-color);
-        margin-bottom: 0.75rem;
-        background: #fff9f9;
-        border-radius: 4px;
-        transition: var(--transition);
-    }
-    
-    .late-item:hover {
-        background: #fff0f0;
-    }
-    
-    .late-item strong {
-        font-weight: 600;
-        color: var(--dark-color);
-    }
-    
-    .late-item small {
-        color: #6c757d;
-        font-size: 0.85rem;
-    }
-    
-    /* Analysis Section */
-    .analysis-card {
-        composes: card-style;
-        padding: 1.5rem;
-        margin-bottom: 2rem;
-    }
-    
-    .analysis-card h3 {
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: var(--dark-color);
-        margin-bottom: 0;
-    }
-    
-    #analysisPlaceholder {
-        min-height: 200px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        background: rgba(248, 249, 250, 0.5);
-        border-radius: var(--border-radius);
-        border: 2px dashed #dee2e6;
-    }
-    
-    #analysisPlaceholder i {
-        font-size: 3rem;
-        color: #d1d3e2;
-        margin-bottom: 1rem;
-    }
-    
-    .generated-report {
-        padding: 1.5rem;
-        background: var(--light-color);
-        border-radius: var(--border-radius);
-        max-height: 500px;
-        overflow-y: auto;
-    }
-    
-    /* Sparkline Section */
-    .sparkline-card {
-        composes: card-style;
-        padding: 1.25rem;
-        margin-bottom: 1.5rem;
-    }
-    
-    .sparkline-title {
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-        color: var(--dark-color);
-        font-size: 1rem;
-    }
-    
-    .sparkline-stats {
-        font-size: 0.85rem;
-        color: #6c757d;
-        margin-bottom: 1rem;
-    }
-    
-    .sparkline-container {
-        height: 50px;
-        margin-top: 1rem;
-        width: 100%;
-    }
-    
-/* Styles pour les statistiques */
-.stats-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.5rem;
-    margin-top: 2rem;
-}
-
-.stats-card {
-    background: #ffffff;
-    border-radius: 16px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
-    flex: 1 1 calc(50% - 1.5rem);
-    padding: 1.25rem 1.5rem;
-    margin-bottom: 1.5rem;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.stats-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
-}
-
-.stats-card-header {
-    font-weight: 600;
-    font-size: 1.1rem;
-    margin-bottom: 0.75rem;
-    color: #333;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.stats-chart {
-    width: 100%;
-    height: 350px;
-}
-
-.summary-cards {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    margin-bottom: 2rem;
-}
-
-.summary-card {
-    background: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    flex: 1 1 200px;
-    padding: 1rem;
-    text-align: center;
-}
-
-.card-value {
-    font-size: 2rem;
-    font-weight: 700;
-    margin: 0.5rem 0;
-}
-
-.positive {
-    color: #28a745;
-}
-
-.negative {
-    color: #dc3545;
-}
-
-.neutral {
-    color: #6c757d;
-}
-
-.pending {
-    color: #ffc107;
-}
-
-.in-progress {
-    color: #17a2b8;
-}
-
-.resolved {
-    color: #28a745;
-}
-
-@media (max-width: 768px) {
-    .stats-card {
-        flex: 1 1 100%;
-    }
-}
-
-    
-    /* Flow Chart Styles */
-    #flowchart-diagram {
-        min-height: 300px;
-        background: #f8f9fa;
-        padding: 1rem;
-        overflow: hidden;
-    }
-
-    #flowchart-diagram svg {
-        width: 100%;
-        height: 100%;
-    }
-
-    .start-node rect {
-        fill: #4e73df !important;
-    }
-
-    .end-node rect {
-        fill: #1cc88a !important;
-    }
-
-    .operation-node rect {
-        fill: #f6c23e !important;
-    }
-    
-    /* Buttons */
-    .btn-primary {
-        background-color: var(--primary-color);
-        border-color: var(--primary-color);
-        padding: 0.5rem 1.25rem;
-        font-weight: 600;
-    }
-    
-    .btn-primary:hover {
-        background-color: #2e59d9;
-        border-color: #2653d4;
-    }
-    
-    .btn-success {
-        background-color: var(--secondary-color);
-        border-color: var(--secondary-color);
-    }
-    
-    /* Responsive adjustments */
-    @media (max-width: 992px) {
-        .chart-container {
-            grid-template-columns: 1fr;
+    <!-- CSS Resources -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="/libs/morris.js06/morris.css">
+    <style>
+        :root {
+            --primary-color: #4e73df;
+            --secondary-color: #1cc88a;
+            --danger-color: #e74a3b;
+            --warning-color: #f6c23e;
+            --info-color: #36b9cc;
+            --light-color: #f8f9fc;
+            --dark-color: #2d3748;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+            --mission-primary: #4a6bdf;
+            --mission-secondary: #20c997;
+            --mission-danger: #ff6b6b;
+            --mission-warning: #ffd43b;
+            --mission-info: #66d9e8;
+            --mission-light: #f8f9fa;
+            --mission-dark: #343a40;
+            --mission-border-radius: 12px;
+            --mission-box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --mission-transition: all 0.3s ease;
         }
-        
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            display: none;
+            backdrop-filter: blur(5px);
+        }
+
+        .loading-overlay .spinner-border {
+            width: 3.5rem;
+            height: 3.5rem;
+            border-width: 0.25em;
+        }
+
+        /* Card Style */
+        .card-style {
+            background: #fff;
+            border-radius: var(--border-radius);
+            border: none;
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-style:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .card-header-style {
+            background: linear-gradient(135deg, #f8f9fc, #e2e8f0);
+            border-bottom: none;
+            padding: 1rem 1.5rem;
+            font-weight: 700;
+            color: var(--dark-color);
+            font-size: 1.1rem;
+        }
+
+        /* Stats Cards */
         .admin-stats {
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            display: flex;
+            justify-content: space-between;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            width: 100%;
         }
-    }
-    
-    @media (max-width: 768px) {
+
+        /* Cartes individuelles */
+        .stat-card {
+            flex: 1;
+            min-width: 0;
+            text-align: center;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+        }
+
+        .stat-card h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
         .stat-value {
-            font-size: 1.75rem;
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            line-height: 1.2;
         }
-        
+
+        .stat-card:nth-child(2) .stat-value {
+            color: var(--secondary-color);
+        }
+
+        .stat-card:nth-child(3) .stat-value {
+            color: var(--danger-color);
+        }
+
+        /* Charts Section */
+        .chart-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
         .chart-wrapper {
-            min-height: 300px;
+            composes: card-style;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #ffffff, #f7fafc);
         }
-    }
-    
-    /* Animations */
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .fade-in {
-        animation: fadeIn 0.5s ease-out forwards;
-    }
 
-    /* Weather Section Styles */
-    #weather {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1.5rem;
-        margin-top: 2rem;
-    }
+        .chart-wrapper h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--dark-color);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
 
-    .weather-card {
-        background: #ffffff;
-        border-radius: 16px;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
-        flex: 1 1 240px;
-        padding: 1.25rem 1.5rem;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
+        /* Mission Charts Section */
+        .mission-chart-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
 
-    .weather-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
-    }
+        .mission-chart-wrapper {
+            flex: 1 1 48%;
+            min-width: 300px;
+            background: white;
+            border-radius: var(--mission-border-radius);
+            box-shadow: var(--mission-box-shadow);
+            padding: 1.5rem;
+            transition: var(--mission-transition);
+        }
 
-    .weather-card-header {
-        font-weight: 600;
-        font-size: 1.1rem;
-        margin-bottom: 0.75rem;
-        color: #333;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
+        .mission-chart-wrapper:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
 
-    .weather-card-body {
-        font-size: 0.95rem;
-        color: #555;
-    }
+        .mission-chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
 
-    .weather-card img {
-        vertical-align: middle;
-        width: 36px;
-        height: 36px;
-    }
+        .mission-chart-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--mission-dark);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
 
-    .stats-card {
-    background: #ffffff;
-    border-radius: 16px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
-    padding: 1.5rem;
-    text-align: center;
-    transition: transform 0.2s ease;
-    }
+        .mission-chart-period {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
 
-    .stats-card:hover {
-        transform: translateY(-4px);
-    }
+        .mission-chart-canvas {
+            width: 100%;
+            height: 300px;
+            position: relative;
+        }
 
-    .stats-card i {
-        font-size: 2rem;
-        color: rgb(113, 182, 249);
-        margin-bottom: 0.5rem;
-    }
+        /* Late Missions Section */
+        .late-items {
+            composes: card-style;
+            padding: 1.5rem;
+            background: #fff;
+        }
 
-    .stats-card h4 {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #333;
-        margin: 0.25rem 0;
-    }
+        .late-items h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--dark-color);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
 
-    .stats-card p {
-        font-size: 0.9rem;
-        color: #555;
-        margin: 0;
-    }
+        .late-item {
+            padding: 1rem;
+            border-left: 4px solid var(--danger-color);
+            margin-bottom: 0.75rem;
+            background: #fef5f5;
+            border-radius: 8px;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
 
-</style>
-{{ parent() }}
+        .late-item:hover {
+            background: #fee2e2;
+            transform: translateX(4px);
+        }
+
+        .late-item strong {
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .late-item small {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        /* Analysis Section */
+        .analysis-card {
+            composes: card-style;
+            padding: 1.5rem;
+            background: #fff;
+        }
+
+        .analysis-card h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--dark-color);
+        }
+
+        .gemini-analysis-container {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.7;
+            color: #1f2937;
+        }
+
+        .analysis-section {
+            margin-bottom: 1.5rem;
+            padding: 1.25rem;
+            background: #f9fafb;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .analysis-section h3 {
+            color: #1e40af;
+            margin-bottom: 0.75rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .analysis-item {
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .analysis-item:before {
+            content: "●";
+            position: absolute;
+            left: 0;
+            color: var(--primary-color);
+            font-size: 0.8rem;
+        }
+
+        .analysis-error {
+            padding: 1.5rem;
+            border-radius: 8px;
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+        }
+
+        .alert-danger {
+            color: #721c24;
+        }
+
+        #analysisPlaceholder {
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 2px dashed #d1d5db;
+            animation: pulse 2s infinite;
+        }
+
+        #analysisPlaceholder i {
+            font-size: 2.5rem;
+            color: #9ca3af;
+            margin-bottom: 1rem;
+        }
+
+        .generated-report {
+            padding: 1.5rem;
+            background: #f9fafb;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            max-height: 500px;
+            overflow-y: auto;
+            font-size: 0.95rem;
+        }
+
+        /* Sparkline Section */
+        .sparkline-card {
+            composes: card-style;
+            padding: 1.25rem;
+            border-left: 4px solid var(--primary-color);
+            background: linear-gradient(135deg, #ffffff, #f9fafb);
+        }
+
+        .sparkline-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--dark-color);
+            margin-bottom: 1rem;
+        }
+
+        .sparkline-stats {
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .sparkline-container {
+            height: 60px;
+            margin-top: 1rem;
+        }
+
+        /* Workflow Table */
+        .table-responsive table {
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .table-responsive th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: var(--dark-color);
+            padding: 1rem;
+        }
+
+        .table-responsive tbody tr {
+            transition: var(--transition);
+        }
+
+        .table-responsive tbody tr:hover {
+            background: #f9fafc;
+        }
+
+        .table-responsive .progress {
+            height: 12px;
+            border-radius: 6px;
+            background: #e5e7eb;
+        }
+
+        .table-responsive .progress-bar {
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            transition: width 0.3s ease;
+        }
+
+        .table-responsive .badge {
+            padding: 1rem 1rem;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        /* Styles pour les statistiques */
+        .stats-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .stats-card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+            flex: 1 1 calc(50% - 1.5rem);
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .stats-card-header {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.75rem;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .stats-chart {
+            width: 100%;
+            height: 350px;
+        }
+
+        .summary-cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .summary-card {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            flex: 1 1 200px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .card-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+        }
+
+        .positive {
+            color: #28a745;
+        }
+
+        .negative {
+            color: #dc3545;
+        }
+
+        .neutral {
+            color: #6c757d;
+        }
+
+        .pending {
+            color: #ffc107;
+        }
+
+        .in-progress {
+            color: #17a2b8;
+        }
+
+        .resolved {
+            color: #28a745;
+        }
+
+        @media (max-width: 768px) {
+            .stats-card {
+                flex: 1 1 100%;
+            }
+        }
+
+        /* Flow Chart Styles */
+        #flowchart-diagram {
+            min-height: 300px;
+            background: #f8f9fa;
+            padding: 1rem;
+            overflow: hidden;
+        }
+
+        #flowchart-diagram svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .start-node rect {
+            fill: #4e73df !important;
+        }
+
+        .end-node rect {
+            fill: #1cc88a !important;
+        }
+
+        .operation-node rect {
+            fill: #f6c23e !important;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            padding: 0.5rem 1.25rem;
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            background-color: #2e59d9;
+            border-color: #2653d4;
+        }
+
+        .btn-success {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+
+        /* Weather Section Styles */
+        #weather {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .weather-card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+            flex: 1 1 240px;
+            padding: 1.25rem 1.5rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .weather-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .weather-card-header {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.75rem;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .weather-card-body {
+            font-size: 0.95rem;
+            color: #555;
+        }
+
+        .weather-card img {
+            vertical-align: middle;
+            width: 36px;
+            height: 36px;
+        }
+
+        .stats-card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            text-align: center;
+            transition: transform 0.2s ease;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .stats-card i {
+            font-size: 2rem;
+            color: rgb(113, 182, 249);
+            margin-bottom: 0.5rem;
+        }
+
+        .stats-card h4 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+            margin: 0.25rem 0;
+        }
+
+        .stats-card p {
+            font-size: 0.9rem;
+            color: #555;
+            margin: 0;
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInMission {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .mission-fade-in {
+            animation: fadeInMission 0.5s ease-out forwards;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 992px) {
+            .chart-container {
+                grid-template-columns: 1fr;
+            }
+
+            .admin-stats {
+                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            }
+
+            .mission-chart-wrapper {
+                flex: 1 1 100%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stat-value {
+                font-size: 2rem;
+            }
+
+            .chart-wrapper {
+                min-height: 320px;
+            }
+
+            .late-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .mission-chart-title {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+    {{ parent() }}
 {% endblock %}
 
 {% block topbar %}
-{{ include('partials/topbar.html.twig', { page_title: 'Tableau de Bord Admin' }) }}
+    {{ include('partials/topbar.html.twig', { page_title: 'Tableau de Bord Admin' }) }}
 {% endblock %}
 
 {% block body %}
-<!-- Global Loading Overlay -->
-<div class="loading-overlay" id="globalLoading">
-    <div class="spinner-border" role="status"></div>
-    <span class="mt-3">Traitement en cours...</span>
-</div>
+    <!-- Global Loading Overlay -->
+    <div class="loading-overlay" id="globalLoading">
+        <div class="spinner-border" role="status"></div>
+        <span class="mt-3">Traitement en cours...</span>
+    </div>
 
-{# Hello widget #}
+    {# Hello widget #}
     <div class="weather-card mt-3 d-flex justify-content-between">
         <div>
             <h3><span style="font-weight: normal;">Bonjour </span><strong>{{ app.user.nom|default('Utilisateur') }}</strong> !</h3>
         </div>
         <div>
-            <a href="{{ path('app_logout') }}" class="btn btn-logout ">
+            <a href="{{ path('app_logout') }}" class="btn btn-logout">
                 <i class="fas fa-sign-out-alt"></i> Déconnexion
             </a>
         </div>
     </div>
 
-{# weather widget #}
+    {# Weather widget #}
     <div id="weather">
         <div class="weather-card">
             <div class="text-center">
@@ -529,12 +700,10 @@
                 <p>Chargement des données météo...</p>
             </div>
         </div>
-    </div> 
+    </div>
 
-    <div id="weather" style="display: flex; flex-wrap: wrap; gap: 1rem;"></div>
-
-{# Administration Section #}
-    <h3 class="m-2"><i class="fas fa-cog"></i></i> Administration </h3>
+    {# Administration Section #}
+    <h3 class="m-2"><i class="fas fa-cog"></i> Administration</h3>
     <div class="summary-cards">
         <div class="summary-card stats-card">
             <i class="fas fa-users"></i>
@@ -580,249 +749,309 @@
 
     <hr>
 
+    <!-- Stats Cards -->
+    <h3 class="mt-5"><i class="fas fa-chart-bar"></i> Projets et Missions</h3>
+    <div class="admin-stats">
+        <div class="stat-card">
+            <h3><i class="fas fa-project-diagram me-2"></i> Projets Totaux</h3>
+            <p class="stat-value">
+                {% set total_projects = 0 %}
+                {% for status, count in project_stats %}
+                    {% set total_projects = total_projects + count %}
+                {% endfor %}
+                {{ total_projects }}
+            </p>
+        </div>
+        <div class="stat-card">
+            <h3><i class="fas fa-tasks me-2"></i> Missions Totales</h3>
+            <p class="stat-value">
+                {% set total_missions = 0 %}
+                {% for status, count in mission_stats %}
+                    {% set total_missions = total_missions + count %}
+                {% endfor %}
+                {{ total_missions }}
+            </p>
+        </div>
+        <div class="stat-card">
+            <h3><i class="fas fa-exclamation-triangle me-2"></i> Missions en Retard</h3>
+            <p class="stat-value">{{ delayed_missions|length }}</p>
+        </div>
+    </div>
 
+    <!-- Recruitment Section -->
+    <h3 class="mt-5"><i class="fas fa-users"></i> Recrutement</h3>
+    <div class="summary-cards">
+        <div class="summary-card stats-card">
+            <i class="fas fa-file-alt"></i>
+            <h4>{{ recruitment_stats.total_demandes }}</h4>
+            <p>Demandes totales</p>
+        </div>
+        <div class="summary-card stats-card">
+            <i class="fas fa-check-circle"></i>
+            <h4>{{ recruitment_stats.accepted_demandes }}</h4>
+            <p>Demandes acceptées</p>
+        </div>
+        <div class="summary-card stats-card">
+            <i class="fas fa-bullhorn"></i>
+            <h4>{{ recruitment_stats.active_offres }}</h4>
+            <p>Offres actives</p>
+        </div>
+        <div class="summary-card stats-card">
+            <i class="fas fa-clock"></i>
+            <h4>{{ recruitment_stats.avg_processing_time }} jours</h4>
+            <p>Temps moyen de traitement</p>
+        </div>
+    </div>
 
+    <!-- Complaints Section -->
+        <h3 class="mt-5"><i class="fas fa-comment-alt"></i> Réclamations</h3>
+
+        <div class="summary-cards">
+            <div class="summary-card">
+                <h5><i class="fas fa-chart-pie"></i> Taux de résolution</h5>
+                <div class="card-value {{ resolutionRate is defined ? (resolutionRate > 75 ? 'positive' : (resolutionRate < 50 ? 'negative' : 'neutral')) : 'neutral' }}">
+                    {{ resolutionRate is defined ? resolutionRate : 0 }}%
+                </div>
+                <p>des réclamations sont résolues</p>
+            </div>
+            <div class="summary-card">
+                <h5><i class="fas fa-thermometer-half"></i> Sentiment dominant</h5>
+                <div class="card-value" id="dominant-sentiment">
+                    {% if sentimentData|length > 1 %}
+                        {% set dominantSentiment = sentimentData|slice(1)|sort((a, b) => b[1] <=> a[1])|first %}
+                        <span class="{{ dominantSentiment[0] == 'Positif' ? 'positive' : (dominantSentiment[0] == 'Négatif' ? 'negative' : 'neutral') }}">
+                            {{ dominantSentiment[0] }}
+                        </span>
+                    {% else %}
+                        <span class="neutral">N/A</span>
+                    {% endif %}
+                </div>
+                <p>des réclamations</p>
+            </div>
+            <div class="summary-card">
+                <h5><i class="fas fa-folder-open"></i> Type principal</h5>
+                <div class="card-value" id="dominant-type">
+                    {% if typeData|length > 1 %}
+                        {% set dominantType = typeData|slice(1)|sort((a, b) => b[1] <=> a[1])|first %}
+                        {{ dominantType[0] }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </div>
+                <p>des réclamations</p>
+            </div>
+        </div>
+        
+    <!-- Projects and Missions Charts -->
+    <h3 class="mt-5"><i class="fas fa-chart-bar"></i> Statistiques des Projets et Missions</h3>
+    <div class="chart-container">
+        <div class="mission-chart-container">
+            <div class="mission-chart-wrapper mission-fade-in">
+                <div class="mission-chart-header">
+                    <h3 class="mission-chart-title"><i class="fas fa-chart-pie"></i> Répartition par Statut</h3>
+                    <span class="mission-chart-period">Mise à jour: {{ "now"|date("d/m/Y H:i") }}</span>
+                </div>
+                <div class="mission-chart-canvas">
+                    <canvas id="missionStatusChart"></canvas>
+                </div>
+            </div>
+            <div class="mission-chart-wrapper mission-fade-in">
+                <div class="mission-chart-header">
+                    <h3 class="mission-chart-title"><i class="fas fa-chart-line"></i> Évolution Mensuelle</h3>
+                    <span class="mission-chart-period">6 derniers mois</span>
+                </div>
+                <div class="mission-chart-canvas">
+                    <canvas id="missionTimelineChart"></canvas>
+                </div>
+            </div>
+            <div class="mission-chart-wrapper mission-fade-in">
+                <div class="mission-chart-header">
+                    <h3 class="mission-chart-title"><i class="fas fa-chart-bar"></i> Répartition par Projet</h3>
+                    <span class="mission-chart-period">Toutes les missions</span>
+                </div>
+                <div class="mission-chart-canvas">
+                    <canvas id="missionProjectDistribution"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+  <div><br><br>
+    <!-- Late Missions Section -->
+    <div class="late-items fade-in">
+        <h3><i class="fas fa-exclamation-triangle text-danger me-2"></i> Missions en retard ({{ delayed_missions|length }})</h3>
+        {% if delayed_missions is empty %}
+            <div class="alert alert-success d-flex align-items-center">
+                <i class="fas fa-check-circle me-2"></i>
+                <span>Aucune mission en retard</span>
+            </div>
+        {% else %}
+            {% for mission in delayed_missions %}
+                <div class="late-item">
+                    <i class="fas fa-tasks text-danger"></i>
+                    <div>
+                        <strong>{{ mission.titre }}</strong> -
+                        <span class="badge bg-{{ mission.status == 'Done' ? 'success' : 'danger' }}">
+                            {{ mission.status }}
+                        </span>
+                        <br>
+                        <small>Projet: {{ mission.project.nom }} • Date limite: {{ mission.dateTerminer|date('d/m/Y') }}</small>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- Sparkline Section -->
+    <div class="card card-style mt-4">
+        <div class="card-header-style">
+            <h4 class="mb-0"><i class="fas fa-chart-line me-2"></i> Progression des missions par projet</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for project in projects %}
+                    <div class="col-md-4 mb-4">
+                        <div class="sparkline-card fade-in">
+                            <div class="sparkline-title">{{ project.entity.nom }}</div>
+                            <div class="sparkline-stats">
+                                {{ project.done_missions }} terminées / {{ project.total_missions }} total
+                            </div>
+                            <div class="sparkline-container">
+                                <span class="project-sparkline" data-sparkline="{{ project.sparkline_data|join(',') }}"></span>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Flow Chart Section -->
+    <div class="card card-style mt-4">
+        <div class="card-header-style">
+            <h4 class="mb-0"><i class="fas fa-project-diagram me-2"></i> Workflow des Projets</h4>
+        </div>
+        <div class="card-body">
+            <div class="mt-4">
+                <h5 class="mb-3"><i class="fas fa-tasks me-2"></i> Progression détaillée par projet</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm">
+                        <thead>
+                            <tr>
+                                <th>Projet</th>
+                                <th>Progression</th>
+                                <th class="text-center">Missions Terminées</th>
+                                <th class="text-center">Total Missions</th>
+                                <th class="text-center">Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for project in projects %}
+                                {% set completion = project.done_missions > 0 ? (project.done_missions / project.total_missions * 100)|round : 0 %}
+                                <tr>
+                                    <td>{{ project.entity.nom }}</td>
+                                    <td style="width: 40%;">
+                                        <div class="progress" title="{{ completion }}% terminé">
+                                            <div class="progress-bar {{ completion < 30 ? 'bg-danger' : (completion < 70 ? 'bg-warning' : 'bg-success') }}"
+                                                 role="progressbar"
+                                                 style="width: {{ completion }}%;"
+                                                 aria-valuenow="{{ completion }}"
+                                                 aria-valuemin="0"
+                                                 aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">{{ completion }}% terminé</small>
+                                    </td>
+                                    <td class="text-center">{{ project.done_missions }}</td>
+                                    <td class="text-center">{{ project.total_missions }}</td>
+                                    <td class="text-center">
+                                        {% if completion == 100 %}
+                                            <span class="badge bg-success">Terminé</span>
+                                        {% elseif completion >= 70 %}
+                                            <span class="badge bg-primary">Avancé</span>
+                                        {% elseif completion >= 30 %}
+                                            <span class="badge bg-warning">En cours</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Démarrage</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analysis Section -->
+    <div class="analysis-card fade-in">
+        <div class="card-header-style d-flex justify-content-between align-items-center">
+            <h3 class="mb-0">
+                <i class="fas fa-robot me-2"></i> Analyse Intelligente
+            </h3>
+            <button id="generateAnalysis" class="btn btn-primary">
+                <i class="fas fa-magic me-1"></i> Générer le Rapport
+            </button>
+        </div>
+        <div class="analysis-content" id="geminiAnalysisContent">
+            <div class="text-center py-5" id="analysisPlaceholder">
+                <i class="fas fa-robot"></i>
+                <p class="mt-3 mb-0">Générez une analyse intelligente en un clic</p>
+            </div>
+        </div>
+    </div>
 <div><br></div>
-<!-- Stats Cards -->
-<div class="admin-stats">
-    <div class="stat-card">
-        <h3>Projets Totaux</h3>
-        <p class="stat-value">
-            {% set total_projects = 0 %}
-            {% for status, count in project_stats %}
-                {% set total_projects = total_projects + count %}
-            {% endfor %}
-            {{ total_projects }}
-        </p>
-    </div>
-    
-    <div class="stat-card">
-        <h3>Missions Totales</h3>
-        <p class="stat-value">
-            {% set total_missions = 0 %}
-            {% for status, count in mission_stats %}
-                {% set total_missions = total_missions + count %}
-            {% endfor %}
-            {{ total_missions }}
-        </p>
-    </div>
-    
-    <div class="stat-card">
-        <h3>Missions en Retard</h3>
-        <p class="stat-value">{{ delayed_missions|length }}</p>
-    </div>
-</div>
-
-<!-- Section Statistiques des réclamations -->
-
-    <!-- Summary Cards -->
-    <div class="summary-cards">        
-        <div class="summary-card">            
-            <h5><i class="fas fa-chart-pie"></i> Taux de résolution</h5>            
-            <div class="card-value {{ resolutionRate is defined ? (resolutionRate > 75 ? 'positive' : (resolutionRate < 50 ? 'negative' : 'neutral')) : 'neutral' }}">                
-                {{ resolutionRate is defined ? resolutionRate : 0 }}%            
-            </div>            
-            <p>des réclamations sont résolues</p>        
-        </div>
-        
-        <div class="summary-card">
-            <h5><i class="fas fa-thermometer-half"></i> Sentiment dominant</h5>
-            <div class="card-value" id="dominant-sentiment">
-                <i class="fas fa-spinner fa-spin"></i>
-            </div>
-            <p>des réclamations</p>
-        </div>
-        
-        <div class="summary-card">
-            <h5><i class="fas fa-folder-open"></i> Type principal</h5>
-            <div class="card-value" id="dominant-type">
-                <i class="fas fa-spinner fa-spin"></i>
-            </div>
-            <p>des réclamations</p>
-        </div>
-    </div>
-<div>
-<!-- Charts Container -->
-    <h3 class="mt-5"><i class="fas fa-chart-bar"></i> Statistiques des Projets </h3>
-
-<div class="chart-container">
-    <div class="chart-wrapper fade-in">
-        <h3><i class="fas fa-project-diagram me-2"></i>Projets par statut</h3>
-        <div id="projectChart" style="width: 100%; height: 350px;"></div>
-    </div>
-    
-    <div class="chart-wrapper fade-in">
-        <h3><i class="fas fa-tasks me-2"></i>Missions par statut</h3>
-        <div id="missionChart" style="width: 100%; height: 350px;"></div>
-    </div>
-</div>
-
-<!-- Late Missions Section -->
-<div class="late-items fade-in">
-    <h3><i class="fas fa-exclamation-triangle text-danger me-2"></i>Missions en retard ({{ delayed_missions|length }})</h3>
-    {% if delayed_missions is empty %}
-        <div class="alert alert-success d-flex align-items-center">
-            <i class="fas fa-check-circle me-2"></i>
-            <span>Aucune mission en retard</span>
-        </div>
-    {% else %}
-        {% for mission in delayed_missions %}
-            <div class="late-item">
-                <strong>{{ mission.titre }}</strong> - 
-                <span class="badge bg-{{ mission.status == 'Done' ? 'success' : 'danger' }}">
-                    {{ mission.status }}
-                </span>
-                <br>
-                <small>Projet: {{ mission.project.nom }} • Date limite: {{ mission.dateTerminer|date('d/m/Y') }}</small>
-            </div>
-        {% endfor %}
-    {% endif %}
-</div>
-
-<!-- Sparkline Section -->
-<div class="card card-style mt-4">
-    <div class="card-header-style">
-        <h4 class="mb-0"><i class="fas fa-chart-line me-2"></i>Progression des missions par projet</h4>
-    </div>
-    <div class="card-body">
-        <div class="row">
-            {% for project in projects %}
-            <div class="col-md-4 mb-4">
-                <div class="sparkline-card fade-in">
-                    <div class="sparkline-title">{{ project.entity.nom }}</div>
-                    <div class="sparkline-stats">
-                        {{ project.done_missions }} terminées / {{ project.total_missions }} total
+    <!-- Loading Modal -->
+    <div class="modal fade" id="loadingModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center py-5">
+                    <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
+                        <span class="visually-hidden">Chargement...</span>
                     </div>
-                    <div class="sparkline-container">
-                        <span class="project-sparkline" 
-                              data-sparkline="{{ project.sparkline_data|join(',') }}"></span>
-                    </div>
+                    <h5>Génération du rapport en cours...</h5>
+                    <p class="mb-0 text-muted">Veuillez patienter</p>
                 </div>
             </div>
-            {% endfor %}
         </div>
     </div>
-</div>
-<!-- Flow Chart Section -->
-<div class="card card-style mt-4">
-    <div class="card-header-style">
-        <h4 class="mb-0"><i class="fas fa-project-diagram me-2"></i>Workflow des Projets</h4>
-    </div>
-    <div class="card-body">
-      
-        
-        <!-- Nouvelle section: Progression du workflow par projet -->
-        <div class="mt-4">
-            <h5 class="mb-3"><i class="fas fa-tasks me-2"></i>Progression détaillée par projet</h5>
-            <div class="table-responsive">
-                <table class="table table-hover table-sm">
-                    <thead class="bg-light">
-                        <tr>
-                            <th>Projet</th>
-                            <th>Progression</th>
-                            <th class="text-center">Missions Terminées</th>
-                            <th class="text-center">Total Missions</th>
-                            <th class="text-center">Statut</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for project in projects %}
-                        {% set completion = project.done_missions > 0 ? (project.done_missions / project.total_missions * 100)|round : 0 %}
-                        <tr>
-                            <td>{{ project.entity.nom }}</td>
-                            <td style="width: 40%;">
-                                <div class="progress" style="height: 10px;">
-                                    <div class="progress-bar {{ completion < 30 ? 'bg-danger' : (completion < 70 ? 'bg-warning' : 'bg-success') }}" 
-                                         role="progressbar" 
-                                         style="width: {{ completion }}%;" 
-                                         aria-valuenow="{{ completion }}" 
-                                         aria-valuemin="0" 
-                                         aria-valuemax="100">
-                                    </div>
-                                </div>
-                                <small class="text-muted">{{ completion }}% terminé</small>
-                            </td>
-                            <td class="text-center">{{ project.done_missions }}</td>
-                            <td class="text-center">{{ project.total_missions }}</td>
-                            <td class="text-center">
-                                {% if completion == 100 %}
-                                    <span class="badge bg-success">Terminé</span>
-                                {% elseif completion >= 70 %}
-                                    <span class="badge bg-primary">Avancé</span>
-                                {% elseif completion >= 30 %}
-                                    <span class="badge bg-warning">En cours</span>
-                                {% else %}
-                                    <span class="badge bg-danger">Démarrage</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- Analysis Section -->
-<div class="analysis-card fade-in">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="mb-0">
-            <i class="fas fa-robot me-2"></i>Analyse Intelligente
-        </h3>
-        <button id="generateAnalysis" class="btn btn-primary">
-            <i class="fas fa-magic me-1"></i> Générer le Rapport
-        </button>
-    </div>
-    
-    <div class="analysis-content" id="geminiAnalysisContent">
-        <div class="text-center py-5" id="analysisPlaceholder">
-            <i class="fas fa-robot"></i>
-            <p class="mt-3 mb-0">Cliquez sur "Générer le Rapport" pour obtenir l'analyse</p>
-        </div>
-    </div>
-</div>
 
-<!-- Loading Modal -->
-<div class="modal fade" id="loadingModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-body text-center py-5">
-                <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
-                    <span class="visually-hidden">Chargement...</span>
-                </div>
-                <h5>Génération du rapport en cours...</h5>
-                <p class="mb-0 text-muted">Veuillez patienter</p>
-            </div>
+    <!-- Recruitment Charts -->
+    <div class="chart-container">
+        <div class="chart-wrapper fade-in">
+            <h3><i class="fas fa-chart-pie me-2"></i> Demandes par statut</h3>
+            <div id="morris-donut-demande" style="height: 350px;" class="morris-chart" data-colors="#3AB5CE,#1B3583,#A8E0EA"></div>
+        </div>
+        <div class="chart-wrapper fade-in">
+            <h3><i class="fas fa-chart-bar me-2"></i> Offres par type de contrat</h3>
+            <div id="morris-bar-offre" style="height: 350px;" class="morris-chart" data-colors="#3AB5CE"></div>
+        </div>
+        <div class="chart-wrapper fade-in">
+            <h3><i class="fas fa-chart-bar me-2"></i> Évolution des demandes</h3>
+            <div id="morris-bar-demande" style="height: 350px;" class="morris-chart" data-colors="#3AB5CE"></div>
         </div>
     </div>
-</div>
-</div>
-<div class="mt-4">
-    <h3 class="mt-4"><i class="fas fa-chart-bar"></i> Statistiques des réclamations</h3>
-    
-    <!-- Charts -->
     <div class="stats-container">
+
+        <!-- Complaint Charts -->
         <div class="stats-card">
             <div class="stats-card-header">
                 <i class="fas fa-tasks"></i> Répartition par statut
             </div>
             <div id="status-chart" class="stats-chart"></div>
         </div>
-        
         <div class="stats-card">
             <div class="stats-card-header">
                 <i class="fas fa-smile"></i> Répartition par sentiment
             </div>
             <div id="sentiment-chart" class="stats-chart"></div>
         </div>
-        
         <div class="stats-card">
             <div class="stats-card-header">
                 <i class="fas fa-tags"></i> Répartition par type
             </div>
             <div id="type-chart" class="stats-chart"></div>
         </div>
-        
         <div class="stats-card">
             <div class="stats-card-header">
                 <i class="fas fa-chart-line"></i> Évolution dans le temps
@@ -830,7 +1059,6 @@
             <div id="timeline-chart" class="stats-chart"></div>
         </div>
     </div>
-</div>
 
 {% endblock %}
 
@@ -844,8 +1072,12 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.11.3/release/flowchart.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
-
+<script src="/libs/morris.js06/morris.min.js"></script>
+<script src="/libs/raphael/raphael.min.js"></script>
 <script>
+var demandeStats = {{ demande_stats|json_encode|raw }};
+var offreStats = {{ offre_stats|json_encode|raw }};
+var demandeTimeline = {{ demande_timeline|json_encode|raw }};
 function formatTime(unix) {
     return new Date(unix * 1000).toLocaleTimeString('fr-FR', {
         hour: '2-digit',
@@ -862,35 +1094,34 @@ navigator.geolocation.getCurrentPosition(function(position) {
         .then(data => {
             const weatherContainer = document.getElementById('weather');
 
-weatherContainer.innerHTML = `
-    ${createCard(`<i class="fas fa-map-marker-alt"></i> Localisation`, `
-        <h3 style="margin: 0; display: flex; align-items: center;">
-            ${data.name}, ${data.sys.country}
-            <img src="https://openweathermap.org/img/wn/${data.weather[0].icon}@4x.png" alt="weather icon" style="width: 80px; height: 80px; margin-left: 15px;">
-        </h3>
-        <p style="margin: 0;">${data.weather[0].description}</p>
-    `)}
+            weatherContainer.innerHTML = `
+                ${createCard(`<i class="fas fa-map-marker-alt"></i> Localisation`, `
+                    <h3 style="margin: 0; display: flex; align-items: center;">
+                        ${data.name}, ${data.sys.country}
+                        <img src="https://openweathermap.org/img/wn/${data.weather[0].icon}@4x.png" alt="weather icon" style="width: 80px; height: 80px; margin-left: 15px;">
+                    </h3>
+                    <p style="margin: 0;">${data.weather[0].description}</p>
+                `)}
 
-    ${createCard(`<i class="fas fa-thermometer-half"></i> Température`, `
-        Température : ${data.main.temp}°C<br>
-        Ressentie : ${data.main.feels_like}°C<br>
-        Min : ${data.main.temp_min}°C<br>
-        Max : ${data.main.temp_max}°C
-    `)}
+                ${createCard(`<i class="fas fa-thermometer-half"></i> Température`, `
+                    Température : ${data.main.temp}°C<br>
+                    Ressentie : ${data.main.feels_like}°C<br>
+                    Min : ${data.main.temp_min}°C<br>
+                    Max : ${data.main.temp_max}°C
+                `)}
 
-    ${createCard(`<i class="fas fa-wind"></i> Vent & Nuages`, `
-        Vent : ${data.wind.speed} m/s (${data.wind.deg}°)<br>
-        Nuages : ${data.clouds.all}%<br>
-        Humidité : ${data.main.humidity}%<br>
-        Pression : ${data.main.pressure} hPa
-    `)}
+                ${createCard(`<i class="fas fa-wind"></i> Vent & Nuages`, `
+                    Vent : ${data.wind.speed} m/s (${data.wind.deg}°)<br>
+                    Nuages : ${data.clouds.all}%<br>
+                    Humidité : ${data.main.humidity}%<br>
+                    Pression : ${data.main.pressure} hPa
+                `)}
 
-    ${createCard(`<i class="fas fa-sun"></i> Soleil`, `
-        Lever : ${formatTime(data.sys.sunrise)}<br>
-        Coucher : ${formatTime(data.sys.sunset)}
-    `)}
-`;
-
+                ${createCard(`<i class="fas fa-sun"></i> Soleil`, `
+                    Lever : ${formatTime(data.sys.sunrise)}<br>
+                    Coucher : ${formatTime(data.sys.sunset)}
+                `)}
+            `;
         })
         .catch(() => {
             document.getElementById('weather').innerHTML = `<div class="card">Erreur : Impossible de récupérer la météo.</div>`;
@@ -911,19 +1142,21 @@ function createCard(title, content) {
         </div>
     `;
 }
+
 // Main Application Script
 document.addEventListener('DOMContentLoaded', function() {
     // Configuration
     const config = {
         analysisEndpoint: '{{ path('admin_generate_analysis') }}',
     };
-    
+
     // State Management
     const state = {
         isGeneratingReport: false,
-        currentReport: null
+        currentReport: null,
+        morrisCharts: {}
     };
-    
+
     // DOM Elements
     const elements = {
         globalLoader: document.getElementById('globalLoading'),
@@ -935,12 +1168,12 @@ document.addEventListener('DOMContentLoaded', function() {
         dominantSentiment: document.getElementById('dominant-sentiment'),
         dominantType: document.getElementById('dominant-type')
     };
-    
+
     // UI Helpers
     const ui = {
         showLoader: () => elements.globalLoader.style.display = 'flex',
         hideLoader: () => elements.globalLoader.style.display = 'none',
-        
+
         showError: (message) => {
             Swal.fire({
                 icon: 'error',
@@ -952,13 +1185,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         },
-        
+
         updateButtonState: (isGenerating, isRefresh = false) => {
             const btn = elements.generateBtn;
             btn.disabled = isGenerating;
-            
+
             if (isGenerating) {
-                btn.innerHTML = isRefresh 
+                btn.innerHTML = isRefresh
                     ? '<i class="fas fa-spinner fa-spin me-1"></i> Rafraîchissement...'
                     : '<i class="fas fa-spinner fa-spin me-1"></i> Génération...';
             } else if (state.currentReport) {
@@ -971,61 +1204,94 @@ document.addEventListener('DOMContentLoaded', function() {
                 btn.classList.add('btn-primary');
             }
         },
-        
+
         updateReportContent: (content) => {
             if (elements.placeholder) {
                 elements.placeholder.remove();
             }
-            
+
             let reportDiv = elements.analysisContent.querySelector('.generated-report');
             if (!reportDiv) {
                 reportDiv = document.createElement('div');
                 reportDiv.className = 'generated-report fade-in';
                 elements.analysisContent.prepend(reportDiv);
             }
-            
+
             reportDiv.innerHTML = content;
         }
     };
-    
+
     // API Functions
     const api = {
         generateAnalysis: async () => {
+            const requestOptions = {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                timeout: 10000
+            };
+
             try {
-                const response = await fetch(config.analysisEndpoint, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                });
-                
+                const controller = new AbortController();
+                const { signal } = controller;
+                requestOptions.signal = signal;
+
+                const timeoutId = setTimeout(() => controller.abort(), requestOptions.timeout);
+
+                const response = await fetch(config.analysisEndpoint, requestOptions);
+                clearTimeout(timeoutId);
+
                 if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.message || 'Erreur serveur');
+                    const errorData = await response.json().catch(() => ({
+                        message: `HTTP error! status: ${response.status}`
+                    }));
+
+                    throw new Error(
+                        errorData.message ||
+                        errorData.error ||
+                        `Request failed with status ${response.status}`
+                    );
                 }
-                
+
                 return await response.json();
             } catch (error) {
-                throw error;
+                const enhancedError = new Error(
+                    error.name === 'AbortError'
+                        ? 'Request timeout: Analysis took too long to generate'
+                        : error.message || 'Failed to generate analysis'
+                );
+
+                enhancedError.originalError = error;
+                enhancedError.isNetworkError = !error.response;
+
+                console.error('API Error:', {
+                    endpoint: config.analysisEndpoint,
+                    error: enhancedError,
+                    timestamp: new Date().toISOString()
+                });
+
+                throw enhancedError;
             }
         }
     };
-    
+
     // Features
     const features = {
         loadCharts: () => {
-            // Load Google Charts
             google.charts.load('current', {'packages':['corechart']});
             google.charts.setOnLoadCallback(function() {
                 features.drawProjectCharts();
                 features.drawReclamationCharts();
             });
+            // Initialize Morris Charts for Recruitment
+            features.drawRecruitmentCharts();
         },
-        
+
         drawProjectCharts: () => {
             try {
-                // Projects Chart
                 const projectData = new google.visualization.DataTable();
                 projectData.addColumn('string', 'Statut');
                 projectData.addColumn('number', 'Nombre');
@@ -1038,49 +1304,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 const projectOptions = {
                     title: '',
                     pieHole: 0.4,
-                    colors: ['#4e73df', '#1cc88a', '#f6c23e', '#e74a3b', '#36b9cc'],
-                    chartArea: {
-                        width: '90%', 
-                        height: '80%',
-                        left: 20,
-                        top: 20,
-                        right: 20,
-                        bottom: 20
-                    },
-                    legend: {
-                        position: 'labeled', 
-                        alignment: 'center',
-                        textStyle: {
-                            color: '#5a5c69',
-                            fontSize: 12
-                        }
-                    },
-                    pieSliceText: 'value',
-                    tooltip: {
-                        text: 'percentage'
-                    },
-                    backgroundColor: 'transparent',
-                    height: 350
-                };
-
-                const projectChart = new google.visualization.PieChart(
-                    document.getElementById('projectChart')
-                );
-                projectChart.draw(projectData, projectOptions);
-
-                // Missions Chart
-                const missionData = new google.visualization.DataTable();
-                missionData.addColumn('string', 'Statut');
-                missionData.addColumn('number', 'Nombre');
-                missionData.addRows([
-                    {% for status, count in mission_stats %}
-                        ['{{ status }}', {{ count }}],
-                    {% endfor %}
-                ]);
-
-                const missionOptions = {
-                    title: '',
-                    is3D: true,
                     colors: ['#4e73df', '#1cc88a', '#f6c23e', '#e74a3b', '#36b9cc'],
                     chartArea: {
                         width: '90%',
@@ -1106,14 +1329,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     height: 350
                 };
 
-                const missionChart = new google.visualization.PieChart(
-                    document.getElementById('missionChart')
+                const projectChart = new google.visualization.PieChart(
+                    document.getElementById('projectChart')
                 );
-                missionChart.draw(missionData, missionOptions);
+                projectChart.draw(projectData, projectOptions);
             } catch (error) {
                 console.error("Erreur dans le rendu des graphiques:", error);
-                
-                // Fallback content
+
                 document.getElementById('projectChart').innerHTML = `
                     <div class="alert alert-warning p-3">
                         <i class="fas fa-exclamation-triangle me-2"></i>
@@ -1128,24 +1350,200 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                     </div>
                 `;
-                
-                document.getElementById('missionChart').innerHTML = `
-                    <div class="alert alert-warning p-3">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        Le graphique des missions n'a pas pu être chargé.
-                        <div class="mt-2">
-                            {% for status, count in mission_stats %}
-                                <div class="d-flex justify-content-between mb-1">
-                                    <span>{{ status }}:</span>
-                                    <strong>{{ count }}</strong>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                `;
             }
         },
-        
+
+        drawMissionCharts: () => {
+            // Mission Status Chart
+            const statusCtx = document.getElementById('missionStatusChart').getContext('2d');
+            const statusChart = new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: [
+                        {% for status, count in mission_stats %}
+                            '{{ status }}',
+                        {% endfor %}
+                    ],
+                    datasets: [{
+                        data: [
+                            {% for status, count in mission_stats %}
+                                {{ count }},
+                            {% endfor %}
+                        ],
+                        backgroundColor: [
+                            '#4a6bdf',
+                            '#20c997',
+                            '#ff6b6b',
+                            '#ffd43b',
+                            '#66d9e8'
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                boxWidth: 12,
+                                padding: 20,
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '65%'
+                }
+            });
+
+            // Mission Timeline Chart - Utilisez maintenant les données réelles
+            const timelineCtx = document.getElementById('missionTimelineChart').getContext('2d');
+            const timelineChart = new Chart(timelineCtx, {
+                type: 'line',
+                data: {
+                    labels: [
+                        {% for month, data in mission_timeline_data %}
+                            '{{ month }}',
+                        {% endfor %}
+                    ],
+                    datasets: [
+                        {
+                            label: 'Créées',
+                            data: [
+                                {% for month, data in mission_timeline_data %}
+                                    {{ data.created }},
+                                {% endfor %}
+                            ],
+                            borderColor: '#4a6bdf',
+                            backgroundColor: 'rgba(74, 107, 223, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        },
+                        {
+                            label: 'Terminées',
+                            data: [
+                                {% for month, data in mission_timeline_data %}
+                                    {{ data.completed }},
+                                {% endfor %}
+                            ],
+                            borderColor: '#20c997',
+                            backgroundColor: 'rgba(32, 201, 151, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                drawBorder: false
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Project Distribution Chart
+            const projectCtx = document.getElementById('missionProjectDistribution').getContext('2d');
+            const projectChart = new Chart(projectCtx, {
+                type: 'bar',
+                data: {
+                    labels: [
+                        {% for project in projects %}
+                            '{{ project.entity.nom }}',
+                        {% endfor %}
+                    ],
+                    datasets: [{
+                        label: 'Missions Terminées',
+                        data: [
+                            {% for project in projects %}
+                                {{ project.done_missions }},
+                            {% endfor %}
+                        ],
+                        backgroundColor: '#20c997',
+                        borderRadius: 4
+                    }, {
+                        label: 'Missions Totales',
+                        data: [
+                            {% for project in projects %}
+                                {{ project.total_missions }},
+                            {% endfor %}
+                        ],
+                        backgroundColor: '#4a6bdf',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: false,
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            stacked: false,
+                            beginAtZero: true,
+                            grid: {
+                                drawBorder: false
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                statusChart.resize();
+                timelineChart.resize();
+                projectChart.resize();
+            });
+        },
+
         drawReclamationCharts: () => {
             try {
                 // Status Chart
@@ -1156,7 +1554,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     pieHole: 0.4,
                     chartArea: {width: '90%', height: '80%'},
                     height: 350,
-                    colors: ['#4e73df', '#1cc88a', '#f6c23e']
+                    colors: ['#4e73df', '#1cc88a', '#f6c23e'],
+                    pieSliceText: 'value',
+                    tooltip: {
+                        text: 'percentage'
+                    }
                 });
 
                 // Sentiment Chart
@@ -1166,7 +1568,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     title: '',
                     chartArea: {width: '85%', height: '75%'},
                     height: 350,
-                    colors: ['#e74a3b', '#858796', '#1cc88a']
+                    colors: ['#e74a3b', '#858796', '#1cc88a'],
+                    legend: {position: 'top'},
+                    hAxis: {
+                        title: 'Sentiment'
+                    },
+                    vAxis: {
+                        title: 'Nombre de réclamations'
+                    }
                 });
 
                 // Type Chart
@@ -1176,7 +1585,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     title: '',
                     chartArea: {width: '85%', height: '75%'},
                     height: 350,
-                    colors: ['#36b9cc', '#f6c23e', '#4e73df']
+                    colors: ['#36b9cc', '#f6c23e', '#4e73df'],
+                    legend: {position: 'top'},
+                    hAxis: {
+                        title: 'Nombre de réclamations'
+                    }
                 });
 
                 // Timeline Chart
@@ -1187,17 +1600,109 @@ document.addEventListener('DOMContentLoaded', function() {
                     chartArea: {width: '85%', height: '75%'},
                     height: 350,
                     colors: ['#4e73df'],
-                    curveType: 'function'
+                    curveType: 'function',
+                    legend: {position: 'top'},
+                    hAxis: {
+                        title: 'Mois'
+                    },
+                    vAxis: {
+                        title: 'Nombre de réclamations'
+                    }
                 });
 
-                // Update dominant values
-                features.updateDominantValues();
-                
             } catch (error) {
                 console.error("Erreur dans le rendu des graphiques de réclamation:", error);
             }
         },
-        
+
+        drawRecruitmentCharts: () => {
+            try {
+                // Donut Chart for Demande Status
+                state.morrisCharts['morris-donut-demande'] = Morris.Donut({
+                    element: 'morris-donut-demande',
+                    data: demandeStats.map(function(item) {
+                        return {
+                            label: item.statut,
+                            value: parseInt(item.count)
+                        };
+                    }),
+                    colors: ['#3AB5CE', '#1B3583', '#A8E0EA'],
+                    resize: true
+                });
+
+                // Bar Chart for Offre by Contract Type
+                state.morrisCharts['morris-bar-offre'] = Morris.Bar({
+                    element: 'morris-bar-offre',
+                    data: offreStats.map(function(item) {
+                        return {
+                            y: item.typeContrat,
+                            a: parseInt(item.count)
+                        };
+                    }),
+                    xkey: 'y',
+                    ykeys: ['a'],
+                    labels: ['Nombre d\'offres'],
+                    colors: ['#3AB5CE'],
+                    resize: true
+                });
+
+                // Bar Chart for Demande Timeline
+                if (!demandeTimeline || demandeTimeline.length < 1 || demandeTimeline.every(item => item.count === 0)) {
+                    document.getElementById('morris-bar-demande').innerHTML = `
+                        <div class="alert alert-info p-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Données insuffisantes pour afficher l'évolution des demandes.
+                        </div>
+                    `;
+                } else {
+                    const maxCount = Math.max(...demandeTimeline.map(item => item.count));
+                    const ymax = maxCount <= 0 ? 5 : Math.ceil(maxCount * 1.2);
+
+                    state.morrisCharts['morris-bar-demande'] = Morris.Bar({
+                        element: 'morris-bar-demande',
+                        data: demandeTimeline.filter(item => item.month && typeof item.count === 'number').map(function(item) {
+                            return {
+                                y: item.month,
+                                a: item.count
+                            };
+                        }),
+                        xkey: 'y',
+                        ykeys: ['a'],
+                        labels: ['Demandes'],
+                        colors: ['#3AB5CE'],
+                        resize: true,
+                        barSizeRatio: 0.4,
+                        xLabelAngle: 45,
+                        gridTextSize: 12,
+                        ymin: 0,
+                        ymax: ymax,
+                        numLines: 5,
+                        hideHover: 'auto'
+                    });
+                }
+            } catch (error) {
+                console.error("Erreur dans le rendu des graphiques de recrutement:", error);
+                document.getElementById('morris-donut-demande').innerHTML = `
+                    <div class="alert alert-warning p-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Le graphique des demandes n'a pas pu être chargé.
+                    </div>
+                `;
+                document.getElementById('morris-bar-offre').innerHTML = `
+                    <div class="alert alert-warning p-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Le graphique des offres n'a pas pu être chargé.
+                    </div>
+                `;
+                document.getElementById('morris-bar-demande').innerHTML = `
+                    <div class="alert alert-warning p-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Le graphique de l'évolution des demandes n'a pas pu être chargé.
+                    </div>
+                `;
+            }
+        },
+
         updateDominantValues: () => {
             try {
                 // Get dominant sentiment
@@ -1205,8 +1710,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (sentimentArray.length > 1) {
                     const dominant = sentimentArray.slice(1).sort((a, b) => b[1] - a[1])[0];
                     elements.dominantSentiment.textContent = dominant[0];
-                    elements.dominantSentiment.className = 'card-value ' + 
-                        (dominant[0] === 'Positif' ? 'positive' : 
+                    elements.dominantSentiment.className = 'card-value ' +
+                        (dominant[0] === 'Positif' ? 'positive' :
                          dominant[0] === 'Négatif' ? 'negative' : 'neutral');
                 }
 
@@ -1218,13 +1723,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             } catch (error) {
                 console.error("Erreur dans la mise à jour des valeurs dominantes:", error);
+
+                // Fallback for each chart if error occurs
+                const chartContainers = ['status-chart', 'sentiment-chart', 'type-chart', 'timeline-chart'];
+                chartContainers.forEach(id => {
+                    const container = document.getElementById(id);
+                    if (container) {
+                        container.innerHTML = `
+                            <div class="alert alert-warning p-2">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Le graphique n'a pas pu être chargé
+                            </div>
+                        `;
+                    }
+                });
             }
         },
-        
+
         initSparklines: () => {
             $('.project-sparkline').each(function() {
                 const data = $(this).data('sparkline').split(',').map(Number);
-                
+
                 if(data.length > 0 && !data.some(isNaN)) {
                     $(this).sparkline(data, {
                         type: 'line',
@@ -1246,14 +1765,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         },
-        
+
         initFlowChart: () => {
             try {
                 elements.flowchartDiagram.innerHTML = '';
-                
+
                 const mermaidDiv = document.createElement('div');
                 mermaidDiv.className = 'mermaid';
-                
+
                 const projectsData = [];
                 {% for project in projects %}
                     projectsData.push({
@@ -1263,16 +1782,16 @@ document.addEventListener('DOMContentLoaded', function() {
                         completion: {{ project.done_missions > 0 ? (project.done_missions / project.total_missions * 100)|round : 0 }}
                     });
                 {% endfor %}
-                
+
                 projectsData.sort((a, b) => a.completion - b.completion);
-                
+
                 let mermaidDefinition = 'flowchart LR\n';
                 mermaidDefinition += '    Start([Début du Workflow]) --> ';
-                
+
                 for (let i = 0; i < projectsData.length; i++) {
                     const project = projectsData[i];
                     const nodeId = `P${i}`;
-                    
+
                     let nodeStyle = '';
                     if (project.completion >= 100) {
                         nodeStyle = ':::complete';
@@ -1283,26 +1802,26 @@ document.addEventListener('DOMContentLoaded', function() {
                     } else {
                         nodeStyle = ':::start';
                     }
-                    
+
                     mermaidDefinition += `${nodeId}["${project.name}<br>(${project.completion}%)"]${nodeStyle}`;
-                    
+
                     if (i < projectsData.length - 1) {
                         mermaidDefinition += ' --> ';
                     } else {
                         mermaidDefinition += ' --> End([Fin])';
                     }
                 }
-                
+
                 mermaidDefinition += '\n';
                 mermaidDefinition += '    classDef complete fill:#1cc88a,stroke:#169a6b,color:white;\n';
                 mermaidDefinition += '    classDef advanced fill:#4e73df,stroke:#2653d4,color:white;\n';
                 mermaidDefinition += '    classDef progress fill:#f6c23e,stroke:#dda20a,color:black;\n';
                 mermaidDefinition += '    classDef start fill:#e74a3b,stroke:#be2617,color:white;\n';
-                
+
                 mermaidDiv.textContent = mermaidDefinition;
                 elements.flowchartDiagram.appendChild(mermaidDiv);
-                
-                mermaid.initialize({ 
+
+                mermaid.initialize({
                     startOnLoad: true,
                     theme: 'neutral',
                     flowchart: {
@@ -1311,9 +1830,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         curve: 'basis'
                     }
                 });
-                
+
                 mermaid.init(undefined, mermaidDiv);
-                
+
             } catch (error) {
                 console.error("Erreur Mermaid:", error);
                 elements.flowchartDiagram.innerHTML = `
@@ -1324,14 +1843,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
             }
         },
-        
+
         handleReportGeneration: async (isRefresh = false) => {
             if (state.isGeneratingReport) return;
-            
+
             state.isGeneratingReport = true;
             ui.showLoader();
             ui.updateButtonState(true, isRefresh);
-            
+
             try {
                 const data = await api.generateAnalysis();
                 state.currentReport = data.report;
@@ -1346,29 +1865,38 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     };
-    
+
     // Event Listeners
     elements.generateBtn.addEventListener('click', () => features.handleReportGeneration(false));
-    
+
     // Initialize all features with delay to ensure everything is loaded
     setTimeout(() => {
         features.loadCharts();
+        features.drawMissionCharts();
         features.initSparklines();
         features.initFlowChart();
     }, 100);
-    
+
     // Handle window resize
     window.addEventListener('resize', () => {
         if (typeof google !== 'undefined' && google.visualization) {
             google.charts.setOnLoadCallback(() => {
-                ['projectChart', 'missionChart', 'status-chart', 'sentiment-chart', 'type-chart', 'timeline-chart'].forEach(id => {
+                ['status-chart', 'sentiment-chart', 'type-chart', 'timeline-chart'].forEach(id => {
                     const element = document.getElementById(id);
                     if (element && element.innerHTML === '') {
-                        // Only redraw if chart exists and is empty (to avoid redrawing during loading)
                         const chart = google.visualization.chart.getChart(element);
                         if (chart) chart.draw();
                     }
                 });
+            });
+        }
+        // Redraw Morris charts
+        if (typeof Morris !== 'undefined') {
+            ['morris-donut-demande', 'morris-bar-offre', 'morris-bar-demande'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element && element.innerHTML !== '' && state.morrisCharts[id]) {
+                    state.morrisCharts[id].redraw();
+                }
             });
         }
     });

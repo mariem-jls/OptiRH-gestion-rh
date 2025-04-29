@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails de la réclamation{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <h1>Détails de la réclamation</h1>
+
+        <div class="card">
+            <div class="card-body">
+                {# ... autres champs ... #}
+                
+                {% if reclamation.documentName %}
+                    <div class="mb-3">
+                        <strong>Document joint :</strong>
+                        <a href="{{ vich_uploader_asset(reclamation, 'documentFile') }}" class="btn btn-sm btn-primary" target="_blank">
+                            <i class="fas fa-download"></i> Télécharger {{ reclamation.documentName }}
+                        </a>
+                    </div>
+                {% endif %}
+                
+                {# ... autres champs ... #}
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <a href="{{ path('app_reclamation_index') }}" class="btn btn-secondary">Retour à la liste</a>
+            <a href="{{ path('app_reclamation_edit', {'id': reclamation.id}) }}" class="btn btn-primary">Modifier</a>
+        </div>
+    </div>
+{% endblock %} 

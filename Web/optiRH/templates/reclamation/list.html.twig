@@ -1,177 +1,398 @@
 {# templates/reclamation/list.html.twig #}
 {% extends 'partials/layout-vertical.html.twig' %}
 
-{% block title %}Liste des réclamations{% endblock %}
+{% block title %}Liste des réclamations • OPTIRH{% endblock %}
 
 {% block topbar %}
-    {{ include('partials/topbar.html.twig', { page_title: 'Liste des réclamations' }) }}
+    {{ include('partials/topbar.html.twig', { page_title: 'Liste des réclamations • OPTIRH' }) }}
 {% endblock %}
 
-{% block stylesheets %}
+{% block css %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
-        .status-select { 
-            width: 150px; 
-            border-radius: 4px; 
-            padding: 5px; 
+        /* Thème OPTIRH - Bleu ciel */
+        :root {
+            --optirh-blue: #4da6ff;
+            --optirh-dark-blue: #3399ff;
+            --optirh-light-blue: #e6f2ff;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-color: #f8f9fa;
+            --dark-color: #2c3e50;
         }
-        .status-pending { 
-            background-color: #fff3cd; 
-            color: #856404; 
+
+        /* Styles pour les statuts */
+        .status-select {
+            width: 160px;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+            border: 1px solid rgba(0,0,0,0.1);
         }
-        .status-in-progress { 
-            background-color: #d1ecf1; 
-            color: #0c5460; 
+
+        .status-select.status-en-attente {
+            background-color: #fff3cd;
+            color: #856404;
         }
-        .status-resolved { 
-            background-color: #d4edda; 
-            color: #155724; 
+
+        .status-select.status-en-cours {
+            background-color: #d1ecf1;
+            color: #0c5460;
         }
-        
-        .sentiment-indicator { 
-            display: inline-block; 
-            width: 10px; 
-            height: 10px; 
-            border-radius: 50%; 
-            margin-right: 5px; 
+
+        .status-select.status-resolue {
+            background-color: #d4edda;
+            color: #155724;
         }
-        .sentiment-positive { 
-            background-color: #28a745; 
+
+        /* Affichage des sentiments */
+        .sentiment-display {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background-color: white;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
         }
-        .sentiment-neutral { 
-            background-color: #ffc107; 
+
+        .sentiment-bubble {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            box-shadow: 0 2px 3px rgba(0,0,0,0.1);
         }
-        .sentiment-negative { 
-            background-color: #dc3545; 
-        }
-        .sentiment-unknown { 
-            background-color: #6c757d; 
-        }
-        
-        .btn-sm { 
-            padding: 0.25rem 0.5rem; 
-            font-size: 0.875rem; 
-            line-height: 1.5; 
-        }
-        
-        .table-responsive {
-            overflow-x: auto;
-        }
-        
-        .badge {
-            font-size: 0.85em;
+
+        .sentiment-bubble.positive { background-color: var(--success-color); }
+        .sentiment-bubble.neutral { background-color: var(--warning-color); }
+        .sentiment-bubble.negative { background-color: var(--danger-color); }
+        .sentiment-bubble.unknown { background-color: #95a5a6; }
+
+        .sentiment-label {
+            font-size: 0.85rem;
             font-weight: 600;
-            padding: 0.35em 0.65em;
         }
         
-        .pagination {
-            display: flex;
-            justify-content: center;
-            margin-top: 1rem;
+        /* Styles pour le formulaire de filtre */
+        .filter-card {
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
         }
         
-        .pagination span {
-            margin: 0 0.25rem;
+        .filter-card .card-header {
+            background-color: var(--optirh-blue);
+            color: white;
+            border-radius: 10px 10px 0 0;
         }
         
-        .pagination .current {
-            font-weight: bold;
-            color: #0d6efd;
+        .filter-btn {
+            background-color: var(--optirh-blue);
+            border-color: var(--optirh-dark-blue);
+            transition: all 0.3s ease;
+        }
+        
+        .filter-btn:hover {
+            background-color: var(--optirh-dark-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .filter-reset {
+            color: #6c757d;
+            background-color: #f8f9fa;
+            border-color: #e9ecef;
+        }
+        
+        .filter-reset:hover {
+            background-color: #e9ecef;
+        }
+        
+        .date-range-filter .form-group {
+            margin-bottom: 10px;
+        }
+        
+        /* Ajout d'un style pour les filtres actifs */
+        .active-filters {
+            background-color: var(--optirh-light-blue);
+            border-radius: 5px;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--optirh-blue);
+        }
+        
+        .active-filters .filter-badge {
+            display: inline-block;
+            background-color: var(--optirh-blue);
+            color: white;
+            border-radius: 20px;
+            padding: 3px 10px;
+            font-size: 0.85rem;
+            margin-right: 5px;
+            margin-bottom: 5px;
         }
     </style>
 {% endblock %}
 
 {% block body %}
-    <div class="container-fluid">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                <h6 class="m-0 font-weight-bold text-primary">Liste des réclamations</h6>
-                <div>
-                    <a href="{{ path('admin_reclamations_pdf') }}" class="btn btn-sm btn-success">
-                        <i class="fas fa-file-pdf"></i> Exporter en PDF
-                    </a>
-                    <a href="{{ path('admin_reclamations_archive') }}" class="btn btn-sm btn-secondary ml-2">
-                        <i class="fas fa-archive"></i> Voir l'historique
-                    </a>
+<div class="container-fluid animate__animated animate__fadeIn">
+    <div class="card mb-4">
+        <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-white">Gestion des réclamations <span class="text-light">OPTIRH</span></h6>
+{# Dans le bloc "header-actions" dans list.html.twig #}
+<div class="header-actions d-flex gap-2">
+    <a href="{{ path('admin_reclamations_statistics') }}" class="btn btn-sm btn-info">
+        <i class="fas fa-chart-bar me-1"></i> Statistiques
+    </a>
+    <a href="{{ path('admin_reclamations_pdf') }}" class="btn btn-sm btn-success">
+        <i class="fas fa-file-pdf me-1"></i> Exporter PDF
+    </a>
+    <a href="{{ path('admin_reclamations_archive') }}" class="btn btn-sm btn-light">
+        <i class="fas fa-archive me-1"></i> Historique
+    </a>
+</div>
+        </div>
+        
+        <div class="card-body">
+            <div class="card filter-card animate__animated animate__fadeInUp">
+                <div class="card-header">
+                    <h6 class="m-0"><i class="fas fa-filter me-2"></i>Filtres avancés</h6>
+                </div>
+                <div class="card-body">
+                    {{ form_start(filterForm, {'attr': {'id': 'filter-form', 'class': 'filter-form'}}) }}
+<div class="row g-3">
+    <div class="col-md-3">
+        {{ form_row(filterForm.description, {'label': 'Recherche par description'}) }}
+    </div>
+    <div class="col-md-3">
+        {{ form_row(filterForm.type) }}
+    </div>
+    <div class="col-md-3">
+        {{ form_row(filterForm.status) }}
+    </div>
+    <div class="col-md-3">
+        {{ form_row(filterForm.sentimentLabel) }}
+    </div>
+</div>
+                    
+                    <div class="row g-3 mt-2 date-range-filter">
+                        <div class="col-md-6">
+                            {{ form_row(filterForm.date.left_date) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_row(filterForm.date.right_date) }}
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end mt-3 gap-2">
+                        <a href="{{ path('admin_reclamations') }}" class="btn filter-reset">
+                            <i class="fas fa-undo me-1"></i> Réinitialiser
+                        </a>
+                        <button type="submit" class="btn filter-btn text-white">
+                            <i class="fas fa-search me-1"></i> Appliquer les filtres
+                        </button>
+                    </div>
+                    {{ form_end(filterForm) }}
                 </div>
             </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-bordered table-striped table-hover">
-                        <thead class="thead-light">
-                            <tr>
-                                <th>Type</th>
-                                <th>Description</th>
-                                <th>Utilisateur</th>
-                                <th>Date</th>
-                                <th>Statut</th>
-                                <th>Sentiment</th>
-                                <th>QR Code</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for reclamation in pagination %}
-                                <tr>
-                                    <td>{{ reclamation.type }}</td>
-                                    <td>{{ reclamation.description|slice(0, 50) }}{% if reclamation.description|length > 50 %}...{% endif %}</td>
-                                    <td>{{ reclamation.utilisateur.nom }}</td>
-                                    <td>{{ reclamation.date|date('d/m/Y H:i') }}</td>
-                                    <td>
-                                        <form method="post" action="{{ path('admin_update_status', {'id': reclamation.id}) }}">
-                                            <select name="status" class="status-select status-{{ reclamation.status|lower|replace({' ': '-'}) }}"
-                                                    onchange="this.form.submit()">
-                                                <option value="En attente" {% if reclamation.status == 'En attente' %}selected{% endif %}>En attente</option>
-                                                <option value="En cours" {% if reclamation.status == 'En cours' %}selected{% endif %}>En cours</option>
-                                                <option value="Résolue" {% if reclamation.status == 'Résolue' %}selected{% endif %}>Résolue</option>
-                                            </select>
-                                        </form>
-                                    </td>
-                                    <td>
-                                        {% if reclamation.sentimentLabel %}
-                                            {% set sentiment_class = reclamation.sentimentLabel == 'positive' ? 'sentiment-positive' : 
-                                                (reclamation.sentimentLabel == 'negative' ? 'sentiment-negative' : 'sentiment-neutral') %}
-                                            <span class="sentiment-indicator {{ sentiment_class }}"></span>
-                                            <span class="{{ reclamation.sentimentScore < 0.3 ? 'text-danger fw-bold' : '' }}">
-                                                {{ reclamation.sentimentLabel|trans }} ({{ reclamation.sentimentScore|number_format(2) }})
-                                            </span>
-                                            {% if reclamation.sentimentScore < 0.3 %}
-                                                <span class="badge bg-danger">Priorité</span>
-                                            {% endif %}
-                                        {% else %}
-                                            <span class="sentiment-indicator sentiment-unknown"></span>
-                                            Non analysé
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <a href="{{ path('admin_reclamation_qr_code', {'id': reclamation.id}) }}" 
-                                           target="_blank" 
-                                           class="btn btn-info btn-sm"
-                                           title="Voir le QR Code">
-                                            <i class="fas fa-qrcode"></i> QR
+            
+{% if app.request.query.all|length > 0 %}
+<div class="active-filters animate__animated animate__fadeIn">
+    <h6><i class="fas fa-tag me-2"></i>Filtres actifs:</h6>
+    <div class="mt-2">
+        {% if app.request.query.has('reclamation_filter') %}
+            {% set filterParams = app.request.query.all['reclamation_filter'] %}
+            
+            {% if filterParams.description is defined and filterParams.description.value is defined and filterParams.description.value is not empty %}
+                <span class="filter-badge"><i class="fas fa-search me-1"></i> {{ filterParams.description.value }}</span>
+            {% endif %}
+            
+            {% if filterParams.type is defined and filterParams.type.value is defined and filterParams.type.value is not empty %}
+                <span class="filter-badge"><i class="fas fa-tags me-1"></i> {{ filterParams.type.value }}</span>
+            {% endif %}
+            
+            {% if filterParams.status is defined and filterParams.status.value is defined and filterParams.status.value is not empty %}
+                <span class="filter-badge"><i class="fas fa-info-circle me-1"></i> {{ filterParams.status.value }}</span>
+            {% endif %}
+            
+            {% if filterParams.sentimentLabel is defined and filterParams.sentimentLabel.value is defined and filterParams.sentimentLabel.value is not empty %}
+                <span class="filter-badge"><i class="fas fa-smile me-1"></i> {{ filterParams.sentimentLabel.value }}</span>
+            {% endif %}
+            
+            {% if filterParams.date is defined %}
+                {% if filterParams.date.left_date is defined and filterParams.date.left_date.value is defined and filterParams.date.left_date.value is not empty %}
+                    <span class="filter-badge"><i class="fas fa-calendar-alt me-1"></i> À partir du {{ filterParams.date.left_date.value|date('d/m/Y') }}</span>
+                {% endif %}
+                
+                {% if filterParams.date.right_date is defined and filterParams.date.right_date.value is defined and filterParams.date.right_date.value is not empty %}
+                    <span class="filter-badge"><i class="fas fa-calendar-alt me-1"></i> Jusqu'au {{ filterParams.date.right_date.value|date('d/m/Y') }}</span>
+                {% endif %}
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+            
+            <div class="table-responsive">
+                <table class="table table-reclamations">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Description</th>
+                            <th>Utilisateur</th>
+                            <th>Date</th>
+                            <th>Statut</th>
+                            <th>Sentiment</th>
+                            <th>Pièces jointes</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reclamation in pagination %}
+                            <tr class="animate__animated animate__fadeIn" style="animation-delay: {{ loop.index * 0.05 }}s">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        {% if reclamation.type == "Salaire" %}💰
+                                        {% elseif reclamation.type == "Rémunération" %}💵
+                                        {% elseif reclamation.type == "Congés" %}🏖️
+                                        {% elseif reclamation.type == "Relations professionnelles" %}👥
+                                        {% elseif reclamation.type == "Conditions de travail" %}🏢
+                                        {% else %}📌{% endif %}
+                                        <span class="ms-2">{{ reclamation.type }}</span>
+                                    </div>
+                                </td>
+                                <td title="{{ reclamation.description }}">
+                                    {{ reclamation.description|slice(0, 50) }}
+                                    {% if reclamation.description|length > 50 %}...{% endif %}
+                                </td>
+                                <td>{{ reclamation.utilisateur.nom }}</td>
+                                <td>{{ reclamation.date|date('d/m/Y H:i') }}</td>
+                                <td>
+                                    <span class="badge bg-{{ reclamation.getStatusColor(reclamation.status) }}">
+                                        {{ reclamation.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if reclamation.sentimentLabel %}
+                                        <span class="badge bg-{{ reclamation.sentimentLabel == 'positive' ? 'success' : (reclamation.sentimentLabel == 'negative' ? 'danger' : 'warning') }}">
+                                            {{ reclamation.sentimentLabel|trans }} ({{ reclamation.sentimentScore|number_format(2) }})
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Non analysé</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if reclamation.documentName %}
+                                        <a href="{{ vich_uploader_asset(reclamation, 'documentFile') }}" 
+                                           class="btn btn-sm btn-outline-primary" 
+                                           target="_blank"
+                                           title="Voir la pièce jointe">
+                                            <i class="fas fa-file-alt me-1"></i>
+                                            {{ reclamation.documentName|slice(0, 20) }}{% if reclamation.documentName|length > 20 %}...{% endif %}
                                         </a>
-                                    </td>
-                                    <td>
+                                    {% else %}
+                                        <span class="text-muted">Aucune pièce jointe</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-2">
                                         <a href="{{ path('admin_reclamation_reponses', {'id': reclamation.id}) }}" 
-                                           class="btn btn-primary btn-sm"
-                                           title="Gérer les réponses">
+                                           class="btn btn-sm btn-primary"
+                                           title="Voir les réponses">
                                             <i class="fas fa-comments"></i>
                                         </a>
-                                    </td>
-                                </tr>
-                            {% else %}
-                                <tr>
-                                    <td colspan="8" class="text-center text-muted">Aucune réclamation trouvée</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    
-                    {# Remplacer la div navigation par la pagination Bootstrap #}
-<div class="d-flex justify-content-center mt-3">
-    {{ knp_pagination_render(pagination) }}
-</div>
+                                        <a href="{{ path('admin_reclamation_qr_code', {'id': reclamation.id}) }}" 
+                                           class="btn btn-sm btn-info"
+                                           title="QR Code">
+                                            <i class="fas fa-qrcode"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="7">
+                                    <div class="empty-state text-center py-4">
+                                        <i class="fas fa-inbox fa-3x mb-3 text-muted"></i>
+                                        <h4 class="mb-3">Aucune réclamation trouvée</h4>
+                                        <p class="text-muted">Aucune réclamation ne correspond à vos critères de recherche</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                <div class="pagination-container mt-4">
+                    {{ knp_pagination_render(pagination) }}
                 </div>
             </div>
         </div>
     </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animation des éléments au chargement
+            const cards = document.querySelectorAll('.card, .table-responsive');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.animation = `fadeInUp 0.5s ease forwards ${index * 0.1}s`;
+            });
+
+            // Tooltips
+            $('[title]').tooltip({
+                trigger: 'hover',
+                placement: 'top',
+                animation: true
+            });
+            
+            // Appliquer datepicker aux inputs de date si non-native
+            if (typeof $.fn.datepicker !== 'undefined') {
+                $('.filter-form input[type="date"]').datepicker({
+                    format: 'yyyy-mm-dd',
+                    autoclose: true,
+                    todayHighlight: true,
+                    language: 'fr'
+                });
+            }
+            
+            // Soumission automatique du formulaire lors de la modification des filtres
+            const autoSubmitInputs = document.querySelectorAll('#filter-form select, #filter-form input[type="date"]');
+            autoSubmitInputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    // Petite pause pour permettre à l'utilisateur de voir le changement avant soumission
+                    setTimeout(() => {
+                        document.getElementById('filter-form').submit();
+                    }, 300);
+                });
+            });
+            
+            // Pour l'input de recherche, on soumet après un délai de frappe
+            const searchInput = document.querySelector('#filter-form input[type="text"]');
+            if (searchInput) {
+                let typingTimer;
+                const doneTypingInterval = 800; // ms
+                
+                searchInput.addEventListener('keyup', function() {
+                    clearTimeout(typingTimer);
+                    if (this.value) {
+                        typingTimer = setTimeout(() => {
+                            document.getElementById('filter-form').submit();
+                        }, doneTypingInterval);
+                    }
+                });
+            }
+        });
+    </script>
 {% endblock %}

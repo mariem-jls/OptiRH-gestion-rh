@@ -1,0 +1,21 @@
+{{ form_start(form) }}
+    {# ... existing fields ... #}
+    
+    <div class="form-group">
+        {{ form_label(form.documentFile) }}
+        {{ form_widget(form.documentFile) }}
+        {{ form_errors(form.documentFile) }}
+        
+        {% if form.vars.data.documentName is defined and form.vars.data.documentName %}
+            <div class="mt-2">
+                <p>Document actuel : 
+                    <a href="{{ vich_uploader_asset(form.vars.data, 'documentFile') }}" target="_blank">
+                        {{ form.vars.data.documentName }}
+                    </a>
+                </p>
+            </div>
+        {% endif %}
+    </div>
+    
+    {# ... existing fields ... #}
+{{ form_end(form) }} 
