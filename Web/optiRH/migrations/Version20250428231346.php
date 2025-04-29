@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20250428131736 extends AbstractMigration
+final class Version20250428231346 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -48,13 +48,13 @@ final class Version20250428131736 extends AbstractMigration
             CREATE TABLE projects (id INT AUTO_INCREMENT NOT NULL, created_by_id INT NOT NULL, nom VARCHAR(100) NOT NULL, description LONGTEXT DEFAULT NULL, status VARCHAR(20) DEFAULT NULL, created_at DATETIME NOT NULL, INDEX IDX_5C93B3A4B03A8386 (created_by_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
-            CREATE TABLE reclamation (id INT AUTO_INCREMENT NOT NULL, utilisateur_id INT NOT NULL, description LONGTEXT NOT NULL, status VARCHAR(50) NOT NULL, date DATETIME NOT NULL, type VARCHAR(50) NOT NULL, sentiment_score DOUBLE PRECISION DEFAULT NULL, sentiment_label VARCHAR(20) DEFAULT NULL, qr_code_filename VARCHAR(255) DEFAULT NULL, INDEX IDX_CE606404FB88E14F (utilisateur_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+            CREATE TABLE reclamation (id INT AUTO_INCREMENT NOT NULL, utilisateur_id INT NOT NULL, description LONGTEXT NOT NULL, status VARCHAR(50) NOT NULL, date DATETIME NOT NULL, type VARCHAR(50) NOT NULL, sentiment_score DOUBLE PRECISION DEFAULT NULL, sentiment_label VARCHAR(20) DEFAULT NULL, qr_code_filename VARCHAR(255) DEFAULT NULL, document_name VARCHAR(255) DEFAULT NULL, updated_at DATETIME DEFAULT NULL, INDEX IDX_CE606404FB88E14F (utilisateur_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
             CREATE TABLE reclamation_archive (id INT AUTO_INCREMENT NOT NULL, type VARCHAR(255) NOT NULL, description LONGTEXT NOT NULL, utilisateur_nom VARCHAR(255) NOT NULL, date DATETIME NOT NULL, deleted_at DATETIME NOT NULL, status VARCHAR(50) NOT NULL, sentiment_score DOUBLE PRECISION DEFAULT NULL, sentiment_label VARCHAR(50) DEFAULT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
-            CREATE TABLE reponse (id INT AUTO_INCREMENT NOT NULL, reclamation_id INT NOT NULL, description LONGTEXT NOT NULL, date DATETIME NOT NULL, rating INT NOT NULL, INDEX IDX_5FB6DEC72D6BA2D9 (reclamation_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+            CREATE TABLE reponse (id INT AUTO_INCREMENT NOT NULL, reclamation_id INT NOT NULL, description LONGTEXT NOT NULL, date DATETIME NOT NULL, rating INT NOT NULL, commentaire LONGTEXT DEFAULT NULL, INDEX IDX_5FB6DEC72D6BA2D9 (reclamation_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
             CREATE TABLE reservation_evenement (id_participation INT AUTO_INCREMENT NOT NULL, id_user INT NOT NULL, id_evenement INT NOT NULL, first_name VARCHAR(255) NOT NULL, last_name VARCHAR(255) NOT NULL, email VARCHAR(255) NOT NULL, telephone VARCHAR(255) NOT NULL, date_reservation DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, INDEX IDX_116109816B3CA4B (id_user), INDEX IDX_116109818B13D439 (id_evenement), PRIMARY KEY(id_participation)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB

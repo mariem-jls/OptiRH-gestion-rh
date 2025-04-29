@@ -693,6 +693,47 @@ class HomeController extends AbstractController
             ->getQuery()
             ->getResult();
 
+        // Récupérer les données de timeline pour les missions
+        $missionTimeline = [];
+        $now = new \DateTime();
+        for ($i = 5; $i >= 0; $i--) {
+            $startDate = (new \DateTime("first day of -$i months"))->setTime(0, 0, 0);
+            $endDate = (clone $startDate)->modify('+1 month');
+            $monthKey = $startDate->format('M Y');
+
+            if ($endDate > $now) {
+                $endDate = clone $now;
+            }
+
+            $created = $missionRepository->createQueryBuilder('m')
+                ->select('COUNT(m.id)')
+                ->where('m.assignedTo = :user')
+                ->andWhere('m.createdAt BETWEEN :start AND :end')
+                ->setParameter('user', $user)
+                ->setParameter('start', $startDate)
+                ->setParameter('end', $endDate)
+                ->getQuery()
+                ->getSingleScalarResult();
+
+            $completed = $missionRepository->createQueryBuilder('m')
+                ->select('COUNT(m.id)')
+                ->where('m.assignedTo = :user')
+                ->andWhere('m.status = :status')
+                ->andWhere('m.updatedAt BETWEEN :start AND :end')
+                ->setParameter('user', $user)
+                ->setParameter('status', 'Done')
+                ->setParameter('start', $startDate)
+                ->setParameter('end', $endDate)
+                ->getQuery()
+                ->getSingleScalarResult();
+
+            $missionTimeline[] = [
+                'month' => $monthKey,
+                'created' => (int)$created,
+                'completed' => (int)$completed
+            ];
+        }
+
         try {
             // Récupérer les statistiques des réclamations
             $statusData = $this->getReclamationStatusData($reclamationRepository);
@@ -732,6 +773,7 @@ class HomeController extends AbstractController
             'mission_stats' => $missionStats,
             'late_missions' => $lateMissions,
             'total_missions' => count($userMissions),
+            'mission_timeline' => $missionTimeline,
             'is_admin' => false,
             // Données des réclamations
             'resolutionRate' => $resolutionRate,

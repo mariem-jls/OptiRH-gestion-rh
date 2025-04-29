@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <link rel="stylesheet" href="/libs/morris.js06/morris.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://www.gstatic.com/charts/loader.js">
     <style>
         :root {
             --primary-color: #4e73df;
@@ -889,7 +890,7 @@
                     <span class="mission-chart-period">Mise à jour: {{ "now"|date("d/m/Y H:i") }}</span>
                 </div>
                 <div class="mission-chart-canvas">
-                    <canvas id="missionStatusChart"></canvas>
+                    <canvas id="missionStatusChart" height="300"></canvas>
                 </div>
             </div>
             <div class="mission-chart-wrapper mission-fade-in">
@@ -898,7 +899,7 @@
                     <span class="mission-chart-period">6 derniers mois</span>
                 </div>
                 <div class="mission-chart-canvas">
-                    <canvas id="missionTimelineChart"></canvas>
+                    <canvas id="missionTimelineChart" height="300"></canvas>
                 </div>
             </div>
             <div class="mission-chart-wrapper mission-fade-in">
@@ -907,7 +908,7 @@
                     <span class="mission-chart-period">Toutes les missions</span>
                 </div>
                 <div class="mission-chart-canvas">
-                    <canvas id="missionProjectDistribution"></canvas>
+                    <canvas id="missionProjectDistribution" height="300"></canvas>
                 </div>
             </div>
         </div>
@@ -967,15 +968,15 @@
     <div class="chart-container">
         <div class="chart-wrapper fade-in">
             <h3><i class="fas fa-chart-pie me-2"></i> Demandes par statut</h3>
-            <div id="morris-donut-demande" style="height: 350px;" class="morris-chart" data-colors="#3AB5CE,#1B3583,#A8E0EA"></div>
+            <canvas id="recruitmentStatusChart" height="350"></canvas>
         </div>
         <div class="chart-wrapper fade-in">
             <h3><i class="fas fa-chart-bar me-2"></i> Offres par type de contrat</h3>
-            <div id="morris-bar-offre" style="height: 350px;" class="morris-chart" data-colors="#3AB5CE"></div>
+            <canvas id="recruitmentContractChart" height="350"></canvas>
         </div>
         <div class="chart-wrapper fade-in">
             <h3><i class="fas fa-chart-bar me-2"></i> Évolution des demandes</h3>
-            <div id="morris-bar-demande" style="height: 350px;" class="morris-chart" data-colors="#3AB5CE"></div>
+            <canvas id="recruitmentEvolutionChart" height="350"></canvas>
         </div>
     </div>
 
@@ -1004,7 +1005,7 @@
                                     <h6 class="m-0"><i class="fas fa-tasks me-2"></i>Répartition par statut</h6>
                                 </div>
                                 <div class="card-body">
-                                    <div id="statusChart" class="chart-container"></div>
+                                    <canvas id="statusChart" height="300"></canvas>
                                 </div>
                             </div>
                         </div>
@@ -1016,7 +1017,7 @@
                                     <h6 class="m-0"><i class="fas fa-smile me-2"></i>Analyse des sentiments</h6>
                                 </div>
                                 <div class="card-body">
-                                    <div id="sentimentChart" class="chart-container"></div>
+                                    <canvas id="sentimentChart" height="300"></canvas>
                                 </div>
                             </div>
                         </div>
@@ -1031,7 +1032,7 @@
                                     <h6 class="m-0"><i class="fas fa-tags me-2"></i>Répartition par type</h6>
                                 </div>
                                 <div class="card-body">
-                                    <div id="typeChart" class="chart-container"></div>
+                                    <canvas id="typeChart" height="300"></canvas>
                                 </div>
                             </div>
                         </div>
@@ -1043,21 +1044,7 @@
                                     <h6 class="m-0"><i class="fas fa-chart-line me-2"></i>Évolution par minute</h6>
                                 </div>
                                 <div class="card-body">
-                                    <div id="timelineChart" class="chart-container"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Analyse croisée Type x Sentiment -->
-                    <div class="row gy-4">
-                        <div class="col-12 animate__animated animate__fadeInUp" style="animation-delay: 0.7s">
-                            <div class="stats-card">
-                                <div class="card-header">
-                                    <h6 class="m-0"><i class="fas fa-th-large me-2"></i>Analyse croisée Type × Sentiment</h6>
-                                </div>
-                                <div class="card-body">
-                                    <div id="typeSentimentChart" class="chart-container" style="height: 400px;"></div>
+                                    <canvas id="timelineChart" height="300"></canvas>
                                 </div>
                             </div>
                         </div>
@@ -1170,196 +1157,32 @@
 
 {% block javascript %}
     {{ parent() }}
-    <!-- Chargement des bibliothèques dans le bon ordre -->
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/raphael@2.3.0/raphael.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/morris.js@0.5.1/morris.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://www.gstatic.com/charts/loader.js"></script>
-
+    
     <script>
-        // Initialisation de Google Charts
-        google.charts.load('current', {'packages':['corechart', 'bar']});
-        
-        // Fonction pour vérifier si un élément existe et contient des données
-        function hasData(data) {
-            return data && Array.isArray(data) && data.length > 0;
-        }
-
-        // Fonction pour initialiser les graphiques Google
-        function initGoogleCharts() {
-            console.log('Initialisation des graphiques Google');
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Initialisation des graphiques...');
             
-            // Graphique de statut des réclamations
-            if (document.getElementById('statusChart')) {
-                const data = google.visualization.arrayToDataTable({{ statusDataJson|raw }});
-                const options = {
-                    pieHole: 0.4,
-                    colors: ['#f39c12', '#3498db', '#2ecc71'],
-                    chartArea: {width: '90%', height: '80%'},
-                    legend: {position: 'right'},
-                    pieSliceText: 'percentage',
-                    sliceVisibilityThreshold: 0.05
-                };
-                const chart = new google.visualization.PieChart(document.getElementById('statusChart'));
-                chart.draw(data, options);
-            }
-            
-            // Graphique de sentiment des réclamations
-            if (document.getElementById('sentimentChart')) {
-                const data = google.visualization.arrayToDataTable({{ sentimentDataJson|raw }});
-                const options = {
-                    pieHole: 0.4,
-                    colors: ['#2ecc71', '#f39c12', '#e74c3c'],
-                    chartArea: {width: '90%', height: '80%'},
-                    legend: {position: 'right'},
-                    pieSliceText: 'percentage',
-                    sliceVisibilityThreshold: 0.05
-                };
-                const chart = new google.visualization.PieChart(document.getElementById('sentimentChart'));
-                chart.draw(data, options);
-            }
-            
-            // Graphique de type des réclamations
-            if (document.getElementById('typeChart')) {
-                const data = google.visualization.arrayToDataTable({{ typeDataJson|raw }});
-                const options = {
-                    chartArea: {width: '80%', height: '70%'},
-                    legend: {position: 'none'},
-                    hAxis: {
-                        minValue: 0,
-                    },
-                    vAxis: {
-                        title: 'Type de réclamation'
-                    },
-                    bars: 'horizontal',
-                    colors: ['#3498db']
-                };
-                const chart = new google.visualization.BarChart(document.getElementById('typeChart'));
-                chart.draw(data, options);
-            }
-            
-            // Graphique d'évolution des réclamations
-            if (document.getElementById('timelineChart')) {
-                const data = google.visualization.arrayToDataTable({{ timelineDataJson|raw }});
-                const options = {
-                    chartArea: {width: '80%', height: '70%'},
-                    legend: {position: 'none'},
-                    colors: ['#3498db'],
-                    hAxis: {
-                        title: 'Temps (minute)',
-                        slantedText: true,
-                        slantedTextAngle: 45
-                    },
-                    vAxis: {
-                        title: 'Nombre de réclamations',
-                        minValue: 0
-                    }
-                };
-                const chart = new google.visualization.LineChart(document.getElementById('timelineChart'));
-                chart.draw(data, options);
-            }
-            
-            // Graphique croisé Type x Sentiment
-            if (document.getElementById('typeSentimentChart')) {
-                // Créer les données croisées à partir des données existantes
-                const typeData = {{ typeDataJson|raw }};
-                const sentimentData = {{ sentimentDataJson|raw }};
+            // Charts pour les missions
+            const missionStatusCtx = document.getElementById('missionStatusChart');
+            if (missionStatusCtx) {
+                console.log('Données de statut des missions:', {
+                    inProgress: {{ mission_stats['In Progress']|default(0) }},
+                    done: {{ mission_stats['Done']|default(0) }},
+                    pending: {{ mission_stats['Pending']|default(0) }}
+                });
                 
-                // Préparer le tableau de données croisées
-                const crossData = [['Type', 'Positif', 'Neutre', 'Négatif']];
-                
-                // Extraire les types uniques (en ignorant l'en-tête)
-                const types = typeData.slice(1).map(row => row[0]);
-                
-                // Pour chaque type, calculer la répartition des sentiments
-                types.forEach(type => {
-                    // Distribution égale des sentiments pour chaque type
-                    const total = typeData.find(row => row[0] === type)[1];
-                    const perSentiment = Math.round(total / 3);
-                    crossData.push([type, perSentiment, perSentiment, perSentiment]);
-                });
-
-                const data = google.visualization.arrayToDataTable(crossData);
-                const options = {
-                    chartArea: {width: '80%', height: '70%'},
-                    isStacked: true,
-                    legend: {position: 'top'},
-                    colors: ['#2ecc71', '#f39c12', '#e74c3c'],
-                    hAxis: {
-                        title: 'Nombre de réclamations'
-                    },
-                    vAxis: {
-                        title: 'Type de réclamation'
-                    }
-                };
-                const chart = new google.visualization.BarChart(document.getElementById('typeSentimentChart'));
-                chart.draw(data, options);
-            }
-        }
-
-        // Fonction pour initialiser les graphiques Morris
-        function initMorrisCharts() {
-            console.log('Initialisation des graphiques Morris');
-            
-            // Graphique des demandes par statut
-            if (document.getElementById('morris-donut-demande')) {
-                new Morris.Donut({
-                    element: 'morris-donut-demande',
-                    data: {{ demande_stats|json_encode|raw }},
-                    colors: ['#3AB5CE', '#1B3583', '#A8E0EA'],
-                    resize: true
-                });
-            }
-            
-            // Graphique des offres par type de contrat
-            if (document.getElementById('morris-bar-offre')) {
-                new Morris.Bar({
-                    element: 'morris-bar-offre',
-                    data: {{ offre_stats|json_encode|raw }},
-                    xkey: 'typeContrat',
-                    ykeys: ['count'],
-                    labels: ['Nombre d\'offres'],
-                    colors: ['#3AB5CE'],
-                    resize: true,
-                    hideHover: 'auto'
-                });
-            }
-            
-            // Graphique de l'évolution des demandes
-            if (document.getElementById('morris-bar-demande')) {
-                new Morris.Bar({
-                    element: 'morris-bar-demande',
-                    data: {{ demande_timeline|json_encode|raw }},
-                    xkey: 'month',
-                    ykeys: ['count'],
-                    labels: ['Demandes'],
-                    colors: ['#3AB5CE'],
-                    resize: true,
-                    hideHover: 'auto'
-                });
-            }
-        }
-
-        // Fonction pour initialiser les graphiques Chart.js
-        function initChartJsGraphs() {
-            console.log('Initialisation des graphiques Chart.js');
-            
-            // Configuration globale de Chart.js
-            Chart.defaults.responsive = true;
-            Chart.defaults.maintainAspectRatio = false;
-            
-            // Graphique de statut des missions
-            const missionStatusChart = document.getElementById('missionStatusChart');
-            if (missionStatusChart) {
-                const ctx = missionStatusChart.getContext('2d');
-                new Chart(ctx, {
+                new Chart(missionStatusCtx, {
                     type: 'doughnut',
                     data: {
-                        labels: [{% for status, count in mission_stats %}'{{ status }}',{% endfor %}],
+                        labels: ['En cours', 'Terminées', 'En attente'],
                         datasets: [{
-                            data: [{% for status, count in mission_stats %}{{ count }},{% endfor %}],
-                            backgroundColor: ['#4e73df', '#1cc88a', '#f6c23e', '#e74a3b', '#36b9cc']
+                            data: [
+                                {{ mission_stats['In Progress']|default(0) }},
+                                {{ mission_stats['Done']|default(0) }},
+                                {{ mission_stats['Pending']|default(0) }}
+                            ],
+                            backgroundColor: ['#3498db', '#2ecc71', '#f39c12']
                         }]
                     },
                     options: {
@@ -1367,37 +1190,42 @@
                         maintainAspectRatio: false,
                         plugins: {
                             legend: {
-                                position: 'right',
-                                labels: {
-                                    padding: 20
-                                }
+                                position: 'right'
                             }
                         }
                     }
                 });
+            } else {
+                console.error('Canvas missionStatusChart non trouvé');
             }
-            
-            // Graphique d'évolution des missions
-            const missionTimelineChart = document.getElementById('missionTimelineChart');
-            if (missionTimelineChart) {
-                const ctx = missionTimelineChart.getContext('2d');
-                new Chart(ctx, {
+
+            const missionTimelineCtx = document.getElementById('missionTimelineChart');
+            if (missionTimelineCtx) {
+                const timelineData = {{ mission_timeline_data|json_encode|raw }};
+                console.log('Données de timeline des missions:', timelineData);
+                
+                const timelineLabels = Object.keys(timelineData);
+                const createdData = Object.values(timelineData).map(item => item.created);
+                const completedData = Object.values(timelineData).map(item => item.completed);
+                
+                new Chart(missionTimelineCtx, {
                     type: 'line',
                     data: {
-                        labels: [{% for month, data in mission_timeline_data %}'{{ month }}',{% endfor %}],
-                        datasets: [{
-                            label: 'Créées',
-                            data: [{% for month, data in mission_timeline_data %}{{ data.created }},{% endfor %}],
-                            borderColor: '#4e73df',
-                            backgroundColor: 'rgba(78, 115, 223, 0.1)',
-                            fill: true
-                        }, {
-                            label: 'Terminées',
-                            data: [{% for month, data in mission_timeline_data %}{{ data.completed }},{% endfor %}],
-                            borderColor: '#1cc88a',
-                            backgroundColor: 'rgba(28, 200, 138, 0.1)',
-                            fill: true
-                        }]
+                        labels: timelineLabels,
+                        datasets: [
+                            {
+                                label: 'Missions créées',
+                                data: createdData,
+                                borderColor: '#3498db',
+                                tension: 0.4
+                            },
+                            {
+                                label: 'Missions terminées',
+                                data: completedData,
+                                borderColor: '#2ecc71',
+                                tension: 0.4
+                            }
+                        ]
                     },
                     options: {
                         responsive: true,
@@ -1406,42 +1234,273 @@
                             legend: {
                                 position: 'top'
                             }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true
+                        }
+                    }
+                });
+            } else {
+                console.error('Canvas missionTimelineChart non trouvé');
+            }
+
+            const missionProjectCtx = document.getElementById('missionProjectDistribution');
+            if (missionProjectCtx) {
+                const projectData = {{ projects|json_encode|raw }};
+                console.log('Données des projets:', projectData);
+                
+                const projectLabels = projectData.map(project => project.entity.nom);
+                const projectCounts = projectData.map(project => project.total_missions);
+                
+                new Chart(missionProjectCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: projectLabels,
+                        datasets: [{
+                            label: 'Missions par projet',
+                            data: projectCounts,
+                            backgroundColor: '#3498db'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
                             }
                         }
                     }
                 });
+            } else {
+                console.error('Canvas missionProjectDistribution non trouvé');
             }
-        }
 
-        // Initialisation au chargement de la page
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialiser Morris.js
-            if (typeof Morris !== 'undefined') {
-                initMorrisCharts();
-            }
-            
-            // Initialiser Chart.js
-            if (typeof Chart === 'function') {
-                initChartJsGraphs();
-            }
-            
-            // Initialiser Google Charts
-            google.charts.setOnLoadCallback(initGoogleCharts);
-            
-            // Gestion du redimensionnement
-            let resizeTimeout;
-            window.addEventListener('resize', function() {
-                clearTimeout(resizeTimeout);
-                resizeTimeout = setTimeout(function() {
-                    if (typeof Morris !== 'undefined') {
-                        Morris.Donut.prototype.redrawAll();
-                        Morris.Bar.prototype.redrawAll();
+            // Charts pour le recrutement
+            const recruitmentStatusCtx = document.getElementById('recruitmentStatusChart');
+            if (recruitmentStatusCtx) {
+                const totalDemandes = {{ recruitment_stats.total_demandes }};
+                const acceptedDemandes = {{ recruitment_stats.accepted_demandes }};
+                const pendingDemandes = totalDemandes - acceptedDemandes;
+                
+                console.log('Statistiques de recrutement:', {
+                    total: totalDemandes,
+                    accepted: acceptedDemandes,
+                    pending: pendingDemandes
+                });
+                
+                new Chart(recruitmentStatusCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Acceptées', 'En attente'],
+                        datasets: [{
+                            data: [acceptedDemandes, pendingDemandes],
+                            backgroundColor: ['#2ecc71', '#f39c12']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'right'
+                            }
+                        }
                     }
-                }, 250);
+                });
+            } else {
+                console.error('Canvas recruitmentStatusChart non trouvé');
+            }
+
+            const recruitmentContractCtx = document.getElementById('recruitmentContractChart');
+            if (recruitmentContractCtx) {
+                console.log('Offres actives:', {{ recruitment_stats.active_offres }});
+                
+                new Chart(recruitmentContractCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Offres actives'],
+                        datasets: [{
+                            label: 'Nombre d\'offres',
+                            data: [{{ recruitment_stats.active_offres }}],
+                            backgroundColor: '#3498db'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            } else {
+                console.error('Canvas recruitmentContractChart non trouvé');
+            }
+
+            const recruitmentEvolutionCtx = document.getElementById('recruitmentEvolutionChart');
+            if (recruitmentEvolutionCtx) {
+                console.log('Timeline des demandes:', {{ demande_timeline|json_encode|raw }});
+                
+                new Chart(recruitmentEvolutionCtx, {
+                    type: 'line',
+                    data: {
+                        labels: {{ demande_timeline|map(item => item.month)|json_encode|raw }},
+                        datasets: [{
+                            label: 'Évolution des demandes',
+                            data: {{ demande_timeline|map(item => item.count)|json_encode|raw }},
+                            borderColor: '#3498db',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            } else {
+                console.error('Canvas recruitmentEvolutionChart non trouvé');
+            }
+
+            // Chart 1: Statut des réclamations
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+            const statusData = {{ statusDataJson|raw }};
+            const statusLabels = statusData.slice(1).map(item => item[0]);
+            const statusValues = statusData.slice(1).map(item => item[1]);
+            
+            new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: statusLabels,
+                    datasets: [{
+                        data: statusValues,
+                        backgroundColor: ['#f39c12', '#3498db', '#2ecc71'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const value = context.raw;
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${context.label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Chart 2: Sentiment des réclamations
+            const sentimentCtx = document.getElementById('sentimentChart').getContext('2d');
+            const sentimentData = {{ sentimentDataJson|raw }};
+            const sentimentLabels = sentimentData.slice(1).map(item => item[0]);
+            const sentimentValues = sentimentData.slice(1).map(item => item[1]);
+            
+            new Chart(sentimentCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: sentimentLabels,
+                    datasets: [{
+                        data: sentimentValues,
+                        backgroundColor: ['#2ecc71', '#f39c12', '#e74c3c'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const value = context.raw;
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${context.label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Chart 3: Type des réclamations
+            const typeCtx = document.getElementById('typeChart').getContext('2d');
+            const typeData = {{ typeDataJson|raw }};
+            const typeLabels = typeData.slice(1).map(item => item[0]);
+            const typeValues = typeData.slice(1).map(item => item[1]);
+            
+            new Chart(typeCtx, {
+                type: 'bar',
+                data: {
+                    labels: typeLabels,
+                    datasets: [{
+                        data: typeValues,
+                        backgroundColor: '#3498db',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            // Chart 4: Timeline des réclamations
+            const timelineCtx = document.getElementById('timelineChart').getContext('2d');
+            const timelineData = {{ timelineDataJson|raw }};
+            const timelineLabels = timelineData.slice(1).map(item => item[0]);
+            const timelineValues = timelineData.slice(1).map(item => item[1]);
+            
+            new Chart(timelineCtx, {
+                type: 'line',
+                data: {
+                    labels: timelineLabels,
+                    datasets: [{
+                        data: timelineValues,
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
             });
         });
     </script>

@@ -414,25 +414,29 @@
                 <!-- Première rangée de graphiques -->
                 <div class="row gy-4 mb-4">
                     <!-- Statistiques par statut -->
-                    <div class="col-md-6">
+                    <div class="col-xl-6 col-lg-6">
                         <div class="stats-card">
                             <div class="card-header">
-                                <h6 class="m-0"><i class="fas fa-tasks me-2"></i>Répartition par statut</h6>
+                                <h5 class="card-title mb-0">Statut des réclamations</h5>
                             </div>
                             <div class="card-body">
-                                <div id="statusChart" class="chart-container"></div>
+                                <div class="chart-container">
+                                    <canvas id="statusChart"></canvas>
+                                </div>
                             </div>
                         </div>
                     </div>
                     
                     <!-- Statistiques par sentiment -->
-                    <div class="col-md-6">
+                    <div class="col-xl-6 col-lg-6">
                         <div class="stats-card">
                             <div class="card-header">
-                                <h6 class="m-0"><i class="fas fa-smile me-2"></i>Analyse des sentiments</h6>
+                                <h5 class="card-title mb-0">Sentiment des réclamations</h5>
                             </div>
                             <div class="card-body">
-                                <div id="sentimentChart" class="chart-container"></div>
+                                <div class="chart-container">
+                                    <canvas id="sentimentChart"></canvas>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -441,25 +445,29 @@
                 <!-- Deuxième rangée de graphiques -->
                 <div class="row gy-4">
                     <!-- Statistiques par type -->
-                    <div class="col-md-6">
+                    <div class="col-xl-6 col-lg-6 mt-4">
                         <div class="stats-card">
                             <div class="card-header">
-                                <h6 class="m-0"><i class="fas fa-tags me-2"></i>Répartition par type</h6>
+                                <h5 class="card-title mb-0">Types de réclamations</h5>
                             </div>
                             <div class="card-body">
-                                <div id="typeChart" class="chart-container"></div>
+                                <div class="chart-container">
+                                    <canvas id="typeChart"></canvas>
+                                </div>
                             </div>
                         </div>
                     </div>
                     
                     <!-- Évolution dans le temps -->
-                    <div class="col-md-6">
+                    <div class="col-xl-6 col-lg-6 mt-4">
                         <div class="stats-card">
                             <div class="card-header">
-                                <h6 class="m-0"><i class="fas fa-chart-line me-2"></i>Évolution temporelle</h6>
+                                <h5 class="card-title mb-0">Évolution des réclamations</h5>
                             </div>
                             <div class="card-body">
-                                <div id="timelineChart" class="chart-container"></div>
+                                <div class="chart-container">
+                                    <canvas id="timelineChart"></canvas>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -468,475 +476,233 @@
         </div>
     </div>
 </div>
+
+{% dump(recruitment_stats) %}
+{% dump(demande_timeline) %}
 {% endblock %}
 
 {% block javascript %}
-<script src="https://www.gstatic.com/charts/loader.js"></script>
-<script src="{{ asset('libs/moment/min/moment-with-locales.min.js') }}"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Chargement de la météo (inchangé)
-    function loadWeather() {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                function(position) {
-                    const lat = position.coords.latitude;
-                    const lon = position.coords.longitude;
-                    
-                    fetch(`/admin/weather?lat=${lat}&lon=${lon}`)
-                        .then(response => {
-                            if (!response.ok) throw new Error('Erreur réseau');
-                            return response.json();
-                        })
-                        .then(data => {
-                            const weatherHTML = `
-                                <div class="weather-card">
-                                    <div class="weather-card-header">
-                                        <i class="fas fa-map-marker-alt"></i> ${data.name}, ${data.sys.country}
-                                    </div>
-                                    <div class="weather-card-body text-center">
-                                        <img src="https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png" 
-                                             alt="Weather icon" class="weather-icon">
-                                        <p class="mb-1">${data.weather[0].description}</p>
-                                        <p class="h4">${Math.round(data.main.temp)}°C</p>
-                                        <small>Vent: ${data.wind.speed} m/s | Humidité: ${data.main.humidity}%</small>
-                                    </div>
-                                </div>
-                            `;
-                            document.getElementById('weather').innerHTML = weatherHTML;
-                        })
-                        .catch(error => {
-                            document.getElementById('weather').innerHTML = `
-                                <div class="weather-card">
-                                    <div class="weather-card-body text-center">
-                                        <i class="fas fa-cloud-exclamation fa-2x mb-2"></i>
-                                        <p>Données météo indisponibles</p>
-                                    </div>
-                                </div>
-                            `;
-                        });
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Initialisation des graphiques...');
+            
+            // Graphique de répartition des missions personnelles
+            const personalMissionCtx = document.getElementById('personalMissionChart').getContext('2d');
+            new Chart(personalMissionCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['En cours', 'Terminées', 'En retard'],
+                    datasets: [{
+                        data: [
+                            {{ mission_stats|filter(stat => stat.status == 'In Progress')|first.count|default(0) }},
+                            {{ mission_stats|filter(stat => stat.status == 'Done')|first.count|default(0) }},
+                            {{ late_missions|length }}
+                        ],
+                        backgroundColor: ['#f6c23e', '#1cc88a', '#e74a3b'],
+                        borderWidth: 1
+                    }]
                 },
-                function(error) {
-                    document.getElementById('weather').innerHTML = `
-                        <div class="weather-card">
-                            <div class="weather-card-body text-center">
-                                <i class="fas fa-location-crosshairs fa-2x mb-2"></i>
-                                <p>Activez la géolocalisation pour voir la météo</p>
-                            </div>
-                        </div>
-                    `;
-                }
-            );
-        } else {
-            document.getElementById('weather').innerHTML = `
-                <div class="weather-card">
-                    <div class="weather-card-body text-center">
-                        <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
-                        <p>Géolocalisation non supportée</p>
-                    </div>
-                </div>
-            `;
-        }
-    }
-
-    // Chargement du graphique en anneau
-    function loadPieChart() {
-        google.charts.load('current', {'packages':['corechart']});
-        google.charts.setOnLoadCallback(function() {
-            const data = new google.visualization.DataTable();
-            data.addColumn('string', 'Statut');
-            data.addColumn('number', 'Nombre');
-
-            // Définir les données avec un ordre spécifique pour contrôler les couleurs
-            const statusOrder = ['To Do', 'In Progress', 'Done'];
-            const statusColors = {
-                'To Do': '#e74a3b',      // Rouge pour To Do
-                'In Progress': '#f6c23e', // Jaune pour In Progress
-                'Done': '#1cc88a'        // Vert pour Done
-            };
-            const rows = [];
-            const colors = [];
-
-            // Parcourir les statuts dans l'ordre souhaité
-            statusOrder.forEach(status => {
-                const stat = {{ mission_stats|json_encode|raw }}.find(s => s.status === status);
-                if (stat) {
-                    rows.push([status, stat.count]);
-                    colors.push(statusColors[status]);
-                }
-            });
-
-            data.addRows(rows);
-
-            const chart = new google.visualization.PieChart(
-                document.getElementById('personalMissionChart')
-            );
-            chart.draw(data, {
-                title: 'Répartition des missions',
-                pieHole: 0.4,
-                colors: colors, // Utiliser les couleurs dans le même ordre que les données
-                chartArea: {width: '80%', height: '70%'},
-                legend: {position: 'right', textStyle: {fontSize: 14}},
-                pieSliceText: 'percentage',
-                animation: {
-                    startup: true,
-                    duration: 1000,
-                    easing: 'out'
-                }
-            });
-
-            document.getElementById('personalMissionChart').classList.add('loaded');
-        });
-    }
-
-    // Chargement du graphique linéaire
-    function loadLineChart() {
-        google.charts.load('current', {'packages':['corechart']});
-        google.charts.setOnLoadCallback(function() {
-            const data = new google.visualization.DataTable();
-            data.addColumn('string', 'Mois');
-            data.addColumn('number', 'À faire');
-            data.addColumn('number', 'En cours');
-            data.addColumn('number', 'Terminées');
-
-            // Extraire les comptes actuels depuis mission_stats
-            const toDoCount = {{ mission_stats|filter(stat => stat.status == 'To Do')|first.count|default(0) }};
-            const inProgressCount = {{ mission_stats|filter(stat => stat.status == 'In Progress')|first.count|default(0) }};
-            const doneCount = {{ mission_stats|filter(stat => stat.status == 'Done')|first.count|default(0) }};
-
-            // Générer les mois (6 derniers mois)
-            const months = [
-                moment().subtract(5, 'months').format('MMM YYYY'),
-                moment().subtract(4, 'months').format('MMM YYYY'),
-                moment().subtract(3, 'months').format('MMM YYYY'),
-                moment().subtract(2, 'months').format('MMM YYYY'),
-                moment().subtract(1, 'months').format('MMM YYYY'),
-                moment().format('MMM YYYY')
-            ];
-
-            // Données simulées basées sur les comptes actuels
-            const trendData = [
-                [months[0], toDoCount + 2, inProgressCount + 1, doneCount],
-                [months[1], toDoCount + 1, inProgressCount + 2, doneCount + 1],
-                [months[2], toDoCount, inProgressCount + 1, doneCount + 2],
-                [months[3], toDoCount + 1, inProgressCount, doneCount + 3],
-                [months[4], toDoCount, inProgressCount + 1, doneCount + 4],
-                [months[5], toDoCount, inProgressCount, doneCount + 5]
-            ];
-            data.addRows(trendData);
-
-            const chart = new google.visualization.LineChart(
-                document.getElementById('missionTrendChart')
-            );
-            chart.draw(data, {
-                title: 'Évolution des missions',
-                colors: ['#e74a3b', '#f6c23e', '#1cc88a'], // To Do: rouge, In Progress: jaune, Done: vert
-                chartArea: {width: '80%', height: '70%'},
-                legend: {position: 'bottom', textStyle: {fontSize: 14}},
-                hAxis: {title: 'Mois', textStyle: {fontSize: 12}},
-                vAxis: {title: 'Nombre de missions', minValue: 0, textStyle: {fontSize: 12}},
-                animation: {
-                    startup: true,
-                    duration: 1000,
-                    easing: 'out'
-                }
-            });
-
-            document.getElementById('missionTrendChart').classList.add('loaded');
-        });
-    }
-
-    // Redimensionnement des graphiques
-    function handleResize() {
-        if (typeof google !== 'undefined' && google.visualization) {
-            google.charts.setOnLoadCallback(function() {
-                // Redessiner le graphique en anneau
-                const data = new google.visualization.DataTable();
-                data.addColumn('string', 'Statut');
-                data.addColumn('number', 'Nombre');
-
-                const statusOrder = ['To Do', 'In Progress', 'Done'];
-                const statusColors = {
-                    'To Do': '#e74a3b',      // Rouge pour To Do
-                    'In Progress': '#f6c23e', // Jaune pour In Progress
-                    'Done': '#1cc88a'        // Vert pour Done
-                };
-                const rows = [];
-                const colors = [];
-
-                statusOrder.forEach(status => {
-                    const stat = {{ mission_stats|json_encode|raw }}.find(s => s.status === status);
-                    if (stat) {
-                        rows.push([status, stat.count]);
-                        colors.push(statusColors[status]);
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const value = context.raw;
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${context.label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
                     }
-                });
-
-                data.addRows(rows);
-
-                const pieChart = new google.visualization.PieChart(
-                    document.getElementById('personalMissionChart')
-                );
-                pieChart.draw(data, {
-                    title: 'Répartition des missions',
-                    pieHole: 0.4,
-                    colors: colors,
-                    chartArea: {width: '80%', height: '70%'},
-                    legend: {position: 'right', textStyle: {fontSize: 14}},
-                    pieSliceText: 'percentage',
-                    animation: {
-                        startup: true,
-                        duration: 1000,
-                        easing: 'out'
-                    }
-                });
-
-                // Redessiner le graphique linéaire
-                const lineData = new google.visualization.DataTable();
-                lineData.addColumn('string', 'Mois');
-                lineData.addColumn('number', 'À faire');
-                lineData.addColumn('number', 'En cours');
-                lineData.addColumn('number', 'Terminées');
-                const toDoCount = {{ mission_stats|filter(stat => stat.status == 'To Do')|first.count|default(0) }};
-                const inProgressCount = {{ mission_stats|filter(stat => stat.status == 'In Progress')|first.count|default(0) }};
-                const doneCount = {{ mission_stats|filter(stat => stat.status == 'Done')|first.count|default(0) }};
-                const months = [
-                    moment().subtract(5, 'months').format('MMM YYYY'),
-                    moment().subtract(4, 'months').format('MMM YYYY'),
-                    moment().subtract(3, 'months').format('MMM YYYY'),
-                    moment().subtract(2, 'months').format('MMM YYYY'),
-                    moment().subtract(1, 'months').format('MMM YYYY'),
-                    moment().format('MMM YYYY')
-                ];
-                const trendData = [
-                    [months[0], toDoCount + 2, inProgressCount + 1, doneCount],
-                    [months[1], toDoCount + 1, inProgressCount + 2, doneCount + 1],
-                    [months[2], toDoCount, inProgressCount + 1, doneCount + 2],
-                    [months[3], toDoCount + 1, inProgressCount, doneCount + 3],
-                    [months[4], toDoCount, inProgressCount + 1, doneCount + 4],
-                    [months[5], toDoCount, inProgressCount, doneCount + 5]
-                ];
-                lineData.addRows(trendData);
-                const lineChart = new google.visualization.LineChart(
-                    document.getElementById('missionTrendChart')
-                );
-                lineChart.draw(lineData, {
-                    title: 'Évolution des missions',
-                    colors: ['#e74a3b', '#f6c23e', '#1cc88a'], // To Do: rouge, In Progress: jaune, Done: vert
-                    chartArea: {width: '80%', height: '70%'},
-                    legend: {position: 'bottom', textStyle: {fontSize: 14}},
-                    hAxis: {title: 'Mois', textStyle: {fontSize: 12}},
-                    vAxis: {title: 'Nombre de missions', minValue: 0, textStyle: {fontSize: 12}},
-                    animation: {
-                        startup: true,
-                        duration: 1000,
-                        easing: 'out'
-                    }
-                });
+                }
             });
-        }
-    }
 
-    // Animation des stats
-    function animateValue(id, start, end, duration) {
-        const obj = document.getElementById(id);
-        let startTimestamp = null;
-        const step = (timestamp) => {
-            if (!startTimestamp) startTimestamp = timestamp;
-            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-            obj.innerHTML = Math.floor(progress * (end - start) + start);
-            if (progress < 1) {
-                window.requestAnimationFrame(step);
-            }
-        };
-        window.requestAnimationFrame(step);
-    }
-
-    // Recherche dans les missions en retard
-    document.getElementById('missionSearch').addEventListener('input', function() {
-        const searchTerm = this.value.toLowerCase();
-        const missionItems = document.querySelectorAll('.mission-item');
-        missionItems.forEach(item => {
-            const title = item.querySelector('h4').textContent.toLowerCase();
-            const project = item.querySelector('p:nth-child(2)').textContent.toLowerCase();
-            if (title.includes(searchTerm) || project.includes(searchTerm)) {
-                item.style.display = 'block';
-            } else {
-                item.style.display = 'none';
-            }
-        });
-    });
-
-    // Gestion du bouton "Terminer"
-    document.querySelectorAll('.mark-complete').forEach(btn => {
-        btn.addEventListener('click', async function() {
-            const missionId = this.dataset.missionId;
-            const payload = {
-                id: missionId,
-                status: 'Done',
-                _token: '{{ csrf_token('mission_status') }}'
-            };
-
-            console.log('Envoi de la requête pour mission ID:', missionId);
-
-            try {
-                const response = await fetch("{{ path('gs-projet_project_missions_update_status', { id: 'MISSION_ID' }) }}".replace('MISSION_ID', missionId), {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
+            // Graphique d'évolution des missions
+            const missionTrendCtx = document.getElementById('missionTrendChart').getContext('2d');
+            const missionTimeline = {{ mission_timeline|json_encode|raw }};
+            
+            new Chart(missionTrendCtx, {
+                type: 'line',
+                data: {
+                    labels: missionTimeline.map(item => item.month),
+                    datasets: [
+                        {
+                            label: 'Missions créées',
+                            data: missionTimeline.map(item => item.created),
+                            borderColor: '#4e73df',
+                            backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Missions terminées',
+                            data: missionTimeline.map(item => item.completed),
+                            borderColor: '#1cc88a',
+                            backgroundColor: 'rgba(28, 200, 138, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        }
                     },
-                    body: JSON.stringify(payload)
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || 'Échec de la mise à jour');
-                }
-
-                console.log('Requête réussie, affichage de la notification');
-
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Succès !',
-                    text: 'Mission marquée comme terminée',
-                    timer: 1000,
-                    showConfirmButton: false,
-                    didClose: () => {
-                        console.log('Notification fermée, rechargement de la page');
-                        window.location.reload(true); // Forcer le rechargement sans cache
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
                     }
-                });
+                }
+            });
 
-            } catch (error) {
-                console.error('Erreur lors de la mise à jour:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Erreur',
-                    text: error.message || 'Une erreur est survenue lors de la mise à jour'
-                });
-            }
+            // Chart 1: Statut des réclamations
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+            const statusData = {{ statusDataJson|raw }};
+            const statusLabels = statusData.slice(1).map(item => item[0]);
+            const statusValues = statusData.slice(1).map(item => item[1]);
+            
+            new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: statusLabels,
+                    datasets: [{
+                        data: statusValues,
+                        backgroundColor: ['#f39c12', '#3498db', '#2ecc71'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const value = context.raw;
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${context.label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Chart 2: Sentiment des réclamations
+            const sentimentCtx = document.getElementById('sentimentChart').getContext('2d');
+            const sentimentData = {{ sentimentDataJson|raw }};
+            const sentimentLabels = sentimentData.slice(1).map(item => item[0]);
+            const sentimentValues = sentimentData.slice(1).map(item => item[1]);
+            
+            new Chart(sentimentCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: sentimentLabels,
+                    datasets: [{
+                        data: sentimentValues,
+                        backgroundColor: ['#2ecc71', '#f39c12', '#e74c3c'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const value = context.raw;
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${context.label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Chart 3: Type des réclamations
+            const typeCtx = document.getElementById('typeChart').getContext('2d');
+            const typeData = {{ typeDataJson|raw }};
+            const typeLabels = typeData.slice(1).map(item => item[0]);
+            const typeValues = typeData.slice(1).map(item => item[1]);
+            
+            new Chart(typeCtx, {
+                type: 'bar',
+                data: {
+                    labels: typeLabels,
+                    datasets: [{
+                        data: typeValues,
+                        backgroundColor: '#3498db',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            // Chart 4: Timeline des réclamations
+            const timelineCtx = document.getElementById('timelineChart').getContext('2d');
+            const timelineData = {{ timelineDataJson|raw }};
+            const timelineLabels = timelineData.slice(1).map(item => item[0]);
+            const timelineValues = timelineData.slice(1).map(item => item[1]);
+            
+            new Chart(timelineCtx, {
+                type: 'line',
+                data: {
+                    labels: timelineLabels,
+                    datasets: [{
+                        data: timelineValues,
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
         });
-    });
-
-    // Gestion du bouton "Détails"
-    document.querySelectorAll('.view-details').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const missionId = this.dataset.missionId;
-            const missionItem = document.querySelector(`.mission-item[data-mission-id="${missionId}"]`);
-            const title = missionItem.querySelector('h4').textContent;
-            const project = missionItem.querySelector('p:nth-child(2)').textContent.replace('Projet: ', '');
-            const deadline = missionItem.querySelector('p:nth-child(3)').textContent.replace('Date limite: ', '');
-            const description = missionItem.querySelector('p:nth-child(4)')?.textContent.replace('Description: ', '') || 'Aucune description';
-            const delay = missionItem.querySelector('.badge').textContent;
-
-            document.getElementById('modalMissionTitle').textContent = title;
-            document.getElementById('modalMissionProject').textContent = project;
-            document.getElementById('modalMissionDeadline').textContent = deadline;
-            document.getElementById('modalMissionDescription').textContent = description;
-            document.getElementById('modalMissionDelay').textContent = delay;
-
-            new bootstrap.Modal('#missionDetailModal').show();
-        });
-    });
-
-    // Initialisation
-    loadWeather();
-    loadPieChart();
-    loadLineChart();
-    window.addEventListener('resize', handleResize);
-
-    // Animer les valeurs au chargement
-    setTimeout(() => {
-        animateValue('totalMissions', 0, {{ total_missions }}, 1000);
-        animateValue('inProgress', 0, {{ mission_stats|filter(stat => stat.status == 'In Progress')|first.count|default(0) }}, 1000);
-        animateValue('completed', 0, {{ mission_stats|filter(stat => stat.status == 'Done')|first.count|default(0) }}, 1000);
-        animateValue('lateMissions', 0, {{ late_missions|length }}, 1000);
-    }, 500);
-
-    // Chargement de Google Charts
-    google.charts.load('current', {'packages':['corechart']});
-    google.charts.setOnLoadCallback(initializeCharts);
-
-    function initializeCharts() {
-        drawStatusChart();
-        drawSentimentChart();
-        drawTypeChart();
-        drawTimelineChart();
-    }
-
-    function drawStatusChart() {
-        try {
-            const data = google.visualization.arrayToDataTable({{ statusDataJson|raw }});
-            const chart = new google.visualization.PieChart(document.getElementById('statusChart'));
-            chart.draw(data, {
-                title: 'Répartition par statut',
-                pieHole: 0.4,
-                colors: ['#4e73df', '#1cc88a', '#f6c23e', '#e74a3b'],
-                chartArea: {width: '90%', height: '80%'},
-                legend: {position: 'right'}
-            });
-        } catch (e) {
-            console.error('Erreur lors du dessin du graphique de statut:', e);
-        }
-    }
-
-    function drawSentimentChart() {
-        try {
-            const data = google.visualization.arrayToDataTable({{ sentimentDataJson|raw }});
-            const chart = new google.visualization.PieChart(document.getElementById('sentimentChart'));
-            chart.draw(data, {
-                title: 'Analyse des sentiments',
-                pieHole: 0.4,
-                colors: ['#36b9cc', '#1cc88a', '#e74a3b'],
-                chartArea: {width: '90%', height: '80%'},
-                legend: {position: 'right'}
-            });
-        } catch (e) {
-            console.error('Erreur lors du dessin du graphique des sentiments:', e);
-        }
-    }
-
-    function drawTypeChart() {
-        try {
-            const data = google.visualization.arrayToDataTable({{ typeDataJson|raw }});
-            const chart = new google.visualization.BarChart(document.getElementById('typeChart'));
-            chart.draw(data, {
-                title: 'Répartition par type',
-                colors: ['#4e73df'],
-                chartArea: {width: '70%', height: '80%'},
-                legend: {position: 'none'},
-                hAxis: {minValue: 0}
-            });
-        } catch (e) {
-            console.error('Erreur lors du dessin du graphique des types:', e);
-        }
-    }
-
-    function drawTimelineChart() {
-        try {
-            const data = google.visualization.arrayToDataTable({{ timelineDataJson|raw }});
-            const chart = new google.visualization.LineChart(document.getElementById('timelineChart'));
-            chart.draw(data, {
-                title: 'Évolution temporelle',
-                colors: ['#4e73df'],
-                chartArea: {width: '80%', height: '80%'},
-                legend: {position: 'none'},
-                hAxis: {slantedText: true, slantedTextAngle: 45},
-                vAxis: {minValue: 0}
-            });
-        } catch (e) {
-            console.error('Erreur lors du dessin du graphique temporel:', e);
-        }
-    }
-
-    // Gestion du redimensionnement
-    window.addEventListener('resize', function() {
-        drawStatusChart();
-        drawSentimentChart();
-        drawTypeChart();
-        drawTimelineChart();
-    });
-});
-</script>
+    </script>
 {% endblock %}

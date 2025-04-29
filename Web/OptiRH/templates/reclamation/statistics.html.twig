@@ -218,171 +218,186 @@
 
 {% block javascript %}
     {{ parent() }}
-   <script src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <script>
-        // Chargement des graphiques Google
-        google.charts.load('current', {'packages':['corechart', 'bar']});
-        google.charts.setOnLoadCallback(drawCharts);
-        
-        function drawCharts() {
+        document.addEventListener('DOMContentLoaded', function() {
             // Chart 1: Statut
-            drawStatusChart();
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+            const statusData = {{ statusData|raw }};
+            const statusLabels = statusData.slice(1).map(item => item[0]);
+            const statusValues = statusData.slice(1).map(item => item[1]);
+            
+            new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: statusLabels,
+                    datasets: [{
+                        data: statusValues,
+                        backgroundColor: ['#f39c12', '#3498db', '#2ecc71'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const value = context.raw;
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${context.label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
             
             // Chart 2: Sentiment
-            drawSentimentChart();
+            const sentimentCtx = document.getElementById('sentimentChart').getContext('2d');
+            const sentimentData = {{ sentimentData|raw }};
+            const sentimentLabels = sentimentData.slice(1).map(item => item[0]);
+            const sentimentValues = sentimentData.slice(1).map(item => item[1]);
+            
+            new Chart(sentimentCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: sentimentLabels,
+                    datasets: [{
+                        data: sentimentValues,
+                        backgroundColor: ['#2ecc71', '#f39c12', '#e74c3c'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const value = context.raw;
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${context.label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
             
             // Chart 3: Type
-            drawTypeChart();
+            const typeCtx = document.getElementById('typeChart').getContext('2d');
+            const typeData = {{ typeData|raw }};
+            const typeLabels = typeData.slice(1).map(item => item[0]);
+            const typeValues = typeData.slice(1).map(item => item[1]);
+            
+            new Chart(typeCtx, {
+                type: 'bar',
+                data: {
+                    labels: typeLabels,
+                    datasets: [{
+                        data: typeValues,
+                        backgroundColor: '#3498db',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
             
             // Chart 4: Timeline
-            drawTimelineChart();
+            const timelineCtx = document.getElementById('timelineChart').getContext('2d');
+            const timelineData = {{ timelineData|raw }};
+            const timelineLabels = timelineData.slice(1).map(item => item[0]);
+            const timelineValues = timelineData.slice(1).map(item => item[1]);
+            
+            new Chart(timelineCtx, {
+                type: 'line',
+                data: {
+                    labels: timelineLabels,
+                    datasets: [{
+                        data: timelineValues,
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
             
             // Chart 5: Type x Sentiment
-            drawTypeSentimentChart();
-            
-            // Redimensionnement des graphiques lors du changement de taille de fenêtre
-            window.addEventListener('resize', function() {
-                drawStatusChart();
-                drawSentimentChart();
-                drawTypeChart();
-                drawTimelineChart();
-                drawTypeSentimentChart();
-            });
-        }
-        
-        function drawStatusChart() {
-            const data = google.visualization.arrayToDataTable({{ statusData|raw }});
-            
-            const options = {
-                pieHole: 0.4,
-                colors: ['#f39c12', '#3498db', '#2ecc71'],
-                chartArea: {width: '90%', height: '80%'},
-                legend: {position: 'right'},
-                pieSliceText: 'percentage',
-                sliceVisibilityThreshold: 0.05
-            };
-            
-            const chart = new google.visualization.PieChart(document.getElementById('statusChart'));
-            chart.draw(data, options);
-        }
-        
-        function drawSentimentChart() {
-            const data = google.visualization.arrayToDataTable({{ sentimentData|raw }});
-            
-            const options = {
-                pieHole: 0.4,
-                colors: ['#2ecc71', '#f39c12', '#e74c3c'],
-                chartArea: {width: '90%', height: '80%'},
-                legend: {position: 'right'},
-                pieSliceText: 'percentage',
-                sliceVisibilityThreshold: 0.05
-            };
-            
-            const chart = new google.visualization.PieChart(document.getElementById('sentimentChart'));
-            chart.draw(data, options);
-        }
-        
-        function drawTypeChart() {
-            const data = google.visualization.arrayToDataTable({{ typeData|raw }});
-            
-            const options = {
-                chartArea: {width: '80%', height: '70%'},
-                legend: {position: 'none'},
-                hAxis: {
-                    minValue: 0,
-                },
-                vAxis: {
-                    title: 'Type de réclamation'
-                },
-                bars: 'horizontal',
-                colors: ['#3498db']
-            };
-            
-            const chart = new google.visualization.BarChart(document.getElementById('typeChart'));
-            chart.draw(data, options);
-        }
-        
-        function drawTimelineChart() {
-            const data = google.visualization.arrayToDataTable({{ timelineData|raw }});
-            
-            const options = {
-                chartArea: {width: '80%', height: '70%'},
-                legend: {position: 'none'},
-                colors: ['#3498db'],
-                hAxis: {
-                    title: 'Temps (minute)',
-                    slantedText: true,
-                    slantedTextAngle: 45
-                },
-                vAxis: {
-                    title: 'Nombre de réclamations',
-                    minValue: 0
-                }
-            };
-            
-            const chart = new google.visualization.LineChart(document.getElementById('timelineChart'));
-            chart.draw(data, options);
-        }
-        
-        function drawTypeSentimentChart() {
-            // Préparation des données pour le graphique croisé
+            const typeSentimentCtx = document.getElementById('typeSentimentChart').getContext('2d');
             const typeSentimentData = {{ typeSentimentData|raw }};
             
-            // Créer un tableau pour le graphique
-            const dataArray = [['Type', 'Positif', 'Neutre', 'Négatif']];
+            // Préparer les données pour le graphique empilé
+            const types = [...new Set(typeSentimentData.map(item => item.type))];
+            const sentiments = ['positive', 'neutral', 'negative'];
+            const datasets = sentiments.map((sentiment, index) => ({
+                label: sentiment.charAt(0).toUpperCase() + sentiment.slice(1),
+                data: types.map(type => {
+                    const item = typeSentimentData.find(d => d.type === type && d.sentiment === sentiment);
+                    return item ? item.count : 0;
+                }),
+                backgroundColor: ['#2ecc71', '#f39c12', '#e74c3c'][index]
+            }));
             
-            // Organiser les données par type
-            const typeGroups = {};
-            
-            typeSentimentData.forEach(item => {
-                if (!typeGroups[item.type]) {
-                    typeGroups[item.type] = {
-                        'positive': 0,
-                        'neutral': 0,
-                        'negative': 0
-                    };
-                }
-                
-                typeGroups[item.type][item.sentiment] = item.count;
-            });
-            
-            // Convertir en format pour le graphique
-            Object.keys(typeGroups).forEach(type => {
-                dataArray.push([
-                    type,
-                    typeGroups[type].positive || 0,
-                    typeGroups[type].neutral || 0,
-                    typeGroups[type].negative || 0
-                ]);
-            });
-            
-            const data = google.visualization.arrayToDataTable(dataArray);
-            
-            const options = {
-                chartArea: {width: '80%', height: '70%'},
-                isStacked: true,
-                legend: {position: 'top'},
-                colors: ['#2ecc71', '#f39c12', '#e74c3c'],
-                hAxis: {
-                    title: 'Nombre de réclamations'
+            new Chart(typeSentimentCtx, {
+                type: 'bar',
+                data: {
+                    labels: types,
+                    datasets: datasets
                 },
-                vAxis: {
-                    title: 'Type de réclamation'
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            stacked: true
+                        },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        }
+                    }
                 }
-            };
-            
-            const chart = new google.visualization.BarChart(document.getElementById('typeSentimentChart'));
-            chart.draw(data, options);
-        }
-        
-        // Animation des éléments au chargement de la page
-        document.addEventListener('DOMContentLoaded', function() {
-            // Animation des cartes et graphiques
-            const cards = document.querySelectorAll('.stats-card');
-            cards.forEach((card, index) => {
-                card.style.opacity = '0';
-                card.style.transform = 'translateY(20px)';
-                card.style.animation = `fadeInUp 0.5s ease forwards ${index * 0.1}s`;
             });
         });
     </script>
