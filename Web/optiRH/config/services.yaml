@@ -5,7 +5,8 @@ parameters:
     turnstile_site_key: '%env(resolve:TURNSTILE_SITE_KEY)%'
     turnstile_secret_key: '%env(resolve:TURNSTILE_SECRET_KEY)%'
     weather_api_key: '%env(resolve:WEATHER_API_KEY)%'
-    
+    google.client_secret_path: '%kernel.project_dir%/config/google_client_secret.json'
+    google.calendar_id: 'primary'
     GOOGLE_CLIENT_ID: '%env(GOOGLE_CLIENT_ID)%'
     GOOGLE_CLIENT_SECRET: '%env(GOOGLE_CLIENT_SECRET)%'
     GOOGLE_REDIRECT_URI: '%env(GOOGLE_REDIRECT_URI)%'
@@ -136,7 +137,7 @@ services:
             $logger: '@logger'
             $defaultTargetLanguage: 'fr'
 
-
+     
     App\Service\OpenAiService:
         arguments:
             $apiKey: '%openai.api_key%'
