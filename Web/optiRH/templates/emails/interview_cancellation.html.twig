@@ -1,0 +1,14 @@
+{# templates/emails/interview_cancellation.html.twig #}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Annulation de votre entretien</title>
+</head>
+<body>
+<h1>Annulation de votre entretien</h1>
+<p>Cher(e) {{ nomComplet }},</p>
+<p>Nous vous informons que l'entretien prévu pour le poste de <strong>{{ poste }}</strong> le <strong>{{ dateTime|date('d/m/Y à H:i') }}</strong> a été annulé.</p>
+<p>Pour toute question, veuillez nous contacter à <a href="mailto:support@optirh.com">support@optirh.com</a>.</p>
+<p>Cordialement,<br>L'équipe OptiRH</p>
+</body>
+</html>

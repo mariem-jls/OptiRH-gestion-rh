@@ -88,8 +88,58 @@
                                 </ul>
                             </div>
 
-                            <!-- Formulaire de Réponse -->
+                            <!-- Assistant IA + Formulaire de Réponse -->
                             <div class="col-md-6">
+                                <!-- Assistant IA -->
+                                <div class="ai-response-section mb-4">
+                                    <div class="ai-response-header">
+                                        <i class="fas fa-robot"></i>
+                                        <h3>Assistant IA</h3>
+                                    </div>
+                                    
+                                    <form id="aiResponseForm" class="mb-3">
+                                        <div class="ai-form-group">
+                                            <label for="responseType">Type de réponse</label>
+                                            <select id="responseType" class="ai-select">
+                                                <option value="professional">Professionnelle</option>
+                                                <option value="empathetic">Empathique</option>
+                                                <option value="solution">Orientée solution</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="ai-form-group">
+                                            <label for="additionalContext">Contexte supplémentaire (optionnel)</label>
+                                            <textarea id="additionalContext" class="ai-textarea" placeholder="Ajoutez des informations contextuelles pour une réponse plus précise..."></textarea>
+                                        </div>
+                                        
+                                        <button type="submit" class="ai-button" id="generateButton">
+                                            <i class="fas fa-magic"></i>
+                                            Générer une réponse
+                                        </button>
+                                    </form>
+                                    
+                                    <div class="loading-spinner" id="loadingSpinner">
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                        <p>Génération de la réponse en cours...</p>
+                                    </div>
+                                    
+                                    <div class="error-message" id="errorMessage"></div>
+                                    
+                                    <div class="ai-response-result" id="responseResult">
+                                        <h4>Réponse générée :</h4>
+                                        <div class="ai-response-content" id="generatedResponse"></div>
+                                        <div class="ai-response-actions">
+                                            <button class="copy-button" id="copyResponse">
+                                                <i class="fas fa-copy"></i> Copier
+                                            </button>
+                                            <button class="use-button" id="useResponse">
+                                                <i class="fas fa-check"></i> Utiliser
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Formulaire de Réponse -->
                                 <h5 class="text-primary mb-3">
                                     <i class="fas fa-reply me-2"></i>Ajouter une Réponse
                                 </h5>
@@ -181,6 +231,12 @@
                                                             <i class="fas fa-star {% if i <= reponse.rating %}text-warning{% else %}text-muted{% endif %}"></i>
                                                         {% endfor %}
                                                     </div>
+                                                    {% if reponse.rating <= 2 and reponse.commentaire %}
+                                                        <div class="mt-2">
+                                                            <strong>Commentaire de l'employé :</strong>
+                                                            <p class="text-muted">{{ reponse.commentaire }}</p>
+                                                        </div>
+                                                    {% endif %}
                                                 {% endif %}
                                                 <small class="text-muted">
                                                     <i class="far fa-clock me-1"></i>{{ reponse.date|date('d/m/Y à H:i') }}
@@ -279,6 +335,169 @@
         .btn-success {
             background-color: #198754;
             border-color: #198754;
+        }
+        .ai-response-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .ai-response-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .ai-response-header i {
+            font-size: 24px;
+            color: #4e73df;
+            margin-right: 15px;
+        }
+
+        .ai-response-header h3 {
+            margin: 0;
+            color: #2d3748;
+            font-weight: 600;
+        }
+
+        .ai-form-group {
+            margin-bottom: 20px;
+        }
+
+        .ai-form-group label {
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .ai-textarea {
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px;
+            width: 100%;
+            min-height: 100px;
+            transition: all 0.3s ease;
+        }
+
+        .ai-textarea:focus {
+            border-color: #4e73df;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+            outline: none;
+        }
+
+        .ai-select {
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 8px 12px;
+            width: 100%;
+            background-color: white;
+            transition: all 0.3s ease;
+        }
+
+        .ai-select:focus {
+            border-color: #4e73df;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+            outline: none;
+        }
+
+        .ai-button {
+            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ai-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
+        }
+
+        .ai-button:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+        }
+
+        .ai-response-result {
+            display: none;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .ai-response-content {
+            font-size: 1.1em;
+            line-height: 1.6;
+            color: #2d3748;
+            margin-bottom: 15px;
+        }
+
+        .ai-response-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .ai-response-actions button {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .copy-button {
+            background-color: #48bb78;
+            color: white;
+            border: none;
+        }
+
+        .copy-button:hover {
+            background-color: #38a169;
+        }
+
+        .use-button {
+            background-color: #4299e1;
+            color: white;
+            border: none;
+        }
+
+        .use-button:hover {
+            background-color: #3182ce;
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .loading-spinner i {
+            color: #4e73df;
+            font-size: 24px;
+        }
+
+        .error-message {
+            display: none;
+            color: #e53e3e;
+            background-color: #fff5f5;
+            border: 1px solid #fc8181;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 15px;
         }
     </style>
 {% endblock %}
@@ -552,6 +771,110 @@
                 });
             });
         });
+
+        // Assistant IA
+        const aiResponseForm = document.getElementById('aiResponseForm');
+        const generateButton = document.getElementById('generateButton');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const errorMessage = document.getElementById('errorMessage');
+        const responseResult = document.getElementById('responseResult');
+        const generatedResponse = document.getElementById('generatedResponse');
+        const copyButton = document.getElementById('copyResponse');
+        const useButton = document.getElementById('useResponse');
+        const descriptionTextarea = document.querySelector('textarea[name="form[description]"]');
+
+        if (aiResponseForm) {
+            aiResponseForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // Réinitialiser l'interface
+                errorMessage.style.display = 'none';
+                responseResult.style.display = 'none';
+                generateButton.disabled = true;
+                loadingSpinner.style.display = 'block';
+
+                try {
+                    const response = await fetch('{{ path('admin_generate_ai_response') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            content: '{{ reclamation.description|escape('js') }}',
+                            type: document.getElementById('responseType').value,
+                            context: document.getElementById('additionalContext').value
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        generatedResponse.textContent = data.response;
+                        responseResult.style.display = 'block';
+                        
+                        // Notification de succès
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Réponse générée',
+                            text: 'La réponse a été générée avec succès',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        throw new Error(data.error || 'Une erreur est survenue');
+                    }
+                } catch (error) {
+                    errorMessage.textContent = error.message;
+                    errorMessage.style.display = 'block';
+                    
+                    // Notification d'erreur
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erreur',
+                        text: error.message
+                    });
+                } finally {
+                    generateButton.disabled = false;
+                    loadingSpinner.style.display = 'none';
+                }
+            });
+        }
+
+        // Copier la réponse générée
+        if (copyButton) {
+            copyButton.addEventListener('click', function() {
+                navigator.clipboard.writeText(generatedResponse.textContent).then(() => {
+                    // Feedback visuel
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Copié !',
+                        text: 'La réponse a été copiée dans le presse-papiers',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                });
+            });
+        }
+
+        // Utiliser la réponse générée
+        if (useButton && descriptionTextarea) {
+            useButton.addEventListener('click', function() {
+                descriptionTextarea.value = generatedResponse.textContent;
+                descriptionTextarea.focus();
+                
+                // Scroll jusqu'au formulaire
+                descriptionTextarea.scrollIntoView({ behavior: 'smooth' });
+                
+                // Feedback visuel
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Réponse utilisée',
+                    text: 'La réponse a été insérée dans le formulaire',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            });
+        }
     });
     </script>
 {% endblock %}

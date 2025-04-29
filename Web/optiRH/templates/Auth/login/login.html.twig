@@ -3,53 +3,155 @@
 	<head>
 		{{ include('partials/title-meta.html.twig', {title: 'Connexion'}) }}
 		{{ include('partials/head-css.html.twig') }}
-        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+		<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+		<!-- Custom styles for professional look -->
+		<style>
+			.card {
+				border: none;
+				border-radius: 12px;
+				box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+				overflow: hidden;
+			}
+			.card-body {
+				padding: 2.5rem;
+			}
+			.logo-img {
+				max-height: 120px;
+				transition: transform 0.3s ease;
+			}
+			.logo-img:hover {
+				transform: scale(1.05);
+			}
+			.form-control {
+				border-radius: 6px;
+				padding: 0.75rem 1rem;
+				transition: border-color 0.2s, box-shadow 0.2s;
+			}
+			.form-control:focus {
+				border-color: #1a73e8;
+				box-shadow: 0 0 0 0.2rem rgba(26, 115, 232, 0.25);
+			}
+			.btn-primary {
+				border-radius: 6px;
+				padding: 0.75rem;
+				font-weight: 500;
+				transition: background-color 0.2s, transform 0.2s;
+			}
+			.btn-primary:hover {
+				transform: translateY(-1px);
+			}
+			.google-btn {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				background-color: #ffffff;
+				border: 1px solid #dadce0;
+				border-radius: 6px;
+				color: #1a73e8;
+				font-weight: 500;
+				padding: 0.75rem;
+				text-decoration: none;
+				transition: background-color 0.2s, box-shadow 0.2s, transform 0.2s;
+				width: 100%;
+				max-width: 400px;
+				box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+			}
+			.google-btn:hover {
+				background-color: #f8f9fa;
+				box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+				transform: translateY(-1px);
+			}
+			.google-btn img {
+				width: 20px;
+				height: 20px;
+				margin-right: 0.75rem;
+			}
+			.google-btn span {
+				font-size: 1rem;
+			}
+			.alert {
+				border-radius: 6px;
+				margin-bottom: 1.5rem;
+			}
+			.text-muted a {
+				color: #1a73e8;
+				font-weight: 500;
+			}
+			.text-muted a:hover {
+				text-decoration: underline;
+			}
+			.form-check-label {
+				cursor: pointer;
+			}
+			@media(max-width: 576px) {
+				.card-body {
+					padding: 1.5rem;
+				}
+				.google-btn {
+					max-width: 100%;
+				}
+			}
+		</style>
 	</head>
 
 	<body class="authentication-bg authentication-bg-pattern">
-		<div class="account-pages mt-2">
+		<div class="account-pages">
 			<div class="container">
 				<div class="row justify-content-center">
-					<div class="col-md-8 col-lg-6 col-xl-4">
-						<div class="text-center">
-							<a href="index">
-								<img src="/images/logo-dark.png" alt="app_logo" height="140" class="mx-auto">
-							</a>
+					<div
+						class="col-md-8 col-lg-6 col-xl-4">
+						<!-- Logo -->
+						<div class="text-center mb-1">
+							<img src="/images/logo-dark.png" alt="Logo de l'application" height="120" class="logo-img mx-auto">
 						</div>
-						<div class="card mt-2">
-							<div class="card-body p-4">
+
+						<!-- Card -->
+						<div class="card">
+							<div class="card-body">
 								<div class="text-center mb-4">
-									<h4 class="text-uppercase mt-0">Connexion</h4>
+									<h4 class="text-uppercase mt-0 fw-bold">Connexion</h4>
 								</div>
 
+								<!-- Error Messages -->
 								{% if error %}
-									<div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+									<div class="alert alert-danger alert-dismissible fade show" role="alert">
+										{{ error.messageKey|trans(error.messageData, 'security') }}
+										<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+									</div>
 								{% endif %}
+								{% for message in app.flashes('error') %}
+									<div class="alert alert-danger alert-dismissible fade show" role="alert">
+										{{ message }}
+										<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+									</div>
+								{% endfor %}
 
+								<!-- Logged-in User Message -->
 								{% if app.user %}
-									<div class="mb-3 text-center">
+									<div class="alert alert-success alert-dismissible fade show text-center" role="alert">
 										Vous êtes connecté en tant que
-										{{ app.user.userIdentifier }},
-										<a href="{{ path('app_logout') }}">Déconnexion</a>
+										<strong>{{ app.user.userIdentifier }}</strong>.
+										<a href="{{ path('app_logout') }}" class="alert-link">Déconnexion</a>
+										<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
 									</div>
 								{% endif %}
 
-								<form method="post" novalidate>
+								<!-- Login Form -->
+								<form method="post" novalidate aria-labelledby="login-form-title">
 									<div class="mb-3">
 										<label for="username" class="form-label">Adresse e-mail</label>
-										<input type="email" value="{{ last_username }}" name="_username" id="username" class="form-control" autocomplete="email" placeholder="Entrez votre e-mail" autofocus>
+										<input type="email" value="{{ last_username }}" name="_username" id="username" class="form-control" autocomplete="email" placeholder="Entrez votre e-mail" required autofocus>
 									</div>
 
 									<div class="mb-3">
 										<label for="password" class="form-label">Mot de passe</label>
-										<input type="password" name="_password" id="password" class="form-control" autocomplete="current-password" placeholder="Entrez votre mot de passe">
+										<input type="password" name="_password" id="password" class="form-control" autocomplete="current-password" placeholder="Entrez votre mot de passe" required>
 									</div>
 
-                                    <div class="cf-turnstile" data-sitekey="{{ sitekey }}" data-theme="light"></div>
-                                    {% for message in app.flashes('error') %}
-                                        <div class="alert alert-danger">{{ message }}</div>
-                                    {% endfor %}
+									<!-- Cloudflare Turnstile -->
+									<div class="mb-3 cf-turnstile" data-sitekey="{{ sitekey }}" data-theme="light"></div>
 
+									<!-- Remember Me -->
 									<div class="mb-3">
 										<div class="form-check">
 											<input type="checkbox" name="_remember_me" id="_remember_me" class="form-check-input" checked>
@@ -57,33 +159,40 @@
 										</div>
 									</div>
 
-									<input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+									<input
+									type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
-									<div class="mb-3 d-grid text-center">
+									<!-- Submit Button -->
+									<div class="mb-3 d-grid">
 										<button class="btn btn-primary" type="submit">Connexion</button>
 									</div>
 								</form>
 
+								<!-- Google Login Button -->
+								<div class="text-center">
+									<a href="{{ path('hwi_oauth_service_redirect', {'service': 'google'}) }}" class="google-btn" role="button" aria-label="Connexion avec Google">
+										<img src="https://developers.google.com/identity/images/g-logo.png" alt="Logo Google">
+										<span>Connexion avec Google</span>
+									</a>
+								</div>
+								<div class="row mt-3">
+									<div class="col-12 text-center text-muted">
+										<p class="mb-2">
+											<a href="{{ path('app_forgot_password_request') }}" class="text-decoration-none">
+												<i class="fa fa-lock me-1"></i>
+												Mot de passe oublié ?
+											</a>
+										</p>
+										<p class="mb-0">
+											Vous n'avez pas de compte ?
+											<a href="{{ path('app_register') }}" class="fw-medium">Inscrivez-vous</a>
+										</p>
+									</div>
+								</div>
 							</div>
 							<!-- end card-body -->
 						</div>
 						<!-- end card -->
-
-						<div class="row mt-3">
-							<div class="col-12 text-center">
-								<p>
-									<a href="{{path('app_forgot_password_request')}}" class="text-dark ms-1">
-										<i class="fa fa-lock me-1"></i>Mot de passe oublié ?</a>
-								</p>
-								<p class="text-dark">Vous n'avez pas de compte ?
-									<a href="{{path('app_register')}}" class="text-dark ms-1">
-										<b>Inscrivez-vous</b>
-									</a>
-								</p>
-							</div>
-							<!-- end col -->
-						</div>
-						<!-- end row -->
 					</div>
 					<!-- end col -->
 				</div>

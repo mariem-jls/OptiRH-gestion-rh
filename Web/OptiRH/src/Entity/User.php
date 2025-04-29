@@ -76,6 +76,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFact
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $googleAuthenticatorSecret = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $googleId = null;
+
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, options: ['default' => 'CURRENT_TIMESTAMP'])]
     private ?\DateTimeInterface $createdAt = null;
@@ -310,7 +313,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFact
     {
         $this->googleAuthenticatorSecret = $googleAuthenticatorSecret;
     }
+
+    public function getGoogleId(): ?string
+    {
+        return $this->googleId;
+    }
+
+    public function setGoogleId(?string $googleId): self
+    {
+        $this->googleId = $googleId;
+        return $this;
+    }
 }
+
 
 
 
