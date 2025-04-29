@@ -20,8 +20,11 @@ return [
     Symfony\UX\Chartjs\ChartjsBundle::class => ['all' => true],
     Daften\Bundle\AddressingBundle\AddressingBundle::class => ['all' => true],
     Symfony\WebpackEncoreBundle\WebpackEncoreBundle::class => ['all' => true],
-    Symfony\UX\StimulusBundle\StimulusBundle::class => ['all' => true],
-    Symfony\UX\Chartjs\ChartjsBundle::class => ['all' => true],
     Scheb\TwoFactorBundle\SchebTwoFactorBundle::class => ['all' => true],
     Lexik\Bundle\FormFilterBundle\LexikFormFilterBundle::class => ['all' => true],
+
+    Vich\UploaderBundle\VichUploaderBundle::class => ['all' => true],
+
+    HWI\Bundle\OAuthBundle\HWIOAuthBundle::class => ['all' => true],
+
 ];

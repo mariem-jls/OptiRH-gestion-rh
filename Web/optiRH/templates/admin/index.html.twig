@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <link rel="stylesheet" href="/libs/morris.js06/morris.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://www.gstatic.com/charts/loader.js">
     <style>
         :root {
             --primary-color: #4e73df;
@@ -663,6 +665,107 @@
                 font-size: 1.1rem;
             }
         }
+
+        /* Styles pour les statistiques des réclamations */
+        .stats-card {
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            height: 100%;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+        
+        .stats-card .card-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 16px;
+            border-bottom: none;
+        }
+        
+        .stats-card .card-body {
+            padding: 20px;
+        }
+        
+        .chart-container {
+            width: 100%;
+            height: 300px;
+            margin: 0 auto;
+        }
+        
+        .key-metric {
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            background: linear-gradient(to right, var(--light-color), white);
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        
+        .metric-value {
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0;
+        }
+        
+        .metric-label {
+            color: var(--dark-color);
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+        
+        /* Indicateurs de type */
+        .type-indicator {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        
+        .type-salaire { background-color: #ffeaa7; color: #d35400; }
+        .type-conges { background-color: #d6eaff; color: #0984e3; }
+        .type-relations { background-color: #e3f9e5; color: #00b894; }
+        .type-conditions { background-color: #ffd3d3; color: #e74c3c; }
+        .type-remuneration { background-color: #e9dbff; color: #6c5ce7; }
+        
+        /* Styles pour l'affichage de sentiments */
+        .sentiment-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 20px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .sentiment-badge.positive {
+            background-color: rgba(46, 204, 113, 0.2);
+            color: #27ae60;
+        }
+        
+        .sentiment-badge.neutral {
+            background-color: rgba(243, 156, 18, 0.2);
+            color: #d35400;
+        }
+        
+        .sentiment-badge.negative {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: #c0392b;
+        }
+        
+        .sentiment-icon {
+            margin-right: 8px;
+            font-size: 1.2em;
+        }
     </style>
     {{ parent() }}
 {% endblock %}
@@ -778,72 +881,7 @@
         </div>
     </div>
 
-    <!-- Recruitment Section -->
-    <h3 class="mt-5"><i class="fas fa-users"></i> Recrutement</h3>
-    <div class="summary-cards">
-        <div class="summary-card stats-card">
-            <i class="fas fa-file-alt"></i>
-            <h4>{{ recruitment_stats.total_demandes }}</h4>
-            <p>Demandes totales</p>
-        </div>
-        <div class="summary-card stats-card">
-            <i class="fas fa-check-circle"></i>
-            <h4>{{ recruitment_stats.accepted_demandes }}</h4>
-            <p>Demandes acceptées</p>
-        </div>
-        <div class="summary-card stats-card">
-            <i class="fas fa-bullhorn"></i>
-            <h4>{{ recruitment_stats.active_offres }}</h4>
-            <p>Offres actives</p>
-        </div>
-        <div class="summary-card stats-card">
-            <i class="fas fa-clock"></i>
-            <h4>{{ recruitment_stats.avg_processing_time }} jours</h4>
-            <p>Temps moyen de traitement</p>
-        </div>
-    </div>
-
-    <!-- Complaints Section -->
-        <h3 class="mt-5"><i class="fas fa-comment-alt"></i> Réclamations</h3>
-
-        <div class="summary-cards">
-            <div class="summary-card">
-                <h5><i class="fas fa-chart-pie"></i> Taux de résolution</h5>
-                <div class="card-value {{ resolutionRate is defined ? (resolutionRate > 75 ? 'positive' : (resolutionRate < 50 ? 'negative' : 'neutral')) : 'neutral' }}">
-                    {{ resolutionRate is defined ? resolutionRate : 0 }}%
-                </div>
-                <p>des réclamations sont résolues</p>
-            </div>
-            <div class="summary-card">
-                <h5><i class="fas fa-thermometer-half"></i> Sentiment dominant</h5>
-                <div class="card-value" id="dominant-sentiment">
-                    {% if sentimentData|length > 1 %}
-                        {% set dominantSentiment = sentimentData|slice(1)|sort((a, b) => b[1] <=> a[1])|first %}
-                        <span class="{{ dominantSentiment[0] == 'Positif' ? 'positive' : (dominantSentiment[0] == 'Négatif' ? 'negative' : 'neutral') }}">
-                            {{ dominantSentiment[0] }}
-                        </span>
-                    {% else %}
-                        <span class="neutral">N/A</span>
-                    {% endif %}
-                </div>
-                <p>des réclamations</p>
-            </div>
-            <div class="summary-card">
-                <h5><i class="fas fa-folder-open"></i> Type principal</h5>
-                <div class="card-value" id="dominant-type">
-                    {% if typeData|length > 1 %}
-                        {% set dominantType = typeData|slice(1)|sort((a, b) => b[1] <=> a[1])|first %}
-                        {{ dominantType[0] }}
-                    {% else %}
-                        N/A
-                    {% endif %}
-                </div>
-                <p>des réclamations</p>
-            </div>
-        </div>
-        
     <!-- Projects and Missions Charts -->
-    <h3 class="mt-5"><i class="fas fa-chart-bar"></i> Statistiques des Projets et Missions</h3>
     <div class="chart-container">
         <div class="mission-chart-container">
             <div class="mission-chart-wrapper mission-fade-in">
@@ -852,7 +890,7 @@
                     <span class="mission-chart-period">Mise à jour: {{ "now"|date("d/m/Y H:i") }}</span>
                 </div>
                 <div class="mission-chart-canvas">
-                    <canvas id="missionStatusChart"></canvas>
+                    <canvas id="missionStatusChart" height="300"></canvas>
                 </div>
             </div>
             <div class="mission-chart-wrapper mission-fade-in">
@@ -861,7 +899,7 @@
                     <span class="mission-chart-period">6 derniers mois</span>
                 </div>
                 <div class="mission-chart-canvas">
-                    <canvas id="missionTimelineChart"></canvas>
+                    <canvas id="missionTimelineChart" height="300"></canvas>
                 </div>
             </div>
             <div class="mission-chart-wrapper mission-fade-in">
@@ -870,7 +908,7 @@
                     <span class="mission-chart-period">Toutes les missions</span>
                 </div>
                 <div class="mission-chart-canvas">
-                    <canvas id="missionProjectDistribution"></canvas>
+                    <canvas id="missionProjectDistribution" height="300"></canvas>
                 </div>
             </div>
         </div>
@@ -899,6 +937,121 @@
                 </div>
             {% endfor %}
         {% endif %}
+    </div>
+
+    <!-- Recruitment Section -->
+    <h3 class="mt-5"><i class="fas fa-users"></i> Recrutement</h3>
+    <div class="summary-cards">
+        <div class="summary-card stats-card">
+            <i class="fas fa-file-alt"></i>
+            <h4>{{ recruitment_stats.total_demandes }}</h4>
+            <p>Demandes totales</p>
+        </div>
+        <div class="summary-card stats-card">
+            <i class="fas fa-check-circle"></i>
+            <h4>{{ recruitment_stats.accepted_demandes }}</h4>
+            <p>Demandes acceptées</p>
+        </div>
+        <div class="summary-card stats-card">
+            <i class="fas fa-bullhorn"></i>
+            <h4>{{ recruitment_stats.active_offres }}</h4>
+            <p>Offres actives</p>
+        </div>
+        <div class="summary-card stats-card">
+            <i class="fas fa-clock"></i>
+            <h4>{{ recruitment_stats.avg_processing_time }} jours</h4>
+            <p>Temps moyen de traitement</p>
+        </div>
+    </div>
+
+    <!-- Recruitment Charts -->
+    <div class="chart-container">
+        <div class="chart-wrapper fade-in">
+            <h3><i class="fas fa-chart-pie me-2"></i> Demandes par statut</h3>
+            <canvas id="recruitmentStatusChart" height="350"></canvas>
+        </div>
+        <div class="chart-wrapper fade-in">
+            <h3><i class="fas fa-chart-bar me-2"></i> Offres par type de contrat</h3>
+            <canvas id="recruitmentContractChart" height="350"></canvas>
+        </div>
+        <div class="chart-wrapper fade-in">
+            <h3><i class="fas fa-chart-bar me-2"></i> Évolution des demandes</h3>
+            <canvas id="recruitmentEvolutionChart" height="350"></canvas>
+        </div>
+    </div>
+
+    <!-- Section Réclamations (isolée) -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-chart-pie me-2"></i>Statistiques des réclamations
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <!-- KPI majeur: Taux de résolution -->
+                    <div class="key-metric animate__animated animate__fadeInUp" style="animation-delay: 0.2s">
+                        <h4 class="metric-value">{{ resolutionRate }}%</h4>
+                        <p class="metric-label">Taux de résolution global</p>
+                    </div>
+                    
+                    <!-- Première rangée de graphiques -->
+                    <div class="row gy-4 mb-4">
+                        <!-- Statistiques par statut -->
+                        <div class="col-md-6 animate__animated animate__fadeInUp" style="animation-delay: 0.3s">
+                            <div class="stats-card">
+                                <div class="card-header">
+                                    <h6 class="m-0"><i class="fas fa-tasks me-2"></i>Répartition par statut</h6>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="statusChart" height="300"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Statistiques par sentiment -->
+                        <div class="col-md-6 animate__animated animate__fadeInUp" style="animation-delay: 0.4s">
+                            <div class="stats-card">
+                                <div class="card-header">
+                                    <h6 class="m-0"><i class="fas fa-smile me-2"></i>Analyse des sentiments</h6>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="sentimentChart" height="300"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Deuxième rangée de graphiques -->
+                    <div class="row gy-4 mb-4">
+                        <!-- Statistiques par type -->
+                        <div class="col-md-6 animate__animated animate__fadeInUp" style="animation-delay: 0.5s">
+                            <div class="stats-card">
+                                <div class="card-header">
+                                    <h6 class="m-0"><i class="fas fa-tags me-2"></i>Répartition par type</h6>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="typeChart" height="300"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Évolution dans le temps -->
+                        <div class="col-md-6 animate__animated animate__fadeInUp" style="animation-delay: 0.6s">
+                            <div class="stats-card">
+                                <div class="card-header">
+                                    <h6 class="m-0"><i class="fas fa-chart-line me-2"></i>Évolution par minute</h6>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="timelineChart" height="300"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Sparkline Section -->
@@ -1000,906 +1153,355 @@
             </div>
         </div>
     </div>
-<div><br></div>
-    <!-- Loading Modal -->
-    <div class="modal fade" id="loadingModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-body text-center py-5">
-                    <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
-                        <span class="visually-hidden">Chargement...</span>
-                    </div>
-                    <h5>Génération du rapport en cours...</h5>
-                    <p class="mb-0 text-muted">Veuillez patienter</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Recruitment Charts -->
-    <div class="chart-container">
-        <div class="chart-wrapper fade-in">
-            <h3><i class="fas fa-chart-pie me-2"></i> Demandes par statut</h3>
-            <div id="morris-donut-demande" style="height: 350px;" class="morris-chart" data-colors="#3AB5CE,#1B3583,#A8E0EA"></div>
-        </div>
-        <div class="chart-wrapper fade-in">
-            <h3><i class="fas fa-chart-bar me-2"></i> Offres par type de contrat</h3>
-            <div id="morris-bar-offre" style="height: 350px;" class="morris-chart" data-colors="#3AB5CE"></div>
-        </div>
-        <div class="chart-wrapper fade-in">
-            <h3><i class="fas fa-chart-bar me-2"></i> Évolution des demandes</h3>
-            <div id="morris-bar-demande" style="height: 350px;" class="morris-chart" data-colors="#3AB5CE"></div>
-        </div>
-    </div>
-    <div class="stats-container">
-
-        <!-- Complaint Charts -->
-        <div class="stats-card">
-            <div class="stats-card-header">
-                <i class="fas fa-tasks"></i> Répartition par statut
-            </div>
-            <div id="status-chart" class="stats-chart"></div>
-        </div>
-        <div class="stats-card">
-            <div class="stats-card-header">
-                <i class="fas fa-smile"></i> Répartition par sentiment
-            </div>
-            <div id="sentiment-chart" class="stats-chart"></div>
-        </div>
-        <div class="stats-card">
-            <div class="stats-card-header">
-                <i class="fas fa-tags"></i> Répartition par type
-            </div>
-            <div id="type-chart" class="stats-chart"></div>
-        </div>
-        <div class="stats-card">
-            <div class="stats-card-header">
-                <i class="fas fa-chart-line"></i> Évolution dans le temps
-            </div>
-            <div id="timeline-chart" class="stats-chart"></div>
-        </div>
-    </div>
-
 {% endblock %}
 
 {% block javascript %}
-{{ parent() }}
-<!-- JS Resources -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://www.gstatic.com/charts/loader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-sparklines/2.1.2/jquery.sparkline.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.11.3/release/flowchart.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
-<script src="/libs/morris.js06/morris.min.js"></script>
-<script src="/libs/raphael/raphael.min.js"></script>
-<script>
-var demandeStats = {{ demande_stats|json_encode|raw }};
-var offreStats = {{ offre_stats|json_encode|raw }};
-var demandeTimeline = {{ demande_timeline|json_encode|raw }};
-function formatTime(unix) {
-    return new Date(unix * 1000).toLocaleTimeString('fr-FR', {
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-}
-
-navigator.geolocation.getCurrentPosition(function(position) {
-    const lat = position.coords.latitude;
-    const lon = position.coords.longitude;
-
-    fetch(`/admin/weather?lat=${lat}&lon=${lon}`)
-        .then(response => response.json())
-        .then(data => {
-            const weatherContainer = document.getElementById('weather');
-
-            weatherContainer.innerHTML = `
-                ${createCard(`<i class="fas fa-map-marker-alt"></i> Localisation`, `
-                    <h3 style="margin: 0; display: flex; align-items: center;">
-                        ${data.name}, ${data.sys.country}
-                        <img src="https://openweathermap.org/img/wn/${data.weather[0].icon}@4x.png" alt="weather icon" style="width: 80px; height: 80px; margin-left: 15px;">
-                    </h3>
-                    <p style="margin: 0;">${data.weather[0].description}</p>
-                `)}
-
-                ${createCard(`<i class="fas fa-thermometer-half"></i> Température`, `
-                    Température : ${data.main.temp}°C<br>
-                    Ressentie : ${data.main.feels_like}°C<br>
-                    Min : ${data.main.temp_min}°C<br>
-                    Max : ${data.main.temp_max}°C
-                `)}
-
-                ${createCard(`<i class="fas fa-wind"></i> Vent & Nuages`, `
-                    Vent : ${data.wind.speed} m/s (${data.wind.deg}°)<br>
-                    Nuages : ${data.clouds.all}%<br>
-                    Humidité : ${data.main.humidity}%<br>
-                    Pression : ${data.main.pressure} hPa
-                `)}
-
-                ${createCard(`<i class="fas fa-sun"></i> Soleil`, `
-                    Lever : ${formatTime(data.sys.sunrise)}<br>
-                    Coucher : ${formatTime(data.sys.sunset)}
-                `)}
-            `;
-        })
-        .catch(() => {
-            document.getElementById('weather').innerHTML = `<div class="card">Erreur : Impossible de récupérer la météo.</div>`;
-        });
-}, function(error) {
-    document.getElementById('weather').innerHTML = `<div class="card">⚠️ Autorisez la géolocalisation pour voir la météo.</div>`;
-});
-
-function createCard(title, content) {
-    return `
-        <div class="weather-card">
-            <div class="weather-card-header">
-                ${title}
-            </div>
-            <div class="weather-card-body">
-                ${content}
-            </div>
-        </div>
-    `;
-}
-
-// Main Application Script
-document.addEventListener('DOMContentLoaded', function() {
-    // Configuration
-    const config = {
-        analysisEndpoint: '{{ path('admin_generate_analysis') }}',
-    };
-
-    // State Management
-    const state = {
-        isGeneratingReport: false,
-        currentReport: null,
-        morrisCharts: {}
-    };
-
-    // DOM Elements
-    const elements = {
-        globalLoader: document.getElementById('globalLoading'),
-        generateBtn: document.getElementById('generateAnalysis'),
-        analysisContent: document.getElementById('geminiAnalysisContent'),
-        placeholder: document.getElementById('analysisPlaceholder'),
-        lateItemsContainer: document.querySelector('.late-items'),
-        flowchartDiagram: document.getElementById('flowchart-diagram'),
-        dominantSentiment: document.getElementById('dominant-sentiment'),
-        dominantType: document.getElementById('dominant-type')
-    };
-
-    // UI Helpers
-    const ui = {
-        showLoader: () => elements.globalLoader.style.display = 'flex',
-        hideLoader: () => elements.globalLoader.style.display = 'none',
-
-        showError: (message) => {
-            Swal.fire({
-                icon: 'error',
-                title: 'Erreur',
-                text: message,
-                confirmButtonText: 'OK',
-                customClass: {
-                    popup: 'border-radius-08'
-                }
-            });
-        },
-
-        updateButtonState: (isGenerating, isRefresh = false) => {
-            const btn = elements.generateBtn;
-            btn.disabled = isGenerating;
-
-            if (isGenerating) {
-                btn.innerHTML = isRefresh
-                    ? '<i class="fas fa-spinner fa-spin me-1"></i> Rafraîchissement...'
-                    : '<i class="fas fa-spinner fa-spin me-1"></i> Génération...';
-            } else if (state.currentReport) {
-                btn.innerHTML = '<i class="fas fa-sync-alt me-1"></i> Rafraîchir';
-                btn.classList.remove('btn-primary');
-                btn.classList.add('btn-success');
-            } else {
-                btn.innerHTML = '<i class="fas fa-magic me-1"></i> Générer le Rapport';
-                btn.classList.remove('btn-success');
-                btn.classList.add('btn-primary');
-            }
-        },
-
-        updateReportContent: (content) => {
-            if (elements.placeholder) {
-                elements.placeholder.remove();
-            }
-
-            let reportDiv = elements.analysisContent.querySelector('.generated-report');
-            if (!reportDiv) {
-                reportDiv = document.createElement('div');
-                reportDiv.className = 'generated-report fade-in';
-                elements.analysisContent.prepend(reportDiv);
-            }
-
-            reportDiv.innerHTML = content;
-        }
-    };
-
-    // API Functions
-    const api = {
-        generateAnalysis: async () => {
-            const requestOptions = {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                },
-                timeout: 10000
-            };
-
-            try {
-                const controller = new AbortController();
-                const { signal } = controller;
-                requestOptions.signal = signal;
-
-                const timeoutId = setTimeout(() => controller.abort(), requestOptions.timeout);
-
-                const response = await fetch(config.analysisEndpoint, requestOptions);
-                clearTimeout(timeoutId);
-
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({
-                        message: `HTTP error! status: ${response.status}`
-                    }));
-
-                    throw new Error(
-                        errorData.message ||
-                        errorData.error ||
-                        `Request failed with status ${response.status}`
-                    );
-                }
-
-                return await response.json();
-            } catch (error) {
-                const enhancedError = new Error(
-                    error.name === 'AbortError'
-                        ? 'Request timeout: Analysis took too long to generate'
-                        : error.message || 'Failed to generate analysis'
-                );
-
-                enhancedError.originalError = error;
-                enhancedError.isNetworkError = !error.response;
-
-                console.error('API Error:', {
-                    endpoint: config.analysisEndpoint,
-                    error: enhancedError,
-                    timestamp: new Date().toISOString()
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Initialisation des graphiques...');
+            
+            // Charts pour les missions
+            const missionStatusCtx = document.getElementById('missionStatusChart');
+            if (missionStatusCtx) {
+                console.log('Données de statut des missions:', {
+                    inProgress: {{ mission_stats['In Progress']|default(0) }},
+                    done: {{ mission_stats['Done']|default(0) }},
+                    pending: {{ mission_stats['Pending']|default(0) }}
                 });
-
-                throw enhancedError;
-            }
-        }
-    };
-
-    // Features
-    const features = {
-        loadCharts: () => {
-            google.charts.load('current', {'packages':['corechart']});
-            google.charts.setOnLoadCallback(function() {
-                features.drawProjectCharts();
-                features.drawReclamationCharts();
-            });
-            // Initialize Morris Charts for Recruitment
-            features.drawRecruitmentCharts();
-        },
-
-        drawProjectCharts: () => {
-            try {
-                const projectData = new google.visualization.DataTable();
-                projectData.addColumn('string', 'Statut');
-                projectData.addColumn('number', 'Nombre');
-                projectData.addRows([
-                    {% for status, count in project_stats %}
-                        ['{{ status }}', {{ count }}],
-                    {% endfor %}
-                ]);
-
-                const projectOptions = {
-                    title: '',
-                    pieHole: 0.4,
-                    colors: ['#4e73df', '#1cc88a', '#f6c23e', '#e74a3b', '#36b9cc'],
-                    chartArea: {
-                        width: '90%',
-                        height: '80%',
-                        left: 20,
-                        top: 20,
-                        right: 20,
-                        bottom: 20
+                
+                new Chart(missionStatusCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['En cours', 'Terminées', 'En attente'],
+                        datasets: [{
+                            data: [
+                                {{ mission_stats['In Progress']|default(0) }},
+                                {{ mission_stats['Done']|default(0) }},
+                                {{ mission_stats['Pending']|default(0) }}
+                            ],
+                            backgroundColor: ['#3498db', '#2ecc71', '#f39c12']
+                        }]
                     },
-                    legend: {
-                        position: 'labeled',
-                        alignment: 'center',
-                        textStyle: {
-                            color: '#5a5c69',
-                            fontSize: 12
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'right'
+                            }
                         }
-                    },
-                    pieSliceText: 'value',
-                    tooltip: {
-                        text: 'percentage'
-                    },
-                    backgroundColor: 'transparent',
-                    height: 350
-                };
-
-                const projectChart = new google.visualization.PieChart(
-                    document.getElementById('projectChart')
-                );
-                projectChart.draw(projectData, projectOptions);
-            } catch (error) {
-                console.error("Erreur dans le rendu des graphiques:", error);
-
-                document.getElementById('projectChart').innerHTML = `
-                    <div class="alert alert-warning p-3">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        Le graphique des projets n'a pas pu être chargé.
-                        <div class="mt-2">
-                            {% for status, count in project_stats %}
-                                <div class="d-flex justify-content-between mb-1">
-                                    <span>{{ status }}:</span>
-                                    <strong>{{ count }}</strong>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                `;
+                    }
+                });
+            } else {
+                console.error('Canvas missionStatusChart non trouvé');
             }
-        },
 
-        drawMissionCharts: () => {
-            // Mission Status Chart
-            const statusCtx = document.getElementById('missionStatusChart').getContext('2d');
-            const statusChart = new Chart(statusCtx, {
+            const missionTimelineCtx = document.getElementById('missionTimelineChart');
+            if (missionTimelineCtx) {
+                const timelineData = {{ mission_timeline_data|json_encode|raw }};
+                console.log('Données de timeline des missions:', timelineData);
+                
+                const timelineLabels = Object.keys(timelineData);
+                const createdData = Object.values(timelineData).map(item => item.created);
+                const completedData = Object.values(timelineData).map(item => item.completed);
+                
+                new Chart(missionTimelineCtx, {
+                    type: 'line',
+                    data: {
+                        labels: timelineLabels,
+                        datasets: [
+                            {
+                                label: 'Missions créées',
+                                data: createdData,
+                                borderColor: '#3498db',
+                                tension: 0.4
+                            },
+                            {
+                                label: 'Missions terminées',
+                                data: completedData,
+                                borderColor: '#2ecc71',
+                                tension: 0.4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            }
+                        }
+                    }
+                });
+            } else {
+                console.error('Canvas missionTimelineChart non trouvé');
+            }
+
+            const missionProjectCtx = document.getElementById('missionProjectDistribution');
+            if (missionProjectCtx) {
+                const projectData = {{ projects|json_encode|raw }};
+                console.log('Données des projets:', projectData);
+                
+                const projectLabels = projectData.map(project => project.entity.nom);
+                const projectCounts = projectData.map(project => project.total_missions);
+                
+                new Chart(missionProjectCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: projectLabels,
+                        datasets: [{
+                            label: 'Missions par projet',
+                            data: projectCounts,
+                            backgroundColor: '#3498db'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            } else {
+                console.error('Canvas missionProjectDistribution non trouvé');
+            }
+
+            // Charts pour le recrutement
+            const recruitmentStatusCtx = document.getElementById('recruitmentStatusChart');
+            if (recruitmentStatusCtx) {
+                const totalDemandes = {{ recruitment_stats.total_demandes }};
+                const acceptedDemandes = {{ recruitment_stats.accepted_demandes }};
+                const pendingDemandes = totalDemandes - acceptedDemandes;
+                
+                console.log('Statistiques de recrutement:', {
+                    total: totalDemandes,
+                    accepted: acceptedDemandes,
+                    pending: pendingDemandes
+                });
+                
+                new Chart(recruitmentStatusCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Acceptées', 'En attente'],
+                        datasets: [{
+                            data: [acceptedDemandes, pendingDemandes],
+                            backgroundColor: ['#2ecc71', '#f39c12']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'right'
+                            }
+                        }
+                    }
+                });
+            } else {
+                console.error('Canvas recruitmentStatusChart non trouvé');
+            }
+
+            const recruitmentContractCtx = document.getElementById('recruitmentContractChart');
+            if (recruitmentContractCtx) {
+                console.log('Offres actives:', {{ recruitment_stats.active_offres }});
+                
+                new Chart(recruitmentContractCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Offres actives'],
+                        datasets: [{
+                            label: 'Nombre d\'offres',
+                            data: [{{ recruitment_stats.active_offres }}],
+                            backgroundColor: '#3498db'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            } else {
+                console.error('Canvas recruitmentContractChart non trouvé');
+            }
+
+            const recruitmentEvolutionCtx = document.getElementById('recruitmentEvolutionChart');
+            if (recruitmentEvolutionCtx) {
+                console.log('Timeline des demandes:', {{ demande_timeline|json_encode|raw }});
+                
+                new Chart(recruitmentEvolutionCtx, {
+                    type: 'line',
+                    data: {
+                        labels: {{ demande_timeline|map(item => item.month)|json_encode|raw }},
+                        datasets: [{
+                            label: 'Évolution des demandes',
+                            data: {{ demande_timeline|map(item => item.count)|json_encode|raw }},
+                            borderColor: '#3498db',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            } else {
+                console.error('Canvas recruitmentEvolutionChart non trouvé');
+            }
+
+            // Chart 1: Statut des réclamations
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+            const statusData = {{ statusDataJson|raw }};
+            const statusLabels = statusData.slice(1).map(item => item[0]);
+            const statusValues = statusData.slice(1).map(item => item[1]);
+            
+            new Chart(statusCtx, {
                 type: 'doughnut',
                 data: {
-                    labels: [
-                        {% for status, count in mission_stats %}
-                            '{{ status }}',
-                        {% endfor %}
-                    ],
+                    labels: statusLabels,
                     datasets: [{
-                        data: [
-                            {% for status, count in mission_stats %}
-                                {{ count }},
-                            {% endfor %}
-                        ],
-                        backgroundColor: [
-                            '#4a6bdf',
-                            '#20c997',
-                            '#ff6b6b',
-                            '#ffd43b',
-                            '#66d9e8'
-                        ],
-                        borderWidth: 0,
-                        hoverOffset: 10
+                        data: statusValues,
+                        backgroundColor: ['#f39c12', '#3498db', '#2ecc71'],
+                        borderWidth: 1
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
                     plugins: {
                         legend: {
-                            position: 'right',
-                            labels: {
-                                boxWidth: 12,
-                                padding: 20,
-                                font: {
-                                    size: 12
-                                }
-                            }
+                            position: 'right'
                         },
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    const label = context.label || '';
-                                    const value = context.raw || 0;
                                     const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = Math.round((value / total) * 100);
-                                    return `${label}: ${value} (${percentage}%)`;
+                                    const value = context.raw;
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${context.label}: ${value} (${percentage}%)`;
                                 }
-                            }
-                        }
-                    },
-                    cutout: '65%'
-                }
-            });
-
-            // Mission Timeline Chart - Utilisez maintenant les données réelles
-            const timelineCtx = document.getElementById('missionTimelineChart').getContext('2d');
-            const timelineChart = new Chart(timelineCtx, {
-                type: 'line',
-                data: {
-                    labels: [
-                        {% for month, data in mission_timeline_data %}
-                            '{{ month }}',
-                        {% endfor %}
-                    ],
-                    datasets: [
-                        {
-                            label: 'Créées',
-                            data: [
-                                {% for month, data in mission_timeline_data %}
-                                    {{ data.created }},
-                                {% endfor %}
-                            ],
-                            borderColor: '#4a6bdf',
-                            backgroundColor: 'rgba(74, 107, 223, 0.1)',
-                            tension: 0.3,
-                            fill: true
-                        },
-                        {
-                            label: 'Terminées',
-                            data: [
-                                {% for month, data in mission_timeline_data %}
-                                    {{ data.completed }},
-                                {% endfor %}
-                            ],
-                            borderColor: '#20c997',
-                            backgroundColor: 'rgba(32, 201, 151, 0.1)',
-                            tension: 0.3,
-                            fill: true
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        },
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false,
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                drawBorder: false
-                            }
-                        },
-                        x: {
-                            grid: {
-                                display: false
                             }
                         }
                     }
                 }
             });
-
-            // Project Distribution Chart
-            const projectCtx = document.getElementById('missionProjectDistribution').getContext('2d');
-            const projectChart = new Chart(projectCtx, {
-                type: 'bar',
+            
+            // Chart 2: Sentiment des réclamations
+            const sentimentCtx = document.getElementById('sentimentChart').getContext('2d');
+            const sentimentData = {{ sentimentDataJson|raw }};
+            const sentimentLabels = sentimentData.slice(1).map(item => item[0]);
+            const sentimentValues = sentimentData.slice(1).map(item => item[1]);
+            
+            new Chart(sentimentCtx, {
+                type: 'doughnut',
                 data: {
-                    labels: [
-                        {% for project in projects %}
-                            '{{ project.entity.nom }}',
-                        {% endfor %}
-                    ],
+                    labels: sentimentLabels,
                     datasets: [{
-                        label: 'Missions Terminées',
-                        data: [
-                            {% for project in projects %}
-                                {{ project.done_missions }},
-                            {% endfor %}
-                        ],
-                        backgroundColor: '#20c997',
-                        borderRadius: 4
-                    }, {
-                        label: 'Missions Totales',
-                        data: [
-                            {% for project in projects %}
-                                {{ project.total_missions }},
-                            {% endfor %}
-                        ],
-                        backgroundColor: '#4a6bdf',
-                        borderRadius: 4
+                        data: sentimentValues,
+                        backgroundColor: ['#2ecc71', '#f39c12', '#e74c3c'],
+                        borderWidth: 1
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
                     plugins: {
                         legend: {
-                            position: 'top',
+                            position: 'right'
                         },
                         tooltip: {
-                            mode: 'index',
-                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const value = context.raw;
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${context.label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Chart 3: Type des réclamations
+            const typeCtx = document.getElementById('typeChart').getContext('2d');
+            const typeData = {{ typeDataJson|raw }};
+            const typeLabels = typeData.slice(1).map(item => item[0]);
+            const typeValues = typeData.slice(1).map(item => item[1]);
+            
+            new Chart(typeCtx, {
+                type: 'bar',
+                data: {
+                    labels: typeLabels,
+                    datasets: [{
+                        data: typeValues,
+                        backgroundColor: '#3498db',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
                         }
                     },
                     scales: {
                         x: {
-                            stacked: false,
-                            grid: {
-                                display: false
-                            }
-                        },
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            // Chart 4: Timeline des réclamations
+            const timelineCtx = document.getElementById('timelineChart').getContext('2d');
+            const timelineData = {{ timelineDataJson|raw }};
+            const timelineLabels = timelineData.slice(1).map(item => item[0]);
+            const timelineValues = timelineData.slice(1).map(item => item[1]);
+            
+            new Chart(timelineCtx, {
+                type: 'line',
+                data: {
+                    labels: timelineLabels,
+                    datasets: [{
+                        data: timelineValues,
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
                         y: {
-                            stacked: false,
-                            beginAtZero: true,
-                            grid: {
-                                drawBorder: false
-                            }
+                            beginAtZero: true
                         }
                     }
                 }
             });
-
-            // Handle window resize
-            window.addEventListener('resize', function() {
-                statusChart.resize();
-                timelineChart.resize();
-                projectChart.resize();
-            });
-        },
-
-        drawReclamationCharts: () => {
-            try {
-                // Status Chart
-                const statusData = google.visualization.arrayToDataTable({{ statusData|json_encode|raw }});
-                const statusChart = new google.visualization.PieChart(document.getElementById('status-chart'));
-                statusChart.draw(statusData, {
-                    title: '',
-                    pieHole: 0.4,
-                    chartArea: {width: '90%', height: '80%'},
-                    height: 350,
-                    colors: ['#4e73df', '#1cc88a', '#f6c23e'],
-                    pieSliceText: 'value',
-                    tooltip: {
-                        text: 'percentage'
-                    }
-                });
-
-                // Sentiment Chart
-                const sentimentData = google.visualization.arrayToDataTable({{ sentimentData|json_encode|raw }});
-                const sentimentChart = new google.visualization.ColumnChart(document.getElementById('sentiment-chart'));
-                sentimentChart.draw(sentimentData, {
-                    title: '',
-                    chartArea: {width: '85%', height: '75%'},
-                    height: 350,
-                    colors: ['#e74a3b', '#858796', '#1cc88a'],
-                    legend: {position: 'top'},
-                    hAxis: {
-                        title: 'Sentiment'
-                    },
-                    vAxis: {
-                        title: 'Nombre de réclamations'
-                    }
-                });
-
-                // Type Chart
-                const typeData = google.visualization.arrayToDataTable({{ typeData|json_encode|raw }});
-                const typeChart = new google.visualization.BarChart(document.getElementById('type-chart'));
-                typeChart.draw(typeData, {
-                    title: '',
-                    chartArea: {width: '85%', height: '75%'},
-                    height: 350,
-                    colors: ['#36b9cc', '#f6c23e', '#4e73df'],
-                    legend: {position: 'top'},
-                    hAxis: {
-                        title: 'Nombre de réclamations'
-                    }
-                });
-
-                // Timeline Chart
-                const timelineData = google.visualization.arrayToDataTable({{ timelineData|json_encode|raw }});
-                const timelineChart = new google.visualization.LineChart(document.getElementById('timeline-chart'));
-                timelineChart.draw(timelineData, {
-                    title: '',
-                    chartArea: {width: '85%', height: '75%'},
-                    height: 350,
-                    colors: ['#4e73df'],
-                    curveType: 'function',
-                    legend: {position: 'top'},
-                    hAxis: {
-                        title: 'Mois'
-                    },
-                    vAxis: {
-                        title: 'Nombre de réclamations'
-                    }
-                });
-
-            } catch (error) {
-                console.error("Erreur dans le rendu des graphiques de réclamation:", error);
-            }
-        },
-
-        drawRecruitmentCharts: () => {
-            try {
-                // Donut Chart for Demande Status
-                state.morrisCharts['morris-donut-demande'] = Morris.Donut({
-                    element: 'morris-donut-demande',
-                    data: demandeStats.map(function(item) {
-                        return {
-                            label: item.statut,
-                            value: parseInt(item.count)
-                        };
-                    }),
-                    colors: ['#3AB5CE', '#1B3583', '#A8E0EA'],
-                    resize: true
-                });
-
-                // Bar Chart for Offre by Contract Type
-                state.morrisCharts['morris-bar-offre'] = Morris.Bar({
-                    element: 'morris-bar-offre',
-                    data: offreStats.map(function(item) {
-                        return {
-                            y: item.typeContrat,
-                            a: parseInt(item.count)
-                        };
-                    }),
-                    xkey: 'y',
-                    ykeys: ['a'],
-                    labels: ['Nombre d\'offres'],
-                    colors: ['#3AB5CE'],
-                    resize: true
-                });
-
-                // Bar Chart for Demande Timeline
-                if (!demandeTimeline || demandeTimeline.length < 1 || demandeTimeline.every(item => item.count === 0)) {
-                    document.getElementById('morris-bar-demande').innerHTML = `
-                        <div class="alert alert-info p-3">
-                            <i class="fas fa-info-circle me-2"></i>
-                            Données insuffisantes pour afficher l'évolution des demandes.
-                        </div>
-                    `;
-                } else {
-                    const maxCount = Math.max(...demandeTimeline.map(item => item.count));
-                    const ymax = maxCount <= 0 ? 5 : Math.ceil(maxCount * 1.2);
-
-                    state.morrisCharts['morris-bar-demande'] = Morris.Bar({
-                        element: 'morris-bar-demande',
-                        data: demandeTimeline.filter(item => item.month && typeof item.count === 'number').map(function(item) {
-                            return {
-                                y: item.month,
-                                a: item.count
-                            };
-                        }),
-                        xkey: 'y',
-                        ykeys: ['a'],
-                        labels: ['Demandes'],
-                        colors: ['#3AB5CE'],
-                        resize: true,
-                        barSizeRatio: 0.4,
-                        xLabelAngle: 45,
-                        gridTextSize: 12,
-                        ymin: 0,
-                        ymax: ymax,
-                        numLines: 5,
-                        hideHover: 'auto'
-                    });
-                }
-            } catch (error) {
-                console.error("Erreur dans le rendu des graphiques de recrutement:", error);
-                document.getElementById('morris-donut-demande').innerHTML = `
-                    <div class="alert alert-warning p-3">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        Le graphique des demandes n'a pas pu être chargé.
-                    </div>
-                `;
-                document.getElementById('morris-bar-offre').innerHTML = `
-                    <div class="alert alert-warning p-3">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        Le graphique des offres n'a pas pu être chargé.
-                    </div>
-                `;
-                document.getElementById('morris-bar-demande').innerHTML = `
-                    <div class="alert alert-warning p-3">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        Le graphique de l'évolution des demandes n'a pas pu être chargé.
-                    </div>
-                `;
-            }
-        },
-
-        updateDominantValues: () => {
-            try {
-                // Get dominant sentiment
-                const sentimentArray = {{ sentimentData|json_encode|raw }};
-                if (sentimentArray.length > 1) {
-                    const dominant = sentimentArray.slice(1).sort((a, b) => b[1] - a[1])[0];
-                    elements.dominantSentiment.textContent = dominant[0];
-                    elements.dominantSentiment.className = 'card-value ' +
-                        (dominant[0] === 'Positif' ? 'positive' :
-                         dominant[0] === 'Négatif' ? 'negative' : 'neutral');
-                }
-
-                // Get dominant type
-                const typeArray = {{ typeData|json_encode|raw }};
-                if (typeArray.length > 1) {
-                    const dominant = typeArray.slice(1).sort((a, b) => b[1] - a[1])[0];
-                    elements.dominantType.textContent = dominant[0];
-                }
-            } catch (error) {
-                console.error("Erreur dans la mise à jour des valeurs dominantes:", error);
-
-                // Fallback for each chart if error occurs
-                const chartContainers = ['status-chart', 'sentiment-chart', 'type-chart', 'timeline-chart'];
-                chartContainers.forEach(id => {
-                    const container = document.getElementById(id);
-                    if (container) {
-                        container.innerHTML = `
-                            <div class="alert alert-warning p-2">
-                                <i class="fas fa-exclamation-triangle me-2"></i>
-                                Le graphique n'a pas pu être chargé
-                            </div>
-                        `;
-                    }
-                });
-            }
-        },
-
-        initSparklines: () => {
-            $('.project-sparkline').each(function() {
-                const data = $(this).data('sparkline').split(',').map(Number);
-
-                if(data.length > 0 && !data.some(isNaN)) {
-                    $(this).sparkline(data, {
-                        type: 'line',
-                        width: '100%',
-                        height: '50px',
-                        lineWidth: 2,
-                        lineColor: '#4e73df',
-                        fillColor: 'rgba(78, 115, 223, 0.1)',
-                        spotRadius: 3,
-                        spotColor: '#4e73df',
-                        minSpotColor: '#e74a3b',
-                        maxSpotColor: '#1cc88a',
-                        highlightSpotColor: '#4e73df',
-                        highlightLineColor: '#4e73df',
-                        tooltipFormatter: function(sparkline, options, fields) {
-                            return `Semaine ${fields.offset + 1}: ${fields.value}%`;
-                        }
-                    });
-                }
-            });
-        },
-
-        initFlowChart: () => {
-            try {
-                elements.flowchartDiagram.innerHTML = '';
-
-                const mermaidDiv = document.createElement('div');
-                mermaidDiv.className = 'mermaid';
-
-                const projectsData = [];
-                {% for project in projects %}
-                    projectsData.push({
-                        name: '{{ project.entity.nom|e('js') }}',
-                        completed: {{ project.done_missions }},
-                        total: {{ project.total_missions }},
-                        completion: {{ project.done_missions > 0 ? (project.done_missions / project.total_missions * 100)|round : 0 }}
-                    });
-                {% endfor %}
-
-                projectsData.sort((a, b) => a.completion - b.completion);
-
-                let mermaidDefinition = 'flowchart LR\n';
-                mermaidDefinition += '    Start([Début du Workflow]) --> ';
-
-                for (let i = 0; i < projectsData.length; i++) {
-                    const project = projectsData[i];
-                    const nodeId = `P${i}`;
-
-                    let nodeStyle = '';
-                    if (project.completion >= 100) {
-                        nodeStyle = ':::complete';
-                    } else if (project.completion >= 70) {
-                        nodeStyle = ':::advanced';
-                    } else if (project.completion >= 30) {
-                        nodeStyle = ':::progress';
-                    } else {
-                        nodeStyle = ':::start';
-                    }
-
-                    mermaidDefinition += `${nodeId}["${project.name}<br>(${project.completion}%)"]${nodeStyle}`;
-
-                    if (i < projectsData.length - 1) {
-                        mermaidDefinition += ' --> ';
-                    } else {
-                        mermaidDefinition += ' --> End([Fin])';
-                    }
-                }
-
-                mermaidDefinition += '\n';
-                mermaidDefinition += '    classDef complete fill:#1cc88a,stroke:#169a6b,color:white;\n';
-                mermaidDefinition += '    classDef advanced fill:#4e73df,stroke:#2653d4,color:white;\n';
-                mermaidDefinition += '    classDef progress fill:#f6c23e,stroke:#dda20a,color:black;\n';
-                mermaidDefinition += '    classDef start fill:#e74a3b,stroke:#be2617,color:white;\n';
-
-                mermaidDiv.textContent = mermaidDefinition;
-                elements.flowchartDiagram.appendChild(mermaidDiv);
-
-                mermaid.initialize({
-                    startOnLoad: true,
-                    theme: 'neutral',
-                    flowchart: {
-                        useMaxWidth: true,
-                        htmlLabels: true,
-                        curve: 'basis'
-                    }
-                });
-
-                mermaid.init(undefined, mermaidDiv);
-
-            } catch (error) {
-                console.error("Erreur Mermaid:", error);
-                elements.flowchartDiagram.innerHTML = `
-                    <div class="alert alert-danger m-2">
-                        <i class="fas fa-exclamation-circle me-2"></i>
-                        Erreur: Le diagramme n'a pas pu être chargé (${error.message})
-                    </div>
-                `;
-            }
-        },
-
-        handleReportGeneration: async (isRefresh = false) => {
-            if (state.isGeneratingReport) return;
-
-            state.isGeneratingReport = true;
-            ui.showLoader();
-            ui.updateButtonState(true, isRefresh);
-
-            try {
-                const data = await api.generateAnalysis();
-                state.currentReport = data.report;
-                ui.updateReportContent(data.report);
-            } catch (error) {
-                ui.showError(error.message || 'Erreur lors de la génération du rapport');
-                state.currentReport = null;
-            } finally {
-                state.isGeneratingReport = false;
-                ui.hideLoader();
-                ui.updateButtonState(false, isRefresh);
-            }
-        }
-    };
-
-    // Event Listeners
-    elements.generateBtn.addEventListener('click', () => features.handleReportGeneration(false));
-
-    // Initialize all features with delay to ensure everything is loaded
-    setTimeout(() => {
-        features.loadCharts();
-        features.drawMissionCharts();
-        features.initSparklines();
-        features.initFlowChart();
-    }, 100);
-
-    // Handle window resize
-    window.addEventListener('resize', () => {
-        if (typeof google !== 'undefined' && google.visualization) {
-            google.charts.setOnLoadCallback(() => {
-                ['status-chart', 'sentiment-chart', 'type-chart', 'timeline-chart'].forEach(id => {
-                    const element = document.getElementById(id);
-                    if (element && element.innerHTML === '') {
-                        const chart = google.visualization.chart.getChart(element);
-                        if (chart) chart.draw();
-                    }
-                });
-            });
-        }
-        // Redraw Morris charts
-        if (typeof Morris !== 'undefined') {
-            ['morris-donut-demande', 'morris-bar-offre', 'morris-bar-demande'].forEach(id => {
-                const element = document.getElementById(id);
-                if (element && element.innerHTML !== '' && state.morrisCharts[id]) {
-                    state.morrisCharts[id].redraw();
-                }
-            });
-        }
-    });
-});
-</script>
+        });
+    </script>
 {% endblock %}

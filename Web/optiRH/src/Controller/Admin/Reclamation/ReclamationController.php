@@ -27,21 +27,28 @@ use App\Service\TranslationService;
 use Psr\Log\LoggerInterface;
 use App\Service\InfobipSmsSender;
 use Lexik\Bundle\FormFilterBundle\Filter\FilterBuilderUpdaterInterface;
+use Symfony\Component\HttpClient\HttpClient;
 
 class ReclamationController extends AbstractController
 {
     private $logger;
     private $translationService;
     private $filterBuilderUpdater;
-
+    private $entityManager;
+    private $huggingFaceApiKey;
+    
     public function __construct(
         LoggerInterface $logger, 
         TranslationService $translationService, 
-        FilterBuilderUpdaterInterface $filterBuilderUpdater
+        FilterBuilderUpdaterInterface $filterBuilderUpdater,
+        EntityManagerInterface $entityManager,
+        string $huggingFaceApiKey
     ) {
         $this->logger = $logger;
         $this->translationService = $translationService;
         $this->filterBuilderUpdater = $filterBuilderUpdater;
+        $this->entityManager = $entityManager;
+        $this->huggingFaceApiKey = $huggingFaceApiKey;
     }
 
     #[Route('/reclamations', name: 'admin_reclamations', methods: ['GET'])]
@@ -460,18 +467,18 @@ class ReclamationController extends AbstractController
     }
     
     #[Route('/reclamations/statistics', name: 'admin_reclamations_statistics', methods: ['GET'])]
-    public function statistics(Request $request, EntityManagerInterface $em): Response
+    public function statistics(Request $request, EntityManagerInterface $entityManager, PaginatorInterface $paginator): Response
     {
-        // Créer le form filter avec les mêmes filtres
+        // Créer le form filter
         $filterForm = $this->createForm(ReclamationFilterType::class);
         $filterForm->handleRequest($request);
         
         // Créer la requête de base pour les statistiques
-        $baseQueryBuilder = $em->getRepository(Reclamation::class)
+        $baseQueryBuilder = $entityManager->getRepository(Reclamation::class)
             ->createQueryBuilder('r');
             
         // Appliquer les filtres si le formulaire est soumis
-        if ($filterForm->isSubmitted()) {
+        if ($filterForm->isSubmitted() && $filterForm->isValid()) {
             $this->filterBuilderUpdater->addFilterConditions($filterForm, $baseQueryBuilder);
         }
         
@@ -482,7 +489,6 @@ class ReclamationController extends AbstractController
         $combinedQueryBuilder = clone $baseQueryBuilder;
         $resolvedQueryBuilder = clone $baseQueryBuilder;
         $totalQueryBuilder = clone $baseQueryBuilder;
-        $timelineQueryBuilder = clone $baseQueryBuilder;
         
         // Statistiques par statut
         $statusStats = $statusQueryBuilder
@@ -530,17 +536,30 @@ class ReclamationController extends AbstractController
         $resolutionRate = $totalReclamations > 0 ? 
             round(($resolvedReclamations / $totalReclamations) * 100, 2) : 0;
         
-        // Réclamations sur le temps (par mois) avec filtres
-        $reclamationsByMonth = $timelineQueryBuilder
-            ->select("CONCAT(YEAR(r.date), '-', MONTH(r.date)) as month, COUNT(r.id) as count")
-            ->groupBy('month')
-            ->orderBy('month', 'ASC')
-            ->getQuery()
-            ->getArrayResult();
+        // Réclamations sur le temps (par mois) - Utilisez DATE_FORMAT qui est compatible avec MySQL
+        $conn = $entityManager->getConnection();
+        $timelineQuery = "
+            SELECT 
+                DATE_FORMAT(r.date, '%Y-%m-%d %H:%i') as datetime,
+                COUNT(r.id) as count
+            FROM reclamation r
+            GROUP BY datetime
+            ORDER BY datetime ASC
+        ";
         
-        $timelineData = $this->formatTimelineData($reclamationsByMonth);
+        try {
+            $stmt = $conn->prepare($timelineQuery);
+            $resultSet = $stmt->executeQuery();
+            $reclamationsByTime = $resultSet->fetchAllAssociative();
+            
+            // Format pour la timeline
+            $timelineData = $this->formatTimelineData($reclamationsByTime);
+        } catch (\Exception $e) {
+            $this->logger->error('Erreur lors de la récupération des données temporelles: ' . $e->getMessage());
+            $timelineData = [['Datetime', 'Nombre de réclamations']]; // Array vide mais valide pour le graphique
+        }
         
-        // Conversion des données pour Google Chart
+        // Conversion des données pour les graphiques
         $statusData = $this->formatChartData($statusStats, 'status', 'count');
         $sentimentData = $this->formatChartData($sentimentStats, 'sentiment', 'count');
         $typeData = $this->formatChartData($typeStats, 'type', 'count');
@@ -556,9 +575,7 @@ class ReclamationController extends AbstractController
             'hasFilters' => $filterForm->isSubmitted()
         ]);
     }
-  
-
-
+    
     /**
      * Formate les données pour les graphiques
      */
@@ -573,24 +590,18 @@ class ReclamationController extends AbstractController
         
         return $formattedData;
     }
-
+    
     /**
      * Formate les données pour les graphiques en timeline
      */
     private function formatTimelineData(array $data): array
     {
         $formattedData = [];
-        $formattedData[] = ['Mois', 'Nombre de réclamations'];
+        $formattedData[] = ['Datetime', 'Nombre de réclamations'];
         
         foreach ($data as $item) {
-            // Formater le mois pour affichage (ex: 2025-4 -> Avril 2025)
-            $parts = explode('-', $item['month']);
-            $year = $parts[0];
-            $month = $parts[1];
-            $dateObj = new \DateTime("$year-$month-01");
-            $formattedMonth = $dateObj->format('M Y'); // Abr. mois et année
-            
-            $formattedData[] = [$formattedMonth, (int)$item['count']];
+            $datetime = $item['datetime'] ?? '';
+            $formattedData[] = [$datetime, (int)$item['count']];
         }
         
         return $formattedData;
@@ -650,6 +661,301 @@ class ReclamationController extends AbstractController
                 'success' => false,
                 'error' => 'Service de traduction temporairement indisponible. Veuillez réessayer plus tard.'
             ], 500);
+        }
+    }
+
+    #[Route('/reclamation/generate-ai-response', name: 'admin_generate_ai_response', methods: ['POST'])]
+    public function generateAIResponse(Request $request): JsonResponse
+    {
+        try {
+            // Vérification de la clé API
+            if (empty($this->huggingFaceApiKey)) {
+                throw new \RuntimeException('La clé API Hugging Face n\'est pas configurée');
+            }
+
+            // Vérification du format de la clé API
+            if (!preg_match('/^hf_[a-zA-Z0-9]{32,}$/', $this->huggingFaceApiKey)) {
+                throw new \RuntimeException('Format de clé API Hugging Face invalide');
+            }
+
+            $data = json_decode($request->getContent(), true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new \InvalidArgumentException('JSON invalide : ' . json_last_error_msg());
+            }
+
+            $reclamationContent = $data['content'] ?? '';
+            $responseType = $data['type'] ?? 'professional';
+            $context = $data['context'] ?? '';
+
+            // Validation plus stricte des entrées
+            if (empty($reclamationContent)) {
+                throw new \InvalidArgumentException('Le contenu de la réclamation est requis');
+            }
+
+            if (!in_array($responseType, ['professional', 'empathetic', 'solution'])) {
+                $responseType = 'professional';
+            }
+
+            // Construction du prompt selon le type de réponse
+            $prompt = match ($responseType) {
+                'empathetic' => "Tu es un assistant RH professionnel et empathique. Réponds à cette réclamation de manière compréhensive et rassurante :\n\n",
+                'solution' => "Tu es un assistant RH orienté solutions. Propose une réponse concrète et détaillée à cette réclamation :\n\n",
+                default => "Tu es un assistant RH professionnel. Formule une réponse claire et professionnelle à cette réclamation :\n\n",
+            };
+
+            $prompt .= "Réclamation : {$reclamationContent}\n";
+            if (!empty($context)) {
+                $prompt .= "Contexte supplémentaire : {$context}\n";
+            }
+            $prompt .= "\nRéponse :";
+
+            // Configuration du client HTTP
+            $client = HttpClient::create([
+                'timeout' => 30,
+                'verify_peer' => false
+            ]);
+
+            $this->logger->info('Envoi de la requête à Hugging Face', [
+                'prompt_length' => strlen($prompt),
+                'response_type' => $responseType,
+                'has_context' => !empty($context),
+                'api_key_prefix' => substr($this->huggingFaceApiKey, 0, 5) . '...' // Log partiel de la clé pour le debugging
+            ]);
+
+            $startTime = microtime(true);
+            $maxRetries = 2;
+            $retryCount = 0;
+            $lastException = null;
+
+            // Logique de retry manuelle
+            while ($retryCount <= $maxRetries) {
+                try {
+                    $response = $client->request('POST', 'https://api-inference.huggingface.co/models/mistralai/Mixtral-8x7B-Instruct-v0.1', [
+                        'headers' => [
+                            'Authorization' => 'Bearer ' . $this->huggingFaceApiKey,
+                            'Content-Type' => 'application/json',
+                        ],
+                        'json' => [
+                            'inputs' => $prompt,
+                            'parameters' => [
+                                'max_length' => 800,
+                                'temperature' => 0.7,
+                                'top_p' => 0.9,
+                                'return_full_text' => false
+                            ]
+                        ]
+                    ]);
+
+                    $statusCode = $response->getStatusCode();
+                    
+                    if ($statusCode === 200) {
+                        break; // Sort de la boucle si la requête réussit
+                    }
+                    
+                    // Gestion spécifique des erreurs HTTP
+                    $responseContent = $response->getContent(false);
+                    $this->logger->error('Erreur API Hugging Face', [
+                        'status_code' => $statusCode,
+                        'response' => $responseContent,
+                        'attempt' => $retryCount + 1
+                    ]);
+
+                    if ($statusCode === 403) {
+                        throw new \RuntimeException('Erreur d\'authentification : Vérifiez votre clé API Hugging Face');
+                    } elseif ($statusCode === 429) {
+                        throw new \RuntimeException('Limite de requêtes dépassée : Veuillez réessayer plus tard');
+                    } else {
+                        throw new \RuntimeException("Erreur API (HTTP $statusCode) : $responseContent");
+                    }
+                    
+                } catch (\Exception $e) {
+                    $lastException = $e;
+                    $retryCount++;
+                    
+                    if ($retryCount <= $maxRetries) {
+                        $this->logger->warning('Tentative de retry après erreur', [
+                            'attempt' => $retryCount,
+                            'error' => $e->getMessage()
+                        ]);
+                        // Attente exponentielle entre les retries (1s, 2s, 4s)
+                        sleep(pow(2, $retryCount - 1));
+                    }
+                }
+            }
+
+            // Si on arrive ici avec une exception, c'est que tous les retries ont échoué
+            if ($lastException !== null) {
+                throw $lastException;
+            }
+
+            $requestDuration = microtime(true) - $startTime;
+
+            $result = $response->toArray();
+            
+            $this->logger->info('Réponse reçue de Hugging Face', [
+                'duration' => round($requestDuration, 2),
+                'status_code' => $statusCode,
+                'retry_count' => $retryCount
+            ]);
+
+            // Extraction et validation de la réponse générée
+            $generatedResponse = '';
+            if (isset($result[0]['generated_text'])) {
+                $generatedResponse = $result[0]['generated_text'];
+            } elseif (isset($result['generated_text'])) {
+                $generatedResponse = $result['generated_text'];
+            } else {
+                throw new \RuntimeException('Format de réponse invalide');
+            }
+
+            // Nettoyage et validation de la réponse
+            $generatedResponse = trim($generatedResponse);
+            if (empty($generatedResponse)) {
+                throw new \RuntimeException('La réponse générée est vide');
+            }
+
+            if (strlen($generatedResponse) < 10) {
+                throw new \RuntimeException('La réponse générée est trop courte');
+            }
+
+            return new JsonResponse([
+                'success' => true,
+                'response' => $generatedResponse,
+                'metadata' => [
+                    'type' => $responseType,
+                    'timestamp' => (new \DateTime())->format('Y-m-d H:i:s'),
+                    'model' => 'Mixtral-8x7B-Instruct-v0.1',
+                    'response_time' => round($requestDuration, 2),
+                    'retry_count' => $retryCount
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            $this->logger->error('Erreur lors de la génération de la réponse IA', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            $errorMessage = 'Une erreur est survenue lors de la génération de la réponse';
+            if ($this->getParameter('kernel.debug')) {
+                $errorMessage .= ' : ' . $e->getMessage();
+            }
+
+            return new JsonResponse([
+                'success' => false,
+                'error' => $errorMessage
+            ], 500);
+        }
+    }
+
+    private function analyzeSentiment(string $text): string
+    {
+        try {
+            // Nettoyage du texte
+            $text = strip_tags($text);
+            $text = trim($text);
+            
+            if (empty($text)) {
+                return 'neutre';
+            }
+
+            // Configuration du client HTTP
+            $client = HttpClient::create([
+                'timeout' => 30,
+                'verify_peer' => false
+            ]);
+
+            // Utilisation du modèle CamemBERT pour l'analyse de sentiments en français
+            $response = $client->request('POST', 'https://api-inference.huggingface.co/models/ProsusAI/finbert', [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $this->huggingFaceApiKey,
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => [
+                    'inputs' => $text,
+                    'parameters' => [
+                        'max_length' => 100,
+                        'temperature' => 0.3,
+                        'return_full_text' => false
+                    ]
+                ]
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            
+            if ($statusCode !== 200) {
+                $this->logger->error('Erreur lors de l\'analyse de sentiment', [
+                    'status_code' => $statusCode,
+                    'response' => $response->getContent(false)
+                ]);
+                return 'neutre';
+            }
+
+            $result = $response->toArray();
+            
+            // Extraction et normalisation du sentiment
+            $sentiment = '';
+            if (isset($result[0]['generated_text'])) {
+                $sentiment = strtolower(trim($result[0]['generated_text']));
+            } elseif (isset($result['generated_text'])) {
+                $sentiment = strtolower(trim($result['generated_text']));
+            }
+
+            // Mapping des sentiments en français
+            $sentimentMap = [
+                'positif' => 'positif',
+                'positive' => 'positif',
+                'négatif' => 'négatif',
+                'negative' => 'négatif',
+                'neutre' => 'neutre',
+                'neutral' => 'neutre'
+            ];
+
+            // Analyse plus détaillée du texte en français
+            $positiveWords = [
+                'content', 'heureux', 'satisfait', 'excellent', 'parfait', 'bon', 'bien', 'super', 'génial', 'merveilleux',
+                'content', 'heureuse', 'satisfaite', 'excellente', 'parfaite', 'bonne', 'bien', 'superbe', 'géniale', 'merveilleuse',
+                'je suis content', 'je suis heureux', 'je suis satisfait', 'je suis ravi', 'je suis enchanté',
+                'je suis contente', 'je suis heureuse', 'je suis satisfaite', 'je suis ravie', 'je suis enchantée',
+                'très content', 'très heureux', 'très satisfait', 'très ravi', 'très enchanté',
+                'très contente', 'très heureuse', 'très satisfaite', 'très ravie', 'très enchantée',
+                'extrêmement content', 'extrêmement heureux', 'extrêmement satisfait',
+                'extrêmement contente', 'extrêmement heureuse', 'extrêmement satisfaite'
+            ];
+            
+            $negativeWords = [
+                'triste', 'déçu', 'mauvais', 'nul', 'terrible', 'horrible', 'insatisfait', 'fâché', 'énervé', 'désolé',
+                'triste', 'déçue', 'mauvaise', 'nulle', 'terrible', 'horrible', 'insatisfaite', 'fâchée', 'énervée', 'désolée',
+                'je suis triste', 'je suis déçu', 'je suis mauvais', 'je suis nul', 'je suis terrible',
+                'je suis triste', 'je suis déçue', 'je suis mauvaise', 'je suis nulle', 'je suis terrible',
+                'très triste', 'très déçu', 'très mauvais', 'très nul', 'très terrible',
+                'très triste', 'très déçue', 'très mauvaise', 'très nulle', 'très terrible',
+                'extrêmement triste', 'extrêmement déçu', 'extrêmement mauvais',
+                'extrêmement triste', 'extrêmement déçue', 'extrêmement mauvaise'
+            ];
+
+            // Vérification des mots-clés en français
+            $textLower = strtolower($text);
+            foreach ($positiveWords as $word) {
+                if (strpos($textLower, $word) !== false) {
+                    return 'positif';
+                }
+            }
+            foreach ($negativeWords as $word) {
+                if (strpos($textLower, $word) !== false) {
+                    return 'négatif';
+                }
+            }
+
+            // Si le sentiment n'est pas clairement identifié, utiliser le résultat de l'API
+            return $sentimentMap[$sentiment] ?? 'neutre';
+
+        } catch (\Exception $e) {
+            $this->logger->error('Erreur lors de l\'analyse de sentiment', [
+                'error' => $e->getMessage(),
+                'text' => $text
+            ]);
+            return 'neutre';
         }
     }
 }

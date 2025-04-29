@@ -2,6 +2,8 @@
 namespace App\Entity;
 
 use App\Entity\Offre;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -81,12 +83,16 @@ class Demande
         message: "La situation actuelle doit être Etudiant, Employé ou Autre."
     )]
     private ?string $situationActuelle = null;
+    #[ORM\OneToMany(mappedBy: 'demande', targetEntity: Interview::class)]
+    private Collection $interviews;
 
     public function __construct()
     {
         $this->date = new \DateTime();
         $this->statut = 'EN_ATTENTE';
+        $this->interviews = new ArrayCollection();
     }
+
 
     public function getId(): int
     {
@@ -206,6 +212,32 @@ class Demande
     public function setSituationActuelle(?string $situationActuelle): void
     {
         $this->situationActuelle = $situationActuelle;
+    }
+    /**
+     * @return Collection|Interview[]
+     */
+    public function getInterviews(): Collection
+    {
+        return $this->interviews;
+    }
+
+    public function addInterview(Interview $interview): self
+    {
+        if (!$this->interviews->contains($interview)) {
+            $this->interviews[] = $interview;
+            $interview->setDemande($this);
+        }
+        return $this;
+    }
+
+    public function removeInterview(Interview $interview): self
+    {
+        if ($this->interviews->removeElement($interview)) {
+            if ($interview->getDemande() === $this) {
+                $interview->setDemande(null);
+            }
+        }
+        return $this;
     }
 
 }

@@ -173,6 +173,25 @@
                             </div>
                         </div>
                         {% endif %}
+
+                        <!-- Champ Document joint -->
+                        <div class="mb-3 vich-file">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-file-alt input-icon text-primary me-2"></i>
+                                {{ form_label(form.documentFile, null, {
+                                    'label_attr': {'class': 'form-label fw-bold text-primary m-0'}
+                                }) }}
+                            </div>
+                            {{ form_widget(form.documentFile, {
+                                'attr': {
+                                    'class': 'form-control',
+                                    'accept': '.pdf,.doc,.docx,.txt'
+                                }
+                            }) }}
+                            <div class="invalid-feedback">
+                                {{ form_errors(form.documentFile) }}
+                            </div>
+                        </div>
                     </div>
 
                     <div class="card-footer text-end">
@@ -265,6 +284,111 @@
             0% { opacity: 1; }
             50% { opacity: 0.5; }
             100% { opacity: 1; }
+        }
+        .vich-file {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+        
+        .vich-file .form-control {
+            padding: 0.5rem;
+            border: 2px dashed #dee2e6;
+            border-radius: 0.5rem;
+            background-color: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+        
+        .vich-file .form-control:hover {
+            border-color: #0d6efd;
+            background-color: #e9ecef;
+        }
+        
+        .vich-file .form-control:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        
+        .vich-file .form-text {
+            color: #6c757d;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        
+        .vich-file .btn-delete {
+            position: absolute;
+            right: 0.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #dc3545;
+            background: none;
+            border: none;
+            padding: 0.25rem;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .vich-file .btn-delete:hover {
+            color: #bd2130;
+        }
+        
+        .vich-file .file-preview {
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+            background-color: #fff;
+        }
+        
+        .vich-file .file-preview img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .vich-file.highlight {
+            border: 2px dashed #0d6efd;
+            background-color: rgba(13, 110, 253, 0.1);
+        }
+
+        .vich-file.highlight::after {
+            content: 'Déposer le fichier ici';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #0d6efd;
+            font-weight: bold;
+            pointer-events: none;
+        }
+
+        .vich-file .form-control {
+            cursor: pointer;
+        }
+
+        .vich-file .form-control::-webkit-file-upload-button {
+            visibility: hidden;
+        }
+
+        .vich-file .form-control::before {
+            content: 'Choisir un fichier';
+            display: inline-block;
+            background: linear-gradient(to bottom, #f9f9f9, #e3e3e3);
+            border: 1px solid #999;
+            border-radius: 3px;
+            padding: 5px 8px;
+            outline: none;
+            white-space: nowrap;
+            cursor: pointer;
+            text-shadow: 1px 1px #fff;
+            font-weight: 700;
+            font-size: 10pt;
+        }
+
+        .vich-file .form-control:hover::before {
+            border-color: #0d6efd;
+        }
+
+        .vich-file .form-control:active::before {
+            background: -webkit-linear-gradient(top, #e3e3e3, #f9f9f9);
         }
     </style>
 {% endblock %}
@@ -479,6 +603,78 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+    </script>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInput = document.querySelector('input[type="file"]');
+            const fileLabel = document.querySelector('.vich-file .form-label');
+            const filePreview = document.createElement('div');
+            filePreview.className = 'file-preview';
+            fileInput.parentNode.appendChild(filePreview);
+
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    // Mettre à jour le label
+                    fileLabel.textContent = `Document sélectionné: ${file.name}`;
+                    
+                    // Créer la prévisualisation
+                    filePreview.innerHTML = `
+                        <div class="d-flex align-items-center p-2 bg-light rounded">
+                            <i class="fas fa-file-alt text-primary me-2"></i>
+                            <div>
+                                <div class="fw-bold">${file.name}</div>
+                                <div class="text-muted small">${(file.size / 1024).toFixed(2)} KB</div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    fileLabel.textContent = 'Document joint';
+                    filePreview.innerHTML = '';
+                }
+            });
+
+            // Gérer le drag & drop
+            const dropZone = fileInput.parentNode;
+            
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, highlight, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, unhighlight, false);
+            });
+
+            function highlight(e) {
+                dropZone.classList.add('highlight');
+            }
+
+            function unhighlight(e) {
+                dropZone.classList.remove('highlight');
+            }
+
+            dropZone.addEventListener('drop', handleDrop, false);
+
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                fileInput.files = files;
+                fileInput.dispatchEvent(new Event('change'));
+            }
+        });
     </script>
 {% endblock %}
                 

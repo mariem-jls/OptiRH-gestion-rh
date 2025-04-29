@@ -1,0 +1,404 @@
+{# templates/reclamation/statistics.html.twig #}
+{% extends 'partials/layout-vertical.html.twig' %}
+
+{% block title %}Statistiques des réclamations • OPTIRH{% endblock %}
+
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', { page_title: 'Statistiques des réclamations • OPTIRH' }) }}
+{% endblock %}
+
+{% block css %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        /* Thème OPTIRH - Bleu ciel */
+        :root {
+            --optirh-blue: #4da6ff;
+            --optirh-dark-blue: #3399ff;
+            --optirh-light-blue: #e6f2ff;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-color: #f8f9fa;
+            --dark-color: #2c3e50;
+        }
+
+        .stats-card {
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            height: 100%;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+        
+        .stats-card .card-header {
+            background-color: var(--optirh-blue);
+            color: white;
+            padding: 16px;
+            border-bottom: none;
+        }
+        
+        .stats-card .card-body {
+            padding: 20px;
+        }
+        
+        .chart-container {
+            width: 100%;
+            height: 300px;
+            margin: 0 auto;
+        }
+        
+        .key-metric {
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            background: linear-gradient(to right, var(--optirh-light-blue), white);
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        
+        .metric-value {
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: var(--optirh-dark-blue);
+            margin-bottom: 0;
+        }
+        
+        .metric-label {
+            color: var(--dark-color);
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+        
+        /* Indicateurs de type */
+        .type-indicator {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        
+        .type-salaire { background-color: #ffeaa7; color: #d35400; }
+        .type-conges { background-color: #d6eaff; color: #0984e3; }
+        .type-relations { background-color: #e3f9e5; color: #00b894; }
+        .type-conditions { background-color: #ffd3d3; color: #e74c3c; }
+        .type-remuneration { background-color: #e9dbff; color: #6c5ce7; }
+        
+        /* Styles pour l'affichage de sentiments */
+        .sentiment-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 20px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .sentiment-badge.positive {
+            background-color: rgba(46, 204, 113, 0.2);
+            color: #27ae60;
+        }
+        
+        .sentiment-badge.neutral {
+            background-color: rgba(243, 156, 18, 0.2);
+            color: #d35400;
+        }
+        
+        .sentiment-badge.negative {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: #c0392b;
+        }
+        
+        .sentiment-icon {
+            margin-right: 8px;
+            font-size: 1.2em;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid animate__animated animate__fadeIn">
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-white">Statistiques des réclamations <span class="text-light">OPTIRH</span></h6>
+            <div class="header-actions d-flex gap-2">
+                <a href="{{ path('admin_reclamations') }}" class="btn btn-sm btn-light">
+                    <i class="fas fa-arrow-left me-1"></i> Retour à la liste
+                </a>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            <!-- KPI majeur: Taux de résolution -->
+            <div class="key-metric animate__animated animate__fadeInUp" style="animation-delay: 0.2s">
+                <h4 class="metric-value">{{ resolutionRate }}%</h4>
+                <p class="metric-label">Taux de résolution global</p>
+            </div>
+            
+            <!-- Première rangée de graphiques -->
+            <div class="row gy-4 mb-4">
+                <!-- Statistiques par statut -->
+                <div class="col-md-6 animate__animated animate__fadeInUp" style="animation-delay: 0.3s">
+                    <div class="stats-card">
+                        <div class="card-header">
+                            <h6 class="m-0"><i class="fas fa-tasks me-2"></i>Répartition par statut</h6>
+                        </div>
+                        <div class="card-body">
+                            <div id="statusChart" class="chart-container"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Statistiques par sentiment -->
+                <div class="col-md-6 animate__animated animate__fadeInUp" style="animation-delay: 0.4s">
+                    <div class="stats-card">
+                        <div class="card-header">
+                            <h6 class="m-0"><i class="fas fa-smile me-2"></i>Analyse des sentiments</h6>
+                        </div>
+                        <div class="card-body">
+                            <div id="sentimentChart" class="chart-container"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Deuxième rangée de graphiques -->
+            <div class="row gy-4 mb-4">
+                <!-- Statistiques par type -->
+                <div class="col-md-6 animate__animated animate__fadeInUp" style="animation-delay: 0.5s">
+                    <div class="stats-card">
+                        <div class="card-header">
+                            <h6 class="m-0"><i class="fas fa-tags me-2"></i>Répartition par type</h6>
+                        </div>
+                        <div class="card-body">
+                            <div id="typeChart" class="chart-container"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Évolution dans le temps -->
+                <div class="col-md-6 animate__animated animate__fadeInUp" style="animation-delay: 0.6s">
+                    <div class="stats-card">
+                        <div class="card-header">
+                            <h6 class="m-0"><i class="fas fa-chart-line me-2"></i>Évolution par minute</h6>
+                        </div>
+                        <div class="card-body">
+                            <div id="timelineChart" class="chart-container"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Analyse croisée Type x Sentiment -->
+            <div class="row gy-4">
+                <div class="col-12 animate__animated animate__fadeInUp" style="animation-delay: 0.7s">
+                    <div class="stats-card">
+                        <div class="card-header">
+                            <h6 class="m-0"><i class="fas fa-th-large me-2"></i>Analyse croisée Type × Sentiment</h6>
+                        </div>
+                        <div class="card-body">
+                            <div id="typeSentimentChart" class="chart-container" style="height: 400px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Chart 1: Statut
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+            const statusData = {{ statusData|raw }};
+            const statusLabels = statusData.slice(1).map(item => item[0]);
+            const statusValues = statusData.slice(1).map(item => item[1]);
+            
+            new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: statusLabels,
+                    datasets: [{
+                        data: statusValues,
+                        backgroundColor: ['#f39c12', '#3498db', '#2ecc71'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const value = context.raw;
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${context.label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Chart 2: Sentiment
+            const sentimentCtx = document.getElementById('sentimentChart').getContext('2d');
+            const sentimentData = {{ sentimentData|raw }};
+            const sentimentLabels = sentimentData.slice(1).map(item => item[0]);
+            const sentimentValues = sentimentData.slice(1).map(item => item[1]);
+            
+            new Chart(sentimentCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: sentimentLabels,
+                    datasets: [{
+                        data: sentimentValues,
+                        backgroundColor: ['#2ecc71', '#f39c12', '#e74c3c'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const value = context.raw;
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${context.label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Chart 3: Type
+            const typeCtx = document.getElementById('typeChart').getContext('2d');
+            const typeData = {{ typeData|raw }};
+            const typeLabels = typeData.slice(1).map(item => item[0]);
+            const typeValues = typeData.slice(1).map(item => item[1]);
+            
+            new Chart(typeCtx, {
+                type: 'bar',
+                data: {
+                    labels: typeLabels,
+                    datasets: [{
+                        data: typeValues,
+                        backgroundColor: '#3498db',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            // Chart 4: Timeline
+            const timelineCtx = document.getElementById('timelineChart').getContext('2d');
+            const timelineData = {{ timelineData|raw }};
+            const timelineLabels = timelineData.slice(1).map(item => item[0]);
+            const timelineValues = timelineData.slice(1).map(item => item[1]);
+            
+            new Chart(timelineCtx, {
+                type: 'line',
+                data: {
+                    labels: timelineLabels,
+                    datasets: [{
+                        data: timelineValues,
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            // Chart 5: Type x Sentiment
+            const typeSentimentCtx = document.getElementById('typeSentimentChart').getContext('2d');
+            const typeSentimentData = {{ typeSentimentData|raw }};
+            
+            // Préparer les données pour le graphique empilé
+            const types = [...new Set(typeSentimentData.map(item => item.type))];
+            const sentiments = ['positive', 'neutral', 'negative'];
+            const datasets = sentiments.map((sentiment, index) => ({
+                label: sentiment.charAt(0).toUpperCase() + sentiment.slice(1),
+                data: types.map(type => {
+                    const item = typeSentimentData.find(d => d.type === type && d.sentiment === sentiment);
+                    return item ? item.count : 0;
+                }),
+                backgroundColor: ['#2ecc71', '#f39c12', '#e74c3c'][index]
+            }));
+            
+            new Chart(typeSentimentCtx, {
+                type: 'bar',
+                data: {
+                    labels: types,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            stacked: true
+                        },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+{% endblock %}
