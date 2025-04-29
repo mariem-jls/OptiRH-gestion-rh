@@ -1,0 +1,13 @@
+{# templates/evenement/search_results.html.twig #}
+
+<h1>Résultats de la recherche</h1>
+
+{% if results is empty %}
+    <p>Aucun événement trouvé pour votre recherche.</p>
+{% else %}
+    <ul>
+    {% for evenement in results %}
+        <li>{{ evenement.titre }} - {{ evenement.description }}</li>
+    {% endfor %}
+    </ul>
+{% endif %}

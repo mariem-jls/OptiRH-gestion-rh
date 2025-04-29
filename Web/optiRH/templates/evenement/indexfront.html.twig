@@ -46,31 +46,300 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 {% endfor %}
+<style>
+    /* Design moderne du toggle */
+    .toggle-container {
+        display: flex;
+        align-items: center;
+        margin-left: 15px;
+    }
+    
+    .toggle-label {
+        margin: 0 10px;
+        font-weight: 500;
+        color: #6c757d;
+        transition: all 0.3s ease;
+    }
+    
+    .toggle-label.active {
+        color: #5e72e4;
+    }
+    
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 30px;
+    }
+    
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #e9ecef;
+        border-radius: 34px;
+        transition: .4s;
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 24px;
+        width: 24px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        border-radius: 50%;
+        transition: .4s;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    
+    input:checked + .toggle-slider {
+        background: linear-gradient(135deg, #5e72e4 0%, #825ee4 100%);
+    }
+    
+    input:checked + .toggle-slider:before {
+        transform: translateX(30px);
+    }
+    
+    .toggle-icon {
+        margin-right: 5px;
+        font-size: 18px;
+        vertical-align: middle;
+    }
+</style>
+<style>
+
+    .countdown-container {
+        margin: 20px 0;
+    }
+    
+    .countdown-card {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(5px);
+        border-radius: 12px;
+        padding: 15px 10px;
+        min-width: 80px;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+    }
+    
+    .countdown-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+    
+    .countdown-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #fff;
+        line-height: 1;
+        margin-bottom: 5px;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+    
+    .countdown-label {
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.8);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    @media (max-width: 768px) {
+        .countdown-card {
+            min-width: 60px;
+            padding: 10px 5px;
+        }
+        
+        .countdown-value {
+            font-size: 1.5rem;
+        }
+        
+        .countdown-label {
+            font-size: 0.7rem;
+        }
+    }
+</style>
+    <style>
+        .marketing-btn {
+            color: #d63384;
+            border-color: #d63384;
+            background-color: transparent;
+        }
+        .marketing-btn:hover {
+            background-color: #d63384;
+            border-color: #d63384;
+            color: white;
+        }
+
+        /* Bouton Finance */
+        .finance-btn {
+            color: #6f42c1;
+            border-color: #6f42c1;
+            background-color: transparent;
+        }
+        .finance-btn:hover {
+            background-color: #6f42c1;
+            border-color: #6f42c1;
+            color: white;
+        }
+
+        /* Bouton Management */
+        .management-btn {
+            color: #6610f2;
+            border-color: #6610f2;
+            background-color: transparent;
+        }
+        .management-btn:hover {
+            background-color: #6610f2;
+            border-color: #6610f2;
+            color: white;
+        }
+        
+        .bg-blur {
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
+        }
+        
+        .overlay-dark {
+            background: rgba(0, 0, 0, 0.4);
+        }
+        
+        .price-badge {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 50px;
+            padding: 8px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+            }
+        }
+        
+        .modal-content {
+            border-radius: 15px;
+            overflow: hidden;
+        }
+.favorite-btn {
+    position: absolute;
+    top: 140px;
+    right: 15px;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 2;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.favorite-btn:hover {
+    background: white;
+    transform: scale(1.1);
+}
+
+.favorite-active {
+    color: red; /* Ou une autre couleur pour l'icône rouge */
+}
+
+
+
+    
+
+    
+    </style>
+
 
 <div class="container-fluid px-4">
     <!-- Section des événements (visible par défaut) -->
      <div id="eventsSection">
         <!-- Header avec dégradé vibrant -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="event-header text-center py-5 position-relative overflow-hidden rounded-3">
-                    <div class="position-relative z-index-1">
-                        <h1 class="display-4 fw-bold text-white mb-3 animate__animated animate__fadeInDown">Nos Événements</h1>
-                        <p class="lead text-white mb-4 animate__animated animate__fadeIn animate__delay-1s">Découvrez des expériences mémorables</p>
-                        <div class="search-container mx-auto animate__animated animate__fadeIn animate__delay-1s" style="max-width: 500px;">
-                            <div class="input-group">
-                                <input type="text" class="form-control rounded-start-pill border-0 shadow-sm py-2 px-4" id="searchInput" placeholder="Rechercher un événement...">
-                                
-                            </div>
-                            
+       <div class="row mb-2"> <!-- Réduction du margin-bottom -->
+    <div class="col-12">
+        <div class="event-header text-center py-4 position-relative overflow-hidden rounded-3 event-header-image" 
+            style="background-image: url('{{ closestEventImage ? asset(closestEventImage) : 'votre_image_par_defaut.jpg' }}'); background-size: cover; background-position: center;">
+
+            <div class="overlay bg-dark opacity-50 position-absolute top-0 start-0 w-100 h-100 rounded-3"></div>
+
+            <div class="position-relative z-index-1">
+                <h1 class="display-5 fw-bold text-white mb-3 animate__animated animate__fadeInDown">Nos Événements</h1>
+
+                {% if closestEvent %}
+                <div class="countdown-container animate__animated animate__fadeIn animate__delay-1s">
+                    <h5 class="text-white mb-3">
+                        Ne ratez pas l'événement 
+                        <span class="fw-bold text-warning">"{{ closestEvent.titre }}"</span> 
+                        qui commence dans :
+                    </h5>
+                    <div class="d-flex justify-content-center gap-3" id="countdown">
+                        <div class="countdown-card">
+                            <div class="countdown-value" id="days">00</div>
+                            <div class="countdown-label">Jours</div>
                         </div>
-                        <a href="{{ path('app_user_reservations') }}" class="btn btn-light rounded-pill px-4 mt-3 animate__animated animate__fadeIn animate__delay-1s">
-                            <i class="mdi mdi-ticket-account me-1"></i> Mes Réservations
-                        </a>
+                        <div class="countdown-card">
+                            <div class="countdown-value" id="hours">00</div>
+                            <div class="countdown-label">Heures</div>
+                        </div>
+                        <div class="countdown-card">
+                            <div class="countdown-value" id="minutes">00</div>
+                            <div class="countdown-label">Minutes</div>
+                        </div>
+                        <div class="countdown-card">
+                            <div class="countdown-value" id="seconds">00</div>
+                            <div class="countdown-label">Secondes</div>
+                        </div>
                     </div>
                 </div>
+                {% endif %}
+
+                <!-- Barre de recherche -->
+                <div class="search-container mx-auto animate__animated animate__fadeIn animate__delay-1s" style="max-width: 500px;">
+                    <div class="input-group">
+                        <input type="text" class="form-control rounded-start-pill border-0 shadow-sm py-2 px-4" id="searchInput" placeholder="Rechercher un événement...">
+                    </div>
+                </div>
+
+                <!-- Bouton "Mes Réservations" -->
+                <a href="{{ path('app_user_reservations') }}" class="btn btn-light rounded-pill px-4 mt-3 animate__animated animate__fadeIn animate__delay-1s">
+                    <i class="mdi mdi-ticket-account me-1"></i> Mes Réservations
+                </a>
             </div>
+
         </div>
+    </div>
+</div>
+
+
 
         <!-- Filtres simplifiés -->
         <div class="row mb-4">
@@ -109,8 +378,20 @@
                     </button>
                 </div>
             </div>
-        </div>
-
+          
+            <div class="toggle-container">
+                <span class="toggle-label">Tous</span>
+                
+                <label class="toggle-switch">
+                    <input type="checkbox" id="toggleRecommended">
+                    <span class="toggle-slider"></span>
+                </label>
+                
+                <span class="toggle-label active">
+                    <i class="mdi mdi-heart toggle-icon"></i>Pour moi
+                </span>
+            </div>
+        
         <div class="row g-4" id="event-grid">
             {% include 'evenement/card.html.twig' with {'evenements': evenements, 'favorisIds': favorisIds} %}
         </div>
@@ -222,113 +503,6 @@
         </div>
     </div>
 {% endfor %}
-    <style>
-        .marketing-btn {
-            color: #d63384;
-            border-color: #d63384;
-            background-color: transparent;
-        }
-        .marketing-btn:hover {
-            background-color: #d63384;
-            border-color: #d63384;
-            color: white;
-        }
-
-        /* Bouton Finance */
-        .finance-btn {
-            color: #6f42c1;
-            border-color: #6f42c1;
-            background-color: transparent;
-        }
-        .finance-btn:hover {
-            background-color: #6f42c1;
-            border-color: #6f42c1;
-            color: white;
-        }
-
-        /* Bouton Management */
-        .management-btn {
-            color: #6610f2;
-            border-color: #6610f2;
-            background-color: transparent;
-        }
-        .management-btn:hover {
-            background-color: #6610f2;
-            border-color: #6610f2;
-            color: white;
-        }
-        
-        .bg-blur {
-            backdrop-filter: blur(2px);
-            -webkit-backdrop-filter: blur(2px);
-        }
-        
-        .overlay-dark {
-            background: rgba(0, 0, 0, 0.4);
-        }
-        
-        .price-badge {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-radius: 50px;
-            padding: 8px 16px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-        
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4);
-            }
-            70% {
-                box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
-            }
-        }
-        
-        .modal-content {
-            border-radius: 15px;
-            overflow: hidden;
-        }
-.favorite-btn {
-    position: absolute;
-    top: 140px;
-    right: 15px;
-    background: rgba(255, 255, 255, 0.9);
-    border: none;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    z-index: 2;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-.favorite-btn:hover {
-    background: white;
-    transform: scale(1.1);
-}
-
-.favorite-active {
-    color: red; /* Ou une autre couleur pour l'icône rouge */
-}
-
-
-
-    
-
-    
-    </style>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
@@ -336,10 +510,38 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
+// Gestionnaire pour le toggle des recommandations
+$('#toggleRecommended').change(function() {
+    var isChecked = $(this).is(':checked');
+    var currentModalite = $('.btn[data-modalite].active').data('modalite');
+    var currentType = $('.btn[data-type].active').data('type');
+    var searchTerm = $('#searchInput').val();
+    
+    var data = {};
+    if (searchTerm) data['term'] = searchTerm;
+    if (currentModalite && currentModalite !== 'all') data['modalite'] = currentModalite;
+    if (currentType && currentType !== 'all') data['type'] = currentType;
+    
+    // Ajouter le paramètre recommended basé sur l'état du toggle
+    data['recommended'] = isChecked;
+    
+    $.ajax({
+        url: '{{ path('app_evenement_indexfront') }}',
+        type: 'GET',
+        data: data,
+        success: function(response) {
+            $('#event-grid').html(response);
+            reattachEventHandlers(); // Réattacher les gestionnaires d'événements
+        },
+        
+    });
+});
+
+</script>
+
+<script>
     $(document).ready(function() {
        
-
-        
         // Animation au survol des cartes
         $('.event-card').hover(
             function() {
@@ -351,6 +553,43 @@
         );
     });
 </script>
+{% if closestEvent %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const eventStart = new Date('{{ closestEvent.dateDebut.format('Y-m-d\\TH:i:s') }}').getTime();
+
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const distance = eventStart - now;
+
+            if (distance <= 0) {
+                document.getElementById("days").innerText = "00";
+                document.getElementById("hours").innerText = "00";
+                document.getElementById("minutes").innerText = "00";
+                document.getElementById("seconds").innerText = "00";
+                clearInterval(countdownInterval);
+                return;
+            }
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById("days").innerText = days.toString().padStart(2, '0');
+            document.getElementById("hours").innerText = hours.toString().padStart(2, '0');
+            document.getElementById("minutes").innerText = minutes.toString().padStart(2, '0');
+            document.getElementById("seconds").innerText = seconds.toString().padStart(2, '0');
+        }
+
+        updateCountdown();
+        const countdownInterval = setInterval(updateCountdown, 1000);
+    });
+</script>
+{% endif %}
+
+
+
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {

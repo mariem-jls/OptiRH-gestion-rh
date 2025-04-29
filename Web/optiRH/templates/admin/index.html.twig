@@ -684,7 +684,7 @@
             <h3><span style="font-weight: normal;">Bonjour </span><strong>{{ app.user.nom|default('Utilisateur') }}</strong> !</h3>
         </div>
         <div>
-            <a href="{{ path('app_logout') }}" class="btn btn-logout ">
+            <a href="{{ path('app_logout') }}" class="btn btn-logout">
                 <i class="fas fa-sign-out-alt"></i> Déconnexion
             </a>
         </div>
@@ -703,7 +703,7 @@
     </div>
 
     {# Administration Section #}
-    <h3 class="m-2"><i class="fas fa-cog"></i> Administration </h3>
+    <h3 class="m-2"><i class="fas fa-cog"></i> Administration</h3>
     <div class="summary-cards">
         <div class="summary-card stats-card">
             <i class="fas fa-users"></i>
@@ -749,11 +749,11 @@
 
     <hr>
 
-    <div><br></div>
     <!-- Stats Cards -->
+    <h3 class="mt-5"><i class="fas fa-chart-bar"></i> Projets et Missions</h3>
     <div class="admin-stats">
         <div class="stat-card">
-            <h3><i class="fas fa-project-diagram me-2"></i>Projets Totaux</h3>
+            <h3><i class="fas fa-project-diagram me-2"></i> Projets Totaux</h3>
             <p class="stat-value">
                 {% set total_projects = 0 %}
                 {% for status, count in project_stats %}
@@ -763,7 +763,7 @@
             </p>
         </div>
         <div class="stat-card">
-            <h3><i class="fas fa-tasks me-2"></i>Missions Totales</h3>
+            <h3><i class="fas fa-tasks me-2"></i> Missions Totales</h3>
             <p class="stat-value">
                 {% set total_missions = 0 %}
                 {% for status, count in mission_stats %}
@@ -773,15 +773,13 @@
             </p>
         </div>
         <div class="stat-card">
-            <h3><i class="fas fa-exclamation-triangle me-2"></i>Missions en Retard</h3>
+            <h3><i class="fas fa-exclamation-triangle me-2"></i> Missions en Retard</h3>
             <p class="stat-value">{{ delayed_missions|length }}</p>
         </div>
     </div>
 
     <!-- Recruitment Section -->
     <h3 class="mt-5"><i class="fas fa-users"></i> Recrutement</h3>
-
-    <!-- Recruitment Summary Cards -->
     <div class="summary-cards">
         <div class="summary-card stats-card">
             <i class="fas fa-file-alt"></i>
@@ -805,68 +803,237 @@
         </div>
     </div>
 
+    <!-- Complaints Section -->
+        <h3 class="mt-5"><i class="fas fa-comment-alt"></i> Réclamations</h3>
+
+        <div class="summary-cards">
+            <div class="summary-card">
+                <h5><i class="fas fa-chart-pie"></i> Taux de résolution</h5>
+                <div class="card-value {{ resolutionRate is defined ? (resolutionRate > 75 ? 'positive' : (resolutionRate < 50 ? 'negative' : 'neutral')) : 'neutral' }}">
+                    {{ resolutionRate is defined ? resolutionRate : 0 }}%
+                </div>
+                <p>des réclamations sont résolues</p>
+            </div>
+            <div class="summary-card">
+                <h5><i class="fas fa-thermometer-half"></i> Sentiment dominant</h5>
+                <div class="card-value" id="dominant-sentiment">
+                    {% if sentimentData|length > 1 %}
+                        {% set dominantSentiment = sentimentData|slice(1)|sort((a, b) => b[1] <=> a[1])|first %}
+                        <span class="{{ dominantSentiment[0] == 'Positif' ? 'positive' : (dominantSentiment[0] == 'Négatif' ? 'negative' : 'neutral') }}">
+                            {{ dominantSentiment[0] }}
+                        </span>
+                    {% else %}
+                        <span class="neutral">N/A</span>
+                    {% endif %}
+                </div>
+                <p>des réclamations</p>
+            </div>
+            <div class="summary-card">
+                <h5><i class="fas fa-folder-open"></i> Type principal</h5>
+                <div class="card-value" id="dominant-type">
+                    {% if typeData|length > 1 %}
+                        {% set dominantType = typeData|slice(1)|sort((a, b) => b[1] <=> a[1])|first %}
+                        {{ dominantType[0] }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </div>
+                <p>des réclamations</p>
+            </div>
+        </div>
+        
+    <!-- Projects and Missions Charts -->
+    <h3 class="mt-5"><i class="fas fa-chart-bar"></i> Statistiques des Projets et Missions</h3>
+    <div class="chart-container">
+        <div class="mission-chart-container">
+            <div class="mission-chart-wrapper mission-fade-in">
+                <div class="mission-chart-header">
+                    <h3 class="mission-chart-title"><i class="fas fa-chart-pie"></i> Répartition par Statut</h3>
+                    <span class="mission-chart-period">Mise à jour: {{ "now"|date("d/m/Y H:i") }}</span>
+                </div>
+                <div class="mission-chart-canvas">
+                    <canvas id="missionStatusChart"></canvas>
+                </div>
+            </div>
+            <div class="mission-chart-wrapper mission-fade-in">
+                <div class="mission-chart-header">
+                    <h3 class="mission-chart-title"><i class="fas fa-chart-line"></i> Évolution Mensuelle</h3>
+                    <span class="mission-chart-period">6 derniers mois</span>
+                </div>
+                <div class="mission-chart-canvas">
+                    <canvas id="missionTimelineChart"></canvas>
+                </div>
+            </div>
+            <div class="mission-chart-wrapper mission-fade-in">
+                <div class="mission-chart-header">
+                    <h3 class="mission-chart-title"><i class="fas fa-chart-bar"></i> Répartition par Projet</h3>
+                    <span class="mission-chart-period">Toutes les missions</span>
+                </div>
+                <div class="mission-chart-canvas">
+                    <canvas id="missionProjectDistribution"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+  <div><br><br>
+    <!-- Late Missions Section -->
+    <div class="late-items fade-in">
+        <h3><i class="fas fa-exclamation-triangle text-danger me-2"></i> Missions en retard ({{ delayed_missions|length }})</h3>
+        {% if delayed_missions is empty %}
+            <div class="alert alert-success d-flex align-items-center">
+                <i class="fas fa-check-circle me-2"></i>
+                <span>Aucune mission en retard</span>
+            </div>
+        {% else %}
+            {% for mission in delayed_missions %}
+                <div class="late-item">
+                    <i class="fas fa-tasks text-danger"></i>
+                    <div>
+                        <strong>{{ mission.titre }}</strong> -
+                        <span class="badge bg-{{ mission.status == 'Done' ? 'success' : 'danger' }}">
+                            {{ mission.status }}
+                        </span>
+                        <br>
+                        <small>Projet: {{ mission.project.nom }} • Date limite: {{ mission.dateTerminer|date('d/m/Y') }}</small>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- Sparkline Section -->
+    <div class="card card-style mt-4">
+        <div class="card-header-style">
+            <h4 class="mb-0"><i class="fas fa-chart-line me-2"></i> Progression des missions par projet</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for project in projects %}
+                    <div class="col-md-4 mb-4">
+                        <div class="sparkline-card fade-in">
+                            <div class="sparkline-title">{{ project.entity.nom }}</div>
+                            <div class="sparkline-stats">
+                                {{ project.done_missions }} terminées / {{ project.total_missions }} total
+                            </div>
+                            <div class="sparkline-container">
+                                <span class="project-sparkline" data-sparkline="{{ project.sparkline_data|join(',') }}"></span>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Flow Chart Section -->
+    <div class="card card-style mt-4">
+        <div class="card-header-style">
+            <h4 class="mb-0"><i class="fas fa-project-diagram me-2"></i> Workflow des Projets</h4>
+        </div>
+        <div class="card-body">
+            <div class="mt-4">
+                <h5 class="mb-3"><i class="fas fa-tasks me-2"></i> Progression détaillée par projet</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm">
+                        <thead>
+                            <tr>
+                                <th>Projet</th>
+                                <th>Progression</th>
+                                <th class="text-center">Missions Terminées</th>
+                                <th class="text-center">Total Missions</th>
+                                <th class="text-center">Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for project in projects %}
+                                {% set completion = project.done_missions > 0 ? (project.done_missions / project.total_missions * 100)|round : 0 %}
+                                <tr>
+                                    <td>{{ project.entity.nom }}</td>
+                                    <td style="width: 40%;">
+                                        <div class="progress" title="{{ completion }}% terminé">
+                                            <div class="progress-bar {{ completion < 30 ? 'bg-danger' : (completion < 70 ? 'bg-warning' : 'bg-success') }}"
+                                                 role="progressbar"
+                                                 style="width: {{ completion }}%;"
+                                                 aria-valuenow="{{ completion }}"
+                                                 aria-valuemin="0"
+                                                 aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">{{ completion }}% terminé</small>
+                                    </td>
+                                    <td class="text-center">{{ project.done_missions }}</td>
+                                    <td class="text-center">{{ project.total_missions }}</td>
+                                    <td class="text-center">
+                                        {% if completion == 100 %}
+                                            <span class="badge bg-success">Terminé</span>
+                                        {% elseif completion >= 70 %}
+                                            <span class="badge bg-primary">Avancé</span>
+                                        {% elseif completion >= 30 %}
+                                            <span class="badge bg-warning">En cours</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Démarrage</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analysis Section -->
+    <div class="analysis-card fade-in">
+        <div class="card-header-style d-flex justify-content-between align-items-center">
+            <h3 class="mb-0">
+                <i class="fas fa-robot me-2"></i> Analyse Intelligente
+            </h3>
+            <button id="generateAnalysis" class="btn btn-primary">
+                <i class="fas fa-magic me-1"></i> Générer le Rapport
+            </button>
+        </div>
+        <div class="analysis-content" id="geminiAnalysisContent">
+            <div class="text-center py-5" id="analysisPlaceholder">
+                <i class="fas fa-robot"></i>
+                <p class="mt-3 mb-0">Générez une analyse intelligente en un clic</p>
+            </div>
+        </div>
+    </div>
+<div><br></div>
+    <!-- Loading Modal -->
+    <div class="modal fade" id="loadingModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center py-5">
+                    <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
+                        <span class="visually-hidden">Chargement...</span>
+                    </div>
+                    <h5>Génération du rapport en cours...</h5>
+                    <p class="mb-0 text-muted">Veuillez patienter</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Recruitment Charts -->
     <div class="chart-container">
         <div class="chart-wrapper fade-in">
-            <h3><i class="fas fa-chart-pie me-2"></i>Demandes par statut</h3>
+            <h3><i class="fas fa-chart-pie me-2"></i> Demandes par statut</h3>
             <div id="morris-donut-demande" style="height: 350px;" class="morris-chart" data-colors="#3AB5CE,#1B3583,#A8E0EA"></div>
         </div>
-
         <div class="chart-wrapper fade-in">
-            <h3><i class="fas fa-chart-bar me-2"></i>Offres par type de contrat</h3>
+            <h3><i class="fas fa-chart-bar me-2"></i> Offres par type de contrat</h3>
             <div id="morris-bar-offre" style="height: 350px;" class="morris-chart" data-colors="#3AB5CE"></div>
         </div>
-
         <div class="chart-wrapper fade-in">
-            <h3><i class="fas fa-chart-bar me-2"></i>Évolution des demandes</h3>
+            <h3><i class="fas fa-chart-bar me-2"></i> Évolution des demandes</h3>
             <div id="morris-bar-demande" style="height: 350px;" class="morris-chart" data-colors="#3AB5CE"></div>
         </div>
     </div>
-
-    <!-- Section Statistiques des réclamations -->
-    <h3 class="mt-5"><i class="fas fa-comment-alt"></i> Réclamations</h3>
-
-    <!-- Summary Cards -->
-    <div class="summary-cards">
-        <div class="summary-card">
-            <h5><i class="fas fa-chart-pie"></i> Taux de résolution</h5>
-            <div class="card-value {{ resolutionRate is defined ? (resolutionRate > 75 ? 'positive' : (resolutionRate < 50 ? 'negative' : 'neutral')) : 'neutral' }}">
-                {{ resolutionRate is defined ? resolutionRate : 0 }}%
-            </div>
-            <p>des réclamations sont résolues</p>
-        </div>
-
-        <div class="summary-card">
-            <h5><i class="fas fa-thermometer-half"></i> Sentiment dominant</h5>
-            <div class="card-value" id="dominant-sentiment">
-                {% if sentimentData|length > 1 %}
-                    {% set dominantSentiment = sentimentData|slice(1)|sort((a, b) => b[1] <=> a[1])|first %}
-                    <span class="{{ dominantSentiment[0] == 'Positif' ? 'positive' : (dominantSentiment[0] == 'Négatif' ? 'negative' : 'neutral') }}">
-                    {{ dominantSentiment[0] }}
-                </span>
-                {% else %}
-                    <span class="neutral">N/A</span>
-                {% endif %}
-            </div>
-            <p>des réclamations</p>
-        </div>
-
-        <div class="summary-card">
-            <h5><i class="fas fa-folder-open"></i> Type principal</h5>
-            <div class="card-value" id="dominant-type">
-                {% if typeData|length > 1 %}
-                    {% set dominantType = typeData|slice(1)|sort((a, b) => b[1] <=> a[1])|first %}
-                    {{ dominantType[0] }}
-                {% else %}
-                    N/A
-                {% endif %}
-            </div>
-            <p>des réclamations</p>
-        </div>
-    </div>
-
-    <!-- Charts -->
     <div class="stats-container">
+
+        <!-- Complaint Charts -->
         <div class="stats-card">
             <div class="stats-card-header">
                 <i class="fas fa-tasks"></i> Répartition par statut
@@ -890,183 +1057,6 @@
                 <i class="fas fa-chart-line"></i> Évolution dans le temps
             </div>
             <div id="timeline-chart" class="stats-chart"></div>
-        </div>
-    </div>
-
-    <!-- Charts Container -->
-    <h3 class="mt-5"><i class="fas fa-chart-bar"></i> Statistiques des Projets et Missions</h3>
-    <div class="chart-container">
-        <div class="mission-chart-container">
-            <div class="mission-chart-wrapper mission-fade-in">
-                <div class="mission-chart-header">
-                    <h3 class="mission-chart-title"><i class="fas fa-chart-pie"></i> Répartition par Statut</h3>
-                    <span class="mission-chart-period">Mise à jour: {{ "now"|date("d/m/Y H:i") }}</span>
-                </div>
-                <div class="mission-chart-canvas">
-                    <canvas id="missionStatusChart"></canvas>
-                </div>
-            </div>
-
-            <div class="mission-chart-wrapper mission-fade-in">
-                <div class="mission-chart-header">
-                    <h3 class="mission-chart-title"><i class="fas fa-chart-line"></i> Évolution Mensuelle</h3>
-                    <span class="mission-chart-period">6 derniers mois</span>
-                </div>
-                <div class="mission-chart-canvas">
-                    <canvas id="missionTimelineChart"></canvas>
-                </div>
-            </div>
-
-            <div class="mission-chart-wrapper mission-fade-in">
-                <div class="mission-chart-header">
-                    <h3 class="mission-chart-title"><i class="fas fa-chart-bar"></i> Répartition par Projet</h3>
-                    <span class="mission-chart-period">Toutes les missions</span>
-                </div>
-                <div class="mission-chart-canvas">
-                    <canvas id="missionProjectDistribution"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Late Missions Section -->
-    <div class="late-items fade-in">
-        <h3><i class="fas fa-exclamation-triangle text-danger me-2"></i>Missions en retard ({{ delayed_missions|length }})</h3>
-        {% if delayed_missions is empty %}
-            <div class="alert alert-success d-flex align-items-center">
-                <i class="fas fa-check-circle me-2"></i>
-                <span>Aucune mission en retard</span>
-            </div>
-        {% else %}
-            {% for mission in delayed_missions %}
-                <div class="late-item">
-                    <i class="fas fa-tasks text-danger"></i>
-                    <div>
-                        <strong>{{ mission.titre }}</strong> -
-                        <span class="badge bg-{{ mission.status == 'Done' ? 'success' : 'danger' }}">
-                        {{ mission.status }}
-                    </span>
-                        <br>
-                        <small>Projet: {{ mission.project.nom }} • Date limite: {{ mission.dateTerminer|date('d/m/Y') }}</small>
-                    </div>
-                </div>
-            {% endfor %}
-        {% endif %}
-    </div>
-
-    <!-- Sparkline Section -->
-    <div class="card card-style mt-4">
-        <div class="card-header-style">
-            <h4 class="mb-0"><i class="fas fa-chart-line me-2"></i>Progression des missions par projet</h4>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                {% for project in projects %}
-                    <div class="col-md-4 mb-4">
-                        <div class="sparkline-card fade-in">
-                            <div class="sparkline-title">{{ project.entity.nom }}</div>
-                            <div class="sparkline-stats">
-                                {{ project.done_missions }} terminées / {{ project.total_missions }} total
-                            </div>
-                            <div class="sparkline-container">
-                        <span class="project-sparkline"
-                              data-sparkline="{{ project.sparkline_data|join(',') }}"></span>
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-
-    <!-- Flow Chart Section -->
-    <div class="card card-style mt-4">
-        <div class="card-header-style">
-            <h4 class="mb-0"><i class="fas fa-project-diagram me-2"></i>Workflow des Projets</h4>
-        </div>
-        <div class="card-body">
-            <div class="mt-4">
-                <h5 class="mb-3"><i class="fas fa-tasks me-2"></i>Progression détaillée par projet</h5>
-                <div class="table-responsive">
-                    <table class="table table-hover table-sm">
-                        <thead>
-                        <tr>
-                            <th>Projet</th>
-                            <th>Progression</th>
-                            <th class="text-center">Missions Terminées</th>
-                            <th class="text-center">Total Missions</th>
-                            <th class="text-center">Statut</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {% for project in projects %}
-                            {% set completion = project.done_missions > 0 ? (project.done_missions / project.total_missions * 100)|round : 0 %}
-                            <tr>
-                                <td>{{ project.entity.nom }}</td>
-                                <td style="width: 40%;">
-                                    <div class="progress" title="{{ completion }}% terminé">
-                                        <div class="progress-bar {{ completion < 30 ? 'bg-danger' : (completion < 70 ? 'bg-warning' : 'bg-success') }}"
-                                             role="progressbar"
-                                             style="width: {{ completion }}%;"
-                                             aria-valuenow="{{ completion }}"
-                                             aria-valuemin="0"
-                                             aria-valuemax="100">
-                                        </div>
-                                    </div>
-                                    <small class="text-muted">{{ completion }}% terminé</small>
-                                </td>
-                                <td class="text-center">{{ project.done_missions }}</td>
-                                <td class="text-center">{{ project.total_missions }}</td>
-                                <td class="text-center">
-                                    {% if completion == 100 %}
-                                        <span class="badge bg-success">Terminé</span>
-                                    {% elseif completion >= 70 %}
-                                        <span class="badge bg-primary">Avancé</span>
-                                    {% elseif completion >= 30 %}
-                                        <span class="badge bg-warning">En cours</span>
-                                    {% else %}
-                                        <span class="badge bg-danger">Démarrage</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Analysis Section -->
-    <div class="analysis-card fade-in">
-        <div class="card-header-style d-flex justify-content-between align-items-center">
-            <h3 class="mb-0">
-                <i class="fas fa-robot me-2"></i>Analyse Intelligente
-            </h3>
-            <button id="generateAnalysis" class="btn btn-primary">
-                <i class="fas fa-magic me-1"></i> Générer le Rapport
-            </button>
-        </div>
-        <div class="analysis-content" id="geminiAnalysisContent">
-            <div class="text-center py-5" id="analysisPlaceholder">
-                <i class="fas fa-robot"></i>
-                <p class="mt-3 mb-0">Générez une analyse intelligente en un clic</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Loading Modal -->
-    <div class="modal fade" id="loadingModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-body text-center py-5">
-                    <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
-                        <span class="visually-hidden">Chargement...</span>
-                    </div>
-                    <h5>Génération du rapport en cours...</h5>
-                    <p class="mb-0 text-muted">Veuillez patienter</p>
-                </div>
-            </div>
         </div>
     </div>
 

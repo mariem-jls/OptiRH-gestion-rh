@@ -192,5 +192,19 @@ public function setNotifiedLate(bool $notifiedLate): self
     $this->notifiedLate = $notifiedLate;
     return $this;
 }
+#[ORM\Column(type: 'string', length: 255, nullable: true)]
+private $meetLink;
 
+// ... autres propriétés et méthodes ...
+
+public function getMeetLink(): ?string
+{
+    return $this->meetLink;
+}
+
+public function setMeetLink(?string $meetLink): self
+{
+    $this->meetLink = $meetLink;
+    return $this;
+}
 }

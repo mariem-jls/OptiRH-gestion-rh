@@ -1,8 +1,8 @@
 <!-- Grille de cartes -->
             {% for evenement in evenements %}
+
             <div class="col-xl-3 col-lg-4 col-md-6" data-category="{{ evenement.modalite|lower }} {{ evenement.type|lower }}">
                 <div class="card event-card h-100 border-0 overflow-hidden ">
-                   
                     <!-- Badge de modalite -->
                     <div class="card-badge {{ evenement.modalite == 'En ligne' ? 'bg-success' : 'bg-info' }}">
                         {{ evenement.modalite }}

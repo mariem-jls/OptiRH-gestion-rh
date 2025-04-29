@@ -4,6 +4,7 @@ namespace App\Controller\Admin\GsProjet;
 use Knp\Snappy\Pdf;
 use App\Service\GeminiAnalysisService;
 use Symfony\Component\Process\Process;
+use App\Service\MeetLinkGenerator;
 use Twig\Environment;
 use Symfony\Component\Form\FormInterface; // Correction de l'import
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -12,6 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\String\Slugger\SluggerInterface;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Entity\GsProjet\Mission;
@@ -87,9 +89,12 @@ class ProjectController extends AbstractController {
     }
     #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_ADMIN')]
-
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
-    {
+    public function new(
+        Request $request, 
+        EntityManagerInterface $entityManager,
+        MeetLinkGenerator $meetGenerator,
+        LoggerInterface $logger
+    ): Response {
         $project = new Project();
         $form = $this->createForm(ProjectType::class, $project);
         $form->handleRequest($request);
@@ -97,32 +102,86 @@ class ProjectController extends AbstractController {
         try {
             if ($form->isSubmitted()) {
                 if ($form->isValid()) {
+                    // Génération du lien Meet avec validation
+                    $meetCode = $meetGenerator->CreateMeetLink();
+                    $project->setMeetLink($meetCode);
+                    
+                    // Audit
+                    $logger->info('Création projet avec Meet', [
+                        'project_id' => $project->getId(),
+                        'meet_code' => $meetCode,
+                        'user' => $this->getUser()->getUserIdentifier()
+                    ]);
+    
+                    // Persistance
                     $project->setCreatedBy($this->getUser());
                     $entityManager->persist($project);
                     $entityManager->flush();
     
-                    return $this->json([
-                        'status' => 'success',
-                        'message' => 'Projet créé avec succès !'
-                    ]);
+                    // Réponse adaptée au type de requête
+                    if ($request->isXmlHttpRequest()) {
+                        return $this->json([
+                            'status' => 'success',
+                            'message' => 'Projet créé avec succès !',
+                            'meetLink' => $project->getMeetLink(),
+                            'redirect' => $this->generateUrl('gs-projet_project_show', ['id' => $project->getId()])
+                        ]);
+                    }
+    
+                    $this->addFlash('success', 'Projet créé avec lien Meet généré');
+                    return $this->redirectToRoute('gs-projet_project_show', ['id' => $project->getId()]);
                 } else {
-                    return new JsonResponse([
-                        'status' => 'error',
-                        'errors' => $this->getFormErrors($form)
-                    ], 400);
+                    // Gestion des erreurs de formulaire
+                    $errors = $this->getFormErrors($form);
+                    $logger->error('Erreur validation formulaire projet', ['errors' => $errors]);
+    
+                    if ($request->isXmlHttpRequest()) {
+                        return $this->json([
+                            'status' => 'error',
+                            'errors' => $errors
+                        ], 400);
+                    }
                 }
             }
         } catch (\Exception $e) {
-            return $this->json([
-                'status' => 'error',
-                'message' => 'Erreur serveur : ' . $e->getMessage()
-            ], 500);
+            $logger->critical('Erreur création projet', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+    
+            if ($request->isXmlHttpRequest()) {
+                return $this->json([
+                    'status' => 'error',
+                    'message' => 'Erreur serveur lors de la création'
+                ], 500);
+            }
+    
+            $this->addFlash('error', 'Une erreur critique est survenue');
         }
     
+        // Rendu pour requête normale
         return $this->render('gs-projet/project/new.html.twig', [
             'form' => $form->createView(),
+            'meetPattern' => 'xxx-yyyy-zzz' // Info pour le front
         ]);
     }
+
+    /**
+     * Génère un code aléatoire pour Google Meet (format: xxx-yyyy-zzz)
+     */
+    private function generateMeetCode(): string
+    {
+        $characters = 'abcdefghijklmnopqrstuvwxyz';
+        $lengths = [3, 4, 3]; // Format des segments du code
+        
+        $codeParts = [];
+        foreach ($lengths as $length) {
+            $codeParts[] = substr(str_shuffle($characters), 0, $length);
+        }
+        
+        return implode('-', $codeParts);
+    }
+
     
     private function getFormErrors(FormInterface $form): array
     {

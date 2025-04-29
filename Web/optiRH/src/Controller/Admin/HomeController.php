@@ -10,6 +10,7 @@ use App\Entity\Demande;
 use App\Entity\Offre;
 use App\Repository\DemandeRepository;
 use App\Repository\OffreRepository;
+use App\Repository\ReclamationRepository;
 
 use App\Entity\Notification ;
 use App\Repository\UserRepository;
@@ -48,17 +49,24 @@ class HomeController extends AbstractController
         EntityManagerInterface $entityManager,
         NotificationRepository $notificationRepository,
         DemandeRepository $demandeRepository,
-        OffreRepository $offreRepository
+        OffreRepository $offreRepository,
+        ReclamationRepository $reclamationRepository
     ): Response {
         $user = $this->security->getUser();
 
         $this->checkLateMissionsForUser($user, $missionRepository, $entityManager, $notificationRepository);
 
         if ($this->isGranted('ROLE_ADMIN')) {
-            return $this->renderAdminDashboard($projectRepository, $missionRepository, $demandeRepository, $offreRepository);
+            return $this->renderAdminDashboard(
+                $projectRepository, 
+                $missionRepository, 
+                $demandeRepository, 
+                $offreRepository, 
+                $reclamationRepository
+            );
         }
 
-        return $this->renderEmployeeDashboard($missionRepository, $user);
+        return $this->renderEmployeeDashboard($missionRepository, $user, $reclamationRepository);
     }
 
     private function checkLateMissionsForUser(
@@ -147,12 +155,10 @@ class HomeController extends AbstractController
         return $workflowData;
     }
 
-    // Moved these methods before renderAdminDashboard to ensure they are defined before being called
-    private function getReclamationStatusData(): array
+    private function getReclamationStatusData(ReclamationRepository $reclamationRepository): array
     {
-        $statusStats = $this->entityManager->createQueryBuilder()
+        $statusStats = $reclamationRepository->createQueryBuilder('r')
             ->select('r.status as status, COUNT(r.id) as count')
-            ->from(Reclamation::class, 'r')
             ->groupBy('r.status')
             ->getQuery()
             ->getArrayResult();
@@ -160,11 +166,10 @@ class HomeController extends AbstractController
         return $this->formatChartData($statusStats, 'status', 'count');
     }
 
-    private function getReclamationSentimentData(): array
+    private function getReclamationSentimentData(ReclamationRepository $reclamationRepository): array
     {
-        $sentimentStats = $this->entityManager->createQueryBuilder()
+        $sentimentStats = $reclamationRepository->createQueryBuilder('r')
             ->select('r.sentimentLabel as sentiment, COUNT(r.id) as count')
-            ->from(Reclamation::class, 'r')
             ->where('r.sentimentLabel IS NOT NULL')
             ->groupBy('r.sentimentLabel')
             ->getQuery()
@@ -173,11 +178,10 @@ class HomeController extends AbstractController
         return $this->formatChartData($sentimentStats, 'sentiment', 'count');
     }
 
-    private function getReclamationTypeData(): array
+    private function getReclamationTypeData(ReclamationRepository $reclamationRepository): array
     {
-        $typeStats = $this->entityManager->createQueryBuilder()
+        $typeStats = $reclamationRepository->createQueryBuilder('r')
             ->select('r.type as type, COUNT(r.id) as count')
-            ->from(Reclamation::class, 'r')
             ->groupBy('r.type')
             ->getQuery()
             ->getArrayResult();
@@ -185,11 +189,10 @@ class HomeController extends AbstractController
         return $this->formatChartData($typeStats, 'type', 'count');
     }
 
-    private function getReclamationTimelineData(): array
+    private function getReclamationTimelineData(ReclamationRepository $reclamationRepository): array
     {
-        $timelineStats = $this->entityManager->createQueryBuilder()
+        $timelineStats = $reclamationRepository->createQueryBuilder('r')
             ->select("SUBSTRING(r.date, 1, 7) as month, COUNT(r.id) as count")
-            ->from(Reclamation::class, 'r')
             ->groupBy('month')
             ->orderBy('month', 'ASC')
             ->getQuery()
@@ -232,7 +235,8 @@ class HomeController extends AbstractController
         ProjectRepository $projectRepository,
         MissionRepository $missionRepository,
         DemandeRepository $demandeRepository,
-        OffreRepository $offreRepository
+        OffreRepository $offreRepository,
+        ReclamationRepository $reclamationRepository
     ): Response {
         // Get all projects with their statistics
         $projects = $projectRepository->findAllWithObjectsAndStats();
@@ -368,34 +372,33 @@ class HomeController extends AbstractController
         // Calculate reclamation resolution rate
         $resolutionRate = 0;
         try {
-            if (class_exists('App\Entity\Reclamation')) {
-                $totalReclamations = $this->entityManager->createQueryBuilder()
-                    ->select('COUNT(r.id)')
-                    ->from(Reclamation::class, 'r')
-                    ->getQuery()
-                    ->getSingleScalarResult();
+            $totalReclamations = $reclamationRepository->createQueryBuilder('r')
+                ->select('COUNT(r.id)')
+                ->getQuery()
+                ->getSingleScalarResult();
 
-                $resolvedReclamations = $this->entityManager->createQueryBuilder()
-                    ->select('COUNT(r.id)')
-                    ->from(Reclamation::class, 'r')
-                    ->where('r.status = :status')
-                    ->setParameter('status', Reclamation::STATUS_RESOLVED)
-                    ->getQuery()
-                    ->getSingleScalarResult();
+            $resolvedReclamations = $reclamationRepository->createQueryBuilder('r')
+                ->select('COUNT(r.id)')
+                ->where('r.status = :status')
+                ->setParameter('status', Reclamation::STATUS_RESOLVED)
+                ->getQuery()
+                ->getSingleScalarResult();
 
-                if ($totalReclamations > 0) {
-                    $resolutionRate = round(($resolvedReclamations / $totalReclamations) * 100, 2);
-                }
+            if ($totalReclamations > 0) {
+                $resolutionRate = round(($resolvedReclamations / $totalReclamations) * 100, 2);
             }
         } catch (\Exception $e) {
+            $this->logger->error('Erreur lors du calcul du taux de résolution des réclamations', [
+                'error' => $e->getMessage()
+            ]);
             $resolutionRate = 0;
         }
 
-        // Get dynamic reclamation statistics
-        $statusData = $this->getReclamationStatusData();
-        $sentimentData = $this->getReclamationSentimentData();
-        $typeData = $this->getReclamationTypeData();
-        $timelineData = $this->getReclamationTimelineData();
+        // Get dynamic reclamation statistics using the repository
+        $statusData = $this->getReclamationStatusData($reclamationRepository);
+        $sentimentData = $this->getReclamationSentimentData($reclamationRepository);
+        $typeData = $this->getReclamationTypeData($reclamationRepository);
+        $timelineData = $this->getReclamationTimelineData($reclamationRepository);
 
         // Format project and mission stats as associative arrays
         $formattedProjectStats = [];
@@ -467,6 +470,53 @@ class HomeController extends AbstractController
             'demande_timeline' => $demandeTimeline,
             'mission_timeline_data' => $missionTimelineData,
         ]);
+    }
+
+    #[Route('/refresh-reclamation-stats', name: 'admin_refresh_reclamation_stats', methods: ['GET'])]
+    public function refreshReclamationStats(ReclamationRepository $reclamationRepository): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        try {
+            // Calculate reclamation resolution rate
+            $totalReclamations = $reclamationRepository->createQueryBuilder('r')
+                ->select('COUNT(r.id)')
+                ->getQuery()
+                ->getSingleScalarResult();
+
+            $resolvedReclamations = $reclamationRepository->createQueryBuilder('r')
+                ->select('COUNT(r.id)')
+                ->where('r.status = :status')
+                ->setParameter('status', Reclamation::STATUS_RESOLVED)
+                ->getQuery()
+                ->getSingleScalarResult();
+
+            $resolutionRate = 0;
+            if ($totalReclamations > 0) {
+                $resolutionRate = round(($resolvedReclamations / $totalReclamations) * 100, 2);
+            }
+
+            // Get fresh statistics
+            $statusData = $this->getReclamationStatusData($reclamationRepository);
+            $sentimentData = $this->getReclamationSentimentData($reclamationRepository);
+            $typeData = $this->getReclamationTypeData($reclamationRepository);
+            $timelineData = $this->getReclamationTimelineData($reclamationRepository);
+
+            return $this->json([
+                'status' => 'success',
+                'resolutionRate' => $resolutionRate,
+                'statusData' => $statusData,
+                'sentimentData' => $sentimentData,
+                'typeData' => $typeData,
+                'timelineData' => $timelineData
+            ]);
+        } catch (\Exception $e) {
+            return $this->json([
+                'status' => 'error',
+                'message' => 'Erreur lors de l\'actualisation des statistiques',
+                'error' => $this->getParameter('kernel.debug') ? $e->getMessage() : null
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     private function getMissionCompletionTrend(
@@ -625,7 +675,8 @@ class HomeController extends AbstractController
 
     private function renderEmployeeDashboard(
         MissionRepository $missionRepository,
-                          $user
+        $user,
+        ReclamationRepository $reclamationRepository
     ): Response {
         $userMissions = $missionRepository->findBy(['assignedTo' => $user]);
 
@@ -642,11 +693,98 @@ class HomeController extends AbstractController
             ->getQuery()
             ->getResult();
 
+        // Récupérer les données de timeline pour les missions
+        $missionTimeline = [];
+        $now = new \DateTime();
+        for ($i = 5; $i >= 0; $i--) {
+            $startDate = (new \DateTime("first day of -$i months"))->setTime(0, 0, 0);
+            $endDate = (clone $startDate)->modify('+1 month');
+            $monthKey = $startDate->format('M Y');
+
+            if ($endDate > $now) {
+                $endDate = clone $now;
+            }
+
+            $created = $missionRepository->createQueryBuilder('m')
+                ->select('COUNT(m.id)')
+                ->where('m.assignedTo = :user')
+                ->andWhere('m.createdAt BETWEEN :start AND :end')
+                ->setParameter('user', $user)
+                ->setParameter('start', $startDate)
+                ->setParameter('end', $endDate)
+                ->getQuery()
+                ->getSingleScalarResult();
+
+            $completed = $missionRepository->createQueryBuilder('m')
+                ->select('COUNT(m.id)')
+                ->where('m.assignedTo = :user')
+                ->andWhere('m.status = :status')
+                ->andWhere('m.updatedAt BETWEEN :start AND :end')
+                ->setParameter('user', $user)
+                ->setParameter('status', 'Done')
+                ->setParameter('start', $startDate)
+                ->setParameter('end', $endDate)
+                ->getQuery()
+                ->getSingleScalarResult();
+
+            $missionTimeline[] = [
+                'month' => $monthKey,
+                'created' => (int)$created,
+                'completed' => (int)$completed
+            ];
+        }
+
+        try {
+            // Récupérer les statistiques des réclamations
+            $statusData = $this->getReclamationStatusData($reclamationRepository);
+            $sentimentData = $this->getReclamationSentimentData($reclamationRepository);
+            $typeData = $this->getReclamationTypeData($reclamationRepository);
+            $timelineData = $this->getReclamationTimelineData($reclamationRepository);
+
+            // Calculer le taux de résolution
+            $totalReclamations = $reclamationRepository->createQueryBuilder('r')
+                ->select('COUNT(r.id)')
+                ->getQuery()
+                ->getSingleScalarResult();
+
+            $resolvedReclamations = $reclamationRepository->createQueryBuilder('r')
+                ->select('COUNT(r.id)')
+                ->where('r.status = :status')
+                ->setParameter('status', 'Résolue')
+                ->getQuery()
+                ->getSingleScalarResult();
+
+            $resolutionRate = $totalReclamations > 0 ? round(($resolvedReclamations / $totalReclamations) * 100, 2) : 0;
+
+        } catch (\Exception $e) {
+            // En cas d'erreur, initialiser avec des valeurs par défaut
+            $statusData = [['Status', 'Nombre']];
+            $sentimentData = [['Sentiment', 'Nombre']];
+            $typeData = [['Type', 'Nombre']];
+            $timelineData = [['Mois', 'Nombre']];
+            $resolutionRate = 0;
+            
+            $this->logger->error('Erreur lors de la récupération des statistiques de réclamations', [
+                'error' => $e->getMessage()
+            ]);
+        }
+
         return $this->render('employee/index.html.twig', [
             'mission_stats' => $missionStats,
             'late_missions' => $lateMissions,
             'total_missions' => count($userMissions),
-            'is_admin' => false
+            'mission_timeline' => $missionTimeline,
+            'is_admin' => false,
+            // Données des réclamations
+            'resolutionRate' => $resolutionRate,
+            'statusData' => $statusData,
+            'sentimentData' => $sentimentData,
+            'typeData' => $typeData,
+            'timelineData' => $timelineData,
+            'statusDataJson' => json_encode($statusData),
+            'sentimentDataJson' => json_encode($sentimentData),
+            'typeDataJson' => json_encode($typeData),
+            'timelineDataJson' => json_encode($timelineData)
         ]);
     }
 }

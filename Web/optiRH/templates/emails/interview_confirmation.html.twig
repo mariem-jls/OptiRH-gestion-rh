@@ -1,0 +1,14 @@
+{# templates/emails/interview_confirmation.html.twig #}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Confirmation d'entretien</title>
+</head>
+<body>
+<h1>Confirmation de votre entretien</h1>
+<p>Bonjour {{ candidateName }},</p>
+<p>Votre entretien pour le poste de <strong>{{ jobTitle }}</strong> est confirmé pour le <strong>{{ interviewDate }}</strong>.</p>
+<p>Rejoignez la réunion : <a href="{{ googleMeetLink }}">{{ googleMeetLink }}</a></p>
+<p>Cordialement,<br>Équipe Recrutement</p>
+</body>
+</html>

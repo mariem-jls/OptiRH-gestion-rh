@@ -36,6 +36,9 @@ class Reponse
     #[ORM\Column(type: "integer")]
     private int $rating = 0;
 
+    #[ORM\Column(type: "text", nullable: true)]
+    private ?string $commentaire = null;
+
     public function __construct()
     {
         $this->date = new \DateTime();
@@ -69,6 +72,9 @@ class Reponse
 
         return $this;
     }
+    
+    public function getCommentaire(): ?string { return $this->commentaire; }
+    public function setCommentaire(?string $commentaire): self { $this->commentaire = $commentaire; return $this; }
     
     #[Assert\Callback]
     public function validate(ExecutionContextInterface $context, $payload)

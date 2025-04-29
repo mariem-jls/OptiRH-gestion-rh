@@ -10,6 +10,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Vich\UploaderBundle\Form\Type\VichFileType;
 
 class ReclamationType extends AbstractType
 {
@@ -33,6 +34,16 @@ class ReclamationType extends AbstractType
                     'class' => 'form-select',
                 ],
                 'required' => true,
+            ])
+            ->add('documentFile', VichFileType::class, [
+                'required' => false,
+                'allow_delete' => true,
+                'download_uri' => true,
+                'label' => 'Document joint',
+                'attr' => [
+                    'class' => 'form-control',
+                    'accept' => '.pdf,.doc,.docx,.txt'
+                ]
             ]);
 
         if ($options['is_admin']) {
@@ -61,6 +72,7 @@ class ReclamationType extends AbstractType
         $resolver->setDefaults([
             'data_class' => Reclamation::class,
             'is_admin' => false,
+            'allow_file_upload' => true
         ]);
     }
 }
