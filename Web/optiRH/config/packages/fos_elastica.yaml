@@ -1,0 +1,40 @@
+fos_elastica:
+    clients:
+        default: 
+            host: '127.0.0.1'
+            port: 9200
+    indexes:
+        evenement:  # Nom de l'index
+            settings:
+                number_of_shards: 1
+                number_of_replicas: 1
+            properties:
+                id_evenement:
+                    type: integer
+                titre:
+                    type: text
+                description:
+                    type: text
+                type:
+                    type: keyword
+                modalite:
+                    type: keyword
+                prix:
+                    type: float
+                date_debut:
+                    type: date
+                date_fin:
+                    type: date
+                lieu:
+                    type: text
+                status:
+                    type: keyword
+                nbr_reservations:
+                    type: integer
+                nbr_favoris:
+                    type: integer
+            persistence:
+                driver: orm
+                model: App\Entity\Evenement\Evenement
+                provider: ~
+                finder: ~

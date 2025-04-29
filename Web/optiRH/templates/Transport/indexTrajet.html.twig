@@ -52,19 +52,19 @@
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm" role="group">
-                                    <a href="{{ path('app_transport_trajet_vehicules', {'id': trajet.id}) }}"
+                                    <a href="{{ path('app_transport_trajet_vehicules', {'id': trajet.id}) }}" 
                                     class="btn btn-outline-info" title="Véhicules">
                                         <i class="mdi mdi-car"></i>
                                     </a>
-                                        <a href="{{ path('app_transport_trajet_edit', {'id': trajet.id}) }}"
+                                        <a href="{{ path('app_transport_trajet_edit', {'id': trajet.id}) }}" 
                                            class="btn btn-outline-warning" title="Modifier">
                                             <i class="mdi mdi-pencil-outline"></i>
                                         </a>
-                                        <form method="post" action="{{ path('app_transport_trajet_delete', {'id': trajet.id}) }}"
+                                        <form method="post" action="{{ path('app_transport_trajet_delete', {'id': trajet.id}) }}" 
                                               style="display:inline;" id="delete-form-{{ trajet.id }}">
                                             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ trajet.id) }}">
-                                            <button type="button" class="btn btn-outline-danger" title="Supprimer"
-                                                    onclick="confirmDelete({{ trajet.id }}, '{{ trajet.type }}')">
+                                            <button type="button" class="btn btn-outline-danger" title="Supprimer" 
+                                                    onclick="confirmDelete({{ trajet.id }})">
                                                 <i class="mdi mdi-delete-outline"></i>
                                             </button>
                                         </form>
@@ -95,14 +95,22 @@
                         </ul>
                     </div>
                 </div>
-                <!-- Bouton Statistiques -->
-                <div class="row mt-3">
-                    <div class="col-12 text-center">
-                    <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#statsModal">
-                        <i class="mdi mdi-chart-bar me-1"></i> Statistiques des réservations par type
-                    </button>
-                    </div>
-                </div>
+                <!-- Boutons Statistiques -->
+<div class="row mt-3">
+    <div class="col-12 text-center">
+        <button class="btn btn-info me-2" data-bs-toggle="modal" data-bs-target="#statsModal">
+            <i class="mdi mdi-chart-bar me-1"></i> Statistiques par type de véhicule
+        </button>
+       <!-- Bouton pour les stats par points -->
+<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#statsPointsModal">
+    <i class="mdi mdi-map-marker-path me-1"></i> Stats par trajets
+</button>
+<!-- Bouton pour le top des stations -->
+<button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#topStationsModal">
+    <i class="mdi mdi-train-car me-1"></i> Top 5 Stations
+</button>
+    </div>
+</div>
             </div>
         </div>
     </div>
@@ -110,11 +118,14 @@
 {% endblock %}
 
 {% block javascript %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://www.gstatic.com/charts/loader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+// Charger Google Charts
+google.charts.load('current', {'packages':['corechart']});
+google.charts.setOnLoadCallback(initializeCharts);
 
-document.addEventListener('DOMContentLoaded', function() {
+function initializeCharts() {
     // Détection de la création réussie
     const urlParams = new URLSearchParams(window.location.search);
 
@@ -130,27 +141,49 @@ document.addEventListener('DOMContentLoaded', function() {
             timer: 5000,
             timerProgressBar: true
         }).then(() => {
-            // Nettoyer l'URL sans recharger la page
             const cleanUrl = window.location.pathname;
             window.history.replaceState({}, document.title, cleanUrl);
         });
     }
-});
+
+    // Afficher l'alerte de succès après modification
+    {% if app.request.query.get('modified') == '1' %}
+        Swal.fire({
+            title: 'Succès !',
+            text: 'Le trajet #{{ app.request.query.get('id') }} a été modifié avec succès',
+            icon: 'success',
+            confirmButtonText: 'OK'
+        }).then(() => {
+            window.history.replaceState({}, document.title, "{{ path('app_transport_trajet_index') }}");
+        });
+    {% endif %}
+
+    // Charger les données statistiques lorsque le modal s'ouvre
+    const statsModal = document.getElementById('statsModal');
+    if (statsModal) {
+        statsModal.addEventListener('show.bs.modal', function() {
+            fetchStatsData();
+        });
+    }
+
+    // Ajoutez l'écouteur pour le nouveau modal
+    const statsPointsModal = document.getElementById('statsPointsModal');
+    if (statsPointsModal) {
+        statsPointsModal.addEventListener('show.bs.modal', function() {
+            fetchPointsStatsData();
+        });
+    }
 
 
+   // Ajoutez l'écouteur pour le nouveau modal
+    const topStationsModal = document.getElementById('topStationsModal');
+    if (topStationsModal) {
+        topStationsModal.addEventListener('show.bs.modal', function() {
+            fetchTopStationsData();
+        });
+    }
+}
 
-// Afficher l'alerte de succès après modification
-{% if app.request.query.get('modified') == '1' %}
-    Swal.fire({
-        title: 'Succès !',
-        text: 'Le trajet #{{ app.request.query.get('id') }} a été modifié avec succès',
-        icon: 'success',
-        confirmButtonText: 'OK'
-    }).then(() => {
-        // Nettoyer l'URL après affichage de l'alerte
-        window.history.replaceState({}, document.title, "{{ path('app_transport_trajet_index') }}");
-    });
-{% endif %}
 // Confirmation AVANT suppression
 function confirmDelete(vehiculeId, vehiculeType) {
     Swal.fire({
@@ -164,24 +197,19 @@ function confirmDelete(vehiculeId, vehiculeType) {
         cancelButtonText: 'Annuler'
     }).then((result) => {
         if (result.isConfirmed) {
-            // Soumettre le formulaire
             const form = document.getElementById('delete-form-' + vehiculeId);
-
-            // Envoyer la requête via fetch pour mieux gérer la réponse
             fetch(form.action, {
                 method: 'POST',
                 body: new FormData(form)
             })
             .then(response => {
                 if (response.ok) {
-                    // Afficher la confirmation APRÈS suppression
                     Swal.fire({
                         title: 'Supprimé !',
                         text: 'Le trajet a été supprimé avec succès.',
                         icon: 'success',
                         confirmButtonText: 'OK'
                     }).then(() => {
-                        // Recharger la page pour actualiser la liste
                         window.location.reload();
                     });
                 } else {
@@ -200,23 +228,6 @@ function confirmDelete(vehiculeId, vehiculeType) {
     });
 }
 
-
-// Initialisation des tooltips
-document.addEventListener('DOMContentLoaded', function() {
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
-    tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-
-    // Charger les données statistiques lorsque le modal s'ouvre
-    const statsModal = document.getElementById('statsModal');
-    if (statsModal) {
-        statsModal.addEventListener('show.bs.modal', function() {
-            fetchStatsData();
-        });
-    }
-});
-
 function fetchStatsData() {
     fetch('{{ path("app_transport_trajet_stats") }}')
     .then(response => {
@@ -227,115 +238,196 @@ function fetchStatsData() {
         if (!data || data.length === 0) {
             throw new Error('Aucune donnée disponible');
         }
-        renderCharts(data);
+        renderGoogleChart(data);
     })
     .catch(error => {
         console.error('Error:', error);
-        // Afficher un message d'erreur dans le modal
-        document.getElementById('mostReservedChart').parentElement.innerHTML = `
+        document.getElementById('chart_div').innerHTML = `
             <div class="alert alert-danger">
                 ${error.message}
             </div>`;
     });
 }
 
-function renderCharts(data) {
+function renderGoogleChart(data) {
     // Vérifier si des données sont disponibles
     if (!data || data.length === 0) {
-        document.getElementById('mostReservedChart').parentElement.innerHTML = `
+        document.getElementById('chart_div').innerHTML = `
             <div class="alert alert-info">
                 Aucune donnée de réservation disponible
             </div>`;
         return;
     }
 
-    const ctx = document.getElementById('mostReservedChart');
-    if (!ctx) return;
-
     // Trier les données
     data.sort((a, b) => b.reservationCount - a.reservationCount);
 
-    // Détruire l'ancien graphique si existant
-    if (ctx.chart) {
-        ctx.chart.destroy();
-    }
-
-    // Préparer les données pour Chart.js
-    const labels = data.map(item => {
+    // Préparer les données pour Google Charts
+    const chartData = new google.visualization.DataTable();
+    chartData.addColumn('string', 'Type de véhicule');
+    chartData.addColumn('number', 'Nombre de réservations');
+    
+    data.forEach(item => {
         // Formater les types de véhicules
+        let vehicleType;
         switch(item.vehicleType) {
-            case 'car': return 'Voiture';
-            case 'bus': return 'Bus';
-            case 'minibus': return 'Minibus';
-            default: return item.vehicleType;
+            case 'car': vehicleType = 'Voiture'; break;
+            case 'bus': vehicleType = 'Bus'; break;
+            case 'minibus': vehicleType = 'Minibus'; break;
+            default: vehicleType = item.vehicleType;
         }
+        chartData.addRow([vehicleType, item.reservationCount]);
     });
 
-    const counts = data.map(item => item.reservationCount);
-
-    // Créer le graphique
-    ctx.chart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Nombre de réservations',
-                data: counts,
-                backgroundColor: [
-                    'rgba(54, 162, 235, 0.7)',  // Bleu
-                    'rgba(75, 192, 192, 0.7)',  // Vert
-                    'rgba(255, 99, 132, 0.7)'   // Rouge
-                ],
-                borderColor: [
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(255, 99, 132, 1)'
-                ],
-                borderWidth: 1
-            }]
+    // Options du graphique
+    const options = {
+        title: 'Statistiques des réservations par type de véhicule',
+        titleTextStyle: {
+            fontSize: 16,
+            bold: true
         },
-        options: {
-            responsive: true,
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Statistiques des réservations par type de véhicule',
-                    font: {
-                        size: 16,
-                        weight: 'bold'
-                    }
-                },
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return `${context.parsed.y} réservations`;
-                        }
-                    }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Nombre de réservations'
-                    },
-                    ticks: {
-                        stepSize: 1,
-                        precision: 0
-                    }
-                },
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Type de véhicule'
-                    }
-                }
-            }
+        height: 400,
+        width: '100%',
+        colors: ['#4285F4', '#34A853', '#EA4335', '#FBBC05', '#673AB7'],
+        hAxis: {
+            title: 'Type de véhicule',
+        },
+        vAxis: {
+            title: 'Nombre de réservations',
+            minValue: 0,
+            format: '0'
+        },
+        legend: { position: 'none' },
+        animation: {
+            duration: 1000,
+            easing: 'out',
+            startup: true
         }
+    };
+
+    // Créer et dessiner le graphique
+    const chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
+    chart.draw(chartData, options);
+
+    // Redimensionner le graphique lorsque la fenêtre change de taille
+    window.addEventListener('resize', function() {
+        chart.draw(chartData, options);
+    });
+}
+
+// Initialisation du modal
+const statsPointsModal = document.getElementById('statsPointsModal');
+if (statsPointsModal) {
+    statsPointsModal.addEventListener('show.bs.modal', function() {
+        fetchPointsStatsData();
+    });
+}
+
+function fetchPointsStatsData() {
+    fetch('{{ path("app_transport_trajet_stats_points") }}')
+    .then(response => response.json())
+    .then(data => {
+        renderPointsChart(data);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('chart_points_div').innerHTML = `
+            <div class="alert alert-danger">
+                Erreur lors du chargement des statistiques
+            </div>`;
+    });
+}
+
+function renderPointsChart(data) {
+    const chartData = new google.visualization.DataTable();
+    chartData.addColumn('string', 'Trajet');
+    chartData.addColumn('number', 'Réservations');
+    
+    data.forEach(item => {
+        const trajetLabel = `${item.pointDepart} → ${item.pointArrive}`;
+        chartData.addRow([trajetLabel, item.reservationCount]);
+    });
+
+    const options = {
+        title: 'Réservations par trajet (Départ → Arrivée)',
+        height: 500,
+        width: '100%',
+        legend: { position: 'none' },
+        hAxis: { title: 'Trajets' },
+        vAxis: { title: 'Nombre de réservations' }
+    };
+
+    const chart = new google.visualization.ColumnChart(
+        document.getElementById('chart_points_div')
+    );
+    chart.draw(chartData, options);
+}
+
+
+// Initialisation du modal
+const topStationsModal = document.getElementById('topStationsModal');
+if (topStationsModal) {
+    topStationsModal.addEventListener('show.bs.modal', function() {
+        fetchTopStationsData();
+    });
+}
+
+function fetchTopStationsData() {
+    fetch('{{ path("app_transport_station_stats_top") }}')
+    .then(response => response.json())
+    .then(data => {
+        renderTopStationsChart(data);
+        populateStationsTable(data);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('top_stations_chart').innerHTML = `
+            <div class="alert alert-danger">
+                Erreur lors du chargement des statistiques
+            </div>`;
+    });
+}
+
+function renderTopStationsChart(data) {
+    const chartData = new google.visualization.DataTable();
+    chartData.addColumn('string', 'Station');
+    chartData.addColumn('number', 'Réservations');
+    
+    data.forEach(item => {
+        chartData.addRow([item.nomStation, item.totalReservations]);
+    });
+
+    const options = {
+        title: 'Top 5 des Stations/Gares',
+        height: 300,
+        width: '100%',
+        legend: { position: 'none' },
+        colors: ['#4285F4'],
+        hAxis: { title: 'Stations' },
+        vAxis: { title: 'Nombre de réservations' },
+        chartArea: {width: '80%'}
+    };
+
+    const chart = new google.visualization.ColumnChart(
+        document.getElementById('top_stations_chart')
+    );
+    chart.draw(chartData, options);
+}
+
+function populateStationsTable(data) {
+    const tableBody = document.getElementById('stationsTableBody');
+    tableBody.innerHTML = ''; // Vide le tableau
+    
+    data.forEach(item => {
+        const row = document.createElement('tr');
+        
+        row.innerHTML = `
+            <td>${item.nomStation}</td>
+            <td>${item.totalReservations}</td>
+            <td>${item.nbTrajets}</td>
+        `;
+        
+        tableBody.appendChild(row);
     });
 }
 </script>
@@ -351,12 +443,56 @@ function renderCharts(data) {
             <div class="modal-body">
                 <div class="row">
                     <div class="col-12">
-                        <canvas id="mostReservedChart" height="400"></canvas>
+                        <div id="chart_div"></div>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal pour les stats par points -->
+<div class="modal fade" id="statsPointsModal" tabindex="-1" aria-labelledby="statsPointsModalLabel">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Statistiques par trajets (Départ-Arrivée)</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="chart_points_div"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal pour le top des stations -->
+<div class="modal fade" id="topStationsModal" tabindex="-1" aria-labelledby="topStationsModalLabel">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Top 5 des Stations/Gares les plus fréquentées</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="top_stations_chart" style="height: 400px;"></div>
+                <div class="table-responsive mt-3">
+                    <table class="table table-striped" id="stationsTable">
+                        <thead>
+                            <tr>
+                                <th>Station</th>
+                                <th>Réservations</th>
+                                <th>Nombre de Trajets</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stationsTableBody">
+                            <!-- Les données seront ajoutées via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

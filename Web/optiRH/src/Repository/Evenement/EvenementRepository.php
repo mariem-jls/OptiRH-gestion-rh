@@ -49,8 +49,7 @@ public function findByCombinedFilters(?string $searchTerm, ?string $modalite, ?s
 
     if ($searchTerm) {
         $qb->andWhere('e.titre LIKE :term')
-           ->orWhere('e.description LIKE :term')
-           ->setParameter('term', '%' . $searchTerm . '%');
+           ->setParameter('term', "%$searchTerm%");
     }
 
     if ($modalite) {
@@ -75,10 +74,16 @@ public function findByTitleLieuModalite(?string $searchTerm)
         $qb->andWhere('e.titre LIKE :term')
            ->orWhere('e.lieu LIKE :term')
            ->orWhere('e.modalite LIKE :term')
-           ->setParameter('term', '%' . $searchTerm . '%');
+           ->setParameter('term', "%$searchTerm%");
     }
 
     return $qb->getQuery()->getResult();
+}
+
+// Méthode pour récupérer tous les événements
+public function findAllEvents()
+{
+    return $this->findAll();
 }
 
 

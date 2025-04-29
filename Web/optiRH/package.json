@@ -3,6 +3,7 @@
     "@fullcalendar/core": "^6.1.17",
     "@fullcalendar/daygrid": "^6.1.17",
     "@ttskch/select2-bootstrap4-theme": "^1.5.2",
+    "leaflet": "^1.9.4",
     "select2": "^4.1.0-rc.0"
   },
   "devDependencies": {
