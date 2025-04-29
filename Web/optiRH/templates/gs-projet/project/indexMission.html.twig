@@ -444,6 +444,9 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                <a id="meetLinkButton" href="#" target="_blank" class="btn btn-primary" style="display: none;" aria-label="Rejoindre la réunion Google Meet">
+                    <i class="bi bi-camera-video me-2"></i> Rejoindre le Meet
+                </a>
                 <button type="submit" form="statusForm" class="btn btn-primary">
                     <i class="bi bi-save me-2"></i> Enregistrer
                 </button>
@@ -622,7 +625,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     statut: info.event.extendedProps.statut,
                     start: info.event.start.toISOString(),
                     projectTitle: info.event.extendedProps.projectTitle,
-                    isLate: info.event.extendedProps.isLate
+                    isLate: info.event.extendedProps.isLate,
+                    meetLink: info.event.extendedProps.meetLink // Ajout de meetLink
                 };
 
                 // Réinitialiser le chatbot
@@ -638,6 +642,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('missionDescription').textContent = info.event.extendedProps.description || 'Aucune description';
                 document.getElementById('missionStatus').textContent = info.event.extendedProps.statut || 'Non spécifié';
                 document.getElementById('statusSelect').value = info.event.extendedProps.statut;
+
+                // Gérer l'affichage du bouton Meet
+                const meetLinkButton = document.getElementById('meetLinkButton');
+                if (info.event.extendedProps.meetLink && info.event.extendedProps.meetLink.trim() !== '') {
+                    meetLinkButton.href = info.event.extendedProps.meetLink;
+                    meetLinkButton.style.display = 'inline-block';
+                } else {
+                    meetLinkButton.style.display = 'none';
+                }
 
                 const deadlineElement = document.getElementById('missionDeadline');
                 deadlineElement.innerHTML = `

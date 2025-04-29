@@ -1,0 +1,232 @@
+{% extends 'partials/layout-vertical.html.twig' %}
+
+{% block title %}Calendrier des Missions{% endblock %}
+
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', {
+        page_title: 'Calendrier des Missions',
+        breadcrumb: [
+            { label: 'Projets', path: path('gs-projet_project_index') },
+            { label: 'Calendrier' }
+        ]
+    }) }}
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <!-- FullCalendar CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+    <!-- SweetAlert2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <!-- Remixicon pour les icônes -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        #calendar {
+            max-width: 1100px;
+            margin: 40px auto;
+        }
+        .modal-content {
+            border-radius: 10px;
+        }
+        .fc-event {
+            cursor: pointer;
+        }
+        .fc-event.is-late {
+            border-left: 4px solid #dc3545 !important;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Flash Messages -->
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <!-- En-tête -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h1 class="h3 mb-0 text-primary">Calendrier des Missions</h1>
+                    <p class="text-muted mb-0">Visualisez et gérez vos missions assignées.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendrier -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div id="calendar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modale pour les détails de la mission -->
+    <div class="modal fade" id="missionModal" tabindex="-1" aria-labelledby="missionModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="missionModalLabel">Détails de la Mission</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="missionId">
+                    <div class="mb-3">
+                        <h6><i class="ri-task-line me-2"></i>Titre</h6>
+                        <p id="missionTitle" class="text-muted"></p>
+                    </div>
+                    <div class="mb-3">
+                        <h6><i class="ri-information-line me-2"></i>Description</h6>
+                        <p id="missionDescription" class="text-muted"></p>
+                    </div>
+                    <div class="mb-3">
+                        <h6><i class="ri-calendar-line me-2"></i>Date de fin</h6>
+                        <p id="missionDate" class="text-muted"></p>
+                    </div>
+                    <div class="mb-3">
+                        <h6><i class="ri-checkbox-circle-line me-2"></i>Statut</h6>
+                        <p id="missionStatus" class="text-muted"></p>
+                    </div>
+                    <div class="mb-3">
+                        <h6><i class="ri-folder-line me-2"></i>Projet</h6>
+                        <p id="missionProject" class="text-muted"></p>
+                    </div>
+                    <div class="mb-3">
+                        <h6><i class="ri-vidicon-line me-2"></i>Lien Google Meet</h6>
+                        <div class="input-group">
+                            <input type="text" id="meetLink" class="form-control" readonly>
+                            <button class="btn btn-primary" id="generateMeetLink">Générer un lien Meet</button>
+                        </div>
+                        <small class="text-muted">Cliquez pour générer un lien Google Meet pour cette mission.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <!-- FullCalendar JS -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Bootstrap JS (inclus via parent si nécessaire) -->
+    <meta name="csrf-token" content="{{ csrf_token('generate_meet') }}">
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const calendarEl = document.getElementById('calendar');
+            const missionModal = new bootstrap.Modal(document.getElementById('missionModal'));
+
+            // Initialiser FullCalendar
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'fr',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                events: {{ missions|json_encode|raw }},
+                eventClick: function(info) {
+                    // Remplir la modale avec les détails de la mission
+                    document.getElementById('missionId').value = info.event.id;
+                    document.getElementById('missionTitle').textContent = info.event.title;
+                    document.getElementById('missionDescription').textContent = info.event.extendedProps.description || 'Aucune description';
+                    document.getElementById('missionDate').textContent = info.event.start.toLocaleDateString('fr-FR');
+                    document.getElementById('missionStatus').textContent = info.event.extendedProps.statut;
+                    document.getElementById('missionProject').textContent = info.event.extendedProps.projectTitle;
+                    document.getElementById('meetLink').value = info.event.extendedProps.meetLink || '';
+
+                    // Ajouter une classe pour les missions en retard
+                    if (info.event.extendedProps.isLate) {
+                        info.el.classList.add('is-late');
+                    }
+
+                    // Afficher la modale
+                    missionModal.show();
+                },
+                eventClassNames: function(arg) {
+                    return arg.event.extendedProps.isLate ? ['is-late'] : [];
+                }
+            });
+
+            calendar.render();
+
+            // Gestion du bouton Générer un lien Meet
+            document.getElementById('generateMeetLink').addEventListener('click', async function() {
+                const missionId = document.getElementById('missionId').value;
+                const meetLinkInput = document.getElementById('meetLink');
+
+                try {
+                    const response = await fetch("{{ path('gs-projet_generate_meet_link', { id: 'MISSION_ID' }) }}".replace('MISSION_ID', missionId), {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-Token': '{{ csrf_token('generate_meet') }}'
+                        }
+                    });
+
+                    const data = await response.json();
+                    if (!response.ok) {
+                        if (response.status === 401 && data.authUrl) {
+                            Swal.fire({
+                                icon: 'info',
+                                title: 'Authentification requise',
+                                text: 'Vous devez vous connecter à votre compte Google pour générer un lien Meet.',
+                                showConfirmButton: true,
+                                confirmButtonText: 'Se connecter'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    window.location.href = data.authUrl;
+                                }
+                            });
+                            return;
+                        }
+                        throw new Error(data.error || 'Erreur lors de la génération du lien Meet');
+                    }
+
+                    meetLinkInput.value = data.meetLink;
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Succès !',
+                        text: 'Lien Google Meet généré avec succès',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+
+                    // Mettre à jour l'événement dans FullCalendar
+                    const event = calendar.getEventById(missionId);
+                    if (event) {
+                        event.setExtendedProp('meetLink', data.meetLink);
+                    }
+
+                } catch (error) {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erreur',
+                        text: 'Échec de la génération du lien Meet : ' + error.message
+                    });
+                }
+            });
+        });
+    </script>
+{% endblock %}
