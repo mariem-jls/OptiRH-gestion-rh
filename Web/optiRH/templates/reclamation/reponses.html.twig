@@ -14,6 +14,14 @@
 {% endblock %}
 
 {% block body %}
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
     <div class="container-fluid">
         <div class="row">
             <!-- Colonne principale -->
@@ -209,7 +217,6 @@
                 <div class="card shadow-sm border-0">
                     <div class="card-body p-0">
                         {% if reclamation.reponses|length > 0 %}
-                            <!-- Titre ajouté ici -->
                             <div class="px-4 pt-4">
                                 <h4 class="text-primary mb-3">
                                     <i class="fas fa-list me-2"></i>Liste des réponses
@@ -498,6 +505,57 @@
             border-radius: 8px;
             padding: 12px;
             margin-top: 15px;
+        }
+        .timeline-reponses {
+            position: relative;
+            margin-left: 0.5rem;
+        }
+        .timeline-item {
+            border-radius: 1rem;
+            box-shadow: 0 2px 8px #e0e4ea;
+            border: none;
+            background: #fff;
+            position: relative;
+            padding-left: 0.5rem;
+        }
+        .timeline-avatar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .avatar-circle {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4e73df 60%, #3056d3 100%);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 2px 8px #e0e4ea;
+        }
+        .timeline-item:hover {
+            box-shadow: 0 6px 24px #3056d355;
+            transform: translateY(-2px) scale(1.01);
+            transition: all 0.2s;
+        }
+        .timeline-actions .btn {
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        @media (max-width: 768px) {
+            .timeline-item .card-body {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+            }
+            .timeline-avatar {
+                margin-bottom: 1rem;
+            }
         }
     </style>
 {% endblock %}
