@@ -49,6 +49,7 @@
             "version": "5.0",
             "ref": "46c9cd2c1e07f0fcfd97e96f12b03b2e0845c4cd"
         }
+    },
     "google/apiclient": {
         "version": "2.18",
         "recipe": {
