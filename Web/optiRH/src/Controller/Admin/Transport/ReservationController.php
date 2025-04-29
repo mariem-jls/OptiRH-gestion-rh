@@ -11,6 +11,10 @@ use App\Repository\Transport\VehiculeRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Doctrine\DBAL\LockMode;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
+use App\Service\PdfGenerator;
+use App\Repository\Transport\ReservationTrajetRepository;
 
 #[Route('/transport/reservation')]
 class ReservationController extends AbstractController
@@ -30,16 +34,21 @@ public function search(Request $request, VehiculeRepository $vehiculeRepo): Resp
     // Si aucun critère n'est fourni, retourner une liste vide
     if (empty($depart) && empty($arrive)) {
         return $this->render('transport/reservation/_results.html.twig', [
-            'vehicules' => []
+            'vehicules' => [],
+            'show_map' => false // Nouveau paramètre
+
         ]);
     }
 
     // Utilisez la méthode modifiée qui accepte des critères partiels
     $vehicules = $vehiculeRepo->findByDepartureOrArrival($depart, $arrive);
-
     return $this->render('transport/reservation/_results.html.twig', [
-        'vehicules' => $vehicules
+        'vehicules' => $vehicules,
+        'show_map' => true, // Activer la carte
+        'search_depart' => $depart, // Transmettre les critères
+        'search_arrive' => $arrive
     ]);
+
 }
 
 
@@ -48,7 +57,8 @@ public function search(Request $request, VehiculeRepository $vehiculeRepo): Resp
         Vehicule $vehicule,
         EntityManagerInterface $em,
         LoggerInterface $logger,
-        Request $request
+        Request $request,
+        MailerInterface $mailer,
     ): Response {
         try {
             $logger->debug('Tentative de réservation pour véhicule: '.$vehicule->getId());
@@ -87,13 +97,31 @@ public function search(Request $request, VehiculeRepository $vehiculeRepo): Resp
             $em->persist($reservation);
             $em->flush();
             $em->commit();
+
+            // Envoi de l'email de confirmation
+        $email = (new Email())
+        ->from('azettt532@gmail.com') // Utilisez l'email configuré dans MAILER_DSN
+        ->to($user->getEmail()) // Assurez-vous que votre entité User a une méthode getEmail()
+        ->subject('Confirmation de votre réservation')
+        ->html($this->renderView(
+            'transport/reservation/reservation_confirmation.html.twig',
+            [
+                'user' => $user,
+                'reservation' => $reservation,
+                'vehicule' => $vehicule,
+                'trajet' => $vehicule->getTrajet()
+            ]
+        ));
+
+    $mailer->send($email);
     
-            $this->addFlash('success', 'Réservation confirmée');
+            $this->addFlash('success', 'Réservation confirmée. Un email de confirmation vous a été envoyé.');
             return $this->redirectToRoute('app_transport_reservation_index');
     
-
-
-
+        
+                
+                
+                
         } catch (\Exception $e) {
             if ($em->isOpen() && $em->getConnection()->isTransactionActive()) {
                 $em->rollback();
@@ -103,12 +131,10 @@ public function search(Request $request, VehiculeRepository $vehiculeRepo): Resp
             // Laissez Symfony gérer l'exception (écran rouge en dev)
             throw $e;
         }
-
-
-
         
     }
 
+    
     #[Route('/mes-reservations', name: 'app_transport_reservation_list', methods: ['GET'])]
 public function userReservations(EntityManagerInterface $em): Response
 {
@@ -144,5 +170,58 @@ public function deleteReservation(ReservationTrajet $reservation, EntityManagerI
     }
 }
 
+
+
+#[Route('/api/trajets', name: 'app_transport_reservation_api_trajets', methods: ['GET'])]
+public function getTrajetsApi(Request $request, VehiculeRepository $vehiculeRepo): JsonResponse
+{
+    $depart = $request->query->get('depart');
+    $arrive = $request->query->get('arrive');
+
+    $vehicules = $vehiculeRepo->findByDepartureOrArrival($depart, $arrive);
+
+    $trajets = [];
+    foreach ($vehicules as $vehicule) {
+        $trajets[] = [
+            'id' => $vehicule->getId(),
+            'type' => $vehicule->getType(),
+            'depart' => $vehicule->getTrajet()->getDepart(),
+            'arrive' => $vehicule->getTrajet()->getArrive(),
+            'places' => $vehicule->getNbrplace(),
+            'disponibilite' => $vehicule->getDisponibilite()
+        ];
+    }
+
+    return $this->json([
+        'trajets' => $trajets,
+        'search' => [
+            'depart' => $depart,
+            'arrive' => $arrive
+        ]
+    ]);
+}  
+
+
+#[Route('/reservations/pdf', name: 'app_reservations_pdf')]
+public function generatePdf(ReservationTrajetRepository $reservationRepo, PdfGenerator $pdfGenerator): Response
+{
+    $reservations = $reservationRepo->findAll();
     
+    $pdfContent = $pdfGenerator->generateReservationsPdf(
+        $reservations, 
+        'transport/reservation/pdf.html.twig'
+    );
+    
+    return new Response(
+        $pdfContent,
+        Response::HTTP_OK,
+        [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="reservations_'.date('Y-m-d').'.pdf"'
+        ]
+    );
+}
+
+
+
 }

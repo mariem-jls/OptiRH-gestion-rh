@@ -1,7 +1,3 @@
-
-
-
-
 {% if vehicules is empty %}
     <div class="alert alert-warning">
         Aucun véhicule disponible pour ce trajet
@@ -20,6 +16,7 @@
             </thead>
             <tbody>
                 {% for vehicule in vehicules %}
+                {% set disponibilite = vehicule.nbrplace > 0 ? 'Disponible' : 'Indisponible' %}
                 <tr>
                     <td>
                         <span class="badge bg-{{ vehicule.type == 'Bus' ? 'info' : 'success' }}">
@@ -28,8 +25,8 @@
                     </td>
                     <td>{{ vehicule.trajet.depart }} → {{ vehicule.trajet.arrive }}</td>
                     <td>
-                        <span class="badge bg-{{ vehicule.disponibilite == 'Disponible' ? 'success' : 'danger' }} status">
-                            {{ vehicule.disponibilite }}
+                        <span class="badge bg-{{ disponibilite == 'Disponible' ? 'success' : 'danger' }}">
+                            {{ disponibilite }}
                         </span>
                     </td>
                     <td class="places">{{ vehicule.nbrplace }}</td>
@@ -47,4 +44,3 @@
         </table>
     </div>
 {% endif %}
-

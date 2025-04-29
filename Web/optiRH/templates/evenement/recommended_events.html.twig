@@ -1,0 +1,25 @@
+{% block title %}Événements recommandés{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <h1>Événements recommandés pour vous</h1>
+
+        {% if recommendedEvents is not empty %}
+            <div class="list-group">
+                {% for eventScore in recommendedEvents %}
+                    <div class="list-group-item">
+                        <h3>{{ eventScore.event.titre }}</h3>
+                        <p><strong>Type :</strong> {{ eventScore.event.type }}</p>
+                        <p><strong>Modalité :</strong> {{ eventScore.event.modalite }}</p>
+                        <p><strong>Prix :</strong> {{ eventScore.event.prix | number_format(2, ',', ' ') }} €</p>
+                        <p><strong>Score :</strong> {{ eventScore.score }}</p>
+                        <p><strong>Date de début :</strong> {{ eventScore.event.datedebut | date('d/m/Y') }}</p>
+                        <p><strong>Date de fin :</strong> {{ eventScore.event.datefin | date('d/m/Y') }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>Aucun événement recommandé pour le moment.</p>
+        {% endif %}
+    </div>
+{% endblock %}

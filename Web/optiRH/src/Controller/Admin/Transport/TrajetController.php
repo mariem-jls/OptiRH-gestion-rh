@@ -116,4 +116,17 @@ public function stats(TrajetRepository $trajetRepository): JsonResponse
     return $this->json($stats);
 }
 
+#[Route('/stats/trajets/points', name: 'app_transport_trajet_stats_points', methods: ['GET'])]
+public function statsByPoints(TrajetRepository $trajetRepository): JsonResponse
+{
+    $stats = $trajetRepository->getReservationStatsByPoints();
+    return $this->json($stats);
+}
+
+#[Route('/stats/stations/top', name: 'app_transport_station_stats_top', methods: ['GET'])]
+public function topStations(TrajetRepository $trajetRepository): JsonResponse
+{
+    $stats = $trajetRepository->getTopStations();
+    return $this->json($stats);
+}
 }

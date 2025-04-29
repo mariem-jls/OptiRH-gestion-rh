@@ -17,6 +17,16 @@ class NotificationRepository extends ServiceEntityRepository
         parent::__construct($registry, Notification::class);
     }
 
+    public function findLateMissionNotificationByMissionId(int $missionId): ?Notification
+    {
+        return $this->createQueryBuilder('n')
+            ->where('n.type = :type')
+            ->andWhere('n.context LIKE :context')
+            ->setParameter('type', Notification::TYPE_LATE_MISSION)
+            ->setParameter('context', '%"mission_id":' . $missionId . '%')
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
     public function findUnreadByUser(User $user, int $limit = null): array
     {
         return $this->createQueryBuilder('n')

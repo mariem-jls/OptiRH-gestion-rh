@@ -61,7 +61,7 @@ class MissionController extends AbstractController
         foreach ($missions as $mission) {
             // Vérifier si la mission est en retard
             if ($this->isMissionLate($mission)) {
-                $notificationService->sendLateMissionNotification($mission);
+                $notificationService->sendLateMissionEmail($mission);
             }
         }
     

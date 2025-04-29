@@ -86,60 +86,79 @@ class MissionNotificationService
         ]);
     }
 
-    public function sendLateMissionNotification(Mission $mission): void
-    {
-        $assignedTo = $mission->getAssignedTo();
-        if (!$assignedTo || $mission->getStatus() === 'Done') {
-            $this->logger->info('Notification en retard ignorée', [
-                'mission_id' => $mission->getId(),
-                'reason' => !$assignedTo ? 'Aucun utilisateur assigné' : 'Statut Done',
-            ]);
-            return;
-        }
-
-        $daysLate = $mission->getDaysLate();
-        if ($daysLate <= 0) {
-            $this->logger->info('Notification en retard ignorée', [
-                'mission_id' => $mission->getId(),
-                'reason' => 'Pas en retard',
-                'days_late' => $daysLate,
-            ]);
-            return;
-        }
-
-        $this->logger->info('Envoi de la notification en retard', [
+    public function sendLateMissionEmail(Mission $mission): void
+{
+    $assignedTo = $mission->getAssignedTo();
+    if (!$assignedTo || $mission->getStatus() === 'Done') {
+        $this->logger->info('Email en retard ignoré', [
             'mission_id' => $mission->getId(),
-            'user_id' => $assignedTo->getId(),
+            'reason' => !$assignedTo ? 'Aucun utilisateur assigné' : 'Statut Done',
+        ]);
+        return;
+    }
+
+    $daysLate = $mission->getDaysLate();
+    if ($daysLate <= 0) {
+        $this->logger->info('Email en retard ignoré', [
+            'mission_id' => $mission->getId(),
+            'reason' => 'Pas en retard',
             'days_late' => $daysLate,
         ]);
-
-        $email = (new TemplatedEmail())
-            ->from(new Address($this->senderEmail, $this->senderName))
-            ->to(new Address($assignedTo->getEmail(), $assignedTo->getNom()))
-            ->subject('MISSION EN RETARD: ' . $mission->getTitre())
-            ->htmlTemplate('gs-projet/project/Email/mission_enRetard.html.twig')
-            ->context([
-                'mission' => $mission,
-                'user' => $assignedTo,
-                'daysLate' => $daysLate,
-            ]);
-
-        $this->mailer->send($email);
-
-        $notification = $this->notificationManager->createLateMissionNotification(
-            $assignedTo,
-            $mission->getTitre(),
-            $mission->getId(),
-            $mission->getProject()->getId(),
-            $daysLate
-        );
-
-        $this->entityManager->persist($notification);
-        $this->entityManager->flush();
-
-        $this->logger->info('Notification en retard créée', [
-            'notification_id' => $notification->getId(),
-            'mission_id' => $mission->getId(),
-        ]);
+        return;
     }
+
+    $this->logger->info('Envoi de l\'email en retard', [
+        'mission_id' => $mission->getId(),
+        'user_id' => $assignedTo->getId(),
+        'days_late' => $daysLate,
+    ]);
+
+    $email = (new TemplatedEmail())
+        ->from(new Address($this->senderEmail, $this->senderName))
+        ->to(new Address($assignedTo->getEmail(), $assignedTo->getNom()))
+        ->subject('MISSION EN RETARD: ' . $mission->getTitre())
+        ->htmlTemplate('gs-projet/project/Email/mission_enRetard.html.twig')
+        ->context([
+            'mission' => $mission,
+            'user' => $assignedTo,
+            'daysLate' => $daysLate,
+        ]);
+
+    $this->mailer->send($email);
+}
+public function createLateMissionNotification(Mission $mission): void
+{
+    $assignedTo = $mission->getAssignedTo();
+    if (!$assignedTo || $mission->getStatus() === 'Done') {
+        return;
+    }
+
+    $daysLate = $mission->getDaysLate();
+    if ($daysLate <= 0) {
+        return;
+    }
+
+    $notification = new Notification();
+    $notification->setRecipient($assignedTo);
+    $notification->setMessage(sprintf(
+        'Mission en retard: "%s" (en retard de %d jours)',
+        $mission->getTitre(),
+        $daysLate
+    ));
+    $notification->markAsUnread();
+    $notification->setType(Notification::TYPE_LATE_MISSION);
+    $notification->setRouteName('gs-projet_project_mission_show');
+    $notification->setRouteParams(['id' => $mission->getId()]);
+    $notification->setContext([
+        'mission_id' => $mission->getId(),
+        'days_late' => $daysLate,
+    ]);
+
+    $this->entityManager->persist($notification);
+
+    $this->logger->info('Notification en retard créée', [
+        'notification_id' => $notification->getId(),
+        'mission_id' => $mission->getId(),
+    ]);
+}
 }
