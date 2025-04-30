@@ -2,7 +2,6 @@ framework:
     messenger:
         transports:
             # https://symfony.com/doc/current/messenger.html#transport-configuration
-<<<<<<< HEAD
             async:
                 dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
                 options:
@@ -13,7 +12,6 @@ framework:
                     multiplier: 2
             failed: 'doctrine://default?queue_name=failed'
             #sync: 'sync://'
-=======
             # async:
             #     dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
             #     options:
@@ -24,7 +22,6 @@ framework:
             #         multiplier: 2
             # failed: 'doctrine://default?queue_name=failed'
             sync: 'sync://'
->>>>>>> 144b523fe0393c23cc26cf31ecda2961c80a9497
 
         routing:
             Symfony\Component\Mailer\Messenger\SendEmailMessage: sync

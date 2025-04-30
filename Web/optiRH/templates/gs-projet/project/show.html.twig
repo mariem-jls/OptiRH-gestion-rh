@@ -60,12 +60,16 @@
                                title="Exporter PDF"
                                aria-label="Exporter le projet en PDF">
                                <i class="ri-file-pdf-line" style="margin-right: 8px; font-size: 18px;"></i> PDF
-                 {% if project.meetLink %}
+              </a>
+               {% if project.meetLink %}
                             <a href="{{ project.meetLink }}" 
+                               class="btn-meet btn-sm rounded-pill"
                                style="background-color: #34C759; color: white; text-decoration: none; padding: 6px 12px; border-radius: 25px; font-weight: bold; display: inline-flex; align-items: center; justify-content: center; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 16px;"
+                               data-project-id="{{ project.id }}"
+                               data-meet-link="{{ project.meetLink }}"
                                target="_blank"
-                               title="Rejoindre la réunion Google Meet"
-                               aria-label="Rejoindre la réunion Google Meet">
+                               title="Rejoindre la réunion  Meet"
+                               aria-label="Rejoindre la réunion  Meet">
                                <i class="ri-vidicon-line" style="margin-right: 8px; font-size: 18px;"></i> Rejoindre Meet
                             </a>
                             {% endif %}
@@ -247,60 +251,145 @@
 
 {% block javascripts %}
 {{ parent() }}
-<meta name="csrf-token" content="{{ csrf_token('mission_status') }}">
+<!-- Tokens CSRF séparés -->
+<meta name="csrf-token-meet" content="{{ csrf_token('send_meet_invitations') }}">
+<meta name="csrf-token-mission" content="{{ csrf_token('mission_status') }}">
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Gestion des checkboxes avec animation
-    document.querySelectorAll('.status-checkbox').forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            const card = this.closest('.card');
-            card.style.transition = 'transform 0.3s ease';
-            card.style.transform = 'scale(0.98)';
+    // Style CSS pour le bouton Meet
+    const style = document.createElement('style');
+    style.textContent = `
+        .btn-meet {
+            background-color: #34C759;
+            color: white;
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 25px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 16px;
+        }
+        .btn-meet:hover {
+            opacity: 0.9;
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Gestion des invitations Meet
+    document.querySelectorAll('[data-meet-link]').forEach(button => {
+        button.addEventListener('click', async function(event) {
+            event.preventDefault();
             
-            setTimeout(() => {
-                updateMissionStatus(this);
-                card.style.transform = '';
-            }, 300);
+            const projectId = this.dataset.projectId;
+            const meetLink = this.dataset.meetLink;
+            const csrfToken = document.querySelector('meta[name="csrf-token-meet"]').content;
+
+            try {
+                const response = await fetch(`/gs-projet/project/${projectId}/send-meet-invitations`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-Token': csrfToken,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.message || 'Erreur lors de l\'envoi');
+                }
+
+                // Notification Toast Bootstrap
+                const toast = new bootstrap.Toast(document.createElement('div'));
+                toast._element.className = 'toast align-items-center text-white bg-success';
+                toast._element.innerHTML = `
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <i class="ri-checkbox-circle-fill me-2"></i>
+                            ${result.message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                `;
+                document.body.appendChild(toast._element);
+                toast.show();
+
+                // Ouvrir le lien après 1.5s
+                setTimeout(() => {
+                    window.open(meetLink, '_blank');
+                }, 1500);
+
+            } catch (error) {
+                console.error('Erreur:', error);
+                const toast = new bootstrap.Toast(document.createElement('div'));
+                toast._element.className = 'toast align-items-center text-white bg-danger';
+                toast._element.innerHTML = `
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <i class="ri-close-circle-fill me-2"></i>
+                            ${error.message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                `;
+                document.body.appendChild(toast._element);
+                toast.show();
+            }
         });
     });
 
-    async function updateMissionStatus(checkbox) {
-        const missionId = checkbox.dataset.missionId;
-        const newStatus = checkbox.checked ? 'Done' : 'To Do';
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+    // Gestion des statuts de mission
+    document.querySelectorAll('.status-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', async function() {
+            const card = this.closest('.card');
+            card.style.transition = 'all 0.3s ease';
+            card.style.transform = 'scale(0.98)';
+            card.style.opacity = '0.8';
 
-        try {
-            const response = await fetch(`/missions/${missionId}/status`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: JSON.stringify({
-                    status: newStatus,
-                    _token: csrfToken
-                })
-            });
+            const missionId = this.dataset.missionId;
+            const newStatus = this.checked ? 'Done' : 'To Do';
+            const csrfToken = document.querySelector('meta[name="csrf-token-mission"]').content;
 
-            if (!response.ok) throw new Error('Échec de la mise à jour');
-            
-            // Animation de confirmation
-            checkbox.parentElement.classList.add('text-success');
-            setTimeout(() => {
-                checkbox.parentElement.classList.remove('text-success');
-            }, 1000);
+            try {
+                const response = await fetch(`/missions/${missionId}/status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'X-CSRF-Token': csrfToken,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                });
 
-        } catch (error) {
-            console.error('Erreur lors de la mise à jour du statut:', error);
-            checkbox.checked = !checkbox.checked;
-            // Afficher une notification d'erreur
-            alert('Erreur lors de la mise à jour du statut de la mission. Veuillez réessayer.');
-        }
-    }
+                if (!response.ok) throw new Error('Échec de la mise à jour');
 
-    // Tooltips Bootstrap
-    const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-    [...tooltips].map(t => new bootstrap.Tooltip(t));
+                // Animation de succès
+                card.classList.add('border-success');
+                setTimeout(() => {
+                    card.style.transform = '';
+                    card.style.opacity = '';
+                    card.classList.remove('border-success');
+                    location.reload(); // Recharger pour mettre à jour les stats
+                }, 1000);
+
+            } catch (error) {
+                console.error('Erreur:', error);
+                this.checked = !this.checked;
+                card.style.transform = '';
+                card.style.opacity = '';
+                card.classList.add('border-danger');
+                setTimeout(() => card.classList.remove('border-danger'), 2000);
+            }
+        });
+    });
+
+    // Initialisation des tooltips
+    new bootstrap.Tooltip(document.body, {
+        selector: '[data-bs-toggle="tooltip"]'
+    });
 });
 </script>
 {% endblock %}

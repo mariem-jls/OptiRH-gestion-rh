@@ -64,6 +64,16 @@ class ProjectRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+    public function findProjectsWithInvalidMeetData(): array
+{
+    return $this->createQueryBuilder('p')
+        ->leftJoin('p.missions', 'm')
+        ->leftJoin('m.assignedTo', 'u')
+        ->where('p.meetLink IS NULL OR p.meetLink = \'\'')
+        ->orWhere('u.email IS NULL OR u.email = \'\'')
+        ->getQuery()
+        ->getResult();
+}
     public function findWithFilters(?string $search, ?string $status, int $page = 1)
     {
         $queryBuilder = $this->createQueryBuilder('p');

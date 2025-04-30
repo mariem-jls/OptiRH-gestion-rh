@@ -14,10 +14,10 @@ use Symfony\Component\HttpFoundation\Response;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use App\Service\MissionNotificationService;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Entity\GsProjet\Mission;
-
 use App\Entity\GsProjet\Project;
 use App\Form\GsProjet\ProjectType;
 use App\Form\GsProjet\ProjectFilterType;
@@ -103,7 +103,7 @@ class ProjectController extends AbstractController {
             if ($form->isSubmitted()) {
                 if ($form->isValid()) {
                     // Génération du lien Meet avec validation
-                    $meetCode = $meetGenerator->CreateMeetLink();
+                    $meetCode = $meetGenerator->CreateMeetLink($project);
                     $project->setMeetLink($meetCode);
                     
                     // Audit
@@ -400,5 +400,27 @@ private function groupMissionsByStatus(array $missions): array
             'activeMissionsCount' => $activeMissionsCount
         ]);
     }
-
+    #[Route('/mission/{id}/send-invitation', name: 'mission_send_invitation', methods: ['POST'])]
+    public function sendInvitation(Mission $mission, MissionNotificationService $notificationService): JsonResponse
+    {
+        if (!$this->isGranted('ROLE_ADMIN')) {
+            return new JsonResponse(['success' => false, 'message' => 'Accès non autorisé'], 403);
+        }
+    
+        try {
+            // Plus besoin de récupérer le meetLink depuis la requête
+            // On utilise directement celui de la mission
+            $notificationService->sendMeetInvitation($mission);
+    
+            return new JsonResponse([
+                'success' => true,
+                'message' => 'Invitation envoyée avec succès'
+            ]);
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Erreur lors de l\'envoi de l\'invitation: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

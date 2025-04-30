@@ -10,6 +10,11 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mime\Address;
+use App\Entity\GsProjet\Project;
+use App\Entity\User;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+
+
 
 class MissionNotificationService
 {
@@ -160,5 +165,47 @@ public function createLateMissionNotification(Mission $mission): void
         'notification_id' => $notification->getId(),
         'mission_id' => $mission->getId(),
     ]);
+}
+public function sendMeetInvitation(Mission $mission): void
+{
+    $assignedTo = $mission->getAssignedTo();
+    
+    // Vérification si la mission a un utilisateur assigné
+    if (!$assignedTo) {
+        $this->logger->info('Invitation Meet ignorée - Aucun utilisateur assigné', [
+            'mission_id' => $mission->getId()
+        ]);
+        return;
+    }
+
+    try {
+        // Construction et envoi de l'email
+        $email = (new TemplatedEmail())
+            ->from(new Address($this->senderEmail, $this->senderName))
+            ->to(new Address($assignedTo->getEmail(), $assignedTo->getNom()))
+            ->subject('Invitation réunion: ' . $mission->getTitre())
+            ->htmlTemplate('gs-projet/project/Email/meet.html.twig')
+            ->context([
+                'mission' => $mission,
+                'user' => $assignedTo,
+                'meetLink' => $mission->getMeetLink(),
+                'deadline' => $mission->getDateTerminer(),
+                'project' => $mission->getProject(),
+            ]);
+
+        $this->mailer->send($email);
+
+        $this->logger->info('Invitation Meet envoyée', [
+            'mission_id' => $mission->getId(),
+            'user_email' => $assignedTo->getEmail()
+        ]);
+
+    } catch (TransportExceptionInterface $e) {
+        $this->logger->error('Erreur d\'envoi email', [
+            'mission_id' => $mission->getId(),
+            'error' => $e->getMessage()
+        ]);
+        throw new \RuntimeException('Erreur lors de l\'envoi de l\'email: '.$e->getMessage());
+    }
 }
 }

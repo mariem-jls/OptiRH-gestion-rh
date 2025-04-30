@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; box-sizing: border-box;">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invitation à la réunion  Meet - OptiRH</title>
+</head>
+<body style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f6f6f6; margin: 0; padding: 0;">
+    <table class="body-wrap" width="100%" bgcolor="#f6f6f6" style="margin: 0; padding: 0;">
+        <tr>
+            <td></td>
+            <td class="container" width="100%" style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                <div class="content" style="background: #ffffff; border-radius: 8px; padding: 30px; border: 3px solid #34C759;">
+                    <table width="100%">
+                        <tr>
+                            <td style="text-align: center;">
+                                   <a href="{{ absolute_url('home') }}" style="display: block; margin-bottom: 20px;">
+                                    <img src="https://i.ibb.co/0yTLr7bq/408065252-0f3bdb15-6321-42da-b294-c12b76d025d3.png" alt="OptiRH" height="80"/>
+                                </a>
+                                <h2 style="margin: 0; font-size: 22px; color: #34C759;">Invitation à la réunion Google Meet</h2>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding-top: 30px;">
+                                <p>Bonjour <strong>{{ user.nom }}</strong>,</p>
+                                <p>Vous êtes invité à rejoindre la réunion Google Meet pour la mission <strong>{{ mission.titre }}</strong>.</p>
+
+                                <div style="background: #e6f4ea; border-left: 4px solid #34C759; border-radius: 6px; padding: 20px; margin: 20px 0;">
+                                    <h3 style="margin: 0 0 10px; color: #34C759; font-size: 18px; text-align: center;">{{ mission.getProjectTitle() }}</h3>
+                                    <p><strong>Lien de la réunion :</strong> <a href="{{ meetLink }}">{{ meetLink }}</a></p>
+                                    <p><strong>Date limite mission :</strong> {{ deadline|date("d/m/Y") }}</p>
+                                    <p><strong>Date d'envoi :</strong> {{ "now"|date("d/m/Y H:i") }}</p>
+                                </div>
+
+                                <p>Veuillez cliquer sur le bouton ci-dessous pour rejoindre la réunion.</p>
+
+                                <div style="text-align: center; margin-top: 30px;">
+                                    <a href="{{ meetLink }}" style="background-color: #34C759; color: white; text-decoration: none; padding: 12px 24px; border-radius: 5px; font-weight: bold; display: inline-block;">Rejoindre la réunion</a>
+                                </div>
+
+                                <p style="margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px;">
+                                    Cordialement,<br>
+                                    <strong>L'équipe OptiRH</strong>
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="footer" style="text-align: center; padding: 20px; font-size: 12px; color: #999;">
+                    © {{ "now"|date("Y") }} OptiRH. Tous droits réservés.
+                </div>
+            </td>
+            <td></td>
+        </tr>
+    </table>
+</body>
+</html>
