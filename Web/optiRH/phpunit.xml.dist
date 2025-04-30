@@ -31,6 +31,20 @@
         <env name="GOOGLE_CLIENT_SECRET" value=""/>
         <env name="GOOGLE_AUTH_CONFIG" value="%kernel.project_dir%/path/to/file.json"/>
         <!-- ###- google/apiclient ### -->
+
+        <!-- ###+ symfony/mercure-notifier ### -->
+        <!-- MERCURE_DSN=mercure://default -->
+        <!-- ###- symfony/mercure-notifier ### -->
+
+        <!-- ###+ symfony/mercure-bundle ### -->
+        <!-- See https://symfony.com/doc/current/mercure.html#configuration -->
+        <!-- The URL of the Mercure hub, used by the app to publish updates (can be a local URL) -->
+        <env name="MERCURE_URL" value="https://example.com/.well-known/mercure"/>
+        <!-- The public URL of the Mercure hub, used by the browser to connect -->
+        <env name="MERCURE_PUBLIC_URL" value="https://example.com/.well-known/mercure"/>
+        <!-- The secret used to sign the JWTs -->
+        <env name="MERCURE_JWT_SECRET" value="!ChangeThisMercureHubJWTSecretKey!"/>
+        <!-- ###- symfony/mercure-bundle ### -->
     </php>
 
     <testsuites>
