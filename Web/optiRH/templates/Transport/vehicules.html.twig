@@ -50,11 +50,7 @@
                                            title="Réservations">
                                             <i class="mdi mdi-calendar-check"></i>
                                         </a>
-                                        <a href="{{ path('app_transport_vehicule_edit', {id: vehicule.id}) }}" 
-                                           class="btn btn-outline-warning"
-                                           title="Modifier">
-                                            <i class="mdi mdi-pencil"></i>
-                                        </a>
+                                        
                                         <form method="post" action="{{ path('app_transport_vehicule_delete', {id: vehicule.id}) }}" 
                                               style="display:inline;" 
                                               id="delete-form-{{ vehicule.id }}">

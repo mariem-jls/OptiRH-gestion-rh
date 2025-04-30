@@ -123,6 +123,14 @@ services:
         arguments:
             $logger: '@monolog.logger'
             $entityManager: '@doctrine.orm.entity_manager'
+
+
+    App\Service\ReservationMailer:
+        arguments:
+            $mailer: '@Symfony\Component\Mailer\MailerInterface'
+            $senderEmail: 'azettt532@gmail.com'
+            
+    
     
     App\Service\GeminiAnalysisService:
         arguments:
@@ -138,10 +146,12 @@ services:
             $logger: '@logger'
             $defaultTargetLanguage: 'fr'
 
-     
+    
     App\Service\OpenAiService:
         arguments:
             $apiKey: '%openai.api_key%'
+
+
 
     App\Service\RecommendationService:
         arguments:
@@ -149,4 +159,5 @@ services:
     App\Controller\Admin\Reclamation\ReclamationController:
         arguments:
             $huggingFaceApiKey: '%hugging_face_api_key%'
+
 

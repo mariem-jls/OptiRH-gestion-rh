@@ -119,7 +119,8 @@ class ReclamationController extends AbstractController
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
         
-        // Générer le PDF et le renvoyer comme réponse
+        $this->addFlash('success', 'PDF généré avec succès');
+        
         return new Response(
             $dompdf->output(),
             Response::HTTP_OK,
@@ -162,6 +163,8 @@ class ReclamationController extends AbstractController
             $request->query->getInt('page', 1),
             10
         );
+
+        $this->addFlash('info', 'Liste des archives chargée');
 
         return $this->render('reclamation/archive_list.html.twig', [
             'pagination' => $pagination,
@@ -215,7 +218,8 @@ class ReclamationController extends AbstractController
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
         
-        // Générer le PDF et le renvoyer comme réponse
+        $this->addFlash('success', 'PDF des archives généré avec succès');
+        
         return new Response(
             $dompdf->output(),
             Response::HTTP_OK,
@@ -306,8 +310,8 @@ class ReclamationController extends AbstractController
                         ));
 
                     $mailer->send($email);
+                    $this->addFlash('success', 'Email envoyé avec succès');
                 } catch (\Exception $e) {
-                    // Vous pouvez logger l'erreur si vous le souhaitez
                     $this->addFlash('warning', 'La réponse a été enregistrée mais l\'email n\'a pas pu être envoyé.');
                 }
             }
@@ -349,7 +353,8 @@ class ReclamationController extends AbstractController
         $writer = new PngWriter();
         $result = $writer->write($qrCode);
         
-        // Retourne l'image générée
+        $this->addFlash('success', 'QR Code généré avec succès');
+        
         return new Response($result->getString(), 200, [
             'Content-Type' => $result->getMimeType(),
             'Content-Disposition' => 'inline; filename="reclamation-details.png"'
@@ -428,7 +433,7 @@ class ReclamationController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $em->flush();
-            $this->addFlash('success', 'Réponse modifiée');
+            $this->addFlash('success', 'Réponse modifiée avec succès');
             return $this->redirectToRoute('admin_reclamation_reponses', ['id' => $reponse->getReclamation()->getId()]);
         }
 
@@ -460,7 +465,7 @@ class ReclamationController extends AbstractController
                 return new JsonResponse(['success' => true, 'message' => 'Réponse supprimée avec succès']);
             }
 
-            $this->addFlash('success', 'Réponse supprimée');
+            $this->addFlash('success', 'Réponse supprimée avec succès');
         }
 
         return $this->redirectToRoute('admin_reclamation_reponses', ['id' => $reponse->getReclamation()->getId()]);
@@ -520,7 +525,7 @@ class ReclamationController extends AbstractController
             ->getQuery()
             ->getArrayResult();
         
-        // Calcul du taux de résolution basé sur les filtres
+        // Calcul du taux de résolution
         $totalReclamations = $totalQueryBuilder
             ->select('COUNT(r.id)')
             ->getQuery()
@@ -536,7 +541,7 @@ class ReclamationController extends AbstractController
         $resolutionRate = $totalReclamations > 0 ? 
             round(($resolvedReclamations / $totalReclamations) * 100, 2) : 0;
         
-        // Réclamations sur le temps (par mois) - Utilisez DATE_FORMAT qui est compatible avec MySQL
+        // Réclamations sur le temps (par minute)
         $conn = $entityManager->getConnection();
         $timelineQuery = "
             SELECT 
@@ -564,6 +569,11 @@ class ReclamationController extends AbstractController
         $sentimentData = $this->formatChartData($sentimentStats, 'sentiment', 'count');
         $typeData = $this->formatChartData($typeStats, 'type', 'count');
         
+        // Vérification des données
+        if (empty($statusData) || empty($sentimentData) || empty($typeData)) {
+            $this->addFlash('warning', 'Aucune donnée disponible pour les statistiques.');
+        }
+        
         return $this->render('reclamation/statistics.html.twig', [
             'statusData' => json_encode($statusData),
             'sentimentData' => json_encode($sentimentData),
@@ -584,8 +594,21 @@ class ReclamationController extends AbstractController
         $formattedData = [];
         $formattedData[] = [$labelKey, 'Nombre'];
         
+        if (empty($data)) {
+            return $formattedData;
+        }
+        
         foreach ($data as $item) {
-            $formattedData[] = [$item[$labelKey] ?? 'Non défini', (int)$item[$valueKey]];
+            if (!isset($item[$labelKey]) || !isset($item[$valueKey])) {
+                continue;
+            }
+            
+            $label = $item[$labelKey] ?? 'Non défini';
+            $value = (int)$item[$valueKey];
+            
+            if ($value > 0) {
+                $formattedData[] = [$label, $value];
+            }
         }
         
         return $formattedData;
@@ -599,9 +622,21 @@ class ReclamationController extends AbstractController
         $formattedData = [];
         $formattedData[] = ['Datetime', 'Nombre de réclamations'];
         
+        if (empty($data)) {
+            return $formattedData;
+        }
+        
         foreach ($data as $item) {
-            $datetime = $item['datetime'] ?? '';
-            $formattedData[] = [$datetime, (int)$item['count']];
+            if (!isset($item['datetime']) || !isset($item['count'])) {
+                continue;
+            }
+            
+            $datetime = $item['datetime'];
+            $count = (int)$item['count'];
+            
+            if ($count > 0) {
+                $formattedData[] = [$datetime, $count];
+            }
         }
         
         return $formattedData;

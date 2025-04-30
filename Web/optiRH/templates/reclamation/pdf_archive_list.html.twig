@@ -5,56 +5,155 @@
     <meta charset="UTF-8">
     <title>{{ title }}</title>
     <style>
-        body { font-family: Arial, sans-serif; }
-        .header { text-align: center; margin-bottom: 20px; }
-        .header h1 { color: #4e73df; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #4e73df; color: white; }
-        tr:nth-child(even) { background-color: #f2f2f2; }
-        .footer { text-align: center; font-size: 12px; color: #666; margin-top: 20px; }
-        .sentiment-positive { color: #28a745; }
-        .sentiment-neutral { color: #ffc107; }
-        .sentiment-negative { color: #dc3545; }
-        .status-pending { color: #856404; background-color: #fff3cd; }
-        .status-in-progress { color: #0c5460; background-color: #d1ecf1; }
-        .status-resolved { color: #155724; background-color: #d4edda; }
+        @page {
+            margin: 2cm;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 10pt;
+            line-height: 1.4;
+            color: #222;
+            background: #f6f8fa;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            margin-bottom: 1.5cm;
+            border-bottom: 2px solid #4e73df;
+            padding-bottom: 0.7cm;
+        }
+        .header img {
+            max-width: 90px;
+            margin-right: 1.2cm;
+        }
+        .header-content {
+            flex: 1;
+        }
+        .header-content h1 {
+            color: #4e73df;
+            font-size: 18pt;
+            margin: 0 0 0.2cm 0;
+        }
+        .header-content p {
+            color: #666;
+            font-size: 10pt;
+            margin: 0.2cm 0 0 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-bottom: 1cm;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px #e0e4ea;
+            overflow: hidden;
+        }
+        thead th {
+            background: #3056d3;
+            color: #fff;
+            padding: 12px 6px;
+            text-align: left;
+            font-weight: bold;
+            font-size: 11pt;
+            border-right: 1px solid #e0e0e0;
+        }
+        thead th:last-child {
+            border-right: none;
+        }
+        tbody td {
+            padding: 6px 4px;
+            border-bottom: 1px solid #e9e9e9;
+            font-size: 9.5pt;
+            vertical-align: top;
+        }
+        tbody tr:nth-child(even) {
+            background-color: #f6f8fa;
+        }
+        tbody tr:nth-child(odd) {
+            background-color: #fff;
+        }
+        .status-badge {
+            padding: 1px 7px;
+            border-radius: 4px;
+            font-size: 8.5pt;
+            font-weight: 600;
+            text-transform: uppercase;
+            display: inline-block;
+            min-width: 60px;
+            text-align: center;
+            box-shadow: 0 1px 2px #ececec;
+        }
+        .status-en-attente { background-color: #fff3cd; color: #856404; }
+        .status-en-cours { background-color: #d1ecf1; color: #0c5460; }
+        .status-resolue { background-color: #d4edda; color: #155724; }
+        .sentiment-badge {
+            padding: 1px 7px;
+            border-radius: 4px;
+            font-size: 8.5pt;
+            font-weight: 600;
+            display: inline-block;
+            min-width: 50px;
+            text-align: center;
+            box-shadow: 0 1px 2px #ececec;
+        }
+        .sentiment-positive { background-color: #d4edda; color: #155724; }
+        .sentiment-neutral { background-color: #fff3cd; color: #856404; }
+        .sentiment-negative { background-color: #f8d7da; color: #721c24; }
+        .footer {
+            text-align: center;
+            margin-top: 2cm;
+            padding-top: 1cm;
+            border-top: 1px solid #ddd;
+            font-size: 9pt;
+            color: #666;
+        }
+        .description-cell {
+            max-width: 180px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>{{ title }}</h1>
-        <p>Date d'extraction: {{ "now"|date("d/m/Y H:i") }}</p>
+        <img src="{{ absolute_url(asset('images/logo-dark.png')) }}" alt="Logo OPTIRH">
+        <div class="header-content">
+            <h1>{{ title }}</h1>
+            <p>Date d'extraction: {{ "now"|date("d/m/Y H:i") }}</p>
+        </div>
     </div>
     
     <table>
         <thead>
             <tr>
-                <th>ID</th>
-                <th>Type</th>
-                <th>Description</th>
-                <th>Utilisateur</th>
-                <th>Date création</th>
-                <th>Date suppression</th>
-                <th>Statut</th>
-                <th>Sentiment</th>
+                <th width="13%">Type</th>
+                <th width="28%">Description</th>
+                <th width="13%">Utilisateur</th>
+                <th width="13%">Date création</th>
+                <th width="13%">Date suppression</th>
+                <th width="13%">Statut</th>
+                <th width="7%">Sentiment</th>
             </tr>
         </thead>
         <tbody>
             {% for archive in archives %}
                 <tr>
-                    <td>{{ archive.id }}</td>
                     <td>{{ archive.type }}</td>
-                    <td>{{ archive.description|slice(0, 100) }}{% if archive.description|length > 100 %}...{% endif %}</td>
+                    <td class="description-cell">{{ archive.description|slice(0, 100) }}{% if archive.description|length > 100 %}...{% endif %}</td>
                     <td>{{ archive.utilisateurNom }}</td>
                     <td>{{ archive.date|date('d/m/Y H:i') }}</td>
                     <td>{{ archive.deletedAt|date('d/m/Y H:i') }}</td>
-                    <td class="status-{{ archive.status|lower|replace({' ': '-'}) }}">
-                        {{ archive.status }}
+                    <td>
+                        <span class="status-badge status-{{ archive.status|lower|replace({' ': '-'}) }}">
+                            {{ archive.status }}
+                        </span>
                     </td>
                     <td>
                         {% if archive.sentimentLabel %}
-                            <span class="sentiment-{{ archive.sentimentLabel }}">
+                            <span class="sentiment-badge sentiment-{{ archive.sentimentLabel }}">
                                 {{ archive.sentimentLabel|trans }} ({{ archive.sentimentScore|number_format(2) }})
                             </span>
                         {% else %}
@@ -67,7 +166,7 @@
     </table>
     
     <div class="footer">
-        <p>Rapport généré par le système de gestion de réclamations</p>
+        <p>Rapport généré par le système de gestion de réclamations OPTIRH</p>
     </div>
 </body>
 </html>

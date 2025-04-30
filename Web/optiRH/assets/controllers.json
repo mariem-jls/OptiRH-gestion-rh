@@ -5,6 +5,12 @@
                 "enabled": true,
                 "fetch": "eager"
             }
+        },
+        "@symfony/ux-notify": {
+            "notify": {
+                "enabled": true,
+                "fetch": "eager"
+            }
         }
     },
     "entrypoints": []

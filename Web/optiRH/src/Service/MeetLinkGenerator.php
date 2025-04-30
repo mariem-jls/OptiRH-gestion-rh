@@ -1,22 +1,23 @@
 <?php
 namespace App\Service;
+use App\Entity\GsProjet\Project; 
 
 class MeetLinkGenerator
 {
-    private array $meetLinks = [
-        'https://meet.google.com/jdu-cqxr-bxw',
-        'https://meet.google.com/brd-dpym-pbm',
-        'https://meet.google.com/vqp-yiib-uqo',
-        'https://meet.google.com/erh-jdsv-ukw',
-        'https://meet.google.com/jby-qxqa-xqu',
-        'https://meet.google.com/ffa-dtzh-iaf',
-        'https://meet.google.com/gnt-zajy-iop',
-        'https://meet.google.com/xgy-tsur-udq',
-        'https://meet.google.com/qnz-svvn-dbo'
-    ];
+    private string $baseUrl = 'https://meet.jit.si/';
 
-    public function CreateMeetLink(): string
+    public function createMeetLink(Project $project): string
     {
-        return $this->meetLinks[array_rand($this->meetLinks)];
+        // Normalise le nom du projet pour l'URL (enlève les espaces et caractères spéciaux)
+        $projectName = preg_replace('/[^a-zA-Z0-9]/', '-', $project->getNom());
+        $projectName = strtolower($projectName);
+        
+        // Ajoute un identifiant unique court pour éviter les conflits
+        $uniqueId = bin2hex(random_bytes(2)); // 4 caractères hex
+        
+        // Crée le nom de salle : "nom-projet-1234"
+        $roomName = 'optirh-' . $projectName . '-' . $uniqueId;
+        
+        return $this->baseUrl . $roomName;
     }
 }

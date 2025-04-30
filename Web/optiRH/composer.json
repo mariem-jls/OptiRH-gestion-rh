@@ -29,6 +29,10 @@
         "hwi/oauth-bundle": "^2.3",
         "knplabs/knp-paginator-bundle": "^6.4",
         "knplabs/knp-snappy-bundle": "^1.10",
+
+        "paypal/rest-api-sdk-php": "^1.6",
+
+
         "league/oauth2-client": "^2.8",
         "lexik/form-filter-bundle": "^8.0",
         "phpdocumentor/reflection-docblock": "^5.3",
@@ -39,6 +43,7 @@
         "scheb/2fa-google-authenticator": "^7.9",
         "smalot/pdfparser": "^2.12",
         "stichoza/google-translate-php": "^5.2",
+        "google/auth": "^1.37",
         "stripe/stripe-php": "^17.1",
         "symfony/asset": "6.4.*",
         "symfony/cache": "6.4.*",
@@ -69,6 +74,7 @@
         "symfony/twig-bundle": "6.4.*",
         "symfony/twilio-notifier": "6.4.*",
         "symfony/ux-chartjs": "^2.24",
+        "symfony/ux-notify": "*",
         "symfony/validator": "6.4.*",
         "symfony/web-link": "6.4.*",
         "symfony/webpack-encore-bundle": "^2.2",
