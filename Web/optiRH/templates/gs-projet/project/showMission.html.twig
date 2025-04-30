@@ -218,37 +218,70 @@
                 });
             });
 // document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('sendMeetInvitation')?.addEventListener('click', function() {
-        // Envoi direct sans popup de confirmation
-        fetch('{{ path('gs-projet_project_mission_send_invitation', {'id': mission.id}) }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: '' // Corps vide car on n'envoie plus de lien
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Invitation envoyée',
-                    text: data.message,
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-            } else {
-                Swal.fire('Erreur', data.message, 'error');
+  document.getElementById('sendMeetInvitation')?.addEventListener('click', function() {
+    // Créer une popup pour sélectionner la date et l'heure de la réunion
+    Swal.fire({
+        title: 'Planifier la réunion',
+        html: `
+            <div style="margin-top: 20px;">
+                <label for="meetDateTime" style="display: block; margin-bottom: 8px; font-weight: bold;">Date et heure de la réunion:</label>
+                <input type="datetime-local" id="meetDateTime" class="swal2-input" required>
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Envoyer l\'invitation',
+        cancelButtonText: 'Annuler',
+        focusConfirm: false,
+        preConfirm: () => {
+            const dateTimeInput = Swal.getPopup().querySelector('#meetDateTime');
+            const meetDateTime = dateTimeInput.value;
+            
+            if (!meetDateTime) {
+                Swal.showValidationMessage('Veuillez sélectionner une date et une heure');
+                return false;
             }
-        })
-        .catch(error => {
-            Swal.fire('Erreur', 'Une erreur est survenue lors de l\'envoi', 'error');
-            console.error(error);
-        });
+            
+            return { meetDateTime: meetDateTime };
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const formData = new URLSearchParams();
+            formData.append('meetDateTime', result.value.meetDateTime);
+            
+            // Envoi avec la date/heure de la réunion
+            fetch('{{ path('gs-projet_project_mission_send_invitation', {'id': mission.id}) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Invitation envoyée',
+                        text: data.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    Swal.fire('Erreur', data.message, 'error');
+                }
+            })
+            .catch(error => {
+                Swal.fire('Erreur', 'Une erreur est survenue lors de l\'envoi', 'error');
+                console.error(error);
+            });
+        }
     });
+});
 });
     
     
     </script>
 {% endblock %}
+
+

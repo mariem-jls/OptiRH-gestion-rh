@@ -25,9 +25,7 @@ return [
     Lexik\Bundle\FormFilterBundle\LexikFormFilterBundle::class => ['all' => true],
     Vich\UploaderBundle\VichUploaderBundle::class => ['all' => true],
     HWI\Bundle\OAuthBundle\HWIOAuthBundle::class => ['all' => true],
-<<<<<<< HEAD
     Symfony\Bundle\MercureBundle\MercureBundle::class => ['all' => true],
     Symfony\UX\Notify\NotifyBundle::class => ['all' => true],
-=======
->>>>>>> 9311c898daedd16c5972753011db33bbc25a8349
+
 ];

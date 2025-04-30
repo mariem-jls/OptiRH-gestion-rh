@@ -166,7 +166,7 @@ public function createLateMissionNotification(Mission $mission): void
         'mission_id' => $mission->getId(),
     ]);
 }
-public function sendMeetInvitation(Mission $mission): void
+public function sendMeetInvitation(Mission $mission, \DateTimeInterface $meetDateTime = null): void
 {
     $assignedTo = $mission->getAssignedTo();
     
@@ -189,6 +189,7 @@ public function sendMeetInvitation(Mission $mission): void
                 'mission' => $mission,
                 'user' => $assignedTo,
                 'meetLink' => $mission->getMeetLink(),
+                'meetDateTime' => $meetDateTime, // Maintenant disponible via le paramètre
                 'deadline' => $mission->getDateTerminer(),
                 'project' => $mission->getProject(),
             ]);
@@ -197,7 +198,8 @@ public function sendMeetInvitation(Mission $mission): void
 
         $this->logger->info('Invitation Meet envoyée', [
             'mission_id' => $mission->getId(),
-            'user_email' => $assignedTo->getEmail()
+            'user_email' => $assignedTo->getEmail(),
+            'meet_date' => $meetDateTime ? $meetDateTime->format('Y-m-d H:i') : null
         ]);
 
     } catch (TransportExceptionInterface $e) {

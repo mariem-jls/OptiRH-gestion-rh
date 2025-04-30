@@ -23,13 +23,15 @@
                         <tr>
                             <td style="padding-top: 30px;">
                                 <p>Bonjour <strong>{{ user.nom }}</strong>,</p>
-                                <p>Vous êtes invité à rejoindre la réunion Google Meet pour la mission <strong>{{ mission.titre }}</strong>.</p>
+                                <p>Vous êtes invité à rejoindre la réunion  pour la mission <strong>{{ mission.titre }}</strong>.</p>
 
                                 <div style="background: #e6f4ea; border-left: 4px solid #34C759; border-radius: 6px; padding: 20px; margin: 20px 0;">
                                     <h3 style="margin: 0 0 10px; color: #34C759; font-size: 18px; text-align: center;">{{ mission.getProjectTitle() }}</h3>
                                     <p><strong>Lien de la réunion :</strong> <a href="{{ meetLink }}">{{ meetLink }}</a></p>
                                     <p><strong>Date limite mission :</strong> {{ deadline|date("d/m/Y") }}</p>
                                     <p><strong>Date d'envoi :</strong> {{ "now"|date("d/m/Y H:i") }}</p>
+                                    <p><strong>Date et heure de la réunion :</strong> {{ meetDateTime|date("d/m/Y H:i") }}</p>
+
                                 </div>
 
                                 <p>Veuillez cliquer sur le bouton ci-dessous pour rejoindre la réunion.</p>
