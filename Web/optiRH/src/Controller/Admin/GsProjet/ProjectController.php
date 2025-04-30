@@ -401,16 +401,26 @@ private function groupMissionsByStatus(array $missions): array
         ]);
     }
     #[Route('/mission/{id}/send-invitation', name: 'mission_send_invitation', methods: ['POST'])]
-    public function sendInvitation(Mission $mission, MissionNotificationService $notificationService): JsonResponse
+    public function sendInvitation(Request $request, Mission $mission, MissionNotificationService $notificationService): JsonResponse
     {
         if (!$this->isGranted('ROLE_ADMIN')) {
             return new JsonResponse(['success' => false, 'message' => 'Accès non autorisé'], 403);
         }
     
+        $meetDateTime = null;
+        if ($request->request->has('meetDateTime')) {
+            try {
+                $meetDateTime = new \DateTime($request->request->get('meetDateTime'));
+            } catch (\Exception $e) {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Format de date/heure invalide'
+                ], 400);
+            }
+        }
+    
         try {
-            // Plus besoin de récupérer le meetLink depuis la requête
-            // On utilise directement celui de la mission
-            $notificationService->sendMeetInvitation($mission);
+            $notificationService->sendMeetInvitation($mission, $meetDateTime);
     
             return new JsonResponse([
                 'success' => true,
@@ -422,5 +432,32 @@ private function groupMissionsByStatus(array $missions): array
                 'message' => 'Erreur lors de l\'envoi de l\'invitation: ' . $e->getMessage()
             ], 500);
         }
+    }
+    #[Route('/candidate/projects', name: 'candidate_projects', methods: ['GET'])]
+    public function projects(Request $request, ProjectRepository $projectRepository, MissionRepository $missionRepository): Response
+    {
+        $search = $request->query->get('search');
+        $projectId = $request->query->getInt('project_id');
+
+        // Récupérer les projets avec recherche
+        $projects = $projectRepository->findWithFilters($search, null, 1);
+
+        // Projet sélectionné
+        $selectedProject = null;
+        $groupedMissions = [];
+        if ($projectId) {
+            $selectedProject = $projectRepository->find($projectId);
+            if ($selectedProject) {
+                // Récupérer les missions groupées par statut
+                $groupedMissions = $missionRepository->findGroupedByStatus($selectedProject);
+            }
+        }
+
+        return $this->render('gs-projet/project/frontMiss.html.twig', [
+            'projects' => $projects,
+            'selected_project' => $selectedProject,
+            'grouped_missions' => $groupedMissions,
+            'search' => $search,
+        ]);
     }
 }
