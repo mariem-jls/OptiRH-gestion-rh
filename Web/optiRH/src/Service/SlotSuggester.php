@@ -17,7 +17,7 @@ class SlotSuggester
     public function suggestSlots(Demande $demande): array
     {
         $slots = [];
-        $today = new \DateTime();
+        $today = new \DateTime('now', new \DateTimeZone('Europe/Paris'));
         $endDate = (clone $today)->modify('+3 days');
         $availableHours = [
             9 => 'Matin',
@@ -41,8 +41,8 @@ class SlotSuggester
                 if (!$this->interviewRepository->isSlotTaken($slotDateTime)) {
                     $slots[] = (object) [
                         'dateTime' => $slotDateTime, // Instance de DateTime
-                        'period' => $period, // "Matin" ou "Après-midi"
-                        'priority' => $hour === 9 ? 'recommended' : 'available', // Garde la priorisation
+                        'period' => $period,
+                        'priority' => $hour === 9 ? 'recommended' : 'available',
                     ];
                 }
             }

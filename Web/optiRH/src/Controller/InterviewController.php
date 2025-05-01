@@ -9,12 +9,19 @@ use App\Repository\DemandeRepository;
 use App\Repository\InterviewRepository;
 use App\Service\SlotSuggester;
 use App\Service\EmailService;
+use App\Service\GoogleMeetService;
+use Google_Client;
+use Google_Service_Calendar;
+use Google_Service_Calendar_Event;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+
 
 class InterviewController extends AbstractController
 {
@@ -60,14 +67,93 @@ class InterviewController extends AbstractController
         $slots = $slotSuggester->suggestSlots($demande);
         $formattedSlots = array_map(function ($slot) {
             return [
-                'dateTime' => $slot->dateTime->format('c'),
+                'dateTime' => $slot->dateTime->format('Y-m-d H:i'),
                 'period' => $slot->period,
+                'priority' => $slot->priority,
             ];
         }, $slots);
 
         return new JsonResponse(['slots' => $formattedSlots]);
     }
 
+    private function getGoogleClient(Request $request): Google_Client
+    {
+        $session = $request->getSession();
+
+        $client = new Google_Client();
+        $client->setClientId($_ENV['GOOGLE_CLIENT_ID']);
+        $client->setClientSecret($_ENV['GOOGLE_CLIENT_SECRET']);
+        $client->setRedirectUri($_ENV['GOOGLE_REDIRECT_URI']);
+        $client->setScopes(['https://www.googleapis.com/auth/calendar']);
+        $client->setAccessType('offline');
+        $client->setPrompt('select_account consent');
+
+        $accessToken = $session->get('google_access_token');
+        if ($accessToken) {
+            $client->setAccessToken($accessToken);
+            if ($client->isAccessTokenExpired()) {
+                $newAccessToken = $client->fetchAccessTokenWithRefreshToken($client->getRefreshToken());
+                $session->set('google_access_token', $newAccessToken);
+            }
+        }
+
+        return $client;
+    }
+
+    #[Route('/auth/google', name: 'auth_google')]
+    public function auth(Request $request): JsonResponse
+    {
+        $client = $this->getGoogleClient($request);
+        $authUrl = $client->createAuthUrl();
+        return new JsonResponse(['authUrl' => $authUrl]);
+    }
+
+    #[Route('/auth/google/callback', name: 'auth_google_callback')]
+    public function callback(Request $request, DemandeRepository $demandeRepository, LoggerInterface $logger): RedirectResponse
+    {
+        $session = $request->getSession();
+        $client = $this->getGoogleClient($request);
+        $code = $request->query->get('code');
+        if (!$code) {
+            throw new \Exception('Code d’autorisation manquant');
+        }
+
+        $accessToken = $client->fetchAccessTokenWithAuthCode($code);
+        $session->set('google_access_token', $accessToken);
+
+        // Récupérer current_demande_id sans valeur par défaut
+        $demandeId = $session->get('current_demande_id');
+        if ($demandeId === null) {
+            $logger->error('current_demande_id non défini dans la session lors de la redirection après authentification Google');
+            // Rediriger vers une page par défaut ou afficher une erreur
+            return $this->redirectToRoute('admin_home');
+        }
+
+        $demande = $demandeRepository->find($demandeId);
+        if (!$demande) {
+            $logger->error('Demande non trouvée pour ID: ' . $demandeId . ' après authentification Google');
+            throw new \Exception('Demande non trouvée après authentification');
+        }
+
+        $logger->info('Redirection vers plan_interview avec demandeId: ' . $demandeId);
+        return $this->redirectToRoute('plan_interview', ['demandeId' => $demande->getId()]);
+    }
+
+    #[Route('/api/check-auth', name: 'api_check_auth', methods: ['GET'])]
+    public function checkAuth(Request $request): JsonResponse
+    {
+        $client = $this->getGoogleClient($request);
+        $authenticated = !empty($client->getAccessToken());
+        return new JsonResponse(['authenticated' => $authenticated]);
+    }
+    private function fetchGoogleMeetLink(): string
+    {
+        $meetLinks = [
+            'https://meet.google.com/bwh-asmq-agw',
+        ];
+
+        return $meetLinks[array_rand($meetLinks)];
+    }
     #[Route('/api/interview/select-slot/{demandeId}', name: 'api_select_slot', methods: ['POST'])]
     public function selectSlot(
         int $demandeId,
@@ -79,45 +165,79 @@ class InterviewController extends AbstractController
     ): JsonResponse {
         $this->denyAccessUnlessGranted('ROLE_ADMIN', null, 'Seuls les recruteurs peuvent planifier des entretiens.');
 
+        $session = $request->getSession();
+        $session->set('current_demande_id', $demandeId);
+
         $demande = $demandeRepository->find($demandeId);
         if (!$demande) {
+            $logger->error("Demande ID $demandeId non trouvée.");
             return new JsonResponse(['error' => 'Demande non trouvée'], 404);
         }
 
         $data = json_decode($request->getContent(), true);
-        if (!isset($data['dateTime']) || !isset($data['googleMeetLink'])) {
+        if (!isset($data['dateTime'])) {
+            $logger->error('Données incomplètes dans la requête : ' . json_encode($data));
             return new JsonResponse(['error' => 'Données incomplètes'], 400);
         }
 
         try {
-            $dateTime = new \DateTime($data['dateTime']);
+            $logger->info('DateTime reçu - DateTime reçu : ' . $data['dateTime']);
+            $dateTime = \DateTime::createFromFormat('Y-m-d H:i', $data['dateTime'], new \DateTimeZone('Europe/Paris'));
+            if ($dateTime === false) {
+                throw new \Exception('Format de dateTime invalide : ' . $data['dateTime']);
+            }
 
-            // Vérifier les conflits
             if ($interviewRepository->isSlotTaken($dateTime)) {
                 $logger->warning('Conflit d\'horaire détecté pour l\'entretien à ' . $dateTime->format('Y-m-d H:i'));
                 return new JsonResponse(['error' => 'Ce créneau horaire est déjà pris. Veuillez choisir un autre horaire.'], 409);
             }
 
+            // Simuler la génération d'un lien Google Meet
+            sleep(1); // Simule un délai réseau de 1 seconde
+            $meetLink = $this->fetchGoogleMeetLink();
+            $logger->info('Lien Google Meet généré : ' . $meetLink);
+
             $interview = new Interview();
             $interview->setDemande($demande)
                 ->setDateTime($dateTime)
-                ->setGoogleMeetLink($data['googleMeetLink']);
+                ->setGoogleMeetLink($meetLink);
 
             $interviewRepository->save($interview, true);
+            $logger->info('Entretien sauvegardé pour la demande ID: ' . $demandeId . ' à ' . $dateTime->format('Y-m-d H:i'));
 
-            $emailService->sendInterviewConfirmationEmail(
-                $demande->getEmail(),
-                $demande->getNomComplet(),
-                $demande->getOffre() ? $demande->getOffre()->getPoste() : 'Poste non spécifié',
-                $interview->getDateTime(),
-                $interview->getGoogleMeetLink()
-            );
+            $email = $demande->getEmail();
+            if (!$email || !preg_match('/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', $email)) {
+                $logger->warning("Email invalide pour la demande ID $demandeId : " . $email);
+                throw new \Exception('Adresse email du candidat invalide.');
+            }
+
+            try {
+                // On passe directement $dateTime, mais on s'assure que le template gère correctement la chaîne
+                $emailService->sendInterviewConfirmationEmail(
+                    $email,
+                    $demande->getNomComplet(),
+                    $demande->getOffre() ? $demande->getOffre()->getPoste() : 'Poste non spécifié',
+                    $interview->getDateTime(),
+                    $interview->getGoogleMeetLink()
+                );
+                $logger->info("Email de confirmation envoyé à $email pour un entretien le " . $dateTime->format('Y-m-d H:i'));
+            } catch (\Exception $e) {
+                $logger->warning('Erreur lors de l\'envoi de l\'email de confirmation à ' . $email . ': ' . $e->getMessage());
+            }
 
             $logger->info('Entretien planifié via API pour la demande ID: ' . $demandeId);
-            return new JsonResponse(['status' => 'success']);
+            return new JsonResponse([
+                'status' => 'success',
+                'interviewId' => $interview->getId(),
+                'dateTime' => $interview->getDateTime()->format('Y-m-d H:i'),
+                'googleMeetLink' => $meetLink
+            ]);
         } catch (\Exception $e) {
-            $logger->error('Erreur lors de la planification via API: ' . $e->getMessage());
-            return new JsonResponse(['error' => 'Erreur lors de la planification: ' . $e->getMessage()], 500);
+            $logger->error('Erreur lors de la planification via API pour demande ID ' . $demandeId . ': ' . $e->getMessage(), [
+                'exception' => $e,
+                'data' => $data,
+            ]);
+            return new JsonResponse(['error' => 'Erreur lors de la planification : ' . $e->getMessage()], 500);
         }
     }
 
