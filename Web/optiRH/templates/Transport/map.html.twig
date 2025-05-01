@@ -1,0 +1,71 @@
+{# templates/map/index.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        #map-container {
+            height: 500px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        #map {
+            height: 100%;
+            width: 100%;
+            background-color: #f8f9fa; /* Fond pendant le chargement */
+        }
+        /* Correction des tuiles manquantes */
+        .leaflet-tile-container img {
+            min-height: 100%;
+            min-width: 100%;
+            position: absolute;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div id="map-container">
+        <div id="map"></div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Configuration de la carte
+            const map = L.map('map', {
+                preferCanvas: true,  // Meilleure performance
+                fadeAnimation: false // Désactive les animations problématiques
+            }).setView([48.8566, 2.3522], 13); // Paris par défaut
+            
+            // Couche OpenStreetMap avec options
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+                noWrap: true,        // Empêche la répétition des tuiles
+                maxZoom: 19,
+                minZoom: 3,
+                subdomains: ['a','b','c']  // Répartition de charge
+            }).addTo(map);
+
+            // Marqueur avec popup
+            L.marker([48.8566, 2.3522]).addTo(map)
+                .bindPopup('<b>Paris</b><br>France')
+                .openPopup();
+
+            // Gestion du redimensionnement
+            function handleResize() {
+                setTimeout(() => {
+                    map.invalidateSize(true);
+                }, 100);
+            }
+
+            window.addEventListener('resize', handleResize);
+            
+            // Forcer le redimensionnement initial
+            handleResize();
+        });
+    </script>
+{% endblock %}

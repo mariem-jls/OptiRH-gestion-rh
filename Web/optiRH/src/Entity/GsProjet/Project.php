@@ -263,6 +263,17 @@ class Project
         $this->status = self::STATUS_ACTIVE;
     }
 }
-   
+#[ORM\Column(type: 'string', length: 255, nullable: true)]
+private ?string $meetLink = null;
+
+// Getters et Setters
+public function getMeetLink(): ?string {
+    return $this->meetLink;
+}
+
+public function setMeetLink(?string $meetLink): self {
+    $this->meetLink = $meetLink;
+    return $this;
+}
     
 }

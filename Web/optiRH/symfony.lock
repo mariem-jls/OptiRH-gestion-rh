@@ -41,6 +41,15 @@
     "endroid/qr-code-bundle": {
         "version": "5.0.2"
     },
+    "friendsofsymfony/elastica-bundle": {
+        "version": "6.6",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "main",
+            "version": "5.0",
+            "ref": "46c9cd2c1e07f0fcfd97e96f12b03b2e0845c4cd"
+        }
+    },
     "google/apiclient": {
         "version": "2.18",
         "recipe": {
@@ -52,6 +61,15 @@
         "files": [
             "./config/packages/google_apiclient.yaml"
         ]
+    },
+    "hwi/oauth-bundle": {
+        "version": "2.3",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "main",
+            "version": "2.0",
+            "ref": "20154480d558409ad3eb9de3644817c81fad2268"
+        }
     },
     "knplabs/knp-paginator-bundle": {
         "version": "v6.4.0"
@@ -183,6 +201,27 @@
             "ref": "fadbfe33303a76e25cb63401050439aa9b1a9c7f"
         }
     },
+    "symfony/mercure-bundle": {
+        "version": "0.3",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "0.3",
+            "ref": "528285147494380298f8f991ee8c47abebaf79db"
+        },
+        "files": [
+            "./config/packages/mercure.yaml"
+        ]
+    },
+    "symfony/mercure-notifier": {
+        "version": "6.4",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "5.3",
+            "ref": "98a27687305d236709390ff01d7a6a9818735b97"
+        }
+    },
     "symfony/messenger": {
         "version": "6.3",
         "recipe": {
@@ -311,6 +350,9 @@
     "symfony/ux-chartjs": {
         "version": "v2.24.0"
     },
+    "symfony/ux-notify": {
+        "version": "v2.24.0"
+    },
     "symfony/validator": {
         "version": "6.3",
         "recipe": {
@@ -381,5 +423,14 @@
     },
     "twig/extra-bundle": {
         "version": "v3.6.1"
+    },
+    "vich/uploader-bundle": {
+        "version": "2.6",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "main",
+            "version": "1.13",
+            "ref": "1b3064c2f6b255c2bc2f56461aaeb76b11e07e36"
+        }
     }
 }

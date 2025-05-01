@@ -27,21 +27,28 @@ use App\Service\TranslationService;
 use Psr\Log\LoggerInterface;
 use App\Service\InfobipSmsSender;
 use Lexik\Bundle\FormFilterBundle\Filter\FilterBuilderUpdaterInterface;
+use Symfony\Component\HttpClient\HttpClient;
 
 class ReclamationController extends AbstractController
 {
     private $logger;
     private $translationService;
     private $filterBuilderUpdater;
-
+    private $entityManager;
+    private $huggingFaceApiKey;
+    
     public function __construct(
         LoggerInterface $logger, 
         TranslationService $translationService, 
-        FilterBuilderUpdaterInterface $filterBuilderUpdater
+        FilterBuilderUpdaterInterface $filterBuilderUpdater,
+        EntityManagerInterface $entityManager,
+        string $huggingFaceApiKey
     ) {
         $this->logger = $logger;
         $this->translationService = $translationService;
         $this->filterBuilderUpdater = $filterBuilderUpdater;
+        $this->entityManager = $entityManager;
+        $this->huggingFaceApiKey = $huggingFaceApiKey;
     }
 
     #[Route('/reclamations', name: 'admin_reclamations', methods: ['GET'])]
@@ -112,7 +119,8 @@ class ReclamationController extends AbstractController
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
         
-        // Générer le PDF et le renvoyer comme réponse
+        $this->addFlash('success', 'PDF généré avec succès');
+        
         return new Response(
             $dompdf->output(),
             Response::HTTP_OK,
@@ -155,6 +163,8 @@ class ReclamationController extends AbstractController
             $request->query->getInt('page', 1),
             10
         );
+
+        $this->addFlash('info', 'Liste des archives chargée');
 
         return $this->render('reclamation/archive_list.html.twig', [
             'pagination' => $pagination,
@@ -208,7 +218,8 @@ class ReclamationController extends AbstractController
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
         
-        // Générer le PDF et le renvoyer comme réponse
+        $this->addFlash('success', 'PDF des archives généré avec succès');
+        
         return new Response(
             $dompdf->output(),
             Response::HTTP_OK,
@@ -299,8 +310,8 @@ class ReclamationController extends AbstractController
                         ));
 
                     $mailer->send($email);
+                    $this->addFlash('success', 'Email envoyé avec succès');
                 } catch (\Exception $e) {
-                    // Vous pouvez logger l'erreur si vous le souhaitez
                     $this->addFlash('warning', 'La réponse a été enregistrée mais l\'email n\'a pas pu être envoyé.');
                 }
             }
@@ -342,7 +353,8 @@ class ReclamationController extends AbstractController
         $writer = new PngWriter();
         $result = $writer->write($qrCode);
         
-        // Retourne l'image générée
+        $this->addFlash('success', 'QR Code généré avec succès');
+        
         return new Response($result->getString(), 200, [
             'Content-Type' => $result->getMimeType(),
             'Content-Disposition' => 'inline; filename="reclamation-details.png"'
@@ -421,7 +433,7 @@ class ReclamationController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $em->flush();
-            $this->addFlash('success', 'Réponse modifiée');
+            $this->addFlash('success', 'Réponse modifiée avec succès');
             return $this->redirectToRoute('admin_reclamation_reponses', ['id' => $reponse->getReclamation()->getId()]);
         }
 
@@ -453,25 +465,25 @@ class ReclamationController extends AbstractController
                 return new JsonResponse(['success' => true, 'message' => 'Réponse supprimée avec succès']);
             }
 
-            $this->addFlash('success', 'Réponse supprimée');
+            $this->addFlash('success', 'Réponse supprimée avec succès');
         }
 
         return $this->redirectToRoute('admin_reclamation_reponses', ['id' => $reponse->getReclamation()->getId()]);
     }
     
     #[Route('/reclamations/statistics', name: 'admin_reclamations_statistics', methods: ['GET'])]
-    public function statistics(Request $request, EntityManagerInterface $em): Response
+    public function statistics(Request $request, EntityManagerInterface $entityManager, PaginatorInterface $paginator): Response
     {
-        // Créer le form filter avec les mêmes filtres
+        // Créer le form filter
         $filterForm = $this->createForm(ReclamationFilterType::class);
         $filterForm->handleRequest($request);
         
         // Créer la requête de base pour les statistiques
-        $baseQueryBuilder = $em->getRepository(Reclamation::class)
+        $baseQueryBuilder = $entityManager->getRepository(Reclamation::class)
             ->createQueryBuilder('r');
             
         // Appliquer les filtres si le formulaire est soumis
-        if ($filterForm->isSubmitted()) {
+        if ($filterForm->isSubmitted() && $filterForm->isValid()) {
             $this->filterBuilderUpdater->addFilterConditions($filterForm, $baseQueryBuilder);
         }
         
@@ -482,7 +494,6 @@ class ReclamationController extends AbstractController
         $combinedQueryBuilder = clone $baseQueryBuilder;
         $resolvedQueryBuilder = clone $baseQueryBuilder;
         $totalQueryBuilder = clone $baseQueryBuilder;
-        $timelineQueryBuilder = clone $baseQueryBuilder;
         
         // Statistiques par statut
         $statusStats = $statusQueryBuilder
@@ -514,7 +525,7 @@ class ReclamationController extends AbstractController
             ->getQuery()
             ->getArrayResult();
         
-        // Calcul du taux de résolution basé sur les filtres
+        // Calcul du taux de résolution
         $totalReclamations = $totalQueryBuilder
             ->select('COUNT(r.id)')
             ->getQuery()
@@ -530,20 +541,38 @@ class ReclamationController extends AbstractController
         $resolutionRate = $totalReclamations > 0 ? 
             round(($resolvedReclamations / $totalReclamations) * 100, 2) : 0;
         
-        // Réclamations sur le temps (par mois) avec filtres
-        $reclamationsByMonth = $timelineQueryBuilder
-            ->select("CONCAT(YEAR(r.date), '-', MONTH(r.date)) as month, COUNT(r.id) as count")
-            ->groupBy('month')
-            ->orderBy('month', 'ASC')
-            ->getQuery()
-            ->getArrayResult();
+        // Réclamations sur le temps (par minute)
+        $conn = $entityManager->getConnection();
+        $timelineQuery = "
+            SELECT 
+                DATE_FORMAT(r.date, '%Y-%m-%d %H:%i') as datetime,
+                COUNT(r.id) as count
+            FROM reclamation r
+            GROUP BY datetime
+            ORDER BY datetime ASC
+        ";
         
-        $timelineData = $this->formatTimelineData($reclamationsByMonth);
+        try {
+            $stmt = $conn->prepare($timelineQuery);
+            $resultSet = $stmt->executeQuery();
+            $reclamationsByTime = $resultSet->fetchAllAssociative();
+            
+            // Format pour la timeline
+            $timelineData = $this->formatTimelineData($reclamationsByTime);
+        } catch (\Exception $e) {
+            $this->logger->error('Erreur lors de la récupération des données temporelles: ' . $e->getMessage());
+            $timelineData = [['Datetime', 'Nombre de réclamations']]; // Array vide mais valide pour le graphique
+        }
         
-        // Conversion des données pour Google Chart
+        // Conversion des données pour les graphiques
         $statusData = $this->formatChartData($statusStats, 'status', 'count');
         $sentimentData = $this->formatChartData($sentimentStats, 'sentiment', 'count');
         $typeData = $this->formatChartData($typeStats, 'type', 'count');
+        
+        // Vérification des données
+        if (empty($statusData) || empty($sentimentData) || empty($typeData)) {
+            $this->addFlash('warning', 'Aucune donnée disponible pour les statistiques.');
+        }
         
         return $this->render('reclamation/statistics.html.twig', [
             'statusData' => json_encode($statusData),
@@ -556,9 +585,7 @@ class ReclamationController extends AbstractController
             'hasFilters' => $filterForm->isSubmitted()
         ]);
     }
-  
-
-
+    
     /**
      * Formate les données pour les graphiques
      */
@@ -567,30 +594,49 @@ class ReclamationController extends AbstractController
         $formattedData = [];
         $formattedData[] = [$labelKey, 'Nombre'];
         
+        if (empty($data)) {
+            return $formattedData;
+        }
+        
         foreach ($data as $item) {
-            $formattedData[] = [$item[$labelKey] ?? 'Non défini', (int)$item[$valueKey]];
+            if (!isset($item[$labelKey]) || !isset($item[$valueKey])) {
+                continue;
+            }
+            
+            $label = $item[$labelKey] ?? 'Non défini';
+            $value = (int)$item[$valueKey];
+            
+            if ($value > 0) {
+                $formattedData[] = [$label, $value];
+            }
         }
         
         return $formattedData;
     }
-
+    
     /**
      * Formate les données pour les graphiques en timeline
      */
     private function formatTimelineData(array $data): array
     {
         $formattedData = [];
-        $formattedData[] = ['Mois', 'Nombre de réclamations'];
+        $formattedData[] = ['Datetime', 'Nombre de réclamations'];
+        
+        if (empty($data)) {
+            return $formattedData;
+        }
         
         foreach ($data as $item) {
-            // Formater le mois pour affichage (ex: 2025-4 -> Avril 2025)
-            $parts = explode('-', $item['month']);
-            $year = $parts[0];
-            $month = $parts[1];
-            $dateObj = new \DateTime("$year-$month-01");
-            $formattedMonth = $dateObj->format('M Y'); // Abr. mois et année
+            if (!isset($item['datetime']) || !isset($item['count'])) {
+                continue;
+            }
             
-            $formattedData[] = [$formattedMonth, (int)$item['count']];
+            $datetime = $item['datetime'];
+            $count = (int)$item['count'];
+            
+            if ($count > 0) {
+                $formattedData[] = [$datetime, $count];
+            }
         }
         
         return $formattedData;
@@ -651,5 +697,197 @@ class ReclamationController extends AbstractController
                 'error' => 'Service de traduction temporairement indisponible. Veuillez réessayer plus tard.'
             ], 500);
         }
+    }
+
+    #[Route('/reclamation/generate-ai-response', name: 'admin_generate_ai_response', methods: ['POST'])]
+    public function generateAIResponse(Request $request): JsonResponse
+    {
+        try {
+            // Vérification de la clé API
+            if (empty($this->huggingFaceApiKey)) {
+                throw new \RuntimeException('La clé API Hugging Face n\'est pas configurée');
+            }
+
+            // Vérification du format de la clé API
+            if (!preg_match('/^hf_[a-zA-Z0-9]{32,}$/', $this->huggingFaceApiKey)) {
+                throw new \RuntimeException('Format de clé API Hugging Face invalide');
+            }
+
+            $data = json_decode($request->getContent(), true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new \InvalidArgumentException('JSON invalide : ' . json_last_error_msg());
+            }
+
+            $reclamationContent = $data['content'] ?? '';
+            $responseType = $data['type'] ?? 'professional';
+            $context = $data['context'] ?? '';
+
+            // Validation plus stricte des entrées
+            if (empty($reclamationContent)) {
+                throw new \InvalidArgumentException('Le contenu de la réclamation est requis');
+            }
+
+            if (!in_array($responseType, ['professional', 'empathetic', 'solution'])) {
+                $responseType = 'professional';
+            }
+
+            // Construction du prompt selon le type de réponse
+            $prompt = match ($responseType) {
+                'empathetic' => "Tu es un assistant RH professionnel et empathique. Réponds à cette réclamation de manière compréhensive et rassurante :\n\n",
+                'solution' => "Tu es un assistant RH orienté solutions. Propose une réponse concrète et détaillée à cette réclamation :\n\n",
+                default => "Tu es un assistant RH professionnel. Formule une réponse claire et professionnelle à cette réclamation :\n\n",
+            };
+
+            $prompt .= "Réclamation : {$reclamationContent}\n";
+            if (!empty($context)) {
+                $prompt .= "Contexte supplémentaire : {$context}\n";
+            }
+            $prompt .= "\nRéponse :";
+
+            // Configuration du client HTTP
+            $client = HttpClient::create([
+                'timeout' => 30,
+                'verify_peer' => false
+            ]);
+
+            $this->logger->info('Envoi de la requête à Hugging Face', [
+                'prompt_length' => strlen($prompt),
+                'response_type' => $responseType,
+                'has_context' => !empty($context),
+                'api_key_prefix' => substr($this->huggingFaceApiKey, 0, 5) . '...' // Log partiel de la clé pour le debugging
+            ]);
+
+            $startTime = microtime(true);
+            $maxRetries = 2;
+            $retryCount = 0;
+            $lastException = null;
+
+            // Logique de retry manuelle
+            while ($retryCount <= $maxRetries) {
+                try {
+                    $response = $client->request('POST', 'https://api-inference.huggingface.co/models/mistralai/Mixtral-8x7B-Instruct-v0.1', [
+                        'headers' => [
+                            'Authorization' => 'Bearer ' . $this->huggingFaceApiKey,
+                            'Content-Type' => 'application/json',
+                        ],
+                        'json' => [
+                            'inputs' => $prompt,
+                            'parameters' => [
+                                'max_length' => 800,
+                                'temperature' => 0.7,
+                                'top_p' => 0.9,
+                                'return_full_text' => false
+                            ]
+                        ]
+                    ]);
+
+                    $statusCode = $response->getStatusCode();
+                    
+                    if ($statusCode === 200) {
+                        break; // Sort de la boucle si la requête réussit
+                    }
+                    
+                    // Gestion spécifique des erreurs HTTP
+                    $responseContent = $response->getContent(false);
+                    $this->logger->error('Erreur API Hugging Face', [
+                        'status_code' => $statusCode,
+                        'response' => $responseContent,
+                        'attempt' => $retryCount + 1
+                    ]);
+
+                    if ($statusCode === 403) {
+                        throw new \RuntimeException('Erreur d\'authentification : Vérifiez votre clé API Hugging Face');
+                    } elseif ($statusCode === 429) {
+                        throw new \RuntimeException('Limite de requêtes dépassée : Veuillez réessayer plus tard');
+                    } else {
+                        throw new \RuntimeException("Erreur API (HTTP $statusCode) : $responseContent");
+                    }
+                    
+                } catch (\Exception $e) {
+                    $lastException = $e;
+                    $retryCount++;
+                    
+                    if ($retryCount <= $maxRetries) {
+                        $this->logger->warning('Tentative de retry après erreur', [
+                            'attempt' => $retryCount,
+                            'error' => $e->getMessage()
+                        ]);
+                        // Attente exponentielle entre les retries (1s, 2s, 4s)
+                        sleep(pow(2, $retryCount - 1));
+                    }
+                }
+            }
+
+            // Si on arrive ici avec une exception, c'est que tous les retries ont échoué
+            if ($lastException !== null) {
+                throw $lastException;
+            }
+
+            $requestDuration = microtime(true) - $startTime;
+
+            $result = $response->toArray();
+            
+            $this->logger->info('Réponse reçue de Hugging Face', [
+                'duration' => round($requestDuration, 2),
+                'status_code' => $statusCode,
+                'retry_count' => $retryCount
+            ]);
+
+            // Extraction et validation de la réponse générée
+            $generatedResponse = '';
+            if (isset($result[0]['generated_text'])) {
+                $generatedResponse = $result[0]['generated_text'];
+            } elseif (isset($result['generated_text'])) {
+                $generatedResponse = $result['generated_text'];
+            } else {
+                throw new \RuntimeException('Format de réponse invalide');
+            }
+
+            // Nettoyage et validation de la réponse
+            $generatedResponse = trim($generatedResponse);
+            if (empty($generatedResponse)) {
+                throw new \RuntimeException('La réponse générée est vide');
+            }
+
+            if (strlen($generatedResponse) < 10) {
+                throw new \RuntimeException('La réponse générée est trop courte');
+            }
+
+            return new JsonResponse([
+                'success' => true,
+                'response' => $generatedResponse,
+                'metadata' => [
+                    'type' => $responseType,
+                    'timestamp' => (new \DateTime())->format('Y-m-d H:i:s'),
+                    'model' => 'Mixtral-8x7B-Instruct-v0.1',
+                    'response_time' => round($requestDuration, 2),
+                    'retry_count' => $retryCount
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            $this->logger->error('Erreur lors de la génération de la réponse IA', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            $errorMessage = 'Une erreur est survenue lors de la génération de la réponse';
+            if ($this->getParameter('kernel.debug')) {
+                $errorMessage .= ' : ' . $e->getMessage();
+            }
+
+            return new JsonResponse([
+                'success' => false,
+                'error' => $errorMessage
+            ], 500);
+        }
+    }
+
+    private function analyzeSentiment(string $text): string
+    {
+        // Utiliser le service SentimentAnalysisService à la place
+        $sentimentAnalyzer = $this->container->get(SentimentAnalysisService::class);
+        $result = $sentimentAnalyzer->analyze($text);
+        return $result['label'];
     }
 }

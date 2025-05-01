@@ -338,6 +338,92 @@
         </div>
     </div>
 </div>
+<<<<<<< HEAD
+
+<!-- Section Réclamations -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-chart-pie me-2"></i>Statistiques des réclamations
+                </h6>
+            </div>
+            <div class="card-body">
+                <!-- KPI majeur: Taux de résolution -->
+                <div class="key-metric">
+                    <h4 class="metric-value">{{ resolutionRate }}%</h4>
+                    <p class="metric-label">Taux de résolution global</p>
+                </div>
+                
+                <!-- Première rangée de graphiques -->
+                <div class="row gy-4 mb-4">
+                    <!-- Statistiques par statut -->
+                    <div class="col-xl-6 col-lg-6">
+                        <div class="stats-card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Statut des réclamations</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="statusChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Statistiques par sentiment -->
+                    <div class="col-xl-6 col-lg-6">
+                        <div class="stats-card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Sentiment des réclamations</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="sentimentChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Deuxième rangée de graphiques -->
+                <div class="row gy-4">
+                    <!-- Statistiques par type -->
+                    <div class="col-xl-6 col-lg-6 mt-4">
+                        <div class="stats-card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Types de réclamations</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="typeChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Évolution dans le temps -->
+                    <div class="col-xl-6 col-lg-6 mt-4">
+                        <div class="stats-card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Évolution des réclamations</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="timelineChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+=======
+>>>>>>> 9311c898daedd16c5972753011db33bbc25a8349
 {% endblock %}
 
 {% block javascript %}

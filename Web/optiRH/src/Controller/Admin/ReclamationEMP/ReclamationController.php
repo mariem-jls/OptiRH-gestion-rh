@@ -143,28 +143,49 @@ class ReclamationController extends AbstractController
         $options = new \Dompdf\Options();
         $options->set('isHtml5ParserEnabled', true);
         $options->set('isRemoteEnabled', true);
+        $options->set('defaultFont', 'Arial');
+        $options->set('isPhpEnabled', true);
+        $options->set('chroot', $this->getParameter('kernel.project_dir') . '/public');
+        $options->setIsRemoteEnabled(true);
         
         $dompdf = new \Dompdf\Dompdf($options);
+        $dompdf->set_option('enable_css', true);
+        $dompdf->set_option('enable_javascript', true);
+        $dompdf->set_option('enable_remote', true);
+
+        // Préparer le logo en base64
+        $logoPath = $this->getParameter('kernel.project_dir') . '/public/images/logo-dark.png';
+        $logoBase64 = base64_encode(file_get_contents($logoPath));
         
         // Générer le HTML pour le PDF
-        $html = $this->renderView('front/reclamation/pdf_list.html.twig', [
+        $html = $this->renderView('reclamation/pdf_list_employee.html.twig', [
             'reclamations' => $reclamations,
-            'user' => $user,
             'title' => 'Mes réclamations',
-            'filters' => $filterForm->getData()
+            'filters' => $filterForm->getData(),
+            'logo' => $logoBase64,
+            'company_name' => 'OptiRH',
+            'current_date' => new \DateTime(),
+            'user' => $user,
+            'total_reclamations' => count($reclamations),
+            'page_num' => 1,
+            'page_count' => 1,
+            'status_counts' => [
+                'pending' => count(array_filter($reclamations, fn($r) => $r->getStatus() === Reclamation::STATUS_PENDING)),
+                'in_progress' => count(array_filter($reclamations, fn($r) => $r->getStatus() === Reclamation::STATUS_IN_PROGRESS)),
+                'resolved' => count(array_filter($reclamations, fn($r) => $r->getStatus() === Reclamation::STATUS_RESOLVED))
+            ]
         ]);
         
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
         
-        // Générer le PDF et le renvoyer comme réponse
         return new Response(
             $dompdf->output(),
             Response::HTTP_OK,
             [
                 'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'attachment; filename="mes-reclamations.pdf"'
+                'Content-Disposition' => 'attachment; filename="mes-reclamations_' . date('Y-m-d') . '.pdf"'
             ]
         );
     }
@@ -230,6 +251,23 @@ class ReclamationController extends AbstractController
             
             $em->persist($reclamation);
             $em->flush();
+            
+            // Envoi du SMS de notification
+            try {
+                $message = sprintf(
+                    "Une nouvelle réclamation a été ajoutée - Type: %s, Status: %s",
+                    $reclamation->getType(),
+                    $reclamation->getStatus()
+                );
+                
+                $smsSender->sendSms('95168384', $message);
+                $this->logger->info('SMS envoyé avec succès pour la réclamation', [
+                    'reclamation_id' => $reclamation->getId()
+                ]);
+            } catch (\Exception $e) {
+                $this->logger->error('Erreur lors de l\'envoi du SMS: ' . $e->getMessage());
+                // On ne bloque pas le processus si le SMS échoue
+            }
             
             $this->addFlash('success', 'Votre réclamation a été enregistrée avec succès.');
             return $this->redirectToRoute('front_reclamations');
@@ -464,10 +502,18 @@ class ReclamationController extends AbstractController
         }
 
         $rating = $request->request->get('rating');
+        $commentaire = $request->request->get('commentaire');
 
         if ($rating >= 1 && $rating <= 5) {
             $reponse->setRating((int)$rating);
-            $reclamation->setStatus(Reclamation::STATUS_RESOLVED);
+            
+            // Gérer le commentaire si le rating est 1 ou 2
+            if ($rating <= 2 && $commentaire) {
+                $reponse->setCommentaire($commentaire);
+                $reclamation->setStatus(Reclamation::STATUS_IN_PROGRESS);
+            } else if ($rating >= 3) {
+                $reclamation->setStatus(Reclamation::STATUS_RESOLVED);
+            }
             
             $em->flush();
             $this->addFlash('success', 'Merci pour votre évaluation !');

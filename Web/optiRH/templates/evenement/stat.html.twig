@@ -1,0 +1,428 @@
+{% extends 'partials/layout-vertical.html.twig' %}
+
+{% block title %}Statistiques des Événements{% endblock %}
+
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', { 
+        
+        
+    }) }}
+{% endblock %}
+
+{% block css %}
+    {{ parent() }}
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #727cf5;
+            --secondary: #6c757d;
+            --accent: #0acf97;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --warning: #f8961e;
+            --light: #f8f9fa;
+            --dark: #212529;
+        }
+        
+        .stats-container {
+            padding: 1.5rem;
+            background-color: #f8fafc;
+        }
+        
+        .stats-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+        
+        .stats-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stats-header p {
+            color: #6c757d;
+            font-size: 1.1rem;
+        }
+        
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .kpi-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            border-left: 4px solid var(--primary);
+            position: relative;
+        }
+        
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+        }
+        
+        .kpi-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 0.5rem 0;
+        }
+        
+        .kpi-label {
+            color: #6c757d;
+            font-size: 1rem;
+        }
+        
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .chart-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+        }
+        
+        .chart-title {
+            color: var(--dark);
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .chart-title i {
+            margin-right: 10px;
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+        
+        .chart-wrapper {
+            position: relative;
+            height: 350px;
+            width: 100%;
+        }
+        
+        .full-width-chart {
+            grid-column: 1 / -1;
+        }
+        
+        @media (max-width: 768px) {
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .btn-back {
+            margin-right: 15px;
+            color: #6c757d;
+            border: 1px solid #dee2e6;
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.25rem;
+            transition: all 0.3s;
+        }
+        .btn-back:hover {
+            background-color: #f8f9fa;
+            color: #495057;
+        }
+    </style>
+{% endblock %}
+
+{% block javascript %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+{% endblock %}
+
+{% block body %}
+<div class="stats-container">
+<a href="{{ path('app_evenement_index') }}" class="btn-back">Retour à la liste</a>
+    <div class="stats-header">
+        <h1>Statistiques des Événements</h1>
+        <p>Visualisation interactive des données de votre plateforme</p>
+    </div>
+
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-value">{{ (modaliteData.data|reduce((carry, item) => carry + item)) }}</div>
+            <div class="kpi-label">Événements au total</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-value">{{ (statusData.data|reduce((carry, item) => carry + item)) }}</div>
+            <div class="kpi-label">Événements analysés</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-value">{{ typeData.labels|length }}</div>
+            <div class="kpi-label">Catégories différentes</div>
+        </div>
+    </div>
+
+    <div class="chart-grid">
+        <!-- Modalité Chart -->
+        <div class="chart-container">
+            <h2 class="chart-title"><i class="fas fa-laptop-house"></i> Répartition par Modalité</h2>
+            <div class="chart-wrapper">
+                <canvas id="modaliteChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Statut Chart -->
+        <div class="chart-container">
+            <h2 class="chart-title"><i class="fas fa-calendar-check"></i> Répartition par Statut</h2>
+            <div class="chart-wrapper">
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Type Chart (full width) -->
+    <div class="chart-container full-width-chart">
+        <h2 class="chart-title"><i class="fas fa-tags"></i> Répartition par Type d'Événement</h2>
+        <div class="chart-wrapper">
+            <canvas id="typeChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Colors configuration
+    const colors = {
+        primary: '#727cf5',
+        secondary: '#6c757d',
+        accent: '#0acf97',
+        success: '#4cc9f0',
+        danger: '#f72585',
+        warning: '#f8961e'
+    };
+
+    // Modalité Chart (Doughnut with icons)
+    const modaliteCtx = document.getElementById('modaliteChart').getContext('2d');
+    new Chart(modaliteCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ modaliteData.labels|json_encode|raw }},
+            datasets: [{
+                data: {{ modaliteData.data|json_encode|raw }},
+                backgroundColor: [
+                    colors.primary,
+                    colors.accent,
+                    colors.success
+                ],
+                borderWidth: 0,
+                hoverOffset: 15
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            cutout: '75%',
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true,
+                        pointStyle: 'circle',
+                        font: {
+                            size: 14
+                        }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    bodyFont: {
+                        size: 14
+                    },
+                    cornerRadius: 8,
+                    displayColors: false
+                },
+                datalabels: {
+                    color: '#fff',
+                    font: {
+                        weight: 'bold',
+                        size: 14
+                    },
+                    formatter: (value) => {
+                        return value > 0 ? value + '%' : '';
+                    }
+                }
+            }
+        },
+        plugins: [ChartDataLabels]
+    });
+
+    // Status Chart (Polar Area)
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    new Chart(statusCtx, {
+        type: 'polarArea',
+        data: {
+            labels: {{ statusData.labels|json_encode|raw }},
+            datasets: [{
+                data: {{ statusData.data|json_encode|raw }},
+                backgroundColor: [
+                    colors.success,
+                    colors.warning,
+                    colors.danger
+                ],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true,
+                        font: {
+                            size: 14
+                        }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    bodyFont: {
+                        size: 14
+                    },
+                    cornerRadius: 8,
+                    displayColors: false
+                },
+                datalabels: {
+                    color: '#fff',
+                    font: {
+                        weight: 'bold',
+                        size: 14
+                    },
+                    formatter: (value) => {
+                        return value > 0 ? value : '';
+                    }
+                }
+            },
+            scales: {
+                r: {
+                    grid: {
+                        color: 'rgba(0,0,0,0.1)'
+                    },
+                    ticks: {
+                        display: false
+                    }
+                }
+            }
+        },
+        plugins: [ChartDataLabels]
+    });
+
+    // Type Chart (Bar with animation)
+    const typeCtx = document.getElementById('typeChart').getContext('2d');
+    
+    // Generate gradient
+    const gradient = typeCtx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, colors.primary);
+    gradient.addColorStop(1, colors.accent);
+    
+    new Chart(typeCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ typeData.labels|json_encode|raw }},
+            datasets: [{
+                data: {{ typeData.data|json_encode|raw }},
+                backgroundColor: gradient,
+                hoverBackgroundColor: colors.secondary,
+                borderColor: 'transparent',
+                borderWidth: 0,
+                borderRadius: 8,
+                barPercentage: 0.7
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    bodyFont: {
+                        size: 14
+                    },
+                    cornerRadius: 8,
+                    displayColors: false
+                },
+                datalabels: {
+                    anchor: 'end',
+                    align: 'top',
+                    color: colors.dark,
+                    font: {
+                        weight: 'bold',
+                        size: 12
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false,
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: '#6c757d',
+                        font: {
+                            size: 12
+                        }
+                    }
+                },
+                y: {
+                    grid: {
+                        color: 'rgba(0,0,0,0.05)',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: '#6c757d',
+                        font: {
+                            size: 12
+                        },
+                        padding: 10
+                    },
+                    beginAtZero: true
+                }
+            },
+            animation: {
+                delay: (context) => {
+                    return context.dataIndex * 100;
+                }
+            }
+        },
+        plugins: [ChartDataLabels]
+    });
+});
+</script>
+{% endblock %}

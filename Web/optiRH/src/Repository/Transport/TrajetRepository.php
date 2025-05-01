@@ -51,6 +51,47 @@ class TrajetRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function getReservationStatsByPoints(): array
+{
+    return $this->createQueryBuilder('t')
+        ->select(
+            't.depart as pointDepart',
+            't.arrive as pointArrive',
+            'COUNT(rt.id) as reservationCount'
+        )
+        ->leftJoin(
+            'App\Entity\Transport\ReservationTrajet', 
+            'rt', 
+            'WITH', 
+            'rt.trajet = t.id'
+        )
+        ->groupBy('t.depart, t.arrive')
+        ->orderBy('reservationCount', 'DESC')
+        ->getQuery()
+        ->getResult();
+        
+}
+public function getTopStations(int $limit = 5): array
+{
+    return $this->createQueryBuilder('t')
+        ->select('
+            t.station as nomStation,
+            COUNT(r.id) as totalReservations,
+            COUNT(DISTINCT t.id) as nbTrajets
+        ')
+        ->leftJoin(
+            'App\Entity\Transport\ReservationTrajet', 
+            'r', 
+            'WITH', 
+            'r.trajet = t.id'
+        )
+        ->groupBy('t.station')
+        ->orderBy('totalReservations', 'DESC')
+        ->setMaxResults($limit)
+        ->getQuery()
+        ->getResult();
+}
 //    /**
 //     * @return Trajet[] Returns an array of Trajet objects
 //     */

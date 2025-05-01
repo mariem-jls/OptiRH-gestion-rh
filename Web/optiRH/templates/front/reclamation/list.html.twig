@@ -411,9 +411,7 @@
                 <h5 class="mb-0">Gestion des réclamations <span class="optirh-brand">OPTIRH</span></h5>
             </div>
             <div class="d-flex gap-2 mt-2 mt-md-0">
-                <a href="{{ path('front_reclamations_pdf') }}" class="btn btn-success btn-sm">
-                    <i class="fas fa-file-pdf me-1"></i> Exporter PDF
-                </a>
+                
                 <a href="{{ path('front_add_reclamation') }}" class="btn btn-primary btn-sm">
                     <i class="fas fa-plus me-1"></i> Nouvelle réclamation
                 </a>
@@ -504,7 +502,7 @@
                             <th>Date</th>
                             <th>Statut</th>
                             <th>Sentiment</th>
-                            <th>QR Code</th>
+                            <th>Pièces jointes</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -533,40 +531,31 @@
                                 </td>
                                 <td>{{ reclamation.date|date('d/m/Y H:i') }}</td>
                                 <td>
-                                    {% set status_class = 'status-' ~ reclamation.status|lower|replace({' ': '-', 'é': 'e'}) %}
-                                    <span class="status-badge {{ status_class }}">
-                                        {% if reclamation.status == 'En attente' %}⏳
-                                        {% elseif reclamation.status == 'En cours' %}🔄
-                                        {% elseif reclamation.status == 'Résolue' %}✅{% endif %}
+                                    <span class="badge bg-{{ reclamation.getStatusColor(reclamation.status) }}">
                                         {{ reclamation.status }}
                                     </span>
                                 </td>
                                 <td>
-                                    <div class="sentiment-display">
-                                        {% if reclamation.sentimentLabel %}
-                                            {% set sentiment_type = reclamation.sentimentLabel %}
-                                            <span class="sentiment-bubble {{ sentiment_type }}"></span>
-                                            <span class="sentiment-label {{ sentiment_type }}">
-                                                {% if sentiment_type == 'positive' %}😊 Positif
-                                                {% elseif sentiment_type == 'neutral' %}😐 Neutre
-                                                {% elseif sentiment_type == 'negative' %}😠 Négatif{% endif %}
-                                            </span>
-                                            <span class="sentiment-score">{{ reclamation.sentimentScore|number_format(2) }}</span>
-                                            {% if reclamation.sentimentScore < 0.3 %}
-                                                <span class="priority-flag">⚠️ Urgent</span>
-                                            {% endif %}
-                                        {% else %}
-                                            <span class="sentiment-bubble unknown"></span>
-                                            <span class="sentiment-label unknown">🤔 Non analysé</span>
-                                        {% endif %}
-                                    </div>
+                                    {% if reclamation.sentimentLabel %}
+                                        <span class="badge bg-{{ reclamation.sentimentLabel == 'positive' ? 'success' : (reclamation.sentimentLabel == 'negative' ? 'danger' : 'warning') }}">
+                                            {{ reclamation.sentimentLabel|trans }} ({{ reclamation.sentimentScore|number_format(2) }})
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Non analysé</span>
+                                    {% endif %}
                                 </td>
                                 <td>
-                                    <a href="{{ path('front_reclamation_qr_code', {'id': reclamation.id}) }}" 
-                                       class="btn btn-info btn-sm"
-                                       title="Voir le QR Code">
-                                        <i class="fas fa-qrcode"></i>
-                                    </a>
+                                    {% if reclamation.documentName %}
+                                        <a href="{{ vich_uploader_asset(reclamation, 'documentFile') }}" 
+                                           class="btn btn-sm btn-outline-primary" 
+                                           target="_blank"
+                                           title="Voir la pièce jointe">
+                                            <i class="fas fa-file-alt me-1"></i>
+                                            {{ reclamation.documentName|slice(0, 20) }}{% if reclamation.documentName|length > 20 %}...{% endif %}
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">Aucune pièce jointe</span>
+                                    {% endif %}
                                 </td>
                                 <td class="action-buttons">
                                     <a href="{{ path('front_reclamation_reponses', {'id': reclamation.id}) }}" 

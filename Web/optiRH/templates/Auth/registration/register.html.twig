@@ -3,34 +3,139 @@
 	<head>
 		{{ include('partials/title-meta.html.twig', {title: 'Inscription'}) }}
 		{{ include('partials/head-css.html.twig') }}
-        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+		<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+		<!-- Custom styles for professional look -->
+		<style>
+			.card {
+				border: none;
+				border-radius: 12px;
+				box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+				overflow: hidden;
+			}
+			.card-body {
+				padding: 2.5rem;
+			}
+			.logo-img {
+				max-height: 120px;
+				transition: transform 0.3s ease;
+			}
+			.logo-img:hover {
+				transform: scale(1.05);
+			}
+			.form-control {
+				border-radius: 6px;
+				padding: 0.75rem 1rem;
+				transition: border-color 0.2s, box-shadow 0.2s;
+			}
+			.form-control:focus {
+				border-color: #1a73e8;
+				box-shadow: 0 0 0 0.2rem rgba(26, 115, 232, 0.25);
+			}
+			.btn-primary {
+				border-radius: 6px;
+				padding: 0.75rem;
+				font-weight: 500;
+				transition: background-color 0.2s, transform 0.2s;
+			}
+			.btn-primary:hover {
+				transform: translateY(-1px);
+			}
+			.google-btn {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				background-color: #ffffff;
+				border: 1px solid #dadce0;
+				border-radius: 6px;
+				color: #1a73e8;
+				font-weight: 500;
+				padding: 0.75rem;
+				text-decoration: none;
+				transition: background-color 0.2s, box-shadow 0.2s, transform 0.2s;
+				width: 100%;
+				max-width: 400px;
+				margin: 1.5rem auto;
+				box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+			}
+			.google-btn:hover {
+				background-color: #f8f9fa;
+				box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+				transform: translateY(-1px);
+			}
+			.google-btn img {
+				width: 20px;
+				height: 20px;
+				margin-right: 0.75rem;
+			}
+			.google-btn span {
+				font-size: 1rem;
+			}
+			.alert {
+				border-radius: 6px;
+				margin-bottom: 1.5rem;
+			}
+			.text-muted a {
+				color: #1a73e8;
+				font-weight: 500;
+			}
+			.text-muted a:hover {
+				text-decoration: underline;
+			}
+			.form-check-label {
+				cursor: pointer;
+			}
+			.text-danger {
+				font-size: 0.875rem;
+				margin-top: 0.25rem;
+			}
+			@media(max-width: 576px) {
+				.card-body {
+					padding: 1.5rem;
+				}
+				.google-btn {
+					max-width: 100%;
+				}
+			}
+		</style>
 	</head>
 
 	<body class="authentication-bg authentication-bg-pattern">
-		<div class="account-pages mt-2 mb-5">
+		<div class="account-pages">
 			<div class="container">
 				<div class="row justify-content-center">
-					<div class="col-md-8 col-lg-6 col-xl-4">
-						<div class="text-center">
-							<a href="index">
-								<img src="/images/logo-dark.png" alt="logo" height="140" class="mx-auto">
-							</a>
+					<div
+						class="col-md-8 col-lg-6 col-xl-4">
+						<!-- Logo -->
+						<div class="text-center mb-1">
+							<img src="/images/logo-dark.png" alt="Logo de l'application" height="120" class="logo-img mx-auto">
 						</div>
-						<div class="card mt-2">
-							<div class="card-body p-4">
+
+						<!-- Card -->
+						<div class="card">
+							<div class="card-body">
 								<div class="text-center mb-4">
-									<h4 class="text-uppercase mt-0">Inscription</h4>
+									<h4 class="text-uppercase mt-0 fw-bold">Inscription</h4>
 								</div>
 
+								<!-- Error Messages -->
 								{% for flash_error in app.flashes('verify_email_error') %}
-									<div class="alert alert-danger" role="alert">{{ flash_error }}</div>
+									<div class="alert alert-danger alert-dismissible fade show" role="alert">
+										{{ flash_error }}
+										<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+									</div>
+								{% endfor %}
+								{% for message in app.flashes('error') %}
+									<div class="alert alert-danger alert-dismissible fade show" role="alert">
+										{{ message }}
+										<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+									</div>
 								{% endfor %}
 
-								{{ form_start(registrationForm, {'attr': {'action': '#', 'novalidate': 'novalidate'}}) }}
-
+								<!-- Registration Form -->
+								{{ form_start(registrationForm, {'attr': {'aria-labelledby': 'register-form-title'}}) }}
 								<div class="mb-3">
 									<label for="{{ registrationForm.nom.vars.id }}" class="form-label">Nom complet</label>
-									{{ form_widget(registrationForm.nom, {'attr': {'class': 'form-control'}}) }}
+									{{ form_widget(registrationForm.nom, {'attr': {'class': 'form-control', 'placeholder': 'Entrez votre nom complet', 'required': 'required'}}) }}
 									{% if form_errors(registrationForm.nom) %}
 										<div class="text-danger">{{ form_errors(registrationForm.nom) }}</div>
 									{% endif %}
@@ -38,7 +143,7 @@
 
 								<div class="mb-3">
 									<label for="{{ registrationForm.email.vars.id }}" class="form-label">Adresse e-mail</label>
-									{{ form_widget(registrationForm.email, {'attr': {'class': 'form-control'}}) }}
+									{{ form_widget(registrationForm.email, {'attr': {'class': 'form-control', 'placeholder': 'Entrez votre e-mail', 'required': 'required'}}) }}
 									{% if form_errors(registrationForm.email) %}
 										<div class="text-danger">{{ form_errors(registrationForm.email) }}</div>
 									{% endif %}
@@ -46,17 +151,16 @@
 
 								<div class="mb-3">
 									<label for="{{ registrationForm.plainPassword.vars.id }}" class="form-label">Mot de passe</label>
-									{{ form_widget(registrationForm.plainPassword, {'attr': {'class': 'form-control'}}) }}
+									{{ form_widget(registrationForm.plainPassword, {'attr': {'class': 'form-control', 'placeholder': 'Entrez votre mot de passe', 'required': 'required'}}) }}
 									{% if form_errors(registrationForm.plainPassword) %}
 										<div class="text-danger">{{ form_errors(registrationForm.plainPassword) }}</div>
 									{% endif %}
 								</div>
 
-                                <div class="cf-turnstile" data-sitekey="{{ sitekey }}" data-theme="light"></div>
-                                {% for message in app.flashes('error') %}
-                                    <div class="alert alert-danger">{{ message }}</div>
-                                {% endfor %}
+								<!-- Cloudflare Turnstile -->
+								<div class="mb-3 cf-turnstile" data-sitekey="{{ sitekey }}" data-theme="light"></div>
 
+								<!-- Terms Checkbox -->
 								<div class="mb-3">
 									<div class="form-check">
 										{{ form_widget(registrationForm.agreeTerms, {'attr': {'class': 'form-check-input'}}) }}
@@ -69,28 +173,31 @@
 									</div>
 								</div>
 
-								<div class="mb-3 text-center d-grid">
+								<!-- Submit Button -->
+								<div class="mb-3 d-grid">
 									<button class="btn btn-primary" type="submit">S'inscrire</button>
 								</div>
-
 								{{ form_end(registrationForm) }}
 
+								<!-- Google Registration Button -->
+								<div class="text-center">
+									<a href="{{ path('hwi_oauth_service_redirect', {'service': 'google'}) }}" class="google-btn" role="button" aria-label="S'inscrire avec Google">
+										<img src="https://developers.google.com/identity/images/g-logo.png" alt="Logo Google">
+										<span>S'inscrire avec Google</span>
+									</a>
+								</div>
+								<div class="row mt-3">
+									<div class="col-12 text-center text-muted">
+										<p class="mb-0 text-dark ">
+											Déjà un compte ?
+											<a href="{{ path('app_login') }}" class="fw-medium">Se connecter</a>
+										</p>
+									</div>
+								</div>
 							</div>
 							<!-- end card-body -->
 						</div>
 						<!-- end card -->
-
-						<div class="row mt-3">
-							<div class="col-12 text-center">
-								<p class="text-muted">Déjà un compte?
-									<a href="login" class="text-dark ms-1">
-										<b>Se connecter</b>
-									</a>
-								</p>
-							</div>
-							<!-- end col -->
-						</div>
-						<!-- end row -->
 					</div>
 					<!-- end col -->
 				</div>
@@ -106,4 +213,3 @@
 		<script src="/js/app.min.js"></script>
 	</body>
 </html>
-

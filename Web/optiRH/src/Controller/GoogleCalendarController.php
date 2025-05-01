@@ -2,398 +2,279 @@
 
 namespace App\Controller;
 
-use Google\Client as Google_Client;
-use Google\Service\Calendar as Google_Service_Calendar;
-use Psr\Log\LoggerInterface;
+use DateTimeInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
-use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Google\Client;
+use Google\Service\Calendar;
+use Google\Service\Calendar\Event;
+use Psr\Log\LoggerInterface;
+use DateTime;
+use DateTimeZone;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
+use App\Entity\Project;
+use App\Repository\GsProjet\ProjectRepository;
 
-/**
- * Controller for Google Calendar integration, handling OAuth authentication and event retrieval.
- */
 class GoogleCalendarController extends AbstractController
 {
-    private LoggerInterface $logger;
+    private Client $client;
 
-    public function __construct(LoggerInterface $logger)
-    {
-        $this->logger = $logger;
+    public function __construct(
+        private readonly LoggerInterface $logger,
+        private readonly RequestStack $requestStack,
+        private readonly MailerInterface $mailer,
+        private readonly ProjectRepository $projectRepository
+    ) {
+        $this->client = new Client();
+        $this->client->setApplicationName('Optirh');
+
+        // Validate environment variables
+        $clientId = $_ENV['GOOGLE_CLIENT_ID'] ?? null;
+        $clientSecret = $_ENV['GOOGLE_CLIENT_SECRET'] ?? null;
+        $redirectUri = $_ENV['GOOGLE_REDIRECT_URI'] ?? null;
+
+        if (!$clientId || !$clientSecret || !$redirectUri) {
+            throw new \RuntimeException(
+                'Missing Google API credentials. Ensure GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and GOOGLE_REDIRECT_URI are set in .env.'
+            );
+        }
+
+        $this->client->setClientId($clientId);
+        $this->client->setClientSecret($clientSecret);
+        $this->client->setRedirectUri($redirectUri);
+        $this->client->addScope(Calendar::CALENDAR);
+        $this->client->setAccessType('offline');
+        $this->client->setPrompt('select_account consent');
+        $this->client->setIncludeGrantedScopes(true);
+
+        // Log the redirect URI for debugging
+        $this->logger->debug('Google Client initialized with redirect URI: ' . $redirectUri);
     }
 
-    /**
-     * Initializes the Google Client with OAuth settings.
-     */
-    private function initializeGoogleClient(): Google_Client
+    #[Route('/connect/google-calendar', name: 'google_calendar_connect')]
+    public function connect(): RedirectResponse
     {
-        $client = new Google_Client();
-        $client->setApplicationName('MissionProjet');
-        $client->setScopes([Google_Service_Calendar::CALENDAR_READONLY]);
-        $client->setClientId($this->getParameter('GOOGLE_CLIENT_ID'));
-        $client->setClientSecret($this->getParameter('GOOGLE_CLIENT_SECRET'));
-        $redirectUri = $this->getParameter('GOOGLE_REDIRECT_URI');
-        $client->setRedirectUri($redirectUri);
-        $client->setAccessType('offline');
-        $client->setPrompt('select_account consent');
-        $client->setIncludeGrantedScopes(true);
-
-        $this->logger->debug('Initialized Google Client', [
-            'redirect_uri' => $redirectUri,
-            'scopes' => $client->getScopes(),
-            'client_id' => substr($this->getParameter('GOOGLE_CLIENT_ID'), 0, 10) . '...'
-        ]);
-
-        return $client;
-    }
-
-    /**
-     * Starts the OAuth authentication flow by generating an authorization URL.
-     */
-    #[Route('/google-calendar/auth', name: 'google_calendar_auth', methods: ['GET'])]
-    public function auth(Request $request): JsonResponse
-    {
-        $session = $request->getSession();
-        
-        if (!$session->isStarted()) {
-            $session->start();
-            $this->logger->debug('Started new session', ['session_id' => $session->getId()]);
-        }
-
-        $session->remove('oauth_state');
-        $session->remove('google_access_token');
-        $session->remove('google_refresh_token');
-
-        $client = $this->initializeGoogleClient();
-
-        $state = bin2hex(random_bytes(32));
-        $session->set('oauth_state', $state);
-        $session->save();
-        $client->setState($state);
-
-        $authUrl = $client->createAuthUrl();
-
-        $this->logger->info('Auth: Initiated OAuth flow', [
-            'state' => $state,
-            'session_id' => $session->getId(),
-            'auth_url' => $authUrl
-        ]);
-
-        return new JsonResponse([
-            'authUrl' => $authUrl,
-            'session_id' => $session->getId()
-        ]);
-    }
-
-    /**
-     * Handles the OAuth callback, validates the state, and stores the access token.
-     */
-    #[Route('/google-calendar/callback', name: 'google_calendar_callback', methods: ['GET'])]
-    public function callback(Request $request, SessionInterface $session): JsonResponse
-    {
-        if (!$session->isStarted()) {
-            $session->start();
-            $this->logger->warning('Session was not started in callback', ['session_id' => $session->getId()]);
-        }
-
-        $sessionState = $session->get('oauth_state');
-        $requestState = $request->query->get('state');
-        $queryParams = $request->query->all();
-        $callbackUrl = $request->getUri();
-
-        $this->logger->debug('Callback: State validation', [
-            'session_state' => $sessionState ?? 'null',
-            'request_state' => $requestState ?? 'null',
-            'session_id' => $session->getId(),
-            'callback_url' => $callbackUrl,
-            'query_params' => $queryParams
-        ]);
-
-        if (!$requestState || !$sessionState || !hash_equals($sessionState, $requestState)) {
-            $session->remove('oauth_state');
-            $this->logger->warning('Invalid OAuth state parameter', [
-                'session_state' => $sessionState,
-                'request_state' => $requestState
-            ]);
-            return new JsonResponse([
-                'error' => 'Invalid state parameter',
-                'solution' => 'Restart the OAuth flow by visiting /google-calendar/auth'
-            ], 400);
-        }
-
-        $session->remove('oauth_state');
-
-        $client = $this->initializeGoogleClient();
-        $code = $request->query->get('code');
-
-        if (!$code) {
-            $this->logger->error('No OAuth code provided in callback', ['query' => $queryParams]);
-            return new JsonResponse(['error' => 'No code provided'], 400);
-        }
-
         try {
-            $accessToken = $client->fetchAccessTokenWithAuthCode($code);
-            $this->logger->debug('OAuth callback response', [
-                'access_token' => $accessToken,
-                'session_id' => $session->getId()
-            ]);
-
-            if (isset($accessToken['error'])) {
-                $this->logger->error('OAuth token error', [
-                    'error' => $accessToken['error'],
-                    'description' => $accessToken['error_description'] ?? null,
-                    'callback_url' => $callbackUrl
-                ]);
-                return new JsonResponse([
-                    'error' => $accessToken['error'],
-                    'description' => $accessToken['error_description'] ?? null
-                ], 400);
+            // Log the redirect URI being used
+            $this->logger->debug('Redirect URI for OAuth: ' . $this->client->getRedirectUri());
+            $authUrl = $this->client->createAuthUrl();
+            if (!$authUrl) {
+                throw new \Exception('Failed to create auth URL');
             }
-
-            if (empty($accessToken['access_token'])) {
-                $this->logger->error('Invalid token response', ['response' => $accessToken]);
-                return new JsonResponse(['error' => 'Invalid token response'], 400);
-            }
-
-            $session->set('google_access_token', $accessToken);
-            $session->save();
-
-            if (!empty($accessToken['refresh_token'])) {
-                $session->set('google_refresh_token', $accessToken['refresh_token']);
-                $cache = new FilesystemAdapter();
-                $cacheItem = $cache->getItem('google_refresh_token_' . $session->getId());
-                $cacheItem->set($accessToken['refresh_token']);
-                $cacheItem->expiresAfter(86400 * 30);
-                $cache->save($cacheItem);
-                $this->logger->info('Stored refresh token', [
-                    'session_id' => $session->getId(),
-                    'cache_key' => 'google_refresh_token_' . $session->getId()
-                ]);
-            }
-
-            return new JsonResponse([
-                'status' => 'success',
-                'expires_in' => $accessToken['expires_in'] ?? null
-            ]);
-
-        } catch (\Google\Service\Exception $e) {
-            $this->logger->error('Google API error during OAuth callback', [
-                'message' => $e->getMessage(),
-                'errors' => $e->getErrors(),
-                'code' => $e->getCode(),
-                'callback_url' => $callbackUrl
-            ]);
-            return new JsonResponse([
-                'error' => 'Google API error',
-                'message' => $e->getMessage(),
-                'code' => $e->getCode()
-            ], 500);
+            return $this->redirect($authUrl);
         } catch (\Exception $e) {
-            $this->logger->error('OAuth callback failed', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'callback_url' => $callbackUrl
-            ]);
-            return new JsonResponse([
-                'error' => 'Authentication failed',
-                'message' => $e->getMessage()
-            ], 500);
+            $this->logger->error('Google Calendar connect error: ' . $e->getMessage());
+            $this->addFlash('error', 'Erreur lors de la génération de l\'URL d\'authentification: ' . $e->getMessage());
+            return $this->redirectToRoute('gs-projet_project_app_calendar');
         }
     }
 
-    /**
-     * Retrieves Google Calendar events for the authenticated user.
-     */
-    #[Route('/google-calendar/events', name: 'google_calendar_events', methods: ['GET'])]
-    public function getEvents(Request $request, SessionInterface $session): JsonResponse
+    #[Route('/google-calendar/callback', name: 'google_calendar_callback')]
+    public function callback(Request $request): RedirectResponse
     {
-        if (!$session->isStarted()) {
-            $session->start();
-            $this->logger->warning('Session was not started in getEvents', ['session_id' => $session->getId()]);
-        }
-
-        if (!$session->has('google_access_token')) {
-            $this->logger->warning('No access token in session', ['session_id' => $session->getId()]);
-            return new JsonResponse([
-                'error' => 'Non authentifié',
-                'solution' => $this->generateUrl('google_calendar_auth')
-            ], 401);
-        }
-
-        $client = $this->initializeGoogleClient();
-        $accessToken = $session->get('google_access_token');
-        $client->setAccessToken($accessToken);
-
-        $this->logger->debug('GetEvents: Access token', [
-            'access_token' => $accessToken,
-            'session_id' => $session->getId()
-        ]);
-
-        if ($client->isAccessTokenExpired()) {
-            try {
-                $refreshToken = $session->get('google_refresh_token') ??
-                    (new FilesystemAdapter())->getItem('google_refresh_token_' . $session->getId())->get();
-
-                if (!$refreshToken) {
-                    $this->logger->error('No refresh token available', ['session_id' => $session->getId()]);
-                    throw new \RuntimeException('No refresh token available');
-                }
-
-                $newToken = $client->fetchAccessTokenWithRefreshToken($refreshToken);
-                $this->logger->debug('Token refresh response', [
-                    'new_token' => $newToken,
-                    'session_id' => $session->getId()
-                ]);
-
-                if (isset($newToken['error'])) {
-                    $this->logger->error('Token refresh failed', [
-                        'error' => $newToken['error'],
-                        'description' => $newToken['error_description'] ?? null
-                    ]);
-                    throw new \RuntimeException($newToken['error_description'] ?? $newToken['error']);
-                }
-
-                $session->set('google_access_token', $newToken);
-                $session->save();
-                if (!empty($newToken['refresh_token'])) {
-                    $session->set('google_refresh_token', $newToken['refresh_token']);
-                    $cache = new FilesystemAdapter();
-                    $cacheItem = $cache->getItem('google_refresh_token_' . $session->getId());
-                    $cacheItem->set($newToken['refresh_token']);
-                    $cacheItem->expiresAfter(86400 * 30);
-                    $cache->save($cacheItem);
-                }
-            } catch (\Exception $e) {
-                $this->logger->error('Token refresh failed', [
-                    'message' => $e->getMessage(),
-                    'session_id' => $session->getId()
-                ]);
-                $session->remove('google_access_token');
-                $session->remove('google_refresh_token');
-                return new JsonResponse([
-                    'error' => 'Non authentifié',
-                    'message' => $e->getMessage(),
-                    'solution' => $this->generateUrl('google_calendar_auth')
-                ], 401);
-            }
+        if ($request->query->has('error')) {
+            $error = $request->query->get('error');
+            $this->logger->error('Google Calendar auth error: ' . $error);
+            $this->addFlash('error', 'Erreur d\'autorisation Google Calendar: ' . $error);
+            return $this->redirectToRoute('gs-projet_project_app_calendar');
         }
 
         try {
-            $service = new Google_Service_Calendar($client);
+            $code = $request->query->get('code');
+            if (!$code) {
+                throw new \Exception('Authorization code missing');
+            }
+            $token = $this->client->fetchAccessTokenWithAuthCode($code);
+            if (isset($token['error'])) {
+                throw new \Exception('Token fetch error: ' . $token['error']);
+            }
+            $this->getSession()->set('google_calendar_token', $token);
+            $this->addFlash('success', 'Connexion réussie à Google Calendar');
+        } catch (\Exception $e) {
+            $this->logger->error('Google Calendar callback error: ' . $e->getMessage());
+            $this->addFlash('error', 'Échec de la connexion à Google Calendar: ' . $e->getMessage());
+        }
+
+        return $this->redirectToRoute('gs-projet_project_app_calendar');
+    }
+
+    #[Route('/google-calendar/events', name: 'google_calendar_events')]
+    public function listEvents(): Response
+    {
+        if (!$this->getSession()->has('google_calendar_token')) {
+            return $this->redirectToRoute('google_calendar_connect');
+        }
+
+        try {
+            $this->initializeClient();
+            $service = new Calendar($this->client);
+            
             $events = $service->events->listEvents('primary', [
-                'timeMin' => (new \DateTime())->format(\DateTime::RFC3339),
-                'timeMax' => (new \DateTime('+1 month'))->format(\DateTime::RFC3339),
-                'singleEvents' => true,
+                'maxResults' => 10,
                 'orderBy' => 'startTime',
-                'maxResults' => 100
+                'singleEvents' => true,
+                'timeMin' => (new DateTime('now', new DateTimeZone('UTC')))->format('c'),
             ]);
 
-            $formattedEvents = [];
-            foreach ($events->getItems() as $event) {
-                $formattedEvents[] = [
-                    'id' => $event->getId(),
-                    'title' => $event->getSummary() ?? 'Sans titre',
-                    'start' => $event->getStart()->getDateTime() ?: $event->getStart()->getDate(),
-                    'end' => $event->getEnd()->getDateTime() ?: $event->getEnd()->getDate(),
-                    'description' => $event->getDescription() ?? '',
-                    'location' => $event->getLocation() ?? '',
-                    'creator' => $event->getCreator() ? $event->getCreator()->getEmail() : null,
-                    'source' => 'google',
-                    'backgroundColor' => '#4285F4',
-                    'borderColor' => '#4285F4'
-                ];
+            return $this->render('calendar/google_events.html.twig', [
+                'events' => $events->getItems(),
+            ]);
+        } catch (\Exception $e) {
+            $this->logger->error('Google Calendar events error: ' . $e->getMessage());
+            $this->addFlash('error', 'Erreur lors de la récupération des événements: ' . $e->getMessage());
+            return $this->redirectToRoute('gs-projet_project_app_calendar');
+        }
+    }
+
+    #[Route('/google-calendar/add-event', name: 'google_calendar_add_event')]
+    public function addEvent(Request $request): Response
+    {
+        if (!$this->getSession()->has('google_calendar_token')) {
+            return $this->redirectToRoute('google_calendar_connect');
+        }
+
+        try {
+            $this->initializeClient();
+            
+            if ($request->isMethod('POST')) {
+                $service = new Calendar($this->client);
+                
+                $event = new Event([
+                    'summary' => $request->request->get('title'),
+                    'description' => $request->request->get('description'),
+                    'start' => $this->createEventDateTime($request->request->get('start_time')),
+                    'end' => $this->createEventDateTime($request->request->get('end_time')),
+                ]);
+
+                $service->events->insert('primary', $event);
+                $this->addFlash('success', 'Événement ajouté avec succès');
+                return $this->redirectToRoute('google_calendar_events');
+            }
+        } catch (\Exception $e) {
+            $this->logger->error('Google Calendar add event error: ' . $e->getMessage());
+            $this->addFlash('error', 'Erreur lors de l\'ajout de l\'événement: ' . $e->getMessage());
+        }
+
+        return $this->render('calendar/add_event.html.twig');
+    }
+
+    #[Route('/google-calendar/create-meet/{projectId}', name: 'google_calendar_create_meet')]
+    public function createMeet(int $projectId): RedirectResponse
+    {
+        if (!$this->getSession()->has('google_calendar_token')) {
+            $this->addFlash('error', 'Veuillez connecter votre compte Google Calendar');
+            return $this->redirectToRoute('google_calendar_connect');
+        }
+
+        try {
+            $this->initializeClient();
+            $service = new Calendar($this->client);
+
+            // Fetch project using ProjectRepository
+            $project = $this->projectRepository->find($projectId);
+            if (!$project) {
+                $this->addFlash('error', 'Projet non trouvé');
+                return $this->redirectToRoute('gs-projet_project_show', ['id' => $projectId]);
             }
 
-            $this->logger->info('Retrieved Google Calendar events', [
-                'count' => count($formattedEvents),
-                'session_id' => $session->getId()
+            // Create Google Meet event
+            $startTime = new DateTime('+1 hour'); // Schedule 1 hour from now
+            $endTime = (clone $startTime)->modify('+1 hour');
+
+            $event = new Event([
+                'summary' => 'Réunion pour le projet: ' . $project->getNom(),
+                'description' => 'Réunion d\'équipe pour discuter du projet ' . $project->getNom(),
+                'start' => $this->createEventDateTime($startTime->format('Y-m-d H:i:s')),
+                'end' => $this->createEventDateTime($endTime->format('Y-m-d H:i:s')),
+                'conferenceData' => [
+                    'createRequest' => [
+                        'requestId' => uniqid(),
+                        'conferenceSolutionKey' => ['type' => 'hangoutsMeet'],
+                    ],
+                ],
+                'attendees' => array_map(fn($member) => ['email' => $member->getEmail()], $project->getMembers()->toArray()),
             ]);
 
-            return new JsonResponse([
-                'events' => $formattedEvents,
-                'timeZone' => $events->getTimeZone()
-            ]);
+            $event = $service->events->insert('primary', $event, ['conferenceDataVersion' => 1]);
 
-        } catch (\Google\Service\Exception $e) {
-            $this->logger->error('Google API error fetching events', [
-                'message' => $e->getMessage(),
-                'errors' => $e->getErrors(),
-                'code' => $e->getCode(),
-                'session_id' => $session->getId()
-            ]);
-            return new JsonResponse([
-                'error' => 'Échec de la récupération des événements',
-                'message' => $e->getMessage(),
-                'code' => $e->getCode()
-            ], 500);
+            // Send email to members
+            $meetLink = $event->getHangoutLink();
+            foreach ($project->getMembers() as $member) {
+                $email = (new Email())
+                    ->from('no-reply@optirh.com')
+                    ->to($member->getEmail())
+                    ->subject('Invitation à la réunion Google Meet pour ' . $project->getNom())
+                    ->html(
+                        '<p>Bonjour ' . $member->getNom() . ',</p>' .
+                        '<p>Une réunion a été planifiée pour le projet <strong>' . $project->getNom() . '</strong>.</p>' .
+                        '<p><strong>Date et heure:</strong> ' . $startTime->format('d/m/Y H:i') . '</p>' .
+                        '<p><strong>Lien Google Meet:</strong> <a href="' . $meetLink . '">' . $meetLink . '</a></p>' .
+                        '<p>Cordialement,<br>L\'équipe Optirh</p>'
+                    );
+
+                $this->mailer->send($email);
+            }
+
+            $this->addFlash('success', 'Réunion Google Meet créée et invitations envoyées');
         } catch (\Exception $e) {
-            $this->logger->error('Failed to fetch events', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'session_id' => $session->getId()
-            ]);
-            return new JsonResponse([
-                'error' => 'Échec de la récupération des événements',
-                'message' => $e->getMessage()
-            ], 500);
+            $this->logger->error('Google Calendar create meet error: ' . $e->getMessage());
+            $this->addFlash('error', 'Erreur lors de la création de la réunion: ' . $e->getMessage());
+        }
+
+        return $this->redirectToRoute('gs-projet_project_show', ['id' => $projectId]);
+    }
+
+    #[Route('/google-calendar/disconnect', name: 'google_calendar_disconnect')]
+    public function disconnect(): RedirectResponse
+    {
+        $this->getSession()->remove('google_calendar_token');
+        $this->addFlash('success', 'Déconnexion réussie');
+        return $this->redirectToRoute('gs-projet_project_app_calendar');
+    }
+
+    private function initializeClient(): void
+    {
+        $token = $this->getSession()->get('google_calendar_token');
+        if (!$token) {
+            throw new \Exception('No Google Calendar token found in session');
+        }
+
+        $this->client->setAccessToken($token);
+
+        if ($this->client->isAccessTokenExpired()) {
+            try {
+                $refreshToken = $token['refresh_token'] ?? null;
+                if (!$refreshToken) {
+                    throw new \Exception('No refresh token available');
+                }
+                $newToken = $this->client->fetchAccessTokenWithRefreshToken($refreshToken);
+                if (isset($newToken['error'])) {
+                    throw new \Exception('Token refresh error: ' . $newToken['error']);
+                }
+                $this->getSession()->set('google_calendar_token', $newToken);
+            } catch (\Exception $e) {
+                $this->logger->error('Token refresh error: ' . $e->getMessage());
+                $this->getSession()->remove('google_calendar_token');
+                throw new \Exception('Failed to refresh access token');
+            }
         }
     }
 
-    /**
-     * Provides debug information about the session and cache.
-     */
-    #[Route('/google-calendar/debug', name: 'google_calendar_debug', methods: ['GET'])]
-    public function debug(SessionInterface $session): JsonResponse
+    private function createEventDateTime(string $datetime): array
     {
-        if (!$session->isStarted()) {
-            $session->start();
-            $this->logger->warning('Session was not started in debug', ['session_id' => $session->getId()]);
-        }
-
-        $cache = new FilesystemAdapter();
-        $refreshTokenCache = $cache->getItem('google_refresh_token_' . $session->getId());
-
-        return new JsonResponse([
-            'session' => [
-                'id' => $session->getId(),
-                'access_token' => $session->has('google_access_token'),
-                'refresh_token' => $session->has('google_refresh_token'),
-                'oauth_state' => $session->has('oauth_state')
-            ],
-            'cache' => [
-                'refresh_token' => $refreshTokenCache->isHit(),
-                'refresh_token_value' => $refreshTokenCache->isHit() ? 'present' : 'not present'
-            ],
-            'environment' => [
-                'redirect_uri' => $this->getParameter('GOOGLE_REDIRECT_URI'),
-                'client_id_set' => !empty($this->getParameter('GOOGLE_CLIENT_ID')),
-                'scopes' => [Google_Service_Calendar::CALENDAR_READONLY]
-            ]
-        ]);
+        return [
+            'dateTime' => (new DateTime($datetime))->format(DateTimeInterface::RFC3339),
+            'timeZone' => 'Europe/Paris',
+        ];
     }
 
-    /**
-     * Disconnects the Google Calendar integration by clearing tokens.
-     */
-    #[Route('/google-calendar/disconnect', name: 'google_calendar_disconnect', methods: ['GET'])]
-    public function disconnect(SessionInterface $session): JsonResponse
+    private function getSession()
     {
-        if (!$session->isStarted()) {
-            $session->start();
-            $this->logger->warning('Session was not started in disconnect', ['session_id' => $session->getId()]);
-        }
-
-        $cache = new FilesystemAdapter();
-        $cache->delete('google_refresh_token_' . $session->getId());
-
-        $session->remove('google_access_token');
-        $session->remove('google_refresh_token');
-        $session->remove('oauth_state');
-
-        $this->logger->info('Google Calendar disconnected', ['session_id' => $session->getId()]);
-
-        return new JsonResponse(['status' => 'success']);
+        return $this->requestStack->getSession();
     }
 }

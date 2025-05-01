@@ -49,8 +49,7 @@ public function findByCombinedFilters(?string $searchTerm, ?string $modalite, ?s
 
     if ($searchTerm) {
         $qb->andWhere('e.titre LIKE :term')
-           ->orWhere('e.description LIKE :term')
-           ->setParameter('term', '%' . $searchTerm . '%');
+           ->setParameter('term', "%$searchTerm%");
     }
 
     if ($modalite) {
@@ -75,11 +74,65 @@ public function findByTitleLieuModalite(?string $searchTerm)
         $qb->andWhere('e.titre LIKE :term')
            ->orWhere('e.lieu LIKE :term')
            ->orWhere('e.modalite LIKE :term')
-           ->setParameter('term', '%' . $searchTerm . '%');
+           ->setParameter('term', "%$searchTerm%");
     }
 
     return $qb->getQuery()->getResult();
 }
+
+// Méthode pour récupérer tous les événements
+public function findAllEvents()
+{
+    return $this->findAll();
+}
+
+
+public function countByModalite(): array
+    {
+        return $this->createQueryBuilder('e')
+            ->select('e.modalite, COUNT(e.id) as count')
+            ->groupBy('e.modalite')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function countByType(): array
+    {
+        return $this->createQueryBuilder('e')
+            ->select('e.type, COUNT(e.id) as count')
+            ->groupBy('e.type')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function countByStatus(): array
+    {
+        // Mise à jour des statuts avant calcul
+        $this->updateAllStatuses();
+        
+        return $this->createQueryBuilder('e')
+            ->select('e.status, COUNT(e.id) as count')
+            ->groupBy('e.status')
+            ->getQuery()
+            ->getResult();
+    }
+
+    private function updateAllStatuses(): void
+    {
+        $conn = $this->getEntityManager()->getConnection();
+        
+        $sql = "
+            UPDATE evenement e
+            SET status = CASE
+                WHEN CURRENT_DATE() BETWEEN e.date_debut AND e.date_fin THEN 'EN_COURS'
+                WHEN CURRENT_DATE() < e.date_debut THEN 'A_VENIR'
+                WHEN CURRENT_DATE() > e.date_fin THEN 'TERMINE'
+                ELSE status
+            END
+        ";
+        
+        $conn->executeStatement($sql);
+    }
 
 
 //    /**

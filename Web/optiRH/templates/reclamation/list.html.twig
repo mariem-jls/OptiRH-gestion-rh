@@ -141,27 +141,39 @@
 {% endblock %}
 
 {% block body %}
-<div class="container-fluid animate__animated animate__fadeIn">
-    <div class="card mb-4">
-        <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
-            <h6 class="m-0 font-weight-bold text-white">Gestion des réclamations <span class="text-light">OPTIRH</span></h6>
-            <div class="header-actions d-flex gap-2">
-                <a href="{{ path('admin_reclamations_pdf') }}" class="btn btn-sm btn-success">
-                    <i class="fas fa-file-pdf me-1"></i> Exporter PDF
-                </a>
-                <a href="{{ path('admin_reclamations_archive') }}" class="btn btn-sm btn-light">
-                    <i class="fas fa-archive me-1"></i> Historique
-                </a>
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-        </div>
-        
-        <div class="card-body">
-            <div class="card filter-card animate__animated animate__fadeInUp">
-                <div class="card-header">
-                    <h6 class="m-0"><i class="fas fa-filter me-2"></i>Filtres avancés</h6>
-                </div>
-                <div class="card-body">
-                    {{ form_start(filterForm, {'attr': {'id': 'filter-form', 'class': 'filter-form'}}) }}
+        {% endfor %}
+    {% endfor %}
+    <div class="container-fluid animate__animated animate__fadeIn">
+        <div class="card mb-4">
+            <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-white">Gestion des réclamations <span class="text-light">OPTIRH</span></h6>
+{# Dans le bloc "header-actions" dans list.html.twig #}
+<div class="header-actions d-flex gap-2">
+    <a href="{{ path('admin_reclamations_statistics') }}" class="btn btn-sm btn-info">
+        <i class="fas fa-chart-bar me-1"></i> Statistiques
+    </a>
+    <a href="{{ path('admin_reclamations_pdf') }}" class="btn btn-sm btn-success">
+        <i class="fas fa-file-pdf me-1"></i> Exporter PDF
+    </a>
+    <a href="{{ path('admin_reclamations_archive') }}" class="btn btn-sm btn-light">
+        <i class="fas fa-archive me-1"></i> Historique
+    </a>
+</div>
+            </div>
+            
+            <div class="card-body">
+                <div class="card filter-card animate__animated animate__fadeInUp">
+                    <div class="card-header">
+                        <h6 class="m-0"><i class="fas fa-filter me-2"></i>Filtres avancés</h6>
+                    </div>
+                    <div class="card-body">
+                        {{ form_start(filterForm, {'attr': {'id': 'filter-form', 'class': 'filter-form'}}) }}
 <div class="row g-3">
     <div class="col-md-3">
         {{ form_row(filterForm.description, {'label': 'Recherche par description'}) }}
@@ -176,28 +188,28 @@
         {{ form_row(filterForm.sentimentLabel) }}
     </div>
 </div>
-                    
-                    <div class="row g-3 mt-2 date-range-filter">
-                        <div class="col-md-6">
-                            {{ form_row(filterForm.date.left_date) }}
+                        
+                        <div class="row g-3 mt-2 date-range-filter">
+                            <div class="col-md-6">
+                                {{ form_row(filterForm.date.left_date) }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form_row(filterForm.date.right_date) }}
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            {{ form_row(filterForm.date.right_date) }}
+                        
+                        <div class="d-flex justify-content-end mt-3 gap-2">
+                            <a href="{{ path('admin_reclamations') }}" class="btn filter-reset">
+                                <i class="fas fa-undo me-1"></i> Réinitialiser
+                            </a>
+                            <button type="submit" class="btn filter-btn text-white">
+                                <i class="fas fa-search me-1"></i> Appliquer les filtres
+                            </button>
                         </div>
+                        {{ form_end(filterForm) }}
                     </div>
-                    
-                    <div class="d-flex justify-content-end mt-3 gap-2">
-                        <a href="{{ path('admin_reclamations') }}" class="btn filter-reset">
-                            <i class="fas fa-undo me-1"></i> Réinitialiser
-                        </a>
-                        <button type="submit" class="btn filter-btn text-white">
-                            <i class="fas fa-search me-1"></i> Appliquer les filtres
-                        </button>
-                    </div>
-                    {{ form_end(filterForm) }}
                 </div>
-            </div>
-            
+                
 {% if app.request.query.all|length > 0 %}
 <div class="active-filters animate__animated animate__fadeIn">
     <h6><i class="fas fa-tag me-2"></i>Filtres actifs:</h6>
@@ -234,103 +246,104 @@
     </div>
 </div>
 {% endif %}
-            
-            <div class="table-responsive">
-                <table class="table table-reclamations">
-                    <thead>
-                        <tr>
-                            <th>Type</th>
-                            <th>Description</th>
-                            <th>Utilisateur</th>
-                            <th>Date</th>
-                            <th>Statut</th>
-                            <th>Sentiment</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for reclamation in pagination %}
-                            <tr class="animate__animated animate__fadeIn" style="animation-delay: {{ loop.index * 0.05 }}s">
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        {% if reclamation.type == "Salaire" %}💰
-                                        {% elseif reclamation.type == "Rémunération" %}💵
-                                        {% elseif reclamation.type == "Congés" %}🏖️
-                                        {% elseif reclamation.type == "Relations professionnelles" %}👥
-                                        {% elseif reclamation.type == "Conditions de travail" %}🏢
-                                        {% else %}📌{% endif %}
-                                        <span class="ms-2">{{ reclamation.type }}</span>
-                                    </div>
-                                </td>
-                                <td title="{{ reclamation.description }}">
-                                    {{ reclamation.description|slice(0, 50) }}
-                                    {% if reclamation.description|length > 50 %}...{% endif %}
-                                </td>
-                                <td>{{ reclamation.utilisateur.nom }}</td>
-                                <td>{{ reclamation.date|date('d/m/Y H:i') }}</td>
-                                <td>
-                                    <form method="post" action="{{ path('admin_update_status', {'id': reclamation.id}) }}">
-                                        {% set status_class = 'status-' ~ reclamation.status|lower|replace({' ': '-', 'é': 'e'}) %}
-                                        <select name="status" class="status-select {{ status_class }}" onchange="this.form.submit()">
-                                            <option value="En attente" {% if reclamation.status == 'En attente' %}selected{% endif %}>⏳ En attente</option>
-                                            <option value="En cours" {% if reclamation.status == 'En cours' %}selected{% endif %}>🔄 En cours</option>
-                                            <option value="Résolue" {% if reclamation.status == 'Résolue' %}selected{% endif %}>✅ Résolue</option>
-                                        </select>
-                                    </form>
-                                </td>
-                                <td>
-                                    <div class="sentiment-display">
-                                        {% if reclamation.sentimentLabel %}
-                                            {% set sentiment_type = reclamation.sentimentLabel %}
-                                            <span class="sentiment-bubble {{ sentiment_type }}"></span>
-                                            <span class="sentiment-label">
-                                                {% if sentiment_type == 'positive' %}😊 Positif
-                                                {% elseif sentiment_type == 'neutral' %}😐 Neutre
-                                                {% elseif sentiment_type == 'negative' %}😠 Négatif{% endif %}
-                                            </span>
-                                            <span class="text-muted small ms-2">{{ reclamation.sentimentScore|number_format(2) }}</span>
-                                        {% else %}
-                                            <span class="sentiment-bubble unknown"></span>
-                                            <span class="sentiment-label">🤔 Non analysé</span>
-                                        {% endif %}
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="d-flex gap-2">
-                                        <a href="{{ path('admin_reclamation_reponses', {'id': reclamation.id}) }}" 
-                                           class="btn btn-sm btn-primary"
-                                           title="Voir les réponses">
-                                            <i class="fas fa-comments"></i>
-                                        </a>
-                                        <a href="{{ path('admin_reclamation_qr_code', {'id': reclamation.id}) }}" 
-                                           class="btn btn-sm btn-info"
-                                           title="QR Code">
-                                            <i class="fas fa-qrcode"></i>
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                        {% else %}
-                            <tr>
-                                <td colspan="7">
-                                    <div class="empty-state text-center py-4">
-                                        <i class="fas fa-inbox fa-3x mb-3 text-muted"></i>
-                                        <h4 class="mb-3">Aucune réclamation trouvée</h4>
-                                        <p class="text-muted">Aucune réclamation ne correspond à vos critères de recherche</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
                 
-                <div class="pagination-container mt-4">
-                    {{ knp_pagination_render(pagination) }}
+                <div class="table-responsive">
+                    <table class="table table-reclamations">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Description</th>
+                                <th>Utilisateur</th>
+                                <th>Date</th>
+                                <th>Statut</th>
+                                <th>Sentiment</th>
+                                <th>Pièces jointes</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reclamation in pagination %}
+                                <tr class="animate__animated animate__fadeIn" style="animation-delay: {{ loop.index * 0.05 }}s">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if reclamation.type == "Salaire" %}💰
+                                            {% elseif reclamation.type == "Rémunération" %}💵
+                                            {% elseif reclamation.type == "Congés" %}🏖️
+                                            {% elseif reclamation.type == "Relations professionnelles" %}👥
+                                            {% elseif reclamation.type == "Conditions de travail" %}🏢
+                                            {% else %}📌{% endif %}
+                                            <span class="ms-2">{{ reclamation.type }}</span>
+                                        </div>
+                                    </td>
+                                    <td title="{{ reclamation.description }}">
+                                        {{ reclamation.description|slice(0, 50) }}
+                                        {% if reclamation.description|length > 50 %}...{% endif %}
+                                    </td>
+                                    <td>{{ reclamation.utilisateur.nom }}</td>
+                                    <td>{{ reclamation.date|date('d/m/Y H:i') }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ reclamation.getStatusColor(reclamation.status) }}">
+                                            {{ reclamation.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if reclamation.sentimentLabel %}
+                                            <span class="badge bg-{{ reclamation.sentimentLabel == 'positive' ? 'success' : (reclamation.sentimentLabel == 'negative' ? 'danger' : 'warning') }}">
+                                                {{ reclamation.sentimentLabel|trans }} ({{ reclamation.sentimentScore|number_format(2) }})
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Non analysé</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if reclamation.documentName %}
+                                            <a href="{{ vich_uploader_asset(reclamation, 'documentFile') }}" 
+                                               class="btn btn-sm btn-outline-primary" 
+                                               target="_blank"
+                                               title="Voir la pièce jointe">
+                                                <i class="fas fa-file-alt me-1"></i>
+                                                {{ reclamation.documentName|slice(0, 20) }}{% if reclamation.documentName|length > 20 %}...{% endif %}
+                                            </a>
+                                        {% else %}
+                                            <span class="text-muted">Aucune pièce jointe</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-2">
+                                            <a href="{{ path('admin_reclamation_reponses', {'id': reclamation.id}) }}" 
+                                               class="btn btn-sm btn-primary"
+                                               title="Voir les réponses">
+                                                <i class="fas fa-comments"></i>
+                                            </a>
+                                            <a href="{{ path('admin_reclamation_qr_code', {'id': reclamation.id}) }}" 
+                                               class="btn btn-sm btn-info"
+                                               title="QR Code">
+                                                <i class="fas fa-qrcode"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="7">
+                                        <div class="empty-state text-center py-4">
+                                            <i class="fas fa-inbox fa-3x mb-3 text-muted"></i>
+                                            <h4 class="mb-3">Aucune réclamation trouvée</h4>
+                                            <p class="text-muted">Aucune réclamation ne correspond à vos critères de recherche</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    
+                    <div class="pagination-container mt-4">
+                        {{ knp_pagination_render(pagination) }}
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 {% endblock %}
 
 {% block javascript %}

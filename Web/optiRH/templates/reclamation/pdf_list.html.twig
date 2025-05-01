@@ -5,110 +5,244 @@
     <meta charset="UTF-8">
     <title>{{ title }}</title>
     <style>
-        body { 
-            font-family: Arial, sans-serif;
-            font-size: 10px;
-            line-height: 1.2;
+        @page {
+            margin: 2cm;
         }
-        .header { 
-            text-align: center; 
-            margin-bottom: 10px; 
+        
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 10pt;
+            line-height: 1.4;
+            color: #222;
+            background: #f6f8fa;
         }
-        .header h1 { 
-            color: #4e73df; 
-            font-size: 16px;
-            margin-bottom: 5px;
+        
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            margin-bottom: 1.5cm;
+            border-bottom: 2px solid #4e73df;
+            padding-bottom: 0.7cm;
         }
-        table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin-bottom: 10px;
-            page-break-inside: auto; /* Autorise les sauts à l’intérieur de la table */
+        
+        .header img {
+            max-width: 90px;
+            margin-right: 1.2cm;
         }
-        th, td { 
-            border: 1px solid #ddd; 
-            padding: 4px;
+        
+        .header-content {
+            flex: 1;
+        }
+        
+        .header-content h1 {
+            color: #4e73df;
+            font-size: 18pt;
+            margin: 0 0 0.2cm 0;
+        }
+        
+        .header-content p {
+            color: #666;
+            font-size: 10pt;
+            margin: 0.2cm 0 0 0;
+        }
+        
+        .filters {
+            margin-bottom: 0.7cm;
+            padding: 0.4cm;
+            background-color: #eaf0fb;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px #d1d9e6;
+        }
+        
+        .filters h2 {
+            font-size: 11pt;
+            color: #4e73df;
+            margin-bottom: 0.3cm;
+        }
+        
+        .filter-item {
+            margin-bottom: 0.15cm;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-bottom: 1cm;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px #e0e4ea;
+            overflow: hidden;
+        }
+        
+        thead th {
+            background: #3056d3;
+            color: #fff;
+            padding: 12px 6px;
             text-align: left;
-            font-size: 9px;
+            font-weight: bold;
+            font-size: 11pt;
+            border-right: 1px solid #e0e0e0;
         }
-        th { 
-            background-color: #4e73df; 
-            color: white; 
+        
+        thead th:last-child {
+            border-right: none;
+        }
+        
+        tbody td {
             padding: 6px 4px;
+            border-bottom: 1px solid #e9e9e9;
+            font-size: 9.5pt;
+            vertical-align: top;
         }
-        tr {
-            page-break-inside: avoid;
-            page-break-after: auto;
+        
+        tbody tr:nth-child(even) {
+            background-color: #f6f8fa;
         }
-        tr:nth-child(even) { 
-            background-color: #f2f2f2; 
+        
+        tbody tr:nth-child(odd) {
+            background-color: #fff;
         }
-        .footer { 
-            text-align: center; 
-            font-size: 8px; 
-            color: #666; 
-            margin-top: 10px;
+        
+        .status-badge {
+            padding: 1px 7px;
+            border-radius: 4px;
+            font-size: 8.5pt;
+            font-weight: 600;
+            text-transform: uppercase;
+            display: inline-block;
+            min-width: 60px;
+            text-align: center;
+            box-shadow: 0 1px 2px #ececec;
         }
-        .sentiment-positive { color: #28a745; }
-        .sentiment-neutral { color: #ffc107; }
-        .sentiment-negative { color: #dc3545; }
-        .status-en-attente { color: #856404; background-color: #fff3cd; }
-        .status-en-cours { color: #0c5460; background-color: #d1ecf1; }
-        .status-résolue { color: #155724; background-color: #d4edda; }
+        
+        .status-en-attente { background-color: #fff3cd; color: #856404; }
+        .status-en-cours { background-color: #d1ecf1; color: #0c5460; }
+        .status-resolue { background-color: #d4edda; color: #155724; }
+        
+        .sentiment-badge {
+            padding: 1px 7px;
+            border-radius: 4px;
+            font-size: 8.5pt;
+            font-weight: 600;
+            display: inline-block;
+            min-width: 50px;
+            text-align: center;
+            box-shadow: 0 1px 2px #ececec;
+        }
+        
+        .sentiment-positive { background-color: #d4edda; color: #155724; }
+        .sentiment-neutral { background-color: #fff3cd; color: #856404; }
+        .sentiment-negative { background-color: #f8d7da; color: #721c24; }
+        
+        .footer {
+            text-align: center;
+            margin-top: 2cm;
+            padding-top: 1cm;
+            border-top: 1px solid #ddd;
+            font-size: 9pt;
+            color: #666;
+        }
+        
+        .page-break {
+            page-break-after: always;
+        }
+        
         .description-cell {
-            max-width: 150px;
-            word-wrap: break-word;
+            max-width: 180px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>{{ title }}</h1>
-        <p>Date d'extraction: {{ "now"|date("d/m/Y H:i") }}</p>
-        {% if user is defined %}
-            <p>Utilisateur: {{ user.nom }}</p>
-        {% endif %}
+        <img src="{{ absolute_url(asset('images/logo-dark.png')) }}" alt="Logo OPTIRH">
+        <div class="header-content">
+            <h1>{{ title }}</h1>
+            <p>Date d'extraction: {{ "now"|date("d/m/Y H:i") }}</p>
+            {% if user is defined %}
+                <p>Utilisateur: {{ user.nom }}</p>
+            {% endif %}
+        </div>
     </div>
+    
+    {% if filters is defined and filters %}
+        <div class="filters">
+            <h2>Filtres appliqués</h2>
+            {% if filters.description is defined and filters.description %}
+                <div class="filter-item">
+                    <strong>Description:</strong> {{ filters.description }}
+                </div>
+            {% endif %}
+            {% if filters.type is defined and filters.type %}
+                <div class="filter-item">
+                    <strong>Type:</strong> {{ filters.type }}
+                </div>
+            {% endif %}
+            {% if filters.status is defined and filters.status %}
+                <div class="filter-item">
+                    <strong>Statut:</strong> {{ filters.status }}
+                </div>
+            {% endif %}
+            {% if filters.date is defined and filters.date %}
+                <div class="filter-item">
+                    <strong>Période:</strong> 
+                    {% if filters.date.left_date is defined %}
+                        Du {{ filters.date.left_date|date('d/m/Y') }}
+                    {% endif %}
+                    {% if filters.date.right_date is defined %}
+                        au {{ filters.date.right_date|date('d/m/Y') }}
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
     
     <table>
         <thead>
             <tr>
-                <th width="5%">ID</th>
-                <th width="10%">Type</th>
-                <th width="35%">Description</th>
-                <th width="10%">Utilisateur</th>
-                <th width="10%">Date</th>
-                <th width="10%">Statut</th>
-                <th width="20%">Sentiment</th>
+                <th width="12%">Type</th>
+                <th width="28%">Description</th>
+                <th width="13%">Utilisateur</th>
+                <th width="13%">Date</th>
+                <th width="13%">Statut</th>
+                <th width="13%">Sentiment</th>
+                <th width="8%">Réponses</th>
             </tr>
         </thead>
         <tbody>
             {% for reclamation in reclamations %}
                 <tr>
-                    <td>{{ reclamation.id }}</td>
                     <td>{{ reclamation.type }}</td>
                     <td class="description-cell">{{ reclamation.description }}</td>
                     <td>{{ reclamation.utilisateur.nom }}</td>
                     <td>{{ reclamation.date|date('d/m/Y H:i') }}</td>
-                    <td class="status-{{ reclamation.status|lower|replace({' ': '-'}) }}">
-                        {{ reclamation.status }}
+                    <td>
+                        <span class="status-badge status-{{ reclamation.status|lower|replace({' ': '-'}) }}">
+                            {{ reclamation.status }}
+                        </span>
                     </td>
                     <td>
                         {% if reclamation.sentimentLabel %}
-                            <span class="sentiment-{{ reclamation.sentimentLabel }}">
+                            <span class="sentiment-badge sentiment-{{ reclamation.sentimentLabel }}">
                                 {{ reclamation.sentimentLabel|trans }} ({{ reclamation.sentimentScore|number_format(2) }})
                             </span>
                         {% else %}
                             Non analysé
                         {% endif %}
                     </td>
+                    <td>{{ reclamation.reponses.count }}</td>
                 </tr>
             {% endfor %}
         </tbody>
     </table>
 
     <div class="footer">
-        <p>Rapport généré par le système de gestion de réclamations</p>
+        <p>Rapport généré par le système de gestion de réclamations OPTIRH</p>
+        <p>© {{ "now"|date("Y") }} OPTIRH - Tous droits réservés</p>
     </div>
 </body>
 </html>

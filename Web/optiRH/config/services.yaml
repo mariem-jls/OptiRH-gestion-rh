@@ -5,19 +5,19 @@ parameters:
     turnstile_site_key: '%env(resolve:TURNSTILE_SITE_KEY)%'
     turnstile_secret_key: '%env(resolve:TURNSTILE_SECRET_KEY)%'
     weather_api_key: '%env(resolve:WEATHER_API_KEY)%'
-    
+    google.client_secret_path: '%kernel.project_dir%/config/google_client_secret.json'
+    google.calendar_id: 'primary'
     GOOGLE_CLIENT_ID: '%env(GOOGLE_CLIENT_ID)%'
     GOOGLE_CLIENT_SECRET: '%env(GOOGLE_CLIENT_SECRET)%'
     GOOGLE_REDIRECT_URI: '%env(GOOGLE_REDIRECT_URI)%'
     app.mailer.sender_email: 'no-reply@votre-domaine.com'
     app.mailer.sender_name: 'Gestion des Missions'
 
-    huggingface_api_key: '%env(HUGGINGFACE_API_KEY)%'
+    hugging_face_api_key: '%env(HUGGING_FACE_API_KEY)%'
     admin_email: 'maram.rachdi11@gmail.com'
     env(GEMINI_API_KEY): ''
 
     avatars_directory: '%kernel.project_dir%/public/uploads/avatars'
-    
     
     infobip_api_url: '%env(INFOBIP_API_URL)%'
     infobip_api_key: '%env(INFOBIP_API_KEY)%'
@@ -40,7 +40,6 @@ parameters:
     #Openia
     openai.api_key: '%env(OPENAI_API_KEY)%'
 
-
 services:
     # Configuration par défaut pour les services
     _defaults:
@@ -53,8 +52,11 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+
+    App\Security\OAuthUserProvider:
+        arguments:
+            $entityManager: '@doctrine.orm.entity_manager'
     
-    # Ajoutez ce service
     App\Service\InfobipSmsSender:
         arguments:
             $client: '@http_client'
@@ -89,11 +91,11 @@ services:
 
     App\Service\SentimentAnalysisService:
         arguments:
-            $apiKey: '%huggingface_api_key%'
+            $apiKey: '%hugging_face_api_key%'
     
     App\Service\EmbeddingService:
         arguments:
-            $huggingFaceApiKey: '%huggingface_api_key%'
+            $huggingFaceApiKey: '%hugging_face_api_key%'
             $httpClient: '@http_client'
             $logger: '@monolog.logger'
 
@@ -121,6 +123,14 @@ services:
         arguments:
             $logger: '@monolog.logger'
             $entityManager: '@doctrine.orm.entity_manager'
+
+
+    App\Service\ReservationMailer:
+        arguments:
+            $mailer: '@Symfony\Component\Mailer\MailerInterface'
+            $senderEmail: 'azettt532@gmail.com'
+            
+    
     
     App\Service\GeminiAnalysisService:
         arguments:
@@ -136,8 +146,20 @@ services:
             $logger: '@logger'
             $defaultTargetLanguage: 'fr'
 
-
+    
     App\Service\OpenAiService:
         arguments:
             $apiKey: '%openai.api_key%'
+
+
+
+    App\Service\RecommendationService:
+        arguments:
+            $evenementFinder: '@fos_elastica.finder.evenement'
+
+            
+    App\Controller\Admin\Reclamation\ReclamationController:
+        arguments:
+            $huggingFaceApiKey: '%hugging_face_api_key%'
+
 

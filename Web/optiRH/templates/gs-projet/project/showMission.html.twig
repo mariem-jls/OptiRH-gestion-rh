@@ -4,8 +4,7 @@
 
 {% block css %}
     <!-- Plugins css -->
-        <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
-
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
     <link href="/libs/dropzone/min/dropzone.min.css" rel="stylesheet" type="text/css"/>
     <link href="/libs/bootstrap-tagsinput/bootstrap-tagsinput.css" rel="stylesheet"/>
     <link href="/libs/multiselect/css/multi-select.css" rel="stylesheet" type="text/css"/>
@@ -102,30 +101,34 @@
                             </div>
                             <div>
                                 <h6 class="mb-0">{{ mission.assignedTo.nom }}</h6>
-<small class="text-muted">
-    {% set role = mission.assignedTo.roles[0]|default('ROLE_USER') %}
-    {% if role == 'ROLE_ADMIN' %}
-        Administrateur
-    {% elseif role == 'ROLE_EMPLOYEE' %}
-        Employee
-    {% elseif role == 'ROLE_USER' %}
-        Utilisateur
-    {% else %}
-        {{ role }}
-    {% endif %}
-</small>
+                                <small class="text-muted">
+                                    {% set role = mission.assignedTo.roles[0]|default('ROLE_USER') %}
+                                    {% if role == 'ROLE_ADMIN' %}
+                                        Administrateur
+                                    {% elseif role == 'ROLE_EMPLOYEE' %}
+                                        Employee
+                                    {% elseif role == 'ROLE_USER' %}
+                                        Utilisateur
+                                    {% else %}
+                                        {{ role }}
+                                    {% endif %}
+                                </small>
                             </div>
                         {% else %}
                             <span class="text-muted">Non assigné</span>
                         {% endif %}
                     </div>
                 </div>
- {% if is_granted('ROLE_ADMIN') %}
+
+                {% if is_granted('ROLE_ADMIN') %}
                 <div class="row mt-4">
                     <div class="col-sm-12 text-end">
                         <a href="{{ path('gs-projet_project_mission_edit', {'id': mission.id}) }}" class="btn btn-warning me-2">
                             <i class="ri-edit-line me-1"></i> Modifier
                         </a>
+                        <button type="button" class="btn btn-info me-2" id="sendMeetInvitation">
+                            <i class="ri-mail-send-line me-1"></i>invitation Meet
+                        </button>
                         <form method="post" action="{{ path('gs-projet_project_mission_delete', {'id': mission.id}) }}" class="d-inline">
                             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ mission.id) }}">
                             <button type="button" class="btn btn-danger delete-mission" data-name="{{ mission.titre }}">
@@ -134,7 +137,7 @@
                         </form>
                     </div>
                 </div>
- {% endif %}
+                {% endif %}
             </div>
         </div>
     </div>
@@ -214,6 +217,71 @@
                     });
                 });
             });
-        });
+// document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('sendMeetInvitation')?.addEventListener('click', function() {
+    // Créer une popup pour sélectionner la date et l'heure de la réunion
+    Swal.fire({
+        title: 'Planifier la réunion',
+        html: `
+            <div style="margin-top: 20px;">
+                <label for="meetDateTime" style="display: block; margin-bottom: 8px; font-weight: bold;">Date et heure de la réunion:</label>
+                <input type="datetime-local" id="meetDateTime" class="swal2-input" required>
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Envoyer l\'invitation',
+        cancelButtonText: 'Annuler',
+        focusConfirm: false,
+        preConfirm: () => {
+            const dateTimeInput = Swal.getPopup().querySelector('#meetDateTime');
+            const meetDateTime = dateTimeInput.value;
+            
+            if (!meetDateTime) {
+                Swal.showValidationMessage('Veuillez sélectionner une date et une heure');
+                return false;
+            }
+            
+            return { meetDateTime: meetDateTime };
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const formData = new URLSearchParams();
+            formData.append('meetDateTime', result.value.meetDateTime);
+            
+            // Envoi avec la date/heure de la réunion
+            fetch('{{ path('gs-projet_project_mission_send_invitation', {'id': mission.id}) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Invitation envoyée',
+                        text: data.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    Swal.fire('Erreur', data.message, 'error');
+                }
+            })
+            .catch(error => {
+                Swal.fire('Erreur', 'Une erreur est survenue lors de l\'envoi', 'error');
+                console.error(error);
+            });
+        }
+    });
+});
+});
+    
+    
     </script>
 {% endblock %}
+
+
