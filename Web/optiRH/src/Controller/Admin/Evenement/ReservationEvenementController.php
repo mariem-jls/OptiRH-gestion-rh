@@ -161,7 +161,7 @@ class ReservationEvenementController extends AbstractController
 
         $session->remove('reservation_data');
 
-        /*$message = sprintf(
+        $message = sprintf(
             "Bonjour %s, votre réservation pour '%s' le %s à %s est confirmée !",
             $reservation->getFirstName(),
             $evenement->getTitre(),
@@ -173,7 +173,7 @@ class ReservationEvenementController extends AbstractController
             $twilio->sendSms($reservation->getTelephone(), $message);
         } catch (\Exception $e) {
             $this->addFlash('sms', "Erreur lors de l'envoi du SMS : " . $e->getMessage());
-        }*/
+        }
 
         $this->addFlash('paiment', 'Paiement effectué avec succès ! Votre réservation est confirmée.');
         return $this->redirectToRoute('app_evenement_indexfront');
@@ -274,12 +274,7 @@ public function generatePdf(ReservationEvenement $reservation): Response
     $generator = new \Picqer\Barcode\BarcodeGeneratorPNG();
     $barcode = $generator->getBarcode((string)$reservation->getId(), $generator::TYPE_CODE_128);
 
-    $fouk=$this->getParameter('kernel.project_dir') . '/public/images/fouk.png';
-    $foukBase64 = base64_encode(file_get_contents($fouk));
-
-    $louta=$this->getParameter('kernel.project_dir') . '/public/images/louta.png';
-    $loutaoBase64 = base64_encode(file_get_contents($louta));
-
+   
     $lignePath = $this->getParameter('kernel.project_dir') . '/public/images/ligne.png';
     $ligneBase64 = base64_encode(file_get_contents($lignePath));
     // Charger le logo en base64

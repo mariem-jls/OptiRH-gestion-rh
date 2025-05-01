@@ -509,50 +509,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<script>
-// Gestionnaire pour le toggle des recommandations
-$('#toggleRecommended').change(function() {
-    var isChecked = $(this).is(':checked');
-    var currentModalite = $('.btn[data-modalite].active').data('modalite');
-    var currentType = $('.btn[data-type].active').data('type');
-    var searchTerm = $('#searchInput').val();
-    
-    var data = {};
-    if (searchTerm) data['term'] = searchTerm;
-    if (currentModalite && currentModalite !== 'all') data['modalite'] = currentModalite;
-    if (currentType && currentType !== 'all') data['type'] = currentType;
-    
-    // Ajouter le paramètre recommended basé sur l'état du toggle
-    data['recommended'] = isChecked;
-    
-    $.ajax({
-        url: '{{ path('app_evenement_indexfront') }}',
-        type: 'GET',
-        data: data,
-        success: function(response) {
-            $('#event-grid').html(response);
-            reattachEventHandlers(); // Réattacher les gestionnaires d'événements
-        },
-        
-    });
-});
 
-</script>
-
-<script>
-    $(document).ready(function() {
-       
-        // Animation au survol des cartes
-        $('.event-card').hover(
-            function() {
-                $(this).find('.card-image').css('transform', 'scale(1.03)');
-            },
-            function() {
-                $(this).find('.card-image').css('transform', 'scale(1)');
-            }
-        );
-    });
-</script>
 {% if closestEvent %}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -589,69 +546,122 @@ $('#toggleRecommended').change(function() {
 {% endif %}
 
 
-
-
 <script>
-document.addEventListener('DOMContentLoaded', function () {
+
+// Fonction pour attacher les gestionnaires d'événements aux boutons favoris
+function attachFavoriteEventHandlers() {
     const favoriteButtons = document.querySelectorAll('.favorite-btn');
 
     favoriteButtons.forEach(button => {
-        button.addEventListener('click', function () {
-            const eventId = this.getAttribute('data-event-id');
-            const userId = '{{ app.user.id }}';
-            const url = '{{ path('ajouter_favori') }}';
+        // Supprimer l'ancien gestionnaire pour éviter les doublons
+        button.removeEventListener('click', handleFavoriteClick);
+        // Ajouter le nouveau gestionnaire
+        button.addEventListener('click', handleFavoriteClick);
+    });
+}
 
-            fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    event_id: eventId,
-                    user_id: userId
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Mise à jour visuelle du bouton en fonction de l'action
-                    if (data.action === 'added') {
-                        this.querySelector('i').classList.remove('mdi-heart-outline');
-                        this.querySelector('i').classList.add('mdi-heart');
-                        this.querySelector('i').classList.add('favorite-active');
-                    } else if (data.action === 'removed') {
-                        this.querySelector('i').classList.remove('mdi-heart');
-                        this.querySelector('i').classList.remove('favorite-active');
-                        this.querySelector('i').classList.add('mdi-heart-outline');
-                    }
-                } else {
-                    alert('Erreur lors de la gestion des favoris');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Erreur',
-                    text: 'Une erreur s\'est produite lors de la gestion des favoris.',
-                    confirmButtonText: 'Ok'
-                });
-            });
+// Fonction de gestion du clic sur le bouton favori
+function handleFavoriteClick() {
+    const eventId = this.getAttribute('data-event-id');
+    const userId = '{{ app.user.id }}';
+    const url = '{{ path('ajouter_favori') }}';
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            event_id: eventId,
+            user_id: userId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Mise à jour visuelle du bouton en fonction de l'action
+            if (data.action === 'added') {
+                this.querySelector('i').classList.remove('mdi-heart-outline');
+                this.querySelector('i').classList.add('mdi-heart');
+                this.querySelector('i').classList.add('favorite-active');
+            } else if (data.action === 'removed') {
+                this.querySelector('i').classList.remove('mdi-heart');
+                this.querySelector('i').classList.remove('favorite-active');
+                this.querySelector('i').classList.add('mdi-heart-outline');
+            }
+        } else {
+            alert('Erreur lors de la gestion des favoris');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Erreur',
+            text: 'Une erreur s\'est produite lors de la gestion des favoris.',
+            confirmButtonText: 'Ok'
         });
     });
-});
+}
+
+// Fonction pour réattacher tous les gestionnaires d'événements après un chargement AJAX
+function reattachEventHandlers() {
+    attachFavoriteEventHandlers();
+    
+    // Animation au survol des cartes (ajoutons-le ici aussi)
+    $('.event-card').hover(
+        function() {
+            $(this).find('.card-image').css('transform', 'scale(1.03)');
+        },
+        function() {
+            $(this).find('.card-image').css('transform', 'scale(1)');
+        }
+    );
+}
+
+// Fonction pour charger les événements avec les filtres et l'ordre appropriés
+function loadEvents() {
+    var isRecommended = $('#toggleRecommended').is(':checked');
+    var searchTerm = $('#searchInput').val();
+    var currentModalite = $('.btn[data-modalite].active').data('modalite');
+    var currentType = $('.btn[data-type].active').data('type');
+    
+    var data = {};
+    if (searchTerm) data['term'] = searchTerm;
+    if (currentModalite && currentModalite !== 'all') data['modalite'] = currentModalite;
+    if (currentType && currentType !== 'all') data['type'] = currentType;
+    
+    if (isRecommended) {
+        // Si le toggle est activé, chargement des recommandations
+        data['recommended'] = true;
+    } else {
+        // Si le toggle est désactivé, tri par date d'ajout décroissante
+        data['sort'] = 'recent';
+    }
+    
+    $.ajax({
+        url: '{{ path('app_evenement_indexfront') }}',
+        type: 'GET',
+        data: data,
+        success: function(response) {
+            $('#event-grid').html(response);
+            reattachEventHandlers(); // Réattacher les gestionnaires d'événements
+        }
+    });
+}
+
 $(document).ready(function() {
+    // Attacher les gestionnaires d'événements lors du chargement initial
+    attachFavoriteEventHandlers();
+    
+    // Gestionnaire pour le toggle des recommandations
+    $('#toggleRecommended').change(function() {
+        loadEvents();
+    });
+
     // Gestionnaire pour la recherche dynamique
     $('#searchInput').on('input', function() {
-        var searchTerm = $(this).val();
-        $.ajax({
-            url: '/admin/evenement/evenements/indexfront',
-            type: 'GET',
-            data: { term: searchTerm },
-            success: function(response) {
-                $('#event-grid').html(response);
-            }
-        });
+        loadEvents();
     });
 
     // Variables pour stocker l'état des filtres
@@ -659,10 +669,9 @@ $(document).ready(function() {
     var currentType = null;
 
     // Gestionnaire pour le filtrage par boutons
-    $('.btn').click(function() {
+    $('.btn[data-modalite], .btn[data-type]').click(function() {
         var modalite = $(this).data('modalite');
         var type = $(this).data('type');
-
         var filterChanged = false;
 
         if (modalite === 'all') { // C'est notre bouton "Tous" pour la modalité
@@ -690,55 +699,34 @@ $(document).ready(function() {
             if (modalite !== undefined) {
                 if (currentModalite === modalite) {
                     currentModalite = null;
+                    $('.btn[data-modalite="all"]').addClass('active');
+                    $(this).removeClass('active');
                 } else {
                     currentModalite = modalite;
-                    $('.btn[data-modalite="all"]').removeClass('active');
+                    $('.btn[data-modalite]').removeClass('active');
+                    $(this).addClass('active');
                 }
+                filterChanged = true;
             }
 
             // Gestion du type
             if (type !== undefined) {
                 if (currentType === type) {
                     currentType = null;
+                    $('.btn[data-type="all"]').addClass('active');
+                    $(this).removeClass('active');
                 } else {
                     currentType = type;
-                    $('.btn[data-type="all"]').removeClass('active');
+                    $('.btn[data-type]').removeClass('active');
+                    $(this).addClass('active');
                 }
+                filterChanged = true;
             }
-            filterChanged = true;
         }
 
         // Effectuer la requête AJAX uniquement si un filtre a changé
         if (filterChanged) {
-            var data = {};
-            if (currentModalite) {
-                data['modalite'] = currentModalite;
-            }
-            if (currentType) {
-                data['type'] = currentType;
-            }
-
-            $.ajax({
-                url: '/admin/evenement/evenements/indexfront',
-                type: 'GET',
-                data: data,
-                success: function(response) {
-                    $('#event-grid').html(response);
-                }
-            });
-        }
-
-        // Mise à jour de l'état actif des boutons
-        $('.btn').removeClass('active');
-        if (currentModalite) {
-            $('.btn[data-modalite="' + currentModalite + '"]').addClass('active');
-        } else {
-            $('.btn[data-modalite="all"]').addClass('active');
-        }
-        if (currentType) {
-            $('.btn[data-type="' + currentType + '"]').addClass('active');
-        } else {
-            $('.btn[data-type="all"]').addClass('active');
+            loadEvents();
         }
     });
 
@@ -747,8 +735,20 @@ $(document).ready(function() {
     if ($('.btn[data-type="all"]').length) {
         $('.btn[data-type="all"]').addClass('active');
     }
-});
 
+    // Animation au survol des cartes
+    $('.event-card').hover(
+        function() {
+            $(this).find('.card-image').css('transform', 'scale(1.03)');
+        },
+        function() {
+            $(this).find('.card-image').css('transform', 'scale(1)');
+        }
+    );
+    
+    // Charger les événements initiaux avec l'ordre approprié
+    loadEvents();
+});
 </script>
 
 {% endblock %}
