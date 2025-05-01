@@ -156,6 +156,8 @@ services:
     App\Service\RecommendationService:
         arguments:
             $evenementFinder: '@fos_elastica.finder.evenement'
+
+            
     App\Controller\Admin\Reclamation\ReclamationController:
         arguments:
             $huggingFaceApiKey: '%hugging_face_api_key%'

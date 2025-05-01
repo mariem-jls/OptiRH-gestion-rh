@@ -27,5 +27,4 @@ return [
     HWI\Bundle\OAuthBundle\HWIOAuthBundle::class => ['all' => true],
     Symfony\Bundle\MercureBundle\MercureBundle::class => ['all' => true],
     Symfony\UX\Notify\NotifyBundle::class => ['all' => true],
-
 ];
