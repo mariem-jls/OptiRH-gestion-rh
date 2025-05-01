@@ -1,14 +1,117 @@
-{# templates/emails/interview_cancellation.html.twig #}
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Annulation de votre entretien</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+            color: #333333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            padding: 30px 20px;
+            background: linear-gradient(135deg, #3ab5ce 0%, #2a9bb5 100%);
+            color: #ffffff;
+        }
+        .header img {
+            max-width: 140px;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+        .content {
+            padding: 30px;
+            line-height: 1.7;
+        }
+        .content h1 {
+            font-size: 26px;
+            color: #2c3e50;
+            margin: 0 0 15px;
+        }
+        .content p {
+            margin: 10px 0;
+            font-size: 16px;
+        }
+        .highlight {
+            font-weight: bold;
+            color: #3ab5ce;
+        }
+        .cta-button {
+            display: inline-block;
+            padding: 12px 30px;
+            background-color: #3ab5ce;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        .cta-button:hover {
+            background-color: #2a9bb5;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #f8f8f8;
+            border-top: 1px solid #e0e0e0;
+            font-size: 13px;
+            color: #666666;
+        }
+        .footer a {
+            color: #3ab5ce;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        @media only screen and (max-width: 600px) {
+            .container {
+                margin: 10px;
+                border-radius: 8px;
+            }
+            .content {
+                padding: 20px;
+            }
+            .header {
+                padding: 20px;
+            }
+        }
+    </style>
 </head>
 <body>
-<h1>Annulation de votre entretien</h1>
-<p>Cher(e) {{ nomComplet }},</p>
-<p>Nous vous informons que l'entretien prévu pour le poste de <strong>{{ poste }}</strong> le <strong>{{ dateTime|date('d/m/Y à H:i') }}</strong> a été annulé.</p>
-<p>Pour toute question, veuillez nous contacter à <a href="mailto:support@optirh.com">support@optirh.com</a>.</p>
-<p>Cordialement,<br>L'équipe OptiRH</p>
+<div class="container">
+    <div class="header">
+        <img src="{{ absolute_url(asset('img-front/logo/logo.png')) }}" alt="Logo OptiRH">
+    </div>
+    <div class="content">
+        <h1>Annulation de votre entretien</h1>
+        <p>Bonjour <span class="highlight">{{ nomComplet }}</span>,</p>
+        <p>Nous sommes au regret de vous informer que l’entretien prévu pour le poste de <strong>{{ poste }}</strong> le <strong>{{ dateTime|date('d/m/Y à H:i') }}</strong> a dû être annulé.</p>
+        <p>Nous vous remercions pour votre compréhension et vous invitons à nous contacter pour discuter d’une éventuelle reprogrammation ou d’autres opportunités :</p>
+        <a href="mailto:support@optirh.com" class="cta-button">Nous contacter</a>
+        <p>Restez également à l’affût de nos offres sur notre site :</p>
+        <a href="https://votre-domaine.com/offres" class="cta-button">Voir les offres</a>
+    </div>
+    <div class="footer">
+        <p>OptiRH - Tous droits réservés © 2025</p>
+        <p><a href="https://votre-domaine.com">Visitez notre site</a> | <a href="mailto:support@optirh.com">Nous contacter</a></p>
+    </div>
+</div>
 </body>
 </html>

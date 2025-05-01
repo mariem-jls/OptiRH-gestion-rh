@@ -6,6 +6,7 @@
 {% endblock %}
 {% block stylesheets %}
     {{ parent() }} {# Conserve les styles de la base #}
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
         .search-form button {
@@ -84,7 +85,18 @@
 
     {% block categories %}
     {% endblock categories %}
-
+    <div class="container mt-4">
+        {% for type, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ type }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% endfor %}
+        {% endfor %}
+    </div>
 
     <!-- Featured_job_start -->
     <section class="featured-job-area feature-padding">

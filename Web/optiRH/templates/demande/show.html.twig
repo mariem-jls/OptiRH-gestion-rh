@@ -60,7 +60,7 @@
                                 {% set interview = demande.interviews|first|default(null) %}
                                 {% if interview %}
                                     <span class="btn btn-sm btn-success disabled">
-                                        <i class="mdi mdi-check-circle me-1"></i> Entretien planifié pour {{ interview.dateTime|date('d/m/Y H:i') }}
+                                        <i class="mdi mdi-check-circle me-1"></i> Entretien planifié pour {{ interview.dateTime|date('d/m/Y H:i', 'Europe/Paris') }}
                                     </span>
                                     <button class="btn btn-sm btn-danger cancel-interview" data-interview-id="{{ interview.id }}">
                                         <i class="mdi mdi-close-circle-outline me-1"></i> Annuler

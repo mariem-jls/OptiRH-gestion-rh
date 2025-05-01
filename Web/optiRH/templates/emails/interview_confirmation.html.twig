@@ -1,14 +1,118 @@
-{# templates/emails/interview_confirmation.html.twig #}
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Confirmation d'entretien</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmation de votre entretien</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+            color: #333333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            padding: 30px 20px;
+            background: linear-gradient(135deg, #b3dde5 0%, #afdae5 100%);
+            color: #ffffff;
+        }
+        .header img {
+            max-width: 140px;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+        .content {
+            padding: 30px;
+            line-height: 1.7;
+        }
+        .content h1 {
+            font-size: 26px;
+            color: #2c3e50;
+            margin: 0 0 15px;
+        }
+        .content p {
+            margin: 10px 0;
+            font-size: 16px;
+        }
+        .highlight {
+            font-weight: bold;
+            color: #3ab5ce;
+        }
+        .cta-button {
+            display: inline-block;
+            padding: 12px 30px;
+            background-color: #3ab5ce;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        .cta-button:hover {
+            background-color: #2a9bb5;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #f8f8f8;
+            border-top: 1px solid #e0e0e0;
+            font-size: 13px;
+            color: #666666;
+        }
+        .footer a {
+            color: #3ab5ce;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        @media only screen and (max-width: 600px) {
+            .container {
+                margin: 10px;
+                border-radius: 8px;
+            }
+            .content {
+                padding: 20px;
+            }
+            .header {
+                padding: 20px;
+            }
+        }
+    </style>
 </head>
 <body>
-<h1>Confirmation de votre entretien</h1>
-<p>Bonjour {{ candidateName }},</p>
-<p>Votre entretien pour le poste de <strong>{{ jobTitle }}</strong> est confirmé pour le <strong>{{ interviewDate }}</strong>.</p>
-<p>Rejoignez la réunion : <a href="{{ googleMeetLink }}">{{ googleMeetLink }}</a></p>
-<p>Cordialement,<br>Équipe Recrutement</p>
+<div class="container">
+    <div class="header">
+        <img src="{{ absolute_url(asset('img-front/logo/logo.png')) }}" alt="Logo OptiRH">
+    </div>
+    <div class="content">
+        <h1>Confirmation de votre entretien</h1>
+        <p>Bonjour <span class="highlight">{{ candidateName }}</span>,</p>
+        <p>Nous sommes ravis de confirmer votre entretien pour le poste de {{ jobTitle }}.</p>
+        <p><strong>Date et heure :</strong> {{ interviewDate }}</p>
+        <p>Rejoignez la réunion virtuelle via ce lien :</p>
+        <a href="{{ googleMeetLink }}" class="cta-button">Accéder à l’entretien</a>
+        <p>Nous vous recommandons de tester votre connexion et votre équipement à l’avance. Pour toute question, contactez-nous à <a href="mailto:support@optirh.com">support@optirh.com</a>.</p>
+        <p>Nous avons hâte de discuter avec vous !</p>
+    </div>
+    <div class="footer">
+        <p>OptiRH - Tous droits réservés © 2025</p>
+        <p><a href="https://votre-domaine.com">Visitez notre site</a> | <a href="mailto:support@optirh.com">Nous contacter</a></p>
+    </div>
+</div>
 </body>
 </html>

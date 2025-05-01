@@ -52,13 +52,6 @@
             border-color: #007bff;
             box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
         }
-        .btn-generate-link {
-            background: linear-gradient(45deg, #28a745, #34c759);
-            border: none;
-        }
-        .btn-generate-link:hover {
-            background: linear-gradient(45deg, #218838, #2ea44f);
-        }
         .accordion-button {
             font-weight: 500;
             color: #007bff;
@@ -108,6 +101,15 @@
                         {{ demande.statut|capitalize }}
                     </span>
 
+                    <div class="mb-3">
+                        <button type="button" class="btn btn-outline-danger" id="google-auth-btn">
+                            <i class="mdi mdi-google me-1"></i> Connectez-vous avec Google pour générer des liens Meet
+                        </button>
+                        <div id="auth-status" style="display: none;">
+                            <p class="mt-2 text-success"><i class="mdi mdi-check-circle me-1"></i> Connecté avec Google.</p>
+                        </div>
+                    </div>
+
                     {{ form_start(form, {'attr': {'id': 'interview-form'}}) }}
                     <div class="mb-3">
                         <label class="form-label">
@@ -121,12 +123,7 @@
                         <label class="form-label">
                             <i class="mdi mdi-link-variant me-1"></i> Lien Google Meet
                         </label>
-                        <div class="input-group">
-                            {{ form_widget(form.googleMeetLink, {'attr': {'class': 'form-control', 'placeholder': 'https://meet.google.com/xxx-xxxx-xxx'}}) }}
-                            <button type="button" class="btn btn-generate-link" id="generate-meet-link">
-                                <i class="mdi mdi-auto-fix me-1"></i> Générer
-                            </button>
-                        </div>
+                        {{ form_widget(form.googleMeetLink, {'attr': {'class': 'form-control', 'placeholder': 'Le lien sera généré automatiquement', 'readonly': 'readonly'}}) }}
                         {{ form_errors(form.googleMeetLink) }}
                     </div>
 
@@ -159,7 +156,7 @@
                                                 <div class="row g-2">
                                                     {% for slot in slots %}
                                                         <div class="col-md-4 slot-card"
-                                                             data-datetime="{{ slot.dateTime|date('Y-m-d\\TH:i') }}"
+                                                             data-datetime="{{ slot.dateTime|date('c') }}"
                                                              data-period="{{ slot.period }}"
                                                              data-priority="{{ slot.priority }}">
                                                             <div class="d-flex align-items-center">
@@ -198,7 +195,11 @@
                 <div class="card-body">
                     <h5 class="mb-3 text-primary"><i class="mdi mdi-eye me-2"></i> Aperçu de l'entretien</h5>
                     <p><strong>Date et heure :</strong> <span id="preview-datetime"></span></p>
-                    <p><strong>Lien Google Meet :</strong> <a id="preview-meet-link" href="#" target="_blank"></a></p>
+                    <p>
+                        <strong>Lien Google Meet :</strong>
+                        <a id="preview-meet-link" href="#" target="_blank"></a>
+                        <small class="text-muted d-block mt-1">Le lien sera actif 10 minutes avant l'heure de l'entretien.</small>
+                    </p>
                     <p><strong>Candidat :</strong> {{ demande.nomComplet }}</p>
                     <p><strong>Poste :</strong> {{ demande.offre ? demande.offre.poste : 'Non spécifié' }}</p>
                 </div>
@@ -212,14 +213,32 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
     <script>
         $(document).ready(function() {
-            // Initialiser Flatpickr
             flatpickr('.flatpickr', {
                 enableTime: true,
                 dateFormat: 'Y-m-d H:i',
                 time_24hr: true,
                 locale: 'fr',
                 minDate: 'today',
-                minuteIncrement: 15
+                minuteIncrement: 15,
+                defaultHour: 9,
+                defaultMinute: 0
+            });
+
+            // Simuler une authentification réussie pour les admins
+            {% if is_granted('ROLE_ADMIN') %}
+            $('#google-auth-btn').hide();
+            $('#auth-status').show();
+            {% endif %}
+
+            // Simuler l'authentification Google au clic
+            $('#google-auth-btn').on('click', function() {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Connexion réussie',
+                    text: 'Vous êtes connecté avec Google.',
+                });
+                $('#google-auth-btn').hide();
+                $('#auth-status').show();
             });
 
             const demandeId = {{ demande.id }};
@@ -248,11 +267,11 @@
                                             <div class="row g-2">
                                                 ${slots.map(slot => `
                                                     <div class="col-md-4 slot-card"
-                                                         data-datetime="${new Date(slot.dateTime).toISOString().slice(0, 16)}"
+                                                         data-datetime="${slot.dateTime}"
                                                          data-period="${slot.period}"
                                                          data-priority="${slot.priority}">
                                                         <div class="d-flex align-items-center">
-                                                            <span>${new Date(slot.dateTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+                                                            <span>${new Date(slot.dateTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' })}</span>
                                                             <span class="tag bg-info text-white">${slot.period}</span>
                                                             ${slot.priority === 'recommended' ? '<span class="tag bg-success text-white">★</span>' : ''}
                                                         </div>
@@ -272,29 +291,26 @@
                 $('.slot-card').removeClass('selected');
                 $(this).addClass('selected');
                 const datetime = $(this).data('datetime');
-                $('#interview_dateTime').val(datetime);
+                const localDate = new Date(datetime);
+                const formattedDate = localDate.toLocaleString('sv', { timeZone: 'Europe/Paris' })
+                    .replace(' ', ' ')
+                    .slice(0, 16);
+                $('#interview_dateTime').val(formattedDate);
                 updatePreview();
             });
 
-            $('#interview_dateTime, #interview_googleMeetLink').on('input change', updatePreview);
+            $('#interview_dateTime').on('input change', updatePreview);
 
             function updatePreview() {
                 const dateTime = $('#interview_dateTime').val();
-                const meetLink = $('#interview_googleMeetLink').val();
-                if (dateTime || meetLink) {
-                    $('#preview-datetime').text(dateTime ? new Date(dateTime).toLocaleString('fr-FR') : 'Non spécifié');
-                    $('#preview-meet-link').text(meetLink || 'Non spécifié').attr('href', meetLink || '#');
+                if (dateTime) {
+                    $('#preview-datetime').text(dateTime ? new Date(dateTime).toLocaleString('fr-FR', { timeZone: 'Europe/Paris' }) : 'Non spécifié');
+                    $('#preview-meet-link').text('Sera généré après planification').attr('href', '#');
                     $('#preview-card').show();
                 } else {
                     $('#preview-card').hide();
                 }
             }
-
-            $('#generate-meet-link').on('click', function() {
-                const fakeLink = 'https://meet.google.com/' + Math.random().toString(36).substring(2, 12);
-                $('#interview_googleMeetLink').val(fakeLink);
-                updatePreview();
-            });
 
             $('.filter-btn').on('click', function() {
                 $('.filter-btn').removeClass('active');
@@ -316,7 +332,6 @@
             $('#interview-form').on('submit', function(e) {
                 e.preventDefault();
                 const dateTime = $('#interview_dateTime').val();
-                const meetLink = $('#interview_googleMeetLink').val();
 
                 if (!dateTime) {
                     Swal.fire({
@@ -326,11 +341,13 @@
                     });
                     return;
                 }
-                if (!meetLink || !meetLink.includes('meet.google.com')) {
+                try {
+                    new Date(dateTime);
+                } catch (e) {
                     Swal.fire({
                         icon: 'error',
                         title: 'Erreur',
-                        text: 'Veuillez fournir un lien Google Meet valide.',
+                        text: 'Format de date invalide.',
                     });
                     return;
                 }
@@ -340,10 +357,14 @@
                     method: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify({
-                        dateTime: new Date(dateTime).toISOString(),
-                        googleMeetLink: meetLink
+                        dateTime: dateTime
                     }),
-                    success: function() {
+                    success: function(response) {
+                        // Mettre à jour l'aperçu avec le vrai lien Google Meet
+                        $('#preview-datetime').text(new Date(dateTime).toLocaleString('fr-FR', { timeZone: 'Europe/Paris' }));
+                        $('#preview-meet-link').text(response.googleMeetLink).attr('href', response.googleMeetLink);
+                        $('#preview-card').show();
+
                         Swal.fire({
                             icon: 'success',
                             title: 'Entretien planifié',
