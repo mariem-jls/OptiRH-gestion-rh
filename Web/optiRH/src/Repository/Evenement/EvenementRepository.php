@@ -87,6 +87,54 @@ public function findAllEvents()
 }
 
 
+public function countByModalite(): array
+    {
+        return $this->createQueryBuilder('e')
+            ->select('e.modalite, COUNT(e.id) as count')
+            ->groupBy('e.modalite')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function countByType(): array
+    {
+        return $this->createQueryBuilder('e')
+            ->select('e.type, COUNT(e.id) as count')
+            ->groupBy('e.type')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function countByStatus(): array
+    {
+        // Mise à jour des statuts avant calcul
+        $this->updateAllStatuses();
+        
+        return $this->createQueryBuilder('e')
+            ->select('e.status, COUNT(e.id) as count')
+            ->groupBy('e.status')
+            ->getQuery()
+            ->getResult();
+    }
+
+    private function updateAllStatuses(): void
+    {
+        $conn = $this->getEntityManager()->getConnection();
+        
+        $sql = "
+            UPDATE evenement e
+            SET status = CASE
+                WHEN CURRENT_DATE() BETWEEN e.date_debut AND e.date_fin THEN 'EN_COURS'
+                WHEN CURRENT_DATE() < e.date_debut THEN 'A_VENIR'
+                WHEN CURRENT_DATE() > e.date_fin THEN 'TERMINE'
+                ELSE status
+            END
+        ";
+        
+        $conn->executeStatement($sql);
+    }
+
+
 //    /**
 //     * @return Evenement[] Returns an array of Evenement objects
 //     */

@@ -355,6 +355,43 @@ public function showall(
     }
 
 
+
+
+    #[Route('evenement/stats', name: 'app_evenement_stats')]
+    public function stat(EvenementRepository $evenementRepository): Response
+    {
+    
+        // Requêtes optimisées directement en base de données
+        $modaliteStats = $evenementRepository->countByModalite();
+        $typeStats = $evenementRepository->countByType();
+        $statusStats = $evenementRepository->countByStatus();
+        
+        // Formatage des données pour Chart.js
+        $modaliteData = [
+            'labels' => array_column($modaliteStats, 'modalite'),
+            'data' => array_column($modaliteStats, 'count')
+        ];
+        
+        $typeData = [
+            'labels' => array_column($typeStats, 'type'),
+            'data' => array_column($typeStats, 'count')
+        ];
+        
+        $statusData = [
+            'labels' => array_column($statusStats, 'status'),
+            'data' => array_column($statusStats, 'count')
+        ];
+
+        return $this->render('evenement/stat.html.twig', [
+            'modaliteData' => $modaliteData,
+            'typeData' => $typeData,
+            'statusData' => $statusData,
+        ]);
+    }
+
+
+    
+
    
 
    
