@@ -6,6 +6,7 @@ use App\Entity\Demande;
 use App\Entity\Interview;
 use App\Form\InterviewType;
 use App\Repository\DemandeRepository;
+use App\Repository\OffreRepository;
 use App\Repository\InterviewRepository;
 use App\Service\SlotSuggester;
 use App\Service\EmailService;
@@ -299,8 +300,11 @@ class InterviewController extends AbstractController
         return new JsonResponse(['status' => 'success']);
     }
     #[Route('/admin/interviews', name: 'admin_interviews', methods: ['GET'])]
-    public function index(InterviewRepository $interviewRepository): Response
-    {
+    public function index(
+        InterviewRepository $interviewRepository,
+        DemandeRepository $demandeRepository,
+        OffreRepository $offreRepository
+    ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN', null, 'Seuls les admins peuvent voir la liste des entretiens.');
 
         // Récupérer tous les interviews triés par date décroissante
@@ -308,38 +312,21 @@ class InterviewController extends AbstractController
 
         // Calcul des statistiques
         $totalInterviews = count($interviews);
+        $totalDemands = count($demandeRepository->findAll());
+        $totalOffers = count($offreRepository->findAll());
 
-        // Nombre d'entretiens à venir et passés
-        $now = new \DateTime();
-        $upcomingInterviews = 0;
-        $pastInterviews = 0;
-        $statusCounts = [
-            'En attente' => 0,
-            'Acceptee' => 0,
-            'Refusee' => 0,
-        ];
-
-        foreach ($interviews as $interview) {
-            $interviewTime = $interview->getDateTime();
-            if ($interviewTime > $now) {
-                $upcomingInterviews++;
-            } else {
-                $pastInterviews++;
-            }
-
-            // Compter les entretiens par statut de demande
-            $status = $interview->getDemande()->getStatut();
-            if (isset($statusCounts[$status])) {
-                $statusCounts[$status]++;
-            }
-        }
+        // Statistiques des demandes avec entretien
+        $demandsWithInterview = count($demandeRepository->createQueryBuilder('d')
+            ->innerJoin('d.interviews', 'i')
+            ->getQuery()
+            ->getResult());
 
         return $this->render('interview/index.html.twig', [
             'interviews' => $interviews,
             'totalInterviews' => $totalInterviews,
-            'upcomingInterviews' => $upcomingInterviews,
-            'pastInterviews' => $pastInterviews,
-            'statusCounts' => $statusCounts,
+            'totalDemands' => $totalDemands,
+            'totalOffers' => $totalOffers,
+            'demandsWithInterview' => $demandsWithInterview,
         ]);
     }
 }

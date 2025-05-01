@@ -5,13 +5,15 @@
 {% block css %}
     {{ parent() }}
     <style>
-        /* Couleurs basées sur le logo */
+        /* Couleurs basées sur le logo avec palette bleue */
         :root {
             --primary-color: #3AB5CE; /* Couleur principale (logo) */
             --primary-light: #5CC3D6; /* Couleur plus claire pour survol */
             --primary-dark: #2A8A9F;  /* Couleur plus sombre pour contraste */
             --neutral-bg: #F8F9FA;    /* Fond neutre */
             --text-color: #333;       /* Couleur du texte */
+            --accent-color: #1b3583;  /* Bleu pour accentuation */
+            --accent-light: #4DA8FF;  /* Bleu clair pour survol */
         }
 
         /* Style général des cartes */
@@ -69,15 +71,7 @@
         }
 
         .interview-card .bg-success {
-            background-color: #28a745 !important;
-        }
-
-        .interview-card .bg-warning {
-            background-color: #ffc107 !important;
-        }
-
-        .interview-card .bg-danger {
-            background-color: #dc3545 !important;
+            background-color: var(--accent-color) !important;
         }
 
         /* Boutons */
@@ -100,24 +94,24 @@
         }
 
         .interview-card .btn-danger {
-            background-color: #dc3545;
+            background-color: #DC3545;
             border-color: #c82333;
         }
 
         .interview-card .btn-danger:hover {
             background-color: #e4606d;
-            border-color: #dc3545;
+            border-color: #DC3545;
             transform: scale(1.05);
         }
 
         .interview-card .btn-success {
-            background-color: var(--primary-color);
-            border-color: var(--primary-dark);
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
         }
 
         .interview-card .btn-success:hover {
-            background-color: var(--primary-light);
-            border-color: var(--primary-color);
+            background-color: var(--accent-light);
+            border-color: var(--accent-color);
             transform: scale(1.05);
         }
 
@@ -184,16 +178,14 @@
             font-weight: 500;
         }
 
-        .stats-card.status-card .stats-value {
-            color: #28a745; /* Vert pour "Acceptée" */
-        }
-
-        .stats-card.status-card.warning .stats-value {
-            color: #ffc107; /* Jaune pour "En attente" */
-        }
-
-        .stats-card.status-card.danger .stats-value {
-            color: #dc3545; /* Rouge pour "Refusée" */
+        /* Style pour les canvas de chart */
+        .chart-container {
+            background-color: var(--neutral-bg);
+            border: 1px solid var(--primary-dark);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
         }
     </style>
 {% endblock %}
@@ -228,33 +220,46 @@
                 <div class="stats-label">Total des entretiens</div>
             </div>
         </div>
-        <!-- Entretiens à venir -->
+        <!-- Nombre total de demandes -->
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stats-card">
+                <i class="mdi mdi-file-document stats-icon"></i>
+                <div class="stats-value">{{ totalDemands }}</div>
+                <div class="stats-label">Total des demandes</div>
+            </div>
+        </div>
+        <!-- Demandes avec entretien -->
         <div class="col-md-3 col-sm-6 mb-3">
             <div class="stats-card">
                 <i class="mdi mdi-calendar-check stats-icon"></i>
-                <div class="stats-value">{{ upcomingInterviews }}</div>
-                <div class="stats-label">Entretiens à venir</div>
+                <div class="stats-value">{{ demandsWithInterview }}</div>
+                <div class="stats-label">Demandes avec entretien</div>
             </div>
         </div>
-        <!-- Entretiens passés -->
+        <!-- Nombre total d'offres -->
         <div class="col-md-3 col-sm-6 mb-3">
             <div class="stats-card">
-                <i class="mdi mdi-calendar-remove stats-icon"></i>
-                <div class="stats-value">{{ pastInterviews }}</div>
-                <div class="stats-label">Entretiens passés</div>
+                <i class="mdi mdi-briefcase stats-icon"></i>
+                <div class="stats-value">{{ totalOffers }}</div>
+                <div class="stats-label">Total des offres</div>
             </div>
         </div>
-        <!-- Entretiens par statut -->
-        <div class="col-md-3 col-sm-6 mb-3">
-            <div class="stats-card status-card">
-                <i class="mdi mdi-chart-pie stats-icon"></i>
-                <div class="stats-label mb-2">Par statut de demande</div>
-                <div class="stats-value">{{ statusCounts['Acceptee'] }}</div>
-                <div class="stats-label mb-1">Acceptée</div>
-                <div class="stats-value warning">{{ statusCounts['En attente'] }}</div>
-                <div class="stats-label mb-1">En attente</div>
-                <div class="stats-value danger">{{ statusCounts['Refusee'] }}</div>
-                <div class="stats-label">Refusée</div>
+    </div>
+
+    <!-- Section des graphiques -->
+    <div class="row mb-4">
+        <!-- Graphique des entretiens vs demandes -->
+        <div class="col-md-6 mb-4">
+            <div class="chart-container">
+                <h3 class="text-center mb-3">Entretiens vs Demandes</h3>
+                <canvas id="interviewVsDemandChart"></canvas>
+            </div>
+        </div>
+        <!-- Graphique des entretiens par poste -->
+        <div class="col-md-6 mb-4">
+            <div class="chart-container">
+                <h3 class="text-center mb-3">Entretiens par poste</h3>
+                <canvas id="interviewByOfferChart"></canvas>
             </div>
         </div>
     </div>
@@ -272,11 +277,6 @@
                         <div class="card-header">
                             <h5 class="mb-0 d-flex align-items-center">
                                 Entretien #{{ interview.id }}
-                                {% set now = "now"|date("U") %}
-                                {% set interview_time = interview.dateTime|date("U") %}
-                                <span class="badge ms-2 {{ now < interview_time ? 'bg-success' : 'bg-secondary' }}">
-                                    {{ now < interview_time ? 'À venir' : 'Passé' }}
-                                </span>
                             </h5>
                         </div>
                         <div class="card-body">
@@ -295,26 +295,19 @@
                             <div class="mb-2">
                                 <strong>Lien Google Meet :</strong><br>
                                 {% if interview.googleMeetLink %}
-                                    {% set now = "now"|date("U") %}
-                                    {% set interview_time = interview.dateTime|date("U") %}
-                                    {% if now < interview_time %}
-                                        <a href="{{ interview.googleMeetLink }}" target="_blank" class="btn btn-sm btn-success mt-1">
-                                            <i class="mdi mdi-video me-1"></i>
-                                            Rejoindre l'entretien
-                                            <i class="mdi mdi-arrow-right ms-1"></i>
-                                        </a>
-                                    {% else %}
-                                        <span class="text-muted">Entretien terminé</span>
-                                    {% endif %}
+                                    <a href="{{ interview.googleMeetLink }}" target="_blank" class="btn btn-sm btn-success mt-1">
+                                        <i class="mdi mdi-video me-1"></i>
+                                        Rejoindre l'entretien
+                                        <i class="mdi mdi-arrow-right ms-1"></i>
+                                    </a>
                                 {% else %}
                                     <span class="text-muted">Lien non disponible</span>
                                 {% endif %}
                             </div>
                             <p class="mb-3">
                                 <strong>Statut de la demande :</strong>
-                                {% set status_class = interview.demande.statut|lower == 'en_attente' ? 'warning' : interview.demande.statut|lower == 'acceptee' ? 'success' : 'danger' %}
-                                <span class="badge status-badge bg-{{ status_class }}">
-                                    {{ interview.demande.statut|capitalize }}
+                                <span class="badge status-badge bg-success">
+                                    Acceptée
                                 </span>
                             </p>
                             <div class="d-flex gap-2">
@@ -338,8 +331,10 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script>
         $(document).ready(function() {
+            // Gestion de l'annulation d'entretien
             $('.cancel-interview').on('click', function() {
                 const interviewId = $(this).data('interview-id');
                 const cancelUrl = '{{ path('api_cancel_interview', {'interviewId': '__interviewId__'}) }}'.replace('__interviewId__', interviewId);
@@ -379,6 +374,100 @@
                         });
                     }
                 });
+            });
+
+            // Données pour les graphiques
+            const interviewVsDemand = {
+                'Entretiens': {{ totalInterviews }},
+                'Demandes': {{ totalDemands }}
+            };
+
+            // Créer un tableau pour les postes
+            const offerCounts = {};
+            {% for interview in interviews %}
+            {% if interview.demande.offre %}
+            offerCounts['{{ interview.demande.offre.poste|escape('js') }}'] = (offerCounts['{{ interview.demande.offre.poste|escape('js') }}'] || 0) + 1;
+            {% else %}
+            offerCounts['Non spécifié'] = (offerCounts['Non spécifié'] || 0) + 1;
+            {% endif %}
+            {% endfor %}
+
+            // Graphique des entretiens vs demandes
+            const interviewVsDemandChartCtx = document.getElementById('interviewVsDemandChart').getContext('2d');
+            new Chart(interviewVsDemandChartCtx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(interviewVsDemand),
+                    datasets: [{
+                        label: 'Nombre',
+                        data: Object.values(interviewVsDemand),
+                        backgroundColor: ['#007BFF', '#3AB5CE'],
+                        borderColor: '#2A8A9F',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Nombre'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Catégorie'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Graphique des entretiens par poste
+            const offerChartCtx = document.getElementById('interviewByOfferChart').getContext('2d');
+            new Chart(offerChartCtx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(offerCounts),
+                    datasets: [{
+                        label: 'Nombre d\'entretiens',
+                        data: Object.values(offerCounts),
+                        backgroundColor: '#3AB5CE',
+                        borderColor: '#2A8A9F',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Nombre d\'entretiens'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Poste'
+                            }
+                        }
+                    }
+                }
             });
         });
     </script>
