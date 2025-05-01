@@ -56,6 +56,9 @@
                             <a href="{{ path('app_demande_edit', {'id': demande.id}) }}" class="btn btn-sm btn-warning">
                                 <i class="mdi mdi-pencil-outline me-1"></i> Modifier
                             </a>
+                            <a href="{{ path('app_demande_pdf', {'id': demande.id}) }}" class="btn btn-sm btn-info">
+                                <i class="mdi mdi-file-pdf-box me-1"></i> Générer PDF
+                            </a>
                             {% if demande.statut == 'ACCEPTEE' %}
                                 {% set interview = demande.interviews|first|default(null) %}
                                 {% if interview %}

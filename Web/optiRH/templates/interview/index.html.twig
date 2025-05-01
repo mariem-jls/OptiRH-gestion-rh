@@ -1,0 +1,385 @@
+{% extends 'partials/layout-vertical.html.twig' %}
+
+{% block title %}Liste des entretiens | Gestion RH{% endblock %}
+
+{% block css %}
+    {{ parent() }}
+    <style>
+        /* Couleurs basées sur le logo */
+        :root {
+            --primary-color: #3AB5CE; /* Couleur principale (logo) */
+            --primary-light: #5CC3D6; /* Couleur plus claire pour survol */
+            --primary-dark: #2A8A9F;  /* Couleur plus sombre pour contraste */
+            --neutral-bg: #F8F9FA;    /* Fond neutre */
+            --text-color: #333;       /* Couleur du texte */
+        }
+
+        /* Style général des cartes */
+        .interview-card {
+            border: 1px solid var(--primary-dark);
+            border-radius: 15px;
+            background-color: var(--neutral-bg);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            overflow: hidden;
+        }
+
+        .interview-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* En-tête de la carte */
+        .interview-card .card-header {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            padding: 15px 20px;
+            border-bottom: 2px solid var(--primary-dark);
+        }
+
+        .interview-card .card-header h5 {
+            font-size: 1.25rem;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        /* Corps de la carte */
+        .interview-card .card-body {
+            padding: 20px;
+            color: var(--text-color);
+        }
+
+        .interview-card .card-body p {
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+
+        .interview-card .card-body strong {
+            color: var(--primary-dark);
+            font-weight: 600;
+        }
+
+        /* Badge de statut */
+        .interview-card .status-badge {
+            font-size: 0.9rem;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .interview-card .bg-success {
+            background-color: #28a745 !important;
+        }
+
+        .interview-card .bg-warning {
+            background-color: #ffc107 !important;
+        }
+
+        .interview-card .bg-danger {
+            background-color: #dc3545 !important;
+        }
+
+        /* Boutons */
+        .interview-card .btn-sm {
+            font-size: 0.85rem;
+            padding: 6px 12px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .interview-card .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-dark);
+        }
+
+        .interview-card .btn-primary:hover {
+            background-color: var(--primary-light);
+            border-color: var(--primary-color);
+            transform: scale(1.05);
+        }
+
+        .interview-card .btn-danger {
+            background-color: #dc3545;
+            border-color: #c82333;
+        }
+
+        .interview-card .btn-danger:hover {
+            background-color: #e4606d;
+            border-color: #dc3545;
+            transform: scale(1.05);
+        }
+
+        .interview-card .btn-success {
+            background-color: var(--primary-color);
+            border-color: var(--primary-dark);
+        }
+
+        .interview-card .btn-success:hover {
+            background-color: var(--primary-light);
+            border-color: var(--primary-color);
+            transform: scale(1.05);
+        }
+
+        /* Liens */
+        .interview-card a.text-primary {
+            color: var(--primary-color) !important;
+            text-decoration: none;
+        }
+
+        .interview-card a.text-primary:hover {
+            color: var(--primary-light) !important;
+            text-decoration: underline;
+        }
+
+        /* Animation pour le titre de la page */
+        .header-title {
+            color: var(--primary-dark);
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .header-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background-color: var(--primary-color);
+            border-radius: 2px;
+        }
+
+        /* Styles pour les cartes de statistiques */
+        .stats-card {
+            border: 1px solid var(--primary-dark);
+            border-radius: 10px;
+            background-color: var(--neutral-bg);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stats-card .stats-icon {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .stats-card .stats-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 5px;
+        }
+
+        .stats-card .stats-label {
+            font-size: 0.95rem;
+            color: var(--text-color);
+            font-weight: 500;
+        }
+
+        .stats-card.status-card .stats-value {
+            color: #28a745; /* Vert pour "Acceptée" */
+        }
+
+        .stats-card.status-card.warning .stats-value {
+            color: #ffc107; /* Jaune pour "En attente" */
+        }
+
+        .stats-card.status-card.danger .stats-value {
+            color: #dc3545; /* Rouge pour "Refusée" */
+        }
+    </style>
+{% endblock %}
+
+{% block topbar %}
+    {{ include('partials/topbar.html.twig', {
+        page_title: 'Liste des entretiens',
+        breadcrumb: {
+            'Recrutement': path('admin_interviews'),
+            'Entretiens': ''
+        }
+    }) }}
+{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-12">
+            <h1 class="header-title mb-4">
+                <i class="mdi mdi-calendar-clock me-2"></i>
+                Liste des entretiens
+            </h1>
+        </div>
+    </div>
+
+    <!-- Section des statistiques -->
+    <div class="row mb-4">
+        <!-- Nombre total d'entretiens -->
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stats-card">
+                <i class="mdi mdi-account-group stats-icon"></i>
+                <div class="stats-value">{{ totalInterviews }}</div>
+                <div class="stats-label">Total des entretiens</div>
+            </div>
+        </div>
+        <!-- Entretiens à venir -->
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stats-card">
+                <i class="mdi mdi-calendar-check stats-icon"></i>
+                <div class="stats-value">{{ upcomingInterviews }}</div>
+                <div class="stats-label">Entretiens à venir</div>
+            </div>
+        </div>
+        <!-- Entretiens passés -->
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stats-card">
+                <i class="mdi mdi-calendar-remove stats-icon"></i>
+                <div class="stats-value">{{ pastInterviews }}</div>
+                <div class="stats-label">Entretiens passés</div>
+            </div>
+        </div>
+        <!-- Entretiens par statut -->
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stats-card status-card">
+                <i class="mdi mdi-chart-pie stats-icon"></i>
+                <div class="stats-label mb-2">Par statut de demande</div>
+                <div class="stats-value">{{ statusCounts['Acceptee'] }}</div>
+                <div class="stats-label mb-1">Acceptée</div>
+                <div class="stats-value warning">{{ statusCounts['En attente'] }}</div>
+                <div class="stats-label mb-1">En attente</div>
+                <div class="stats-value danger">{{ statusCounts['Refusee'] }}</div>
+                <div class="stats-label">Refusée</div>
+            </div>
+        </div>
+    </div>
+
+    {% if interviews is empty %}
+        <div class="alert alert-info">
+            <i class="mdi mdi-information-outline me-2"></i>
+            Aucun entretien planifié pour le moment.
+        </div>
+    {% else %}
+        <div class="row">
+            {% for interview in interviews %}
+                <div class="col-md-4 mb-4">
+                    <div class="card interview-card">
+                        <div class="card-header">
+                            <h5 class="mb-0 d-flex align-items-center">
+                                Entretien #{{ interview.id }}
+                                {% set now = "now"|date("U") %}
+                                {% set interview_time = interview.dateTime|date("U") %}
+                                <span class="badge ms-2 {{ now < interview_time ? 'bg-success' : 'bg-secondary' }}">
+                                    {{ now < interview_time ? 'À venir' : 'Passé' }}
+                                </span>
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-2">
+                                <strong>Candidat :</strong>
+                                {{ interview.demande.nomComplet }}
+                            </p>
+                            <p class="mb-2">
+                                <strong>Poste :</strong>
+                                {{ interview.demande.offre ? interview.demande.offre.poste : 'Non spécifié' }}
+                            </p>
+                            <p class="mb-2">
+                                <strong>Date :</strong>
+                                {{ interview.dateTime|date('d/m/Y H:i', 'Europe/Paris') }}
+                            </p>
+                            <div class="mb-2">
+                                <strong>Lien Google Meet :</strong><br>
+                                {% if interview.googleMeetLink %}
+                                    {% set now = "now"|date("U") %}
+                                    {% set interview_time = interview.dateTime|date("U") %}
+                                    {% if now < interview_time %}
+                                        <a href="{{ interview.googleMeetLink }}" target="_blank" class="btn btn-sm btn-success mt-1">
+                                            <i class="mdi mdi-video me-1"></i>
+                                            Rejoindre l'entretien
+                                            <i class="mdi mdi-arrow-right ms-1"></i>
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">Entretien terminé</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted">Lien non disponible</span>
+                                {% endif %}
+                            </div>
+                            <p class="mb-3">
+                                <strong>Statut de la demande :</strong>
+                                {% set status_class = interview.demande.statut|lower == 'en_attente' ? 'warning' : interview.demande.statut|lower == 'acceptee' ? 'success' : 'danger' %}
+                                <span class="badge status-badge bg-{{ status_class }}">
+                                    {{ interview.demande.statut|capitalize }}
+                                </span>
+                            </p>
+                            <div class="d-flex gap-2">
+                                <a href="{{ path('app_demande_show', {'id': interview.demande.id}) }}"
+                                   class="btn btn-sm btn-primary">
+                                    <i class="mdi mdi-eye me-1"></i>
+                                    Voir la demande
+                                </a>
+                                <button class="btn btn-sm btn-danger cancel-interview"
+                                        data-interview-id="{{ interview.id }}">
+                                    <i class="mdi mdi-close-circle-outline me-1"></i>
+                                    Annuler
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function() {
+            $('.cancel-interview').on('click', function() {
+                const interviewId = $(this).data('interview-id');
+                const cancelUrl = '{{ path('api_cancel_interview', {'interviewId': '__interviewId__'}) }}'.replace('__interviewId__', interviewId);
+                Swal.fire({
+                    title: 'Confirmer l\'annulation',
+                    text: 'Voulez-vous vraiment annuler cet entretien ?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Oui, annuler',
+                    cancelButtonText: 'Non'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: cancelUrl,
+                            method: 'DELETE',
+                            success: function() {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Entretien annulé',
+                                    text: 'L\'entretien a été annulé et le candidat a été informé.',
+                                    timer: 2000
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            },
+                            error: function(xhr) {
+                                let errorMessage = 'Une erreur est survenue lors de l\'annulation.';
+                                if (xhr.responseJSON && xhr.responseJSON.error) {
+                                    errorMessage = xhr.responseJSON.error;
+                                }
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Erreur',
+                                    text: errorMessage
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}

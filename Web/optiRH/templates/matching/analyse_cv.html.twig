@@ -241,12 +241,12 @@
                                 <i class="mdi mdi-file-pdf-box mdi-18px"></i> Télécharger
                             </a>`,
                         resultat: 'Non analysé',
-                        voir: d.id ?
-                            `<a href="{{ path('app_demande_show', {'id': 'DEMANDE_ID'}) }}".replace('DEMANDE_ID', d.id)
-                                class="btn btn-sm btn-soft-primary" data-bs-toggle="tooltip" title="Voir détails">
-                                <i class="mdi mdi-eye-outline"></i>
-                            </a>` :
-                            `<span class="text-muted">Demande non disponible</span>`
+                    voir: d.id ?
+                        `<a href="/demande/${d.id}"
+                            class="btn btn-sm btn-soft-primary" data-bs-toggle="tooltip" title="Voir détails">
+                            <i class="mdi mdi-eye-outline"></i>
+                        </a>` :
+                        `<span class="text-muted">Demande non disponible</span>`
                     }))).draw();
 
                     analyseBtn.prop('disabled', data.demandes.length === 0);

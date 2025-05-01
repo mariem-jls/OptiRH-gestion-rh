@@ -298,4 +298,48 @@ class InterviewController extends AbstractController
 
         return new JsonResponse(['status' => 'success']);
     }
+    #[Route('/admin/interviews', name: 'admin_interviews', methods: ['GET'])]
+    public function index(InterviewRepository $interviewRepository): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN', null, 'Seuls les admins peuvent voir la liste des entretiens.');
+
+        // Récupérer tous les interviews triés par date décroissante
+        $interviews = $interviewRepository->findBy([], ['dateTime' => 'DESC']);
+
+        // Calcul des statistiques
+        $totalInterviews = count($interviews);
+
+        // Nombre d'entretiens à venir et passés
+        $now = new \DateTime();
+        $upcomingInterviews = 0;
+        $pastInterviews = 0;
+        $statusCounts = [
+            'En attente' => 0,
+            'Acceptee' => 0,
+            'Refusee' => 0,
+        ];
+
+        foreach ($interviews as $interview) {
+            $interviewTime = $interview->getDateTime();
+            if ($interviewTime > $now) {
+                $upcomingInterviews++;
+            } else {
+                $pastInterviews++;
+            }
+
+            // Compter les entretiens par statut de demande
+            $status = $interview->getDemande()->getStatut();
+            if (isset($statusCounts[$status])) {
+                $statusCounts[$status]++;
+            }
+        }
+
+        return $this->render('interview/index.html.twig', [
+            'interviews' => $interviews,
+            'totalInterviews' => $totalInterviews,
+            'upcomingInterviews' => $upcomingInterviews,
+            'pastInterviews' => $pastInterviews,
+            'statusCounts' => $statusCounts,
+        ]);
+    }
 }

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Détails de la demande #{{ demande.id }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #333;
+        }
+        h1 {
+            font-size: 24px;
+            color: #007bff;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 5px;
+        }
+        h2 {
+            font-size: 18px;
+            color: #007bff;
+            margin-top: 20px;
+        }
+        dl {
+            margin: 0;
+        }
+        dt {
+            font-weight: bold;
+            color: #6c757d;
+            float: left;
+            width: 200px;
+        }
+        dd {
+            margin-bottom: 10px;
+            margin-left: 220px;
+        }
+        .badge {
+            padding: 5px 10px;
+            border-radius: 5px;
+            color: #fff;
+        }
+        .badge-success { background-color: #28a745; }
+        .badge-warning { background-color: #ffc107; }
+        .badge-danger { background-color: #dc3545; }
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+<h1>Détails de la demande #{{ demande.id }}</h1>
+<p><strong>Poste :</strong> {{ demande.offre ? demande.offre.poste : 'Non spécifié' }} - Dossier de {{ demande.nomComplet }}</p>
+
+<div class="section">
+    <h2>Informations personnelles</h2>
+    <dl>
+        <dt>Statut</dt>
+        <dd>
+            {% set status_class = demande.statut|lower == 'en_attente' ? 'warning' : demande.statut|lower == 'acceptee' ? 'success' : 'danger' %}
+            <span class="badge badge-{{ status_class }}">{{ demande.statut|capitalize }}</span>
+        </dd>
+        <dt>Date de dépôt</dt>
+        <dd>{{ demande.date|date('d/m/Y à H:i') }}</dd>
+        <dt>Coordonnées</dt>
+        <dd>
+            {{ demande.email }}<br>
+            {{ demande.telephone }}<br>
+            {{ demande.adresse }}
+        </dd>
+        <dt>Situation actuelle</dt>
+        <dd>{{ demande.situationActuelle }}</dd>
+    </dl>
+</div>
+
+<div class="section">
+    <h2>Disponibilité</h2>
+    <dl>
+        <dt>Date début disponible</dt>
+        <dd>{{ demande.dateDebutDisponible ? demande.dateDebutDisponible|date('d/m/Y') : 'Non spécifiée' }}</dd>
+    </dl>
+</div>
+
+<div class="section">
+    <h2>Description</h2>
+    <div>{{ demande.description|raw }}</div>
+</div>
+
+<div class="section">
+    <h2>Documents</h2>
+    {% if demande.fichierPieceJointe %}
+        <p><strong>Fichier joint :</strong> {{ demande.fichierPieceJointe }}</p>
+    {% else %}
+        <p>Aucun document joint à cette demande.</p>
+    {% endif %}
+</div>
+
+<div class="section">
+    <h2>Entretiens</h2>
+    {% if interviews is not empty %}
+        <ul>
+            {% for interview in interviews %}
+                <li>Entretien #{{ interview.id }} - {{ interview.dateTime|date('d/m/Y H:i', 'Europe/Paris') }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Aucun entretien associé à cette demande.</p>
+    {% endif %}
+</div>
+</body>
+</html>

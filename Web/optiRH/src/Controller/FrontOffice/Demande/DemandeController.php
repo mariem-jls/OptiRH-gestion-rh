@@ -14,10 +14,18 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Psr\Log\LoggerInterface;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 #[Route('/demande')]
 class DemandeController extends AbstractController
 {
+    private $logger;
+
+    public function __construct(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+    }
     #[Route('/', name: 'app_demande_index', methods: ['GET'])]
     public function index(EntityManagerInterface $entityManager): Response
     {
@@ -116,14 +124,80 @@ class DemandeController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_demande_show', methods: ['GET'])]
-    public function show(Demande $demande): Response
+    #[Route('/{id}', name: 'app_demande_show', methods: ['GET'], requirements: ['id' => '\d+'])]
+    public function show(?Demande $demande): Response
     {
+        $this->logger->debug('Attempting to show Demande', ['id' => $demande ? $demande->getId() : 'null']);
+        if (!$demande) {
+            $this->addFlash('danger', 'La demande spécifiée n\'existe pas.');
+            return $this->redirectToRoute('admin_analyse_cv');
+        }
+
         return $this->render('demande/show.html.twig', [
             'demande' => $demande,
+            'interviews' => $demande->getInterviews(),
         ]);
     }
+    #[Route('/{id}/pdf', name: 'app_demande_pdf', methods: ['GET'], requirements: ['id' => '\d+'])]
+    public function generatePdf(?Demande $demande): Response
+    {
+        $this->logger->debug('Generating PDF for Demande', ['id' => $demande ? $demande->getId() : 'null']);
+        if (!$demande) {
+            $this->addFlash('danger', 'La demande spécifiée n\'existe pas.');
+            return $this->redirectToRoute('admin_analyse_cv');
+        }
 
+        // Configurer Dompdf avec les paramètres définis dans services.yaml
+        $options = new Options();
+        $options->set('defaultFont', 'Arial');
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isRemoteEnabled', true);
+        $options->set('tempDir', $this->getParameter('pdf.temp_dir'));
+        $options->set('fontDir', $this->getParameter('pdf.font_dir'));
+        $options->set('fontCache', $this->getParameter('pdf.font_dir'));
+
+        $dompdf = new Dompdf($options);
+
+        // Rendre le contenu HTML de la demande
+        $html = $this->renderView('demande/pdf.html.twig', [
+            'demande' => $demande,
+            'interviews' => $demande->getInterviews(),
+        ]);
+
+        // Charger le HTML dans Dompdf
+        $dompdf->loadHtml($html);
+
+        // Définir le format du papier (A4 par défaut)
+        $dompdf->setPaper('A4', 'portrait');
+
+        // Ajouter des métadonnées
+        $dompdf->addInfo('Title', 'Détails de la demande #' . $demande->getId());
+        $dompdf->addInfo('Author', 'OptiRH');
+        $dompdf->addInfo('Subject', 'Demande d\'emploi');
+        $dompdf->addInfo('Keywords', 'demande, emploi, recrutement');
+
+        // Rendre le PDF
+        try {
+            $dompdf->render();
+        } catch (\Exception $e) {
+            $this->logger->error('Failed to generate PDF', ['error' => $e->getMessage()]);
+            throw $e;
+        }
+
+        // Générer un nom de fichier unique
+        $filename = sprintf('demande_%s_%s.pdf', $demande->getId(), (new \DateTime())->format('Ymd_His'));
+
+        // Envoyer le PDF en réponse
+        $output = $dompdf->output();
+        return new Response(
+            $output,
+            Response::HTTP_OK,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"', // Défini manuellement
+            ]
+        );
+    }
     #[Route('/{id}/edit', name: 'app_demande_edit', methods: ['GET', 'POST'])]
     public function edit(
         Request $request,
