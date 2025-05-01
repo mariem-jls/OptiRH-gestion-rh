@@ -74,8 +74,7 @@
 <body>
 
     <div class="header">
-<img src="file:///C:/pidevWeb/OptiRH/Web/optiRH/public/images/logoGris_enhanced.png" alt="Logo" style="max-width: 200px;display: block; margin: 0 auto; ">
-        <div class="project-info">
+            <img src="{{ absolute_url(asset('img-front/logo/logo.png')) }}" alt="Logo" style="max-width: 200px; display: block; margin: 0 auto;">        <div class="project-info">
             <h1>{{ project.nom }}</h1>
             <p>Créé le : {{ project.createdAt|date('d/m/Y') }}</p>
             <p>Statut :

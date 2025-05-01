@@ -128,7 +128,7 @@ services:
     App\Service\ReservationMailer:
         arguments:
             $mailer: '@Symfony\Component\Mailer\MailerInterface'
-            $senderEmail: 'azettt532@gmail.com'
+            $senderEmail: 'OptiRH@gmail.com'
             
     
     
