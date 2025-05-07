@@ -40,5 +40,5 @@ La version **web** permet une gestion dématérialisée et centralisée des ress
 ### Étapes d'installation
 1. **Cloner le dépôt**
 ```bash
-    git clone https://github.com/votre-utilisateur/OptiRH.git
+    git clone [https://github.com/votre-utilisateur/OptiRH.git](https://github.com/mariem-jls/OptiRH-gestion-rh)
     cd OptiRH
